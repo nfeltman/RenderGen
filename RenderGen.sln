@@ -8,19 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{CEAB518E-4B21-4D73-A30F-2D367F4E0E8D}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = RenderGenCompiler\\RenderGenCompiler.csproj
-		SccProjectName1 = RenderGenCompiler
-		SccLocalPath1 = RenderGenCompiler
-		SccProjectUniqueName2 = Sample_BasicBVH\\Sample_BasicBVH.csproj
-		SccProjectTopLevelParentUniqueName2 = RenderGen.sln
-		SccProjectName2 = Sample_BasicBVH
-		SccLocalPath2 = Sample_BasicBVH
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
