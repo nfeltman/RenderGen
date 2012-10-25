@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderGenCompiler", "RenderGenCompiler\RenderGenCompiler.csproj", "{2AB29EC0-4179-4F28-B416-EC876A07AA98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_BasicBVH", "Sample_BasicBVH\Sample_BasicBVH.csproj", "{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{CEAB518E-4B21-4D73-A30F-2D367F4E0E8D}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 3
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = RenderGenCompiler\\RenderGenCompiler.csproj
+		SccProjectName1 = RenderGenCompiler
+		SccLocalPath1 = RenderGenCompiler
+		SccProjectUniqueName2 = Sample_BasicBVH\\Sample_BasicBVH.csproj
+		SccProjectTopLevelParentUniqueName2 = RenderGen.sln
+		SccProjectName2 = Sample_BasicBVH
+		SccLocalPath2 = Sample_BasicBVH
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2AB29EC0-4179-4F28-B416-EC876A07AA98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AB29EC0-4179-4F28-B416-EC876A07AA98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AB29EC0-4179-4F28-B416-EC876A07AA98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AB29EC0-4179-4F28-B416-EC876A07AA98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8} = {CEAB518E-4B21-4D73-A30F-2D367F4E0E8D}
+	EndGlobalSection
+EndGlobal
