@@ -329,6 +329,14 @@ namespace CoreLib
 				Sort([](T& t1, T& t2){return t1<t2;});
 			}
 
+			bool Contains(const T & val)
+			{
+				for (int i = 0; i<_count; i++)
+					if (buffer[i] == val)
+						return true;
+				return false;
+			}
+
 			template<typename Comparer>
 			void Sort(Comparer compare)
 			{

@@ -3,6 +3,7 @@
 #include "Runtime/VectorMath.h"
 #include "Runtime/ObjModel.h"
 #include "Runtime/Common.h"
+#include "CoreLib/Parser.h"
 
 using namespace CoreLib::Basic;
 using namespace CoreLib::IO;
@@ -48,17 +49,30 @@ namespace RenderGen
 		static SceneProfile FromFile(String fileName)
 		{
 			SceneProfile rs;
-			StreamReader reader(fileName);
-			rs.FileName = reader.ReadLine();
-			rs.Width = StringToInt(reader.ReadLine());
-			rs.Height = StringToInt(reader.ReadLine());
-			rs.FOV = (float)StringToDouble(reader.ReadLine());
-			rs.ZMin = (float)StringToDouble(reader.ReadLine());
-			rs.ZMax = (float)StringToDouble(reader.ReadLine());
-			for (int i = 0; i<4; i++)
+			CoreLib::Text::Parser parser(File::ReadAllText(fileName));
+			while (!parser.IsEnd())
 			{
-				auto line = reader.ReadLine();
-				sscanf_s(line.ToMultiByteString(), "%f %f %f %f", rs.Transform.m[0][i], rs.Transform.m[1][i], rs.Transform.m[2][i], rs.Transform.m[3][i]);
+				auto tk = parser.ReadWord();
+				if (tk == L"file")
+					rs.FileName = parser.ReadStringLiteral();
+				else if (tk == L"width")
+					rs.Width = parser.ReadInt();
+				else if (tk == L"height")
+					rs.Height = parser.ReadInt();
+				else if (tk == L"fov")
+					rs.FOV = (float)parser.ReadDouble();
+				else if (tk == L"zmin" || tk == L"znear")
+					rs.ZMin = (float)parser.ReadDouble();
+				else if (tk == L"zmax" || tk == L"zfar")
+					rs.ZMax = (float)parser.ReadDouble();
+				else if (tk == L"transform")
+				{
+					for (int i = 0; i<4; i++)
+						for (int j = 0; j<4; j++)
+							rs.Transform.m[j][i] = (float)parser.ReadDouble();
+				}
+				else
+					parser.ReadToken();
 			}
 			return rs;
 		}
@@ -69,16 +83,19 @@ namespace RenderGen
 		try
 		{
 			auto args = StartupArguments::Parse(argc, argv);
+
+			auto sceneProfile = SceneProfile::FromFile(args.SceneFileName);
+			ObjModel obj;
+			if (!LoadObj(obj, Path::Combine(Path::GetDirectoryName(args.FileName), sceneProfile.FileName).ToMultiByteString()))
+				throw Exception(L"Failed to load \'" + sceneProfile.FileName + L"\'");
+
+			printf("Mesh loaded. %d polygons.\n", obj.Faces.Count());
+
 			// Load renderer library
 			auto lib = LoadLibraryW(args.FileName.Buffer());
 			RenderFunction render = (RenderFunction)GetProcAddress(lib, "RenderMain");
 			if (render == 0)
 				throw Exception(L"Failed to load renderer library.");
-			
-			auto sceneProfile = SceneProfile::FromFile(args.SceneFileName);
-			ObjModel obj;
-			if (!LoadObj(obj, sceneProfile.FileName.ToMultiByteString()))
-				throw Exception(L"Failed to load obj model.");;
 			
 			// Create triangles buffer
 			Scene scene;
@@ -96,6 +113,7 @@ namespace RenderGen
 			wprintf_s(L"%s\n", e.Message.Buffer());
 			return 1;
 		}
+		_CrtDumpMemoryLeaks();
 	}
 }
 

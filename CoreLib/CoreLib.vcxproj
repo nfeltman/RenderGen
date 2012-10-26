@@ -105,6 +105,12 @@
     <ClInclude Include="Link.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LibMath.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Regex\MetaLexer.h" />
+    <ClInclude Include="Regex\Regex.h" />
+    <ClInclude Include="Regex\RegexDFA.h" />
+    <ClInclude Include="Regex\RegexNFA.h" />
+    <ClInclude Include="Regex\RegexTree.h" />
     <ClInclude Include="SmartPointer.h" />
     <ClInclude Include="Stream.h" />
     <ClInclude Include="TextIO.h" />
@@ -112,6 +118,13 @@
   <ItemGroup>
     <ClCompile Include="LibIO.cpp" />
     <ClCompile Include="LibString.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Regex\MetaLexer.cpp" />
+    <ClCompile Include="Regex\Regex.cpp" />
+    <ClCompile Include="Regex\RegexDFA.cpp" />
+    <ClCompile Include="Regex\RegexNFA.cpp" />
+    <ClCompile Include="Regex\RegexParser.cpp" />
+    <ClCompile Include="Regex\RegexTree.cpp" />
     <ClCompile Include="Stream.cpp" />
     <ClCompile Include="TextIO.cpp" />
   </ItemGroup>

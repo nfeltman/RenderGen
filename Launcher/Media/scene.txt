@@ -1,0 +1,13 @@
+/* scene description file */
+
+file "bunny.obj"       // obj mesh file name
+width 1024             // width of image, default is 512
+height 512             // height of image, default is 512
+fov 80                 // vertical field of view in angles, default is 75
+zmin 1.0               // near z clip plane, default is 1
+zmax 1000.0            // far z clip plane, default is 10000.0
+transform              // world transform, default is identity
+    1.0  0.0  0.0  0.0
+    0.0  1.0  0.0  0.0
+    0.0  0.0  1.0  0.0
+    0.0  0.0  0.0  1.0

@@ -136,6 +136,7 @@ namespace CoreLib
 			{
 				return pointer != ptr.pointer;
 			}
+
 			T* operator +(int offset) const
 			{
 				return pointer+offset;
@@ -155,6 +156,24 @@ namespace CoreLib
 					ptr.refCount = 0;
 				}
 				return *this;
+			}
+			T* Release()
+			{
+				if(pointer)
+				{
+					if((*refCount) > 1)
+					{
+						(*refCount)--;
+					}
+					else
+					{
+						delete refCount;
+					}
+				}
+				auto rs = pointer;
+				refCount = 0;
+				pointer = 0;
+				return rs;
 			}
 			~RefPtr()
 			{
@@ -196,10 +215,10 @@ namespace CoreLib
 				int Dummy;
 			};
 		public:
-			operator int _BoolConversionClass::*() const 
+			operator void*() const 
 			{
 				if (pointer)
-					return &_BoolConversionClass::Dummy;
+					return (void*)(pointer);
 				else
 					return 0;
 			}
