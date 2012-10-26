@@ -1,10 +1,6 @@
 #include "LibIO.h"
 #include "Exception.h"
-
-#ifdef WINDOWS_PLATFORM
-#include <Windows.h>
-#include "Shlwapi.h"
-#endif
+#include <sys/stat.h>
 
 namespace CoreLib
 {
@@ -14,11 +10,8 @@ namespace CoreLib
 
 		bool File::Exists(const String & fileName)
 		{
-#ifdef WINDOWS_PLATFORM
-			return PathFileExistsW(fileName.Buffer()) != 0;
-#else
-			throw NotImplementedException(L"FileExists not implemented for current platform.");
-#endif
+			struct stat sts;
+			return stat(((String)fileName).ToMultiByteString(), &sts) != -1;
 		}
 
 		String Path::TruncateExt(const String & path)

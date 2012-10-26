@@ -80,7 +80,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BitmapPrinter.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ObjModel.h" />
     <ClInclude Include="VectorMath.h" />
@@ -91,7 +90,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BitmapPrinter.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="ObjModel.cpp" />
     <ClCompile Include="Runtime.cpp" />

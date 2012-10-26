@@ -2,6 +2,7 @@
 #define CORE_LIB_TEXT_IO_H
 
 #include "Stream.h"
+#include "WideChar.h"
 #include <mbctype.h>
 
 namespace CoreLib
@@ -150,11 +151,11 @@ namespace CoreLib
 					if (_ismbblead(mb[0]))
 					{
 						mb[1] = get();
-						MultiByteToWideChar(CP_ACP, 0, mb, 2, &rs, 1);
+						MByteToWideChar(&rs, 1, mb, 2);
 					}
 					else
 					{
-						MultiByteToWideChar(CP_ACP, 0, mb, 1, &rs, 1);
+						rs = mb[0];
 					}
 					return rs;
 				}

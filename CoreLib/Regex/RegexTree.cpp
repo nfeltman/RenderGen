@@ -129,8 +129,8 @@ namespace Text
 				if ((Ranges[i].Begin >= Ranges[j].Begin && Ranges[i].Begin <= Ranges[j].End) ||
 					(Ranges[j].Begin >= Ranges[i].Begin && Ranges[j].Begin <= Ranges[i].End) )
 				{
-					Ranges[i].Begin = min(Ranges[i].Begin, Ranges[j].Begin);
-					Ranges[i].End = max(Ranges[i].End, Ranges[j].End);
+					Ranges[i].Begin = Math::Min(Ranges[i].Begin, Ranges[j].Begin);
+					Ranges[i].End = Math::Max(Ranges[i].End, Ranges[j].End);
 					Ranges.RemoveAt(j);
 					j--;
 				}
@@ -169,8 +169,8 @@ namespace Text
 	void RegexCharSet::RangeIntersection(RegexCharRange r1, RegexCharRange r2, RegexCharSet & rs)
 	{
 		RegexCharRange r;
-		r.Begin = max(r1.Begin,r2.Begin);
-		r.End = min(r1.End, r2.End);
+		r.Begin = Math::Max(r1.Begin,r2.Begin);
+		r.End = Math::Min(r1.End, r2.End);
 		if (r.Begin <= r.End)
 			rs.Ranges.Add(r);
 	}

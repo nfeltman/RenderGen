@@ -68,17 +68,7 @@ namespace CoreLib
 		private:
 			static char * WideCharToAnsi(wchar_t * buffer, int length)
 			{
-				size_t requiredBufferSize;
-				requiredBufferSize = WideCharToMultiByte(CP_OEMCP, NULL, buffer, length, 0, 0, NULL, NULL)+1;
-				if (requiredBufferSize)
-				{
-					char * multiByteBuffer = new char[requiredBufferSize];
-					WideCharToMultiByte(CP_OEMCP, NULL, buffer, length, multiByteBuffer, requiredBufferSize, NULL, NULL);
-					multiByteBuffer[requiredBufferSize-1] = 0;
-					return multiByteBuffer;
-				}
-				else
-					return 0;
+				return WideCharToMByte(buffer, length);
 			}
 		public:
 			virtual List<char> GetBytes(const String & str)
@@ -93,21 +83,8 @@ namespace CoreLib
 
 			virtual String GetString(char * buffer, int length)
 			{
-#ifdef WINDOWS_PLATFORM
-				// regard as ansi
-				int rlength = MultiByteToWideChar(CP_ACP, 0, buffer, length, NULL, 0)-1;
-				if (length < 0) length = 0;
-				if (length != 0)
-				{
-					wchar_t * rbuffer = new wchar_t[length+1];
-					MultiByteToWideChar(CP_ACP, NULL, buffer, length, rbuffer, length+1);
-					return String::FromBuffer(rbuffer, length);
-				}
-				else
-					return String();
-#else
-				throw NotImplementedException(L"UnicodeEncoding::GetString() not implemented for current platform.");
-#endif
+				auto rbuffer = MByteToWideChar(buffer, length);
+				return String::FromBuffer(rbuffer, length);
 			}
 		};
 
@@ -185,6 +162,7 @@ namespace CoreLib
 		Encoding * StreamReader::DetermineEncoding()
 		{
 			int flag = 0;
+#ifdef WINDOWS_PLATFORM
 			int rs = IsTextUnicode(buffer.Buffer(), buffer.Count(), &flag);
 			if (flag & (IS_TEXT_UNICODE_SIGNATURE | IS_TEXT_UNICODE_REVERSE_SIGNATURE))
 				return Encoding::Unicode;
@@ -192,6 +170,9 @@ namespace CoreLib
 				return Encoding::Ansi;
 			else
 				return 0;
+#else
+			return Encoding::Ansi;
+#endif
 		}
 		
 		void StreamReader::ReadBuffer()

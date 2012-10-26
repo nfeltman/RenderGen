@@ -4,6 +4,7 @@
 #include "Runtime/ObjModel.h"
 #include "Runtime/Common.h"
 #include "CoreLib/Parser.h"
+#include "CoreLib/DLL.h"
 
 using namespace CoreLib::Basic;
 using namespace CoreLib::IO;
@@ -92,8 +93,13 @@ namespace RenderGen
 			printf("Mesh loaded. %d polygons.\n", obj.Faces.Count());
 
 			// Load renderer library
+			
+			CoreLib::System::DynamicLibrary renderLib(args.FileName);
+			RenderFunction render = renderLib.GetProc<RenderFunction>(L"RenderMain");
+#ifdef WINDOWS_PLATFORM
 			auto lib = LoadLibraryW(args.FileName.Buffer());
 			RenderFunction render = (RenderFunction)GetProcAddress(lib, "RenderMain");
+#endif
 			if (render == 0)
 				throw Exception(L"Failed to load renderer library.");
 			

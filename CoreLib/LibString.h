@@ -4,7 +4,7 @@
 #include <tchar.h>
 #include <cstdlib>
 #include <stdio.h>
-#include <Windows.h>
+#include "WideChar.h"
 #include "SmartPointer.h"
 #include "Common.h"
 
@@ -79,13 +79,8 @@ namespace CoreLib
 			String(const char * str)
 				:buffer(0), multiByteBuffer(0), length(0)
 			{
-				length = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0)-1;
-				if (length < 0) length = 0;
-				if (length != 0)
-				{
-					buffer = new wchar_t[length+1];
-					MultiByteToWideChar(CP_ACP, NULL, str, -1, buffer.Ptr(), length+1);
-				}
+				buffer = MByteToWideChar(str, strlen(str));
+				length = wcslen(buffer.Ptr());
 			}
 			String(const String & str)
 				:buffer(0), multiByteBuffer(0), length(0)
@@ -222,13 +217,19 @@ namespace CoreLib
 					return L"";
 			}
 
-			char * ToMultiByteString(int * len = 0)
+			char * ToMultiByteString(int * len = 0) const
 			{
 				if (!buffer)
 					return "";
 				else
 				{
 					if (multiByteBuffer)
+						return multiByteBuffer;
+					((String*)this)->multiByteBuffer = WideCharToMByte(buffer.Ptr(), length);
+					if (len)
+						*len = strnlen_s(multiByteBuffer, length*2);
+					return multiByteBuffer;
+					/*if (multiByteBuffer)
 						return multiByteBuffer;
 					size_t requiredBufferSize;
 					requiredBufferSize = WideCharToMultiByte(CP_OEMCP, NULL, buffer.Ptr(), length, 0, 0, NULL, NULL)+1;
@@ -242,7 +243,7 @@ namespace CoreLib
 						return multiByteBuffer;
 					}
 					else
-						return "";
+						return "";*/
 				}
 			}
 

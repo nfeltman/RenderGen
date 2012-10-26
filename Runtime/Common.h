@@ -3,7 +3,6 @@
 
 #include "CoreLib/Basic.h"
 #include "VectorMath.h"
-#pragma comment(lib, "gdiplus.lib")
 namespace RenderGen
 {
 	using namespace CoreLib::Basic;
