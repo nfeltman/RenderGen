@@ -3,6 +3,7 @@
 
 #include "CoreLib/Basic.h"
 #include "VectorMath.h"
+
 namespace RenderGen
 {
 	using namespace CoreLib::Basic;
@@ -41,8 +42,7 @@ namespace RenderGen
 			rs.Height = Height;
 			return rs;
 		}
-
-		void Save(String fileName);
+		void Save(String fileName); // Save the image in pfm format
 	};
 
 	class Triangle
