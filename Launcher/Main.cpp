@@ -87,24 +87,33 @@ namespace RenderGen
 
 			auto sceneProfile = SceneProfile::FromFile(args.SceneFileName);
 			ObjModel obj;
-			if (!LoadObj(obj, Path::Combine(Path::GetDirectoryName(args.FileName), sceneProfile.FileName).ToMultiByteString()))
+			if (!LoadObj(obj, Path::Combine(Path::GetDirectoryName(args.SceneFileName), sceneProfile.FileName).ToMultiByteString()))
 				throw Exception(L"Failed to load \'" + sceneProfile.FileName + L"\'");
 
 			printf("Mesh loaded. %d polygons.\n", obj.Faces.Count());
 
 			// Load renderer library
-			
 			CoreLib::System::DynamicLibrary renderLib(args.FileName);
 			RenderFunction render = renderLib.GetProc<RenderFunction>(L"RenderMain");
-#ifdef WINDOWS_PLATFORM
-			auto lib = LoadLibraryW(args.FileName.Buffer());
-			RenderFunction render = (RenderFunction)GetProcAddress(lib, "RenderMain");
-#endif
+
 			if (render == 0)
 				throw Exception(L"Failed to load renderer library.");
 			
+
 			// Create triangles buffer
 			Scene scene;
+			scene.ZMin = sceneProfile.ZMin;
+			scene.ZMax = sceneProfile.ZMax;
+			scene.FOV = sceneProfile.FOV;
+
+			for (int i = 0; i<obj.Faces.Count(); i++)
+			{
+				Triangle tri;
+				tri.Normal = obj.Normals[obj.Faces[i].NormalIds[0]];
+				scene.Triangles.Add(tri);
+			}
+
+			printf("Render started...\n");
 
 			Image image(sceneProfile.Width, sceneProfile.Height);
 			render(image.CreateRef(), &scene);

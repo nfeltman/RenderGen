@@ -42,16 +42,22 @@ namespace RenderGen
 			rs.Height = Height;
 			return rs;
 		}
-		void Save(String fileName); // Save the image in pfm format
+		void Save(String fileName); // Save the image in pfm or bmp format
 	};
 
 	class Triangle
-	{};
+	{
+	public:
+		Vec3 Normal;
+		Vec3 V0, V1, V2;
+	};
 
 	class Scene
 	{
 	public:
-
+		float ZMin, ZMax;
+		float FOV;
+		List<Triangle> Triangles;
 	};
 
 	typedef void (*RenderFunction)(ImageRef image, Scene * scene);
