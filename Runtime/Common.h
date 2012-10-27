@@ -45,11 +45,29 @@ namespace RenderGen
 		void Save(String fileName); // Save the image in pfm or bmp format
 	};
 
-	class Triangle
+	struct MeshFace
 	{
-	public:
-		Vec3 Normal;
-		Vec3 V0, V1, V2;
+		float PlaneU, PlaneV, PlaneD;
+		short MaterialId;
+		short ProjectionAxis;
+		float K_beta_u, K_beta_v, K_beta_d, K_alpha_u;
+		float K_gamma_u, K_gamma_v, K_gamma_d, K_alpha_v;
+		union
+		{
+			struct
+			{
+				int Normal1, Normal2, Normal3;
+			};
+			int Normals[3];
+		};
+		union
+		{
+			struct
+			{
+				int TexCoord1, TexCoord2, TexCoord3;
+			};
+			int TexCoords[3];
+		};
 	};
 
 	class Scene
@@ -57,7 +75,18 @@ namespace RenderGen
 	public:
 		float ZMin, ZMax;
 		float FOV;
-		List<Triangle> Triangles;
+		List<MeshFace> Triangles;
+		List<Vec2> TexCoords;
+		List<Vec3> Normals;
+	};
+
+	class Ray
+	{
+	public:
+		Vec3 Origin;
+		Vec3 Direction;
+		Vec3 ReciprocalDirection;
+		float tMin, tMax;
 	};
 
 	typedef void (*RenderFunction)(ImageRef image, Scene * scene);

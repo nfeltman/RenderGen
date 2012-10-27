@@ -15,8 +15,8 @@ namespace CoreLib
 				L"#SingleLineComment = {//[^\\n]*\\n}\n"\
 				L"#MultiLineComment = {/\\*([^*]|\\*[^/])*\\*/}\n"\
 				L"Identifier = {[a-zA-Z_]\\w*}\n"\
-				L"IntConstant = {\\d+}\n"\
-				L"FloatConstant = {\\d*.\\d+|\\d+(.\\d+)?(e(-)?\\d+)?}\n"\
+				L"IntConstant = {-?\\d+}\n"\
+				L"FloatConstant = {-?\\d*.\\d+|\\d+(.\\d+)?(e(-)?\\d+)?}\n"\
 				L"StringConstant = {\"([^\\\\\"]|\\\\\\.)*\"}\n"\
 				L"CharConstant = {'[^\\n\\r]*'}\n"\
 				L"LParent = {\\(}\n"\
