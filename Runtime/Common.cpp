@@ -19,9 +19,9 @@ namespace RenderGen
 			{
 				int x=i; 
 				int y=(image.Height-1)-j;
-				int r = image.Pixels[j*image.Width+i].x*255;
-				int g = image.Pixels[j*image.Width+i].y*255;
-				int b = image.Pixels[j*image.Width+i].z*255;
+				int r = (int)(image.Pixels[j*image.Width+i].x*255);
+				int g = (int)(image.Pixels[j*image.Width+i].y*255);
+				int b = (int)(image.Pixels[j*image.Width+i].z*255);
 				if (r > 255) r=255;
 				if (g > 255) g=255;
 				if (b > 255) b=255;
