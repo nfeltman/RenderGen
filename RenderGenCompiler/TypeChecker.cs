@@ -19,6 +19,44 @@ namespace RenderGenCompiler
             scopeStack.Push(context.CreateScope());
         }
 
+        public override AggregateNode VisitAggregateNode(AggregateNode node)
+        {
+            node.Scope = scopeStack.Peek();
+            node.BaseExpr.Accept(this);
+            if (!string.IsNullOrEmpty(node.AggregationField))
+            {
+                var ctype = node.BaseExpr.Type as ContainerType;
+                if (ctype == null)
+                {
+                    Errors.Add("Aggregation domain does not evaluate to a collection.");
+                    node.Type = new ErrorCodeType();
+                }
+                else
+                {
+                    var stype = ctype.ClientType as StructType;
+                    if (stype == null && stype.Fields.ContainsKey(node.AggregationField))
+                    {
+                        Errors.Add("Aggregation domain does not evaluate to a struct that contains field \'" + node.AggregationField + "\'.");
+                        node.Type = new ErrorCodeType();
+                    }
+                    else
+                    {
+                        node.Type = stype.Fields[node.AggregationField];
+                    }
+                }
+            }
+            else
+            {
+                node.Type = node.BaseExpr.Type;
+            }
+            if (!node.Type.Equals(PlainCodeType.IntType) && !node.Type.Equals(PlainCodeType.FloatType))
+            {
+                Errors.Add("Aggregation field must be int or float.");
+                node.Type = new ErrorCodeType();
+            }
+            return node;
+        }
+
         public override FunctionNode VisitFunctionNode(FunctionNode node)
         {
             // requires node.Type already exists ( parameter types already evaluated )

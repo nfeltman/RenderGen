@@ -17,6 +17,22 @@ namespace RenderGenCompiler
         public abstract ExpressionNode Accept(ExprVisitor visitor);
     }
 
+    public enum Aggregator
+    {
+        Min, Max, Sum
+    }
+
+    public class AggregateNode : ExpressionNode
+    {
+        public string AggregationField;
+        public Aggregator Aggregator;
+        public ExpressionNode BaseExpr;
+        public override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitAggregateNode(this);
+        }
+    }
+
     public class FunctionNode : ExpressionNode
     {
         
@@ -130,6 +146,10 @@ namespace RenderGenCompiler
         public static IfNode If(ExpressionNode predicate, ExpressionNode tExpr, ExpressionNode fExpr)
         {
             return new IfNode() { Predicate = predicate, TrueExpression = tExpr, FalseExpression = fExpr };
+        }
+        public static AggregateNode Aggregate(Aggregator aggregator, string aggregationField, ExpressionNode baseNode)
+        {
+            return new AggregateNode() { Aggregator = aggregator, AggregationField = aggregationField, BaseExpr = baseNode };
         }
     }
 }

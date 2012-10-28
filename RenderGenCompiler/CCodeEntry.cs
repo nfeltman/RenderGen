@@ -38,6 +38,74 @@ namespace RenderGenCompiler
         public static PlainCodeType BoolType = new PlainCodeType("bool");
     }
 
+    public class StructType : CodeType, ICollection<KeyValuePair<string, CodeType>>
+    {
+        public string TypeName;
+        public Dictionary<string, CodeType> Fields = new Dictionary<string,CodeType>();
+        public StructType()
+        {}
+
+        public StructType(string typeName)
+        {
+            this.TypeName = typeName;
+        }
+
+        public void Add(string fieldName, CodeType type)
+        {
+            Fields.Add(fieldName, type);
+        }
+
+        public override bool Equals(CodeType other)
+        {
+            return other is StructType && (other as StructType).TypeName == this.TypeName;
+        }
+
+        public void Add(KeyValuePair<string, CodeType> item)
+        {
+            Fields.Add(item.Key, item.Value);
+        }
+
+        public void Clear()
+        {
+            Fields.Clear();
+        }
+
+        public bool Contains(KeyValuePair<string, CodeType> item)
+        {
+            return Fields.Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<string, CodeType>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Count
+        {
+            get { return Fields.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        public bool Remove(KeyValuePair<string, CodeType> item)
+        {
+            return Fields.Remove(item.Key);
+        }
+
+        public IEnumerator<KeyValuePair<string, CodeType>> GetEnumerator()
+        {
+            return Fields.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return Fields.GetEnumerator();
+        }
+    }
+
     public class ContainerType : CodeType
     {
         public CodeType ClientType;

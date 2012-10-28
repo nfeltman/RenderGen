@@ -17,6 +17,11 @@ namespace RenderGenCompiler
         {
             return node;
         }
+        public virtual AggregateNode VisitAggregateNode(AggregateNode node)
+        {
+            node.BaseExpr.Accept(this);
+            return node;
+        }
         public virtual ApplyNode VisitApplyNode(ApplyNode node)
         {
             node.Function.Accept(this);
