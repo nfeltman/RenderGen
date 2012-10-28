@@ -18,7 +18,6 @@ namespace Sample_Brute
             var type_geom = new PlainCodeType("triangle");
             var type_SampleSet = new ContainerType(type_Sample);
             var type_GeomSet = new ContainerType(type_geom);
-            var type_geomSamplePair = new PlainCodeType("sample_tri_pair");
 
             context.AddFunction(new ExtFunctionDef("ray_tri_intersection", new ContainerType(SystemTypes.Intersection), type_geom, type_Sample));
 
