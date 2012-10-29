@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_Brute", "Sample_Brut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerIntrinsics", "CompilerIntrinsics\CompilerIntrinsics.csproj", "{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FrontEnd", "TopEndCompilers\FrontEnd.fsproj", "{8AE3EC3B-884F-435F-8772-26B7C96FDA69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,16 @@ Global
 		{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}.Release|Win32.ActiveCfg = Release|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8AE3EC3B-884F-435F-8772-26B7C96FDA69}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

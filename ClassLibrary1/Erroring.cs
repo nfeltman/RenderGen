@@ -31,6 +31,10 @@ namespace Mockingbird
         {
             return message == null ? f(value) : new Erroring<U>(message);
         }
+        public Erroring<U> FMap<U>(Func<T, U> f)
+        {
+            return message == null ? new Erroring<U>(f(value)) : new Erroring<U>(message);
+        }
     }
 
     public static class UnitErroringHelper

@@ -30,6 +30,7 @@ namespace Mockingbird
     {
         public MbNode Child { get; set; }
         public String Label { get; set; }
+        public MbType Type { get; set; }
         public T Accept<T>(MbNodeVisitor<T> v)
         {
             return v.ForFix(this);
