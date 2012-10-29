@@ -1,6 +1,6 @@
 /* scene description file */
 
-file "bunny.obj"       // obj mesh file name
+file "meshes/bunny.obj"       // obj mesh file name
 width 256             // width of image, default is 512
 height 256             // height of image, default is 512
 fov 80                 // vertical field of view in angles, default is 75

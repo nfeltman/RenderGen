@@ -1,29 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderGenCompiler", "RenderGenCompiler\RenderGenCompiler.csproj", "{2AB29EC0-4179-4F28-B416-EC876A07AA98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderGenCompiler", "src\compiler\RenderGenCompiler\RenderGenCompiler.csproj", "{2AB29EC0-4179-4F28-B416-EC876A07AA98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_BasicBVH", "Sample_BasicBVH\Sample_BasicBVH.csproj", "{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_BasicBVH", "src\renderers\Sample_BasicBVH\Sample_BasicBVH.csproj", "{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{CEAB518E-4B21-4D73-A30F-2D367F4E0E8D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "Launcher\Launcher.vcxproj", "{33EBC2C6-AEEA-4910-9639-B9A042FB3AE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "src\launcher\Launcher.vcxproj", "{33EBC2C6-AEEA-4910-9639-B9A042FB3AE3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreLib", "CoreLib\CoreLib.vcxproj", "{F9BE7957-8399-899E-0C49-E714FDDD4B65}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreLib", "src\corelib\CoreLib.vcxproj", "{F9BE7957-8399-899E-0C49-E714FDDD4B65}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "Runtime\Runtime.vcxproj", "{0729752D-C822-4C8A-8ABF-38497BB5D115}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "src\runtime\Runtime.vcxproj", "{0729752D-C822-4C8A-8ABF-38497BB5D115}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRenderer", "SampleRenderer\SampleRenderer.vcxproj", "{97467B86-403E-4844-A7E2-39FDF97A2268}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRenderer", "src\renderers\SampleRenderer\SampleRenderer.vcxproj", "{97467B86-403E-4844-A7E2-39FDF97A2268}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mockingbird", "ClassLibrary1\Mockingbird.csproj", "{8C3ADE9B-E0E4-4A9F-803F-9D21E07C5FD3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mockingbird", "src\ClassLibrary1\Mockingbird.csproj", "{8C3ADE9B-E0E4-4A9F-803F-9D21E07C5FD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_Brute", "Sample_Brute\Sample_Brute.csproj", "{D9E09784-41EB-4746-B3FF-8369336BD0B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample_Brute", "src\renderers\Sample_Brute\Sample_Brute.csproj", "{D9E09784-41EB-4746-B3FF-8369336BD0B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerIntrinsics", "CompilerIntrinsics\CompilerIntrinsics.csproj", "{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerIntrinsics", "src\compiler\CompilerIntrinsics\CompilerIntrinsics.csproj", "{CA81A04C-2068-4A12-8C85-6EBDB903DC7E}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FrontEnd", "TopEndCompilers\FrontEnd.fsproj", "{8AE3EC3B-884F-435F-8772-26B7C96FDA69}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FrontEnd", "src\TopEndCompilers\FrontEnd.fsproj", "{8AE3EC3B-884F-435F-8772-26B7C96FDA69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppIncludeGen", "CppIncludeGen\CppIncludeGen.csproj", "{7E8AE8CB-892C-41B4-B4C7-FB0A3DD328E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppIncludeGen", "src\tools\CppIncludeGen\CppIncludeGen.csproj", "{7E8AE8CB-892C-41B4-B4C7-FB0A3DD328E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
