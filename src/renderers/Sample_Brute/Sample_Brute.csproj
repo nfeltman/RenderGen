@@ -48,11 +48,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CompilerIntrinsics\CompilerIntrinsics.csproj">
+    <ProjectReference Include="..\..\compiler\CompilerIntrinsics\CompilerIntrinsics.csproj">
       <Project>{ca81a04c-2068-4a12-8c85-6ebdb903dc7e}</Project>
       <Name>CompilerIntrinsics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RenderGenCompiler\RenderGenCompiler.csproj">
+    <ProjectReference Include="..\..\compiler\RenderGenCompiler\RenderGenCompiler.csproj">
       <Project>{2ab29ec0-4179-4f28-b416-ec876a07aa98}</Project>
       <Name>RenderGenCompiler</Name>
     </ProjectReference>

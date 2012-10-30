@@ -51,9 +51,10 @@ namespace CppIncludeGen
         }
         public bool ParseFile(string dirName, string fileName)
         {
-            if (processedFiles.Contains(Path.GetFileName(fileName).ToUpper()))
-                return true;
+            
             string fname = Path.Combine(dirName, fileName);
+            if (processedFiles.Contains(fname.ToUpper()))
+                return true;
             if (!File.Exists(fname))
             {
                 foreach (var d in SearchDirs)
@@ -66,7 +67,7 @@ namespace CppIncludeGen
             if (File.Exists(fname))
             {
                 var txt = File.ReadAllLines(fname);
-                processedFiles.Add(Path.GetFileName(fileName).ToUpper());
+                processedFiles.Add(fname.ToUpper());
                 ParseText(Path.GetDirectoryName(fname), txt);
                 
                 return true;

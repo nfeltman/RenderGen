@@ -38,7 +38,7 @@ namespace Sample_Brute
                         )
                     )
                 );
-
+            CppCompiler.FromSpec("msvc.txt").CreateDLL("void RenderMain(RenderGen::ImageRef img, RenderGen::Scene * scene){}");
             var rs = expr.Compile(context);
             if (!rs.Success)
             {

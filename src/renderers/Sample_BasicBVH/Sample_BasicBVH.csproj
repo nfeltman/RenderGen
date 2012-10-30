@@ -52,7 +52,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderGenCompiler\RenderGenCompiler.csproj">
+    <ProjectReference Include="..\..\compiler\RenderGenCompiler\RenderGenCompiler.csproj">
       <Project>{2ab29ec0-4179-4f28-b416-ec876a07aa98}</Project>
       <Name>RenderGenCompiler</Name>
     </ProjectReference>
