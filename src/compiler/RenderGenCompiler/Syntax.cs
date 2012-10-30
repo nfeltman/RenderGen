@@ -17,92 +17,25 @@ namespace RenderGenCompiler
         public abstract ExpressionNode Accept(ExprVisitor visitor);
     }
 
-    public enum Aggregator
-    {
-        Min, Max, Sum
-    }
+    public class GeometryRayInputNode : ExpressionNode
+    { }
 
-    public class AggregateNode : ExpressionNode
-    {
-        public string AggregationField;
-        public Aggregator Aggregator;
-        public ExpressionNode BaseExpr;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitAggregateNode(this);
-        }
-    }
-
-    public class FunctionNode : ExpressionNode
-    {
-        
-        public string FunctionName;
-        public List<string> Variables;
-        public ExpressionNode Body;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitFunctionNode(this);
-        }
-    }
-
-    public class VarRefNode : ExpressionNode
-    {
-        public string Variable;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitVarRefNode(this);
-        }
-    }
-
-    public class ApplyNode : ExpressionNode
-    {
-        public FunctionNode Function;
-        public List<ExpressionNode> Arguments;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitApplyNode(this);
-        }
-    }
-
-    public class InvokeNode : ExpressionNode
-    {
-        public string FunctionName;
-        public List<ExpressionNode> Arguments;
-        public bool IsExternal = false;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitInvokeNode(this);
-        }
-    }
-
-    public class SelectNode : ExpressionNode
+    public class PipeNode : ExpressionNode
     {
         public ExpressionNode BaseNode;
-        public FunctionNode Selector;
-        public override ExpressionNode Accept(ExprVisitor visitor)
+        public Operator Operator;
+        public PipeNode(ExpressionNode baseExpr, Operator op)
         {
-            return visitor.VisitSelectNode(this);
+            this.BaseNode = baseExpr;
+            this.Operator = op;
         }
+
     }
 
-    public class SelectManyNode : ExpressionNode
+    public class MapNode : ExpressionNode
     {
         public ExpressionNode BaseNode;
-        public FunctionNode Selector;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitSelectManyNode(this);
-        }
-    }
-
-    public class IfNode : ExpressionNode
-    {
-        public ExpressionNode Predicate;
-        public ExpressionNode TrueExpression, FalseExpression;
-        public override ExpressionNode Accept(ExprVisitor visitor)
-        {
-            return visitor.VisitIfNode(this);
-        }
+        public Operator Operator;
     }
 
     public static class Exprs
@@ -135,6 +68,13 @@ namespace RenderGenCompiler
         {
             return new VarRefNode() { Variable = varName };
         }
+        // geometry predicates.
+        // predicate tree
+
+        // partition node: 1s
+        // geometry partition node: impl
+        // fix
+        // helper : shading.
         public static SelectNode Select(ExpressionNode baseNode, FunctionNode fun)
         {
             return new SelectNode() { BaseNode = baseNode, Selector = fun };
