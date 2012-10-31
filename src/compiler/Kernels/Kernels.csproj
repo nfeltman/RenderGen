@@ -4,20 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{998A82F7-9DFA-49D9-B3A9-16F7B56E2DB8}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{FADFC69B-7619-427F-A8E4-2182B209711C}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sample_BasicBVH</RootNamespace>
-    <AssemblyName>Sample_BasicBVH</AssemblyName>
+    <RootNamespace>RenderGen.Kernels</RootNamespace>
+    <AssemblyName>RenderGen.Kernels</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -27,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -45,18 +39,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="BinaryGeometryPartition_Kernel.cs" />
+    <Compile Include="BruteKernel.cs" />
+    <Compile Include="Kernels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SamplePartition_1_Kernel.cs" />
+    <Compile Include="ShadeKernel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\compiler\Kernels\Kernels.csproj">
-      <Project>{fadfc69b-7619-427f-a8e4-2182b209711c}</Project>
-      <Name>Kernels</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\compiler\RenderGenCompiler\RenderGenCompiler.csproj">
+    <ProjectReference Include="..\RenderGenCompiler\RenderGenCompiler.csproj">
       <Project>{2ab29ec0-4179-4f28-b416-ec876a07aa98}</Project>
       <Name>RenderGenCompiler</Name>
     </ProjectReference>

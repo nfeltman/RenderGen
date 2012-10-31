@@ -4,92 +4,136 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RenderGenCompiler
+namespace RenderGen.Compiler
 {
-    public abstract class ExpressionNode
+    internal abstract class ExpressionNode
     {
-        internal Scope Scope;
-        public CodeType Type;
-        public CompileResult Compile(Context context)
-        {
-            return Compiler.Compile(context, this);
-        }
-        public abstract ExpressionNode Accept(ExprVisitor visitor);
+        //internal Scope Scope;
+        internal RenderItemType Type;
+        internal abstract ExpressionNode Accept(ExprVisitor visitor);
     }
 
-    public class GeometryRayInputNode : ExpressionNode
-    { }
-
-    public class PipeNode : ExpressionNode
+    internal class InputNode : ExpressionNode
     {
-        public ExpressionNode BaseNode;
-        public Operator Operator;
-        public PipeNode(ExpressionNode baseExpr, Operator op)
+        internal InputNode(RenderItemType type)
+        {
+            Type = type;
+        }
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitInputNode(this);
+        }
+    }
+
+    internal abstract class OperatorNode : ExpressionNode
+    {}
+
+    internal class KernelNode : OperatorNode
+    {
+        internal IKernel Kernel;
+        internal KernelNode(IKernel kernel)
+        {
+            this.Kernel = kernel;
+        }
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitKernelNode(this);
+        }
+    }
+
+    internal class SubPipeNode : OperatorNode
+    {
+        internal ExpressionNode SubPipe;
+        internal SubPipeNode(ExpressionNode subPipe)
+        {
+            this.SubPipe = subPipe;
+        }
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitSubPipeNode(this);
+        }
+    }
+
+    internal class RecurNode : OperatorNode
+    {
+        internal RecurNode()
+        {
+        }
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitRecurNode(this);
+        }
+    }
+
+    internal class PipeNode : ExpressionNode
+    {
+        internal ExpressionNode BaseNode;
+        internal OperatorNode Operator;
+        internal PipeNode(ExpressionNode baseExpr, OperatorNode op)
         {
             this.BaseNode = baseExpr;
             this.Operator = op;
         }
 
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitPipeNode(this);
+        }
     }
 
-    public class MapNode : ExpressionNode
+    internal class MapNode : ExpressionNode
     {
-        public ExpressionNode BaseNode;
-        public Operator Operator;
+        internal ExpressionNode BaseNode;
+        internal OperatorNode Operator;
+        internal MapNode(ExpressionNode baseExpr, OperatorNode op)
+        {
+            this.BaseNode = baseExpr;
+            this.Operator = op;
+        }
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
+        {
+            return visitor.VisitMapNode(this);
+        }
     }
 
-    public static class Exprs
+    internal class BranchNode : ExpressionNode
     {
-        public static ApplyNode Apply(FunctionNode func, params ExpressionNode[] args)
+        internal ExpressionNode BaseNode;
+        internal ExpressionNode TrueBranch, FalseBranch;
+        internal IPredicate Predicate;
+        internal BranchNode(ExpressionNode baseNode, IPredicate predicate, ExpressionNode trueExpr, ExpressionNode falseExpr)
         {
-            return new ApplyNode() { Function = func, Arguments = args.ToList() };
+            this.BaseNode = baseNode;
+            this.Predicate = predicate;
+            this.TrueBranch = trueExpr;
+            this.FalseBranch = falseExpr;
         }
-        public static InvokeNode Call(string funcName, params ExpressionNode[] args)
-        {
-            return new InvokeNode() { FunctionName = funcName, Arguments = args.ToList(), IsExternal = false };
-        }
-        public static InvokeNode CallExt(string funcName, params ExpressionNode[] args)
-        {
-            return new InvokeNode() { FunctionName = funcName, Arguments = args.ToList(), IsExternal = true };
-        }
-        public static FunctionNode Lambda(string varName, ExpressionNode body)
-        {
-            return new FunctionNode() { Body = body, Variables = new List<string>() { varName }, FunctionName = "ignore_func_name" };
-        }
-        public static FunctionNode Lambda(string[] varNames, ExpressionNode body)
-        {
-            return new FunctionNode() { Body = body, Variables = varNames.ToList(), FunctionName = "ignore_func_name" };
-        }
-        public static FunctionNode Fix(string funName, CodeType returnType, string varName, ExpressionNode body)
-        {
-            return new FunctionNode() { Body = body, Variables = new List<string>() { varName }, FunctionName = funName, Type = new FunctionType() { ReturnType = returnType } };
-        }
-        public static VarRefNode Var(string varName)
-        {
-            return new VarRefNode() { Variable = varName };
-        }
-        // geometry predicates.
-        // predicate tree
 
-        // partition node: 1s
-        // geometry partition node: impl
-        // fix
-        // helper : shading.
-        public static SelectNode Select(ExpressionNode baseNode, FunctionNode fun)
+        internal override ExpressionNode Accept(ExprVisitor visitor)
         {
-            return new SelectNode() { BaseNode = baseNode, Selector = fun };
+            return visitor.VisitBranchNode(this);
         }
-        public static SelectManyNode SelectMany(ExpressionNode baseNode, FunctionNode fun)
+    }
+
+    internal class RecurringNode : ExpressionNode
+    {
+        internal ExpressionNode BaseNode;
+        internal ExpressionNode SubExpr;
+        internal RecurringNode(ExpressionNode baseNode, ExpressionNode subExpr)
         {
-            return new SelectManyNode() { BaseNode = baseNode, Selector = fun };
+            this.BaseNode = baseNode;
+            this.SubExpr = subExpr;
         }
-        public static IfNode If(ExpressionNode predicate, ExpressionNode tExpr, ExpressionNode fExpr)
+
+        internal override ExpressionNode Accept(ExprVisitor visitor)
         {
-            return new IfNode() { Predicate = predicate, TrueExpression = tExpr, FalseExpression = fExpr };
-        }
-        public static AggregateNode Aggregate(Aggregator aggregator, string aggregationField, ExpressionNode baseNode)
-        {
-            return new AggregateNode() { Aggregator = aggregator, AggregationField = aggregationField, BaseExpr = baseNode };
+            return visitor.VisitRecurringNode(this);
         }
     }
 }

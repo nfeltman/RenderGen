@@ -7,8 +7,8 @@
     <ProjectGuid>{2AB29EC0-4179-4F28-B416-EC876A07AA98}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RenderGenCompiler</RootNamespace>
-    <AssemblyName>RenderGenCompiler</AssemblyName>
+    <RootNamespace>RenderGen.Compiler</RootNamespace>
+    <AssemblyName>RenderGen.Compiler</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
@@ -43,20 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CCodeEntry.cs" />
     <Compile Include="CodeGen.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompileResult.cs" />
-    <Compile Include="Context.cs" />
     <Compile Include="CppCompiler.cs" />
     <Compile Include="NativeKernel.cs" />
-    <Compile Include="Operator.cs" />
     <Compile Include="Predicate.cs" />
     <Compile Include="PrintVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenderAPI.cs" />
     <Compile Include="RenderStream.cs" />
     <Compile Include="Syntax.cs" />
-    <Compile Include="TypeChecker.cs" />
     <Compile Include="Types.cs" />
     <Compile Include="Visitor.cs" />
   </ItemGroup>

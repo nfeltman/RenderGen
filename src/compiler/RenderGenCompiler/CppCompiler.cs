@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RenderGenCompiler
+namespace RenderGen.Compiler
 {
     public abstract class CppCompiler
     {

@@ -4,103 +4,48 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RenderGenCompiler
+namespace RenderGen.Compiler
 {
-    public class PrintVisitor : ExprVisitor
+    internal class PrintVisitor : ExprVisitor
     {
-        StringBuilder sb = new StringBuilder();
-        int indent = 0;
-        private void WriteLine(string value)
+        internal override ExpressionNode VisitInputNode(InputNode node)
         {
-            sb.AppendLine(value);
-            for (int i = 0; i < indent; i++)
-                sb.Append("  ");
+            return base.VisitInputNode(node);
         }
-        private void WriteList(List<ExpressionNode> list)
+
+        internal override ExpressionNode VisitKernelNode(KernelNode node)
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].Accept(this);
-                if (i != list.Count - 1)
-                    sb.Append(", ");
-            }
+            return base.VisitKernelNode(node);
         }
-        private void WriteList(List<string> list)
+
+        internal override ExpressionNode VisitMapNode(MapNode node)
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                sb.Append(list[i]);
-                if (i != list.Count - 1)
-                    sb.Append(", ");
-            }
+            return base.VisitMapNode(node);
         }
-        public override string ToString()
+
+        internal override ExpressionNode VisitPipeNode(PipeNode node)
         {
-            return sb.ToString();
+            return base.VisitPipeNode(node);
         }
-        public override FunctionNode VisitFunctionNode(FunctionNode node)
+
+        internal override ExpressionNode VisitRecurNode(RecurNode node)
         {
-            sb.AppendFormat("Fun {0}(", node.FunctionName);
-            WriteList(node.Variables);
-            WriteLine(")");
-            sb.Append("{");
-            indent++;
-            WriteLine("");
-            node.Body.Accept(this);
-            indent--;
-            WriteLine("");
-            sb.Append("}");
-            return node;
+            return base.VisitRecurNode(node);
         }
-        public override VarRefNode VisitVarRefNode(VarRefNode node)
+
+        internal override ExpressionNode VisitRecurringNode(RecurringNode node)
         {
-            sb.Append(node.Variable);
-            return node;
+            return base.VisitRecurringNode(node);
         }
-        public override ApplyNode VisitApplyNode(ApplyNode node)
+
+        internal override ExpressionNode VisitSubPipeNode(SubPipeNode node)
         {
-            node.Function.Accept(this);
-            sb.Append("(");
-            WriteList(node.Arguments);
-            sb.Append(")");
-            return node;
+            return base.VisitSubPipeNode(node);
         }
-        public override InvokeNode VisitInvokeNode(InvokeNode node)
+
+        internal override ExpressionNode VisitBranchNode(BranchNode node)
         {
-            sb.Append(node.FunctionName);
-            sb.Append("(");
-            WriteList(node.Arguments);
-            sb.Append(")");
-            return node;
-        }
-        public override SelectNode VisitSelectNode(SelectNode node)
-        {
-            sb.Append("Select(");
-            node.BaseNode.Accept(this);
-            sb.Append(", ");
-            node.Selector.Accept(this);
-            sb.Append(")");
-            return node;
-        }
-        public override SelectManyNode VisitSelectManyNode(SelectManyNode node)
-        {
-            sb.Append("SelectMany(");
-            node.BaseNode.Accept(this);
-            sb.Append(", ");
-            node.Selector.Accept(this);
-            sb.Append(")");
-            return node;
-        }
-        public override IfNode VisitIfNode(IfNode node)
-        {
-            sb.Append("if (");
-            node.Predicate.Accept(this);
-            sb.Append("; ");
-            node.TrueExpression.Accept(this);
-            sb.Append(" else ");
-            node.FalseExpression.Accept(this);
-            sb.Append(")");
-            return node;
+            return base.VisitBranchNode(node);
         }
     }
 }

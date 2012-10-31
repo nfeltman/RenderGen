@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RenderGenCompiler
+namespace RenderGen.Compiler
 {
-    public class NativeKernel
+    public interface IKernel
     {
-        public string Name;
+        string Name { get; }
     }
-    public class NativeKernel<TIn, TOut> : NativeKernel
+
+    public interface IKernel<TIn, TOut> : IKernel
     {
-        public CodeType ReturnType;
-        public CodeType[] ArgumentTypes;
+        RenderItemType ReturnType { get; }
+        RenderItemType[] ArgumentTypes { get; }
     }
 }

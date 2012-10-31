@@ -4,52 +4,55 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RenderGenCompiler
+namespace RenderGen.Compiler
 {
-    public class ExprVisitor
+    internal class ExprVisitor
     {
-        public virtual FunctionNode VisitFunctionNode(FunctionNode node)
-        {
-            node.Body.Accept(this);
-            return node;
-        }
-        public virtual VarRefNode VisitVarRefNode(VarRefNode node)
-        {
-            return node;
-        }
-        public virtual AggregateNode VisitAggregateNode(AggregateNode node)
-        {
-            node.BaseExpr.Accept(this);
-            return node;
-        }
-        public virtual ApplyNode VisitApplyNode(ApplyNode node)
-        {
-            node.Function.Accept(this);
-            node.Arguments.ForEach(n => n.Accept(this));
-            return node;
-        }
-        public virtual InvokeNode VisitInvokeNode(InvokeNode node)
-        {
-            node.Arguments.ForEach(n => n.Accept(this));
-            return node;
-        }
-        public virtual SelectNode VisitSelectNode(SelectNode node)
+        internal virtual ExpressionNode VisitPipeNode(PipeNode node)
         {
             node.BaseNode.Accept(this);
-            node.Selector.Accept(this);
             return node;
         }
-        public virtual SelectManyNode VisitSelectManyNode(SelectManyNode node)
+
+        internal virtual ExpressionNode VisitMapNode(MapNode node)
         {
             node.BaseNode.Accept(this);
-            node.Selector.Accept(this);
             return node;
         }
-        public virtual IfNode VisitIfNode(IfNode node)
+
+        internal virtual ExpressionNode VisitBranchNode(BranchNode node)
         {
-            node.Predicate.Accept(this);
-            node.TrueExpression.Accept(this);
-            node.FalseExpression.Accept(this);
+            node.BaseNode.Accept(this);
+            node.TrueBranch.Accept(this);
+            node.FalseBranch.Accept(this);
+            return node;
+        }
+
+        internal virtual ExpressionNode VisitRecurringNode(RecurringNode node)
+        {
+            node.BaseNode.Accept(this);
+            node.SubExpr.Accept(this);
+            return node;
+        }
+
+        internal virtual ExpressionNode VisitKernelNode(KernelNode node)
+        {
+            return node;
+        }
+
+        internal virtual ExpressionNode VisitInputNode(InputNode node)
+        {
+            return node;
+        }
+
+        internal virtual ExpressionNode VisitSubPipeNode(SubPipeNode node)
+        {
+            node.SubPipe.Accept(this);
+            return node;
+        }
+
+        internal virtual ExpressionNode VisitRecurNode(RecurNode node)
+        {
             return node;
         }
     }
