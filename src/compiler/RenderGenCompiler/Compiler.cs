@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RenderGen.Compiler
 {
@@ -12,7 +11,7 @@ namespace RenderGen.Compiler
         {
             CompileResult rs = new CompileResult();
             rs.Success = true;
-
+            
             return rs;
         }
     }

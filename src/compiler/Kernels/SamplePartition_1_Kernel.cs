@@ -20,7 +20,7 @@ namespace RenderGen.Kernels
 
         public string Name
         {
-            get { throw new NotImplementedException(); }
+            get { return "SamplePartition1"; }
         }
     }
 }

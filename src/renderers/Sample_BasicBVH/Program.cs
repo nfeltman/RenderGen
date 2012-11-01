@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RenderGen.Client;
+using RenderGen.Compiler.Visualization;
 
 namespace Sample_BasicBVH
 {
@@ -27,6 +28,8 @@ namespace Sample_BasicBVH
 
 
             var rs = renderer.Compile();
+            PipeVisualizer.Visualize(renderer, "pipe.bmp");
+
             if (!rs.Success)
             {
                 foreach (var err in rs.Errors)

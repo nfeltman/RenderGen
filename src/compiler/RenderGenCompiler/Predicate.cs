@@ -11,6 +11,30 @@ namespace RenderGen.Compiler
         LessOrEqual, GreaterOrEqual,
         NotEqual
     }
+
+    public static class PredicateUtils
+    {
+        public static string OperatorToString(PredicateOperator op)
+        {
+            switch (op)
+            {
+                case PredicateOperator.Equal:
+                    return "=";
+                case PredicateOperator.Greater:
+                    return ">";
+                case PredicateOperator.GreaterOrEqual:
+                    return ">=";
+                case PredicateOperator.Less:
+                    return "<";
+                case PredicateOperator.LessOrEqual:
+                    return "<=";
+                case PredicateOperator.NotEqual:
+                    return "!=";
+            }
+            return "";
+        }
+    }
+
     public interface IPredicate
     {
     }
@@ -29,6 +53,11 @@ namespace RenderGen.Compiler
         {
             this.Operator = op;
             this.Threshold = count;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("|G| {0} {1}?", PredicateUtils.OperatorToString(Operator), Threshold);
         }
     }
 }
