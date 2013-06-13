@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{amssymb,amsthm}
+\usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
+\parindent 0pt
+\parskip .75em
+
+%bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\expr} {\langle\mathit{expr}\rangle}
+\newcommand {\decompG} {\langle\mathit{breakMethodG}\rangle}
+\newcommand {\decompS} {\langle\mathit{breakMethodS}\rangle}
+\newcommand {\decompH} {\langle\mathit{breakMethodH}\rangle}
+\newcommand {\sizeRange} {\langle\mathit{sizeRange}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+%source nodes 
+\newcommand {\chain}{\mathtt{>>}}
+\newcommand {\fix}{\mathtt{fix}}
+\newcommand {\call}{\mathtt{call}}
+\newcommand {\test}{\mathtt{Test}}
+\newcommand {\isect}{\mathtt{Isect}}
+\newcommand {\shade}{\mathtt{Shade}}
+\newcommand {\bmrg}{\mathtt{BreakMapReduceG}}
+\newcommand {\bmrs}{\mathtt{BreakMapReduceS}}
+\newcommand {\bmrh}{\mathtt{BreakMapReduceH}}
+\newcommand {\oneS}{\mathtt{1S}}
+\newcommand {\oneG}{\mathtt{1G}}
+\newcommand {\oneH}{\mathtt{1H}}
+\newcommand {\sampP}{\mathtt{16^2\_SP}}
+\newcommand {\twoGP}{\mathtt{2\_GP}}
+\newcommand {\geosamp}{\mathtt{GeoSamp}}
+\newcommand {\hit}{\mathtt{Hit}}
+\newcommand {\frag}{\mathtt{Frag}}
+
+%semantics
+\newcommand {\calG}{\mathcal{G}}
+\newcommand {\calS}{\mathcal{S}}
+\newcommand {\calK}{\mathcal{K}}
+\newcommand {\bound}{\mathit{bound}}
+
+
+% Equation spacing
+\newcommand {\inferenceSpacing}{\setlength{\jot}{2ex}}
+\newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
+
+\title{\Large\textbf{Rendering Logic}}
+\author{Nicolas Feltman}
+\begin{document}
+\maketitle
+
+Judgements:
+
+\begin{gather}
+G \times S \times L \to H \\
+h_1 \ge h_2
+\end{gather}
+
+Rules:
+\inferenceSpacing
+\begin{gather}
+\infer {g \times s^k \to h^k }{isect (g,s) = h} \\
+\infer {g \times s^k \to \bot^k }{miss(g,s)} \\
+\infer {\emptyset \times s^k \to \bot^k }{\cdot} \\
+\infer {G \times \emptyset \to \emptyset }{\cdot} \\
+\infer {G_1, G_2 \times s^k \to h_1^k }{G_1, G_2 \times s^k \to h_1^k & G_1, G_2 \times s^k \to h_2^k & h_1 \ge h_2} \\
+\infer {G_1, G_2 \times s^k \to h_2^k }{G_1, G_2 \times s^k \to h_1^k & G_1, G_2 \times s^k \to h_2^k & h_2 \ge h_1} \\
+\infer {G \times S_1,S_2 \to H_1,H_2 }{G \times S_1 \to H_1 & G \times S_2 \to H_2}
+\end{gather}
+
+
+\end{document}
+

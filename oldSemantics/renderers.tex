@@ -1,0 +1,319 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{qtree}
+\usepackage{amssymb,amsthm}
+\usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
+\parindent 0pt
+\parskip .75em
+
+%source nodes 
+\newcommand {\oneS}{\mathtt{1S}}
+\newcommand {\oneG}{\mathtt{1G}}
+\newcommand {\comp}{\mathtt{>=>}}
+\newcommand {\fix}{\mathtt{fix}}
+\newcommand {\call}{\mathtt{call}}
+\newcommand {\id}{\mathtt{id}}
+\newcommand {\sampP}{\mathtt{16^2\_SP}}
+\newcommand {\twoGP}{\mathtt{2\_GP}}
+
+% monophasic work items
+\newcommand {\sbag}{\mathtt{SBag}}
+\newcommand {\gbag}{\mathtt{GBag}}
+\newcommand {\twoHolder}{\mathtt{2Hold}}
+\newcommand {\filt}{\mathtt{Filt}}
+
+%structs
+\newcommand {\sleft}{\mathtt{Left}}
+\newcommand {\sright}{\mathtt{Right}}
+\newcommand {\bound}{\mathit{bound}}
+\newcommand {\bag}{\mathtt{Bag}}
+\newcommand {\twoBox}{\mathtt{OpenNode}}
+\newcommand {\plus}{\mathtt{Plus}}
+
+% other relations
+\newcommand{\isect}{\between}
+\newcommand{\nisect}{\not \between}
+
+% Equation spacing
+\setlength{\jot}{3ex}
+
+\title{\Large\textbf{ RenderGen Notes}}
+\author{Nicolas Feltman, Yong He, Kayvon Fatahalian}
+\begin{document}
+\maketitle
+
+\section{Fragment Calculus}
+
+A fragment group is represented as a partial function from samples to geometry.  Let $\oplus$ be a function which merges two fragment groups.  
+
+\section{The Monophasic Renderer Model}
+
+This model takes in both the geometry and the samples at the same time and computes the results directly.
+
+\subsection{Utility Nodes}
+\subsubsection{Fixed Points}
+\begin{gather}
+\infer{\langle \fix(N,l), \kappa, \Phi, G, S\rangle \to\langle N, \kappa, [\Phi, l:N], \Phi, G, S \rangle}{ \cdot }
+\\
+\infer{\langle \call(l), \kappa, \Phi, G, S \rangle \to \langle \Phi(l), \kappa, \Phi, \Phi, G, S \rangle }{\cdot}
+\end{gather}
+
+\subsection{Decompositional Nodes}
+
+\subsection{Filter Work Item}
+\begin{gather}
+\infer {\filt(\gamma, \sigma, A) \to A}{\gamma \isect \sigma}
+\\
+\infer {\filt(\gamma, \sigma, A) \to \bot}{\gamma \nisect \sigma}
+\end{gather}
+
+\subsubsection{Identity Node}
+\begin{gather}
+\infer {\langle\id, \kappa, \Phi,G, S \rangle \to \langle \kappa, \emptyset, \Phi, G, S \rangle}{\cdot}
+\end{gather}
+
+\subsubsection{Full Decomposition Nodes}
+\begin{gather}
+\infer{\bag(\ldots, A,\ldots, B, \ldots) \to \bag(\ldots, B,\ldots, A, \ldots)}{\cdot}
+\\
+\infer{\bag(A, \ldots) \to \bag(A', \ldots)}{A \to A'}
+\\
+\infer{\bag(\bot, A, \ldots) \to \bag(A, \ldots)}{\cdot}
+\\
+\infer{\bag(\bot) \to \bot}{\cdot}
+\\
+\infer{\bag(f_1, \ldots, f_n) \to f_1 \oplus \cdots \oplus f_n}{\cdot} 
+\end{gather}
+First, $\oneS$:
+\begin{gather}
+\infer{\langle\oneS, \kappa, \Phi, G, S  \rangle \to \bag(
+\langle \kappa, \emptyset, \Phi, G, s_1 \rangle, \ldots, 
+\langle \kappa, \emptyset, \Phi, G, s_n \rangle)}
+{S = \{s_1, \ldots, s_n\}}
+\end{gather}
+And now $\oneG$:
+\begin{gather}
+\infer{\langle\oneS, \kappa, \Phi, G, S \rangle \to \bag(
+\langle \kappa, \emptyset, \Phi, g_1, S \rangle, \ldots, 
+\langle \kappa, \emptyset, \Phi, g_n, S \rangle)}
+{G = \{g_1, \ldots, g_n\}}
+\end{gather}
+
+\subsubsection{Geometry Partitions}
+\begin{gather}
+\infer{
+\langle\twoGP(p), \kappa, \Phi, G^\gamma, S^\sigma \rangle \to \bag(
+\langle \kappa, \emptyset, \Phi, G_1^{\gamma_1}, S^\sigma \rangle,
+\langle \kappa, \emptyset, \Phi, G_2^{\gamma_2}, S^\sigma \rangle)}
+{(G_1,G_2) = p(G) & \gamma_1 = \bound(G_1) & \gamma_2 = \bound(G_2)}
+\end{gather}
+
+\subsubsection{Samples Partitions (TODO)}
+I next present the basic sample partition.
+\begin{gather}
+\infer{\langle\twoGP(p, \gamma), \kappa, \Phi, G \rangle \to \bag(G)}{}
+\\
+\infer{\langle\sampP(G), S, t\rangle \to \langle \lambda(F).\bigcup F, \{(G, b, S_i, t_i) : b \isect t_i \}\rangle}{\{t_i\} = \mathit{split}(t)} 
+\end{gather}
+
+\subsection{Modifier and Combinator Nodes}
+The following nodes do not directly represent decomposition, but instead denote ways to combine or modify the basic nodes.
+
+\subsubsection{Branching}
+\begin{gather}
+\infer{\langle N +_p M, \kappa, \Phi, G^\gamma, S^\sigma\rangle \to \langle N, \kappa, \Phi, G^\gamma, S^\sigma \rangle}{p(G,S) = \mathrm{left}}
+\\
+\infer{\langle N +_p M, \kappa, \Phi, G^\gamma, S^\sigma\rangle \to \langle M, \kappa, \Phi, G^\gamma, S^\sigma \rangle}{p(G,S) = \mathrm{right}}
+\end{gather}
+
+\subsubsection{Composition (TODO)}
+The composition of decompositions is denoted with a $\comp$. 
+\begin{gather}
+\infer{\langle N \comp M, \emptyset, \Phi, G^\gamma, S^\sigma \rangle \to \langle  N, M, \Phi, G^\gamma, S^\sigma \rangle}{\cdot}
+\\
+\infer{\langle N \comp M, \kappa, \Phi, G^\gamma, S^\sigma \rangle \to \langle  N, M \comp \kappa, \Phi, G^\gamma, S^\sigma \rangle}{ \kappa \not = \emptyset}
+\end{gather}
+
+\subsubsection{Temporary Decompositions}
+
+forthcoming
+
+
+
+\section{The Biphasic Renderer Model (ALL TODO)}
+
+A renderer is entirely specified by a tree of source nodes. The renderer operates in two phases:
+\begin{itemize}
+\item {\bf Precompute Phase:} This phase takes the source nodes and a set of geometry and produces a structure which holds all of the geometry.
+\item {\bf Evaluation Phase:} The input to the evaluation phase is the samples, as well as the structure that was build by the precomput phase. (Lazy BVH build here)
+\end{itemize}
+
+\subsection{Node Summary}
+
+(NOTE: ignore the content of these tables; they are not being synced)
+\\ \\
+At a glance, here are all of the source nodes.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+Name & Node Arity & Special Arguments & Notes \\ \hline
+$\id$ & 0 & - & -\\ \hline
+$\sampP$ & 0 & $\sigma$ & -\\ \hline
+$\twoGP$ & 0 & $p, \gamma$ & $\gamma$ is a bound type argument \\ \hline
+$\oneS$ & 0 & - & -\\ \hline
+$\comp$ & 2 & - & - \\ \hline
+$\plus$ & 2 & $p, m$ & mode $m$ determine's $p$'s input \\ \hline
+$\fix$ & 1 & $l$ & - \\ \hline
+\end{tabular}
+\end{center}
+
+Here is a table of all of the geometry structure elements.  Obviously, elements like $\sleft$ and $\sright$ could be combined into a single node with a binary special argument, if one preferred that representation. 
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+Name & Node Arity & Special Arguments & Notes\\ \hline
+$\bag$ & 0 & - & -\\ \hline
+$\twoBox$ & 2 & $b_1 : \gamma$, $b_2 : \gamma$ & -\\ \hline
+$\sleft$ & 1 & - &  - \\ \hline
+$\sright$ & 1 & - &  - \\ \hline
+$\plus$ & 2 & - & - \\ \hline
+\end{tabular}
+\end{center}
+
+We also have some sample structure elements.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+Name & Node Arity & Special Arguments & Notes\\ \hline
+$\bag$ & 0 & S & - \\ \hline
+\end{tabular}
+\end{center}
+
+The input to the first phase 
+
+\subsection{Utility Nodes}
+
+\subsubsection{Fixed Points}
+Recursion requires two nodes: one to set a fixed-point label, and another to call it.  The nodes are called $\fix$ and $\call$, respectively.  The former is node-unary, the latter is node-nullary, and both require a single special argument, which is the name of the label in use.  Note that a label introduced at a $\fix$ node is only in scope in the subtree beneath that node.  Also, when drawing the tree graphically, $\call(l)$ is usually represented with just the label $l$.  
+
+Semantically, this behavior is handled by keeping about an environment variable $\Phi$, which maps labels to nodes.  The environment is untouched by all nodes except $\fix$ and $\call$.  In particular, $\fix$ introduces labels to the environment, and $\call$ reads labels from the environment.  Noting that $[\Phi, l:N]$ denotes the function $\Phi$ extended with the output $N$ at input $l$, we have:
+\begin{gather}
+\infer{\langle \fix(N,l), \kappa, \Phi, G \rangle \to\langle N, \kappa, [\Phi, l:N], G \rangle}{ \cdot }
+\\
+\infer{\langle \call(l), \kappa, \Phi, G \rangle \to \langle \Phi(l), \kappa, \Phi, G \rangle }{\cdot}
+\end{gather}
+
+Then during the evaluation phase, we have,
+\begin{gather}
+\infer{\langle \fix(N,l), \Phi, R, S \rangle \to \langle m, F \rangle}{\langle N, [\Phi, l:N], R, S \rangle \to \langle m, F \rangle}
+\\
+\infer{\langle \call(l), \Phi, R, S \rangle \to \langle m, F \rangle}{\langle \Phi(l), \Phi, R, S \rangle \to \langle m, F \rangle}
+\end{gather}
+
+\subsection{Decompositional Nodes}
+In this subsection, I'll cover all of the nodes which perform decompositions.  All of these nodes are nullary, meaning that they do not take any arguments.
+
+\subsubsection{Identity Node}
+The identity node, noted $\id$, represents the trivial decomposition.
+\begin{gather}
+\infer[\text{(Precompute Phase)}] {\langle\id, \kappa, \Phi, G \rangle \to \langle \kappa, \emptyset, \Phi, G \rangle}{\cdot} \\
+\infer[\text{(Eval Phase)}] {\langle\id, R, S \rangle \to \langle \cdot, [(R,S)] \rangle}{\cdot} 
+\end{gather}
+
+\subsubsection{Full Decomposition Nodes}
+I next note the full decomposition nodes, $\oneS$ and $\oneG$.  These decompositions completely decompose their respective sets.  First we cover $\oneS$:
+\begin{gather}
+\infer{\langle\oneS, \kappa, \Phi, G \rangle \to \langle \kappa, \emptyset, \Phi, G \rangle}{\cdot}
+\\
+\infer{\langle\oneS, R, S\rangle \to \langle \lambda(F).\bigcup F, \{(R,s) : s \in S\} \rangle}{\cdot} 
+\end{gather}
+And now $\oneG$:
+\begin{gather}
+\infer{\langle\oneG, \emptyset, \Phi, G \rangle \to \bag(G)}{\cdot}
+\\
+\infer{\langle\oneG, \bag(G), S\rangle \to \langle \ldots, \{(g,S) : g \in G\} \rangle}{\cdot} 
+\end{gather}
+
+\subsubsection{Geometry Partitions}
+I next present the basic geometry partition. In this case, the node partitions into two sets, but the generalization to more is obvious.  The parameter $\gamma$ identifies a module for producing bounds (for examples, an axis aligned bounding box, or half-space bounds, etc.).
+\begin{gather}
+\infer{\langle\twoGP(p, \gamma), \kappa, \Phi, G \rangle \to \twoBox(\langle \kappa, \emptyset, \Phi, G_1 \rangle,\langle \kappa, \emptyset, \Phi, G_2 \rangle,b_1,b_2)}
+{(G_1,G_2) = p(G) & b_1 = \bound_\gamma(G_1) & b_2 = \bound_\gamma(G_2)}
+\\
+\infer{\twoBox(A,B,b_1,b_2) \to \twoBox(A',B,b_1,b_2)}{A \to A'}
+\\
+\infer{\twoBox(A,B,b_1,b_2) \to \twoBox(A,B',b_1,b_2)}{B \to B'}
+\end{gather}
+The resulting $\twoBox$ structure contains the bounds of the two children, and pointers to substructures ({\it i.e.}, one node in a BVH tree).  This kind of node assumes that its bounds have been checked by the parent structure, or that bounds checking is not important.  
+
+In the following nodes, the symbol $\isect$ means that two bounds intersect, and $\nisect$ means they do not intersect.
+\begin{gather}
+\infer{\langle\twoGP(p, \gamma),\twoBox(n_1,n_2,b_1,b_2), S, t\rangle \to \langle \{\}, \{\} \rangle}{b_1 \nisect t & b_2 \nisect t} 
+\\
+\infer{\langle\twoGP(p, \gamma),\twoBox(n_1,n_2,b_1,b_2), S, t\rangle \to \langle f, P \rangle}{b_1 \isect t & b_2 \nisect t & \langle n_1, S, t\rangle \to \langle f, P\rangle} 
+\\
+\infer{\langle\twoGP(p, \gamma),\twoBox(n_1,n_2,b_1,b_2), S, t\rangle \to \langle f, P \rangle}{b_1 \nisect t & b_2 \isect t & \langle n_2, S, t\rangle \to \langle f, P\rangle} 
+\end{gather}
+TODO: figure out how to carry around sample metadata
+\subsubsection{Samples Partitions}
+I next present the basic sample partition.
+\begin{gather}
+\infer{\langle\twoGP(p, \gamma), \kappa, \Phi, G \rangle \to \bag(G)}{}
+\\
+\infer{\langle\sampP(G), S, t\rangle \to \langle \lambda(F).\bigcup F, \{(G, b, S_i, t_i) : b \isect t_i \}\rangle}{\{t_i\} = \mathit{split}(t)} 
+\end{gather}
+
+\subsection{Modifier and Combinator Nodes}
+The following nodes do not directly represent decomposition, but instead denote ways to combine or modify the basic nodes.
+
+\subsubsection{Branching}
+Sometimes, the choice of what decomposition you want to perform is dependent on data.  To express this situation, we have the branch operator.    The expression $N \plus_p^m M$ denotes a conditional choice between the nodes $N$ and $M$, based on predicate $p$, evaluating under one of three modes $m$ (geometry, sample-duplicate, and sample-defer).  The particular mode $m$ determines the type of $p$.  The first mode is for when the branch choice depends only on geometry, meaning that the decision can be made during the build phase.  Note the rightmost judgement above the bar means ``the node $N$, for samples $G$, will produce a constructor $f$ to operate on the results of the breakdown $C$".
+\begin{gather}
+\infer{\langle N +_p^m M, \kappa, \Phi, G \rangle \to \sleft(\langle N, \kappa, \Phi, G \rangle)}{m={\rm geom} & p(G) = \mathrm{left}}
+\\
+\infer{\langle N +_p^m M, \kappa, \Phi, G \rangle \to \sright(\langle M, \kappa, \Phi, G \rangle)}{m={\rm geom} & p(G) = \mathrm{right}}
+\\
+\infer{\sleft(A) \to \sleft(A')}{A \to A'}
+\\
+\infer{\sright(A) \to \sright(A')}{A \to A'}
+\end{gather}
+Next there is the case where the branch decision depends on samples and no action is taken during the build phase, probably because the user doesn't want to risk doing unnecessary decompositions.
+\begin{gather}
+\infer{\langle N +_p^m M, \kappa, \Phi, G \rangle \to \bag(G)}{m={\rm sDef}}
+\end{gather}
+Alternatively, the user may want to perform both sub-decompositions proactively.  This may be wasted work and wasted storage if no samples end up requiring the sub-expressions to be evaluated.  However, if it's likely that both will end up evaluated, we'd like to perform the appropriate precomputation.  The best example of this so far is Warren's frustrum rasterizer.  In this case, the duplicate represntation down both sides of the tree has little memory overhead because a BVH subtree can be represented as a partition of an array. 
+\begin{gather}
+\infer{\langle N +_p^m M, \kappa, \Phi, G \rangle \to \plus(\langle N, \kappa, \Phi, G \rangle, \langle M, \kappa, \Phi, G \rangle)}{m={\rm sDup}}
+\\
+\infer{\plus(A, B) \to \plus(A', B)}{A \to A'}
+\\
+\infer{\plus(A, B) \to \plus(A, B')}{B \to B'}
+\end{gather}
+
+\subsubsection{Composition}
+The composition of decompositions is denoted with a $\comp$. Note that previously, I have used variables like $C_N$ to denote lists of sets of geometry that are output from the $N$ decomposition.  Below, I instead deconstruct $C_N$ into the list $[G_1,\ldots,G_n]$, because I need to pass each $G_i$ independently to the right-hand-side $M$ decomposition.
+\begin{gather}
+\infer{\langle N \comp M, \emptyset, \Phi, G \rangle \to \langle  N, M, \Phi, G \rangle}{\cdot}
+\\
+\infer{\langle N \comp M, \kappa, \Phi, G \rangle \to \langle  N, M \comp \kappa, \Phi, G \rangle}{ \kappa \not = \emptyset}
+\end{gather}
+
+\subsubsection{Temporary Decompositions}
+
+forthcoming
+
+\subsubsection{Phase-Adjustment Node}
+
+forthcoming
+
+\section{Example Renderers}
+
+\subsection{Basic BVH Ray-Tracer}
+
+\begin{center}
+\Tree [. [.$\comp$ $\oneS$ [.VP [.V is ] [.NP fun ]]]]
+\end{center}
+
+\end{document}
+

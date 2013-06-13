@@ -1,0 +1,186 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{amssymb,amsthm}
+\usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
+\parindent 0pt
+\parskip .75em
+
+%bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\expr} {\langle\mathit{expr}\rangle}
+\newcommand {\decompG} {\langle\mathit{breakMethodG}\rangle}
+\newcommand {\decompS} {\langle\mathit{breakMethodS}\rangle}
+\newcommand {\decompH} {\langle\mathit{breakMethodH}\rangle}
+\newcommand {\sizeRange} {\langle\mathit{sizeRange}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+%source nodes 
+\newcommand {\chain}{\mathtt{>>}}
+\newcommand {\rightFish}{\mathtt{>=>}}
+\newcommand {\fix}{\mathtt{fix}}
+\newcommand {\call}{\mathtt{call}}
+\newcommand {\test}{\mathtt{test}}
+\newcommand {\filt}{\mathtt{filt}}
+\newcommand {\isect}{\mathtt{hit}}
+\newcommand {\shade}{\mathtt{Shade}}
+\newcommand {\bmrg}{\mathtt{BreakMapReduceG}}
+\newcommand {\bmrs}{\mathtt{BreakMapReduceS}}
+\newcommand {\bmrh}{\mathtt{BreakMapReduceH}}
+\newcommand {\buildG}{\mathtt{buildG}}
+\newcommand {\buildS}{\mathtt{buildS}}
+\newcommand {\unboundG}{\mathtt{unboundG}}
+\newcommand {\unboundS}{\mathtt{unboundS}}
+\newcommand {\mmrG}{\mathtt{mmrG}}
+\newcommand {\mmrS}{\mathtt{mmrS}}
+\newcommand {\oneS}{\mathtt{1S}}
+\newcommand {\oneG}{\mathtt{1G}}
+\newcommand {\oneH}{\mathtt{1H}}
+\newcommand {\flatD}{\mathtt{flat}}
+\newcommand {\sampP}{\mathtt{16^2\_SP}}
+\newcommand {\twoGP}{\mathtt{2\_GP}}
+\newcommand {\geosamp}{\mathtt{GeoSamp}}
+\newcommand {\hit}{\mathtt{Hit}}
+\newcommand {\frag}{\mathtt{Frag}}
+
+%semantics
+\newcommand {\calG}{\mathcal{G}}
+\newcommand {\calS}{\mathcal{S}}
+\newcommand {\calK}{\mathcal{K}}
+\newcommand {\bound}{\mathit{bound}}
+
+
+% Equation spacing
+\newcommand {\inferenceSpacing}{\setlength{\jot}{3ex}}
+\newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
+
+\title{\Large\textbf{Mockingbird Semantics}}
+\author{Nicolas Feltman}
+\begin{document}
+\maketitle
+
+\section{MbFilter}
+
+\subsection{Grammar}
+\begin{align*}
+\decompG &= \oneG~|~\twoGP \\
+\decompS &= \oneS~|~\sampP \\
+\decompH &= \oneH \\
+\\
+\expr &= \expr \chain \expr \\
+&\gbar \fix~x. \expr \\
+&\gbar x \\
+&\gbar \test \{ \expr \} \\
+&\gbar \isect \\
+&\gbar \shade \\
+&\gbar \mathtt{if~}|g| > n \mathtt{~then~} \expr \mathtt{~else~} \expr \\
+&\gbar \bmrg (\decompG) \{ \expr \} \\
+&\gbar \bmrs (\decompS) \{ \expr \} \\
+&\gbar \bmrh (\decompH) \{ \expr \} \\
+\\
+\sizeRange &= [a,b]~|~[a+] \\
+\langle\myit{entity-type}\rangle &= \geosamp~\sizeRange~\sizeRange\\
+ &\gbar \hit~\sizeRange \\
+ & \gbar \frag~\sizeRange \\
+\langle\myit{transition-type}\rangle &= \langle\myit{entity-type}\rangle \to \langle\myit{entity-type}\rangle \\
+\langle\myit{breakG-type}\rangle &= (\sizeRange \to \sizeRange)~\sizeRange  \\
+\langle\myit{breakS-type}\rangle &= \sizeRange~(\sizeRange \to \sizeRange)  \\
+\langle\myit{breakH-type}\rangle &= \sizeRange \to \sizeRange
+\end{align*}
+
+\subsection{Typing Rules}
+\inferenceSpacing
+\begin{gather}
+\infer {\Gamma\vdash e_1 \chain e_2 : \tau \to \tau''}{\Gamma \vdash e_1 : \tau\to \tau' & \Gamma \vdash e_2 : \tau' \to \tau''} \\
+\infer {\Gamma\vdash \fix~x.e : \phi}{\Gamma, x:\phi \vdash e : \phi} \\
+\infer {\Gamma\vdash \call~x : \phi}{\Gamma(x) = \phi} \\
+\infer {\Gamma\vdash \test \{ e \} : \geosamp~\sigma_1~\sigma_2 \to \tau}{\Gamma \vdash e : \geosamp~\sigma_1~\sigma_2  \to \tau} \\
+\infer {\Gamma \vdash \isect : \geosamp~[1,1]~[1,1] \to \hit} {\cdot} \\
+\infer {\Gamma \vdash \shade : \hit~[1,1] \to \frag} {\cdot} \\
+\infer {\Gamma \vdash  \mathtt{if~}|g| > n \mathtt{~then~} e_1 \mathtt{~else~} e_2 : \geosamp~[a,b]~\sigma \to \tau} {\Gamma \vdash e_1 : \geosamp~[n+1,b]~\sigma \to \tau & \Gamma \vdash e_2 : \geosamp~[a,n]~\sigma \to \tau} \\
+\infer {\Gamma \vdash \bmrg (d) \{ e \} : \geosamp \to \tau} {\Gamma \vdash e : \geosamp \to \tau } \\
+\infer {\Gamma \vdash \bmrs (d) \{ e \} : \geosamp \to \tau} {\Gamma \vdash e : \geosamp \to \tau } \\
+\infer {\Gamma \vdash \bmrh (d) \{ e \} : \hit \to \tau} {\Gamma \vdash e : \hit \to \tau }
+\end{gather}
+
+\subsection{Denotational Semantics}
+
+\begin{align}
+|e_1 \chain e_2 | &= |e_2| \circ |e_1| \\
+|\fix~x. e| &= |[(\fix~x. e)/(\call~x)]e| \\
+|\test\{e\}| &=  |e| \circ id_\between \cup  (\lambda (G,S).\{(\bot,k):(s,k)\in S\}) \circ id_{\not \between} \\
+|\isect| &= \{((\{g\},\{(s,k)\}), \{(h,k)\}) : h = isect(g,s)\}\\
+|\shade| &= \{(\{(s,k)\}, \{(f,k)\}) : f = shade(h)\} \\
+| \mathtt{if~}|g| > n \mathtt{~then~} e_1 \mathtt{~else~} e_2| &=  |e_1| \circ id_{|g|>n} \cup  |e_2| \circ id_{|g|\le n}\\
+|\bmrg (d) \{ e \} | &= \begin{array}{l} \{((G,S), \{F_1 \oplus \cdots \oplus F_n\}) \\
+	: ((G_i,S), f_i) \in |e|, (G, \{G_1,...,G_n\}) \in |d| \} \end{array}\\
+|\bmrs (d) \{ e \} | &= \begin{array}{l} \{((G,S), \{F_1 \cup \cdots \cup F_n\}) \\
+	: ((G,S_i), f_i) \in |e|, (S, \{S_1,...,S_n\}) \in |d| \} \end{array} \\
+|\bmrh (d) \{ e \} | &= \begin{array}{l} \{(H, \{F_1 \cup \cdots \cup F_n\}) \\
+	: (H_i, F_i) \in |e|, (H, \{H_1,...,H_n\}) \in |d| \} \end{array}
+\end{align}
+
+\subsection{Theorems}
+
+\begin{enumerate}
+\item For any expression $e$, if $((G,S),F) \in |e|$, then $keys(S) = keys(F)$.
+\item For any expression $e:\geosamp \to \frag$, if $((G,S),F) \in |e|$, then for all $(s,k) \in S$, $(\bigoplus_{g\in G} shade(isect(g,s)),k) \in F$.
+\end{enumerate}
+
+
+
+\section{MbOrder}
+\normalSpacing
+\subsection{Grammar}
+\begin{align*}
+\\
+e &= e~\chain~e \\
+&\gbar \fix~x.~e \\
+&\gbar x \\
+&\gbar \isect \\
+&\gbar \test \{ e \} \\
+&\gbar \filt \{ e \} \\
+&\gbar \mathtt{ifsizeG}(>n)~e \mathtt{~else~} e \\
+&\gbar \buildG \{ d_G \} \\
+&\gbar \buildS \{ d_S \} \\
+&\gbar \unboundG \{ e \} \\
+&\gbar \unboundS \{ e \} \\
+&\gbar \mmrG \{ e \} \\
+&\gbar \mmrS \{ e \} \\
+\\
+d_\alpha &= \flatD \\
+&\gbar p_\alpha~\rightFish~d_\alpha \\
+&\gbar \fix~x.~d_\alpha \\
+&\gbar x \\
+&\gbar \bound (d_\alpha) \\
+&\gbar \mathtt{ifsize\alpha}(>n)~d_\alpha \mathtt{~else~} d_\alpha \\
+\\
+p_G &= \oneG~|~\twoGP \\
+p_S &= \oneS~|~\sampP \\
+\\
+\tau &= \sigma \to \sigma \\
+\sigma &= \geosamp~\delta~\delta \\
+&\gbar \hit~\delta \\
+\delta &= * \\
+&\gbar [\delta] \\
+&\gbar \# \delta \\
+&\gbar \delta + \delta \\
+&\gbar \fix~x.~\delta \\
+&\gbar x \\
+\end{align*}
+
+\subsection{Typing Rules}
+\inferenceSpacing
+\begin{gather}
+\infer {\Gamma\vdash e_1 \chain e_2 : \sigma \to \sigma''}{\Gamma \vdash e_1 : \sigma\to \sigma' & \Gamma \vdash e_2 : \sigma' \to \sigma''} \\
+\infer {\Gamma\vdash \fix~x.e : \tau}{\Gamma, x:\tau \vdash e : \tau} \\
+\infer {\Gamma\vdash x : \tau}{\Gamma(x) = \tau} \\
+\infer {\Gamma\vdash \test \{ e \} : \geosamp~\#\delta_1~\#\delta_2 \to \sigma}{\Gamma \vdash e : \geosamp~\#\delta_1~\#\delta_2  \to \sigma} \\
+\infer {\Gamma \vdash \isect : \geosamp~\ast~\ast \to \hit \ast} {\cdot} \\
+\infer {\Gamma \vdash \mmrG (d) \{ e \} : \geosamp~[\delta_1]~\delta_2 \to \hit \ast} {\Gamma \vdash e : \geosamp~\delta_1~\delta_2 \to \hit \ast }
+\end{gather}
+
+
+\end{document}
+

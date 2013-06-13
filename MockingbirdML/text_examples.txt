@@ -1,0 +1,50 @@
+
+
+Naive Raytracer:
+
+buildG (1G >=> flat) >> buildS (1S >=> flat) >> mmrS { mmrG { hit } }
+
+
+Naive Rasterizer:
+
+buildG (1G >=> flat) >> buildS (1S >=> flat) >> mmrG { mmrS { hit } }
+
+
+Repeat Work Raytracer:
+
+buildS(1S >=> flat ) >> 
+mmrS {
+	fix d.
+		buildG(bound(flat)) >>
+		buildS(bound(flat)) >> 
+		test { 
+			unboundG >>
+			unboundS >> (
+				ifsizeG(>1) buildG(2GP >=> flat) >> mmrG{d} 
+				else Hit ) 
+		}
+}
+
+DACRT:
+
+buildS(1S >=> bound(flat)) >>
+fix d. 
+	buildG(bound(flat)) >>
+	filt { 
+		unboundG >> (
+			ifsizeG(>1) buildG(2GP >=> flat) >> mmrG{d} 
+			else mmrS {Hit} ) 
+	} 
+
+BVH-Accelerated: 
+
+buildG(fix b. bound(ifsizeG(>1) (2GP >=> b) else flat)) >>
+buildS(1S) >>
+mmrS { 
+	buildS(bound(flat)) >>
+	fix t.
+		unboundG >>
+		test {
+			case mmrG{t} | Hit 
+		} 
+}
