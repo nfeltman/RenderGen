@@ -15,22 +15,39 @@ struct
 	and substExpr G expr =
 		let
 			val s = substExpr G
+			fun sNew x e = substExpr (x::G) e
 		in
 			case expr of 
 			  Efold (name, r, e1, e2) => Efold (name, substLam G r, s e1, s e2)
 			| Emap (name, i, r, e) => Emap (name, i, substLam G r, s e)
-			| Elet (x, e1, e2) => 
-				let
-					val tr1 = substExpr G e1
-				in
-					case tr1 of
-					  Evar v => substExpr ((x,Singleton v)::G) e2
-					| Etuple es => foldr (fn (e,rest) => Elet (es,) )
-					| other => Elet (x, other, substExpr ((x,NoChange)::G) e2)
-				end
-			| Evar x => Evar (case lookup G x of NoChange => x | Singleton v => v) 
+			| Elet (x, e1, e2) => (
+				case s e1 of
+				  Evar v => sNew (x,Singleton v) e2
+				| Etuple es => 
+					let
+						fun expand [] newVars = 
+								let
+									val rev = List.rev newVars
+								in
+									Elet (x, Etuple (map Evar rev), sNew (x, SplitTuple rev) e2)
+								end
+						  | expand (e::es) newVars = 
+								let
+									val v = Variable.addSuffix x "'part"
+									val rest = expand es (v::newVars)
+								in
+									Elet (v, e, rest)
+								end
+					in
+						expand es []
+					end
+				| other => Elet (x, other, sNew (x,NoChange) e2))
+			| Evar x => Evar (case lookup G x of NoChange => x | SplitTuple _ => x | Singleton v => v) 
 			| Etuple es => Etuple (map s es)
-			| Eproj (i, e) => Eproj (i, s e)
+			| Eproj (i, e) => (
+				case s e of
+				  e2 as Evar v => (case lookup G v of SplitTuple t => Evar (List.nth(t,i)) | _ => Eproj (i, s e2))
+				| other => Eproj (i, other))
 			| Einj (b, e) => Einj (b, s e)
 			| Eif (e1, e2, e3) => Eif (s e1, s e2, s e3)
 			| Eop0 p => Eop0 p

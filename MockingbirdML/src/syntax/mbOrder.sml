@@ -20,7 +20,7 @@ struct
 					| Dbound of decG
 					| Dlayer of primDecompG * decG
 					| Dfix of label * domainType * decG
-					| Dlabel of label
+					| Dvar of label
 
 	datatype expr	= Echain of expr * expr
 					| Emmr of caseDomain * expr

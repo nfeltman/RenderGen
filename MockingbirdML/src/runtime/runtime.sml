@@ -79,27 +79,16 @@ structure Runtime = struct
 	
 	(* Hits *)
 	val bottomHit : Hit = Depth.Infty
-	fun allocHits n = (n, tabulate (n, fn _ => (0, bottomHit)))
+	fun allocHits n = (n, tabulate (n, fn _ => (bottomHit)))
 	fun closer (h1,h2) = Depth.min h1 h2
-	fun unionHits ((size1,hArr1),(size2,hArr2)) : (int * Hit) dynArray = 
+	fun unionHits ((size1,hArr1: Hit arr),(size2,hArr2: Hit arr)) : Hit dynArray = 
 		let
 			fun incr a = offset (a,1)
-			val merged = alloc (size1 + size2, (0,bottomHit))
-			fun setRest m 0 _ = ()
-			  | setRest m n a = (setElem (m, 0, first hArr2); setRest (incr m) (n-1) (incr a))
-			fun merge m n1 hArr1 0 _ = setRest m n1 hArr1
-			  | merge m 0 _ n2 hArr2 = setRest m n2 hArr2
-			  | merge m n1 hArr1 n2 hArr2 = 
-				let
-					val h1 : (int * Hit) = first hArr1
-					val h2 : (int * Hit) = first hArr2
-				in
-					if #1 h1 < #1 h2
-					then (setElem (m, 0, h1); merge (incr m) (n1-1) (incr hArr1) n2 hArr2)
-					else (setElem (m, 0, h2); merge (incr m) n1 hArr1 (n2-1) (incr hArr2))
-				end
+			fun setRest m 0 _ = m
+			  | setRest m n a = (setElem (m, 0, first a); setRest (incr m) (n-1) (incr a)) 
+			val merged = alloc (size1 + size2, bottomHit)
 		in
-			merge merged size1 hArr1 size2 hArr2;
+			setRest (setRest merged size1 hArr1) size2 hArr2;
 			(size1+size2, merged)
 		end
 	
@@ -113,7 +102,7 @@ structure Runtime = struct
 				(2,fromList [a1,a2])
 			end
 	
-	fun runExperiment (render : (Tri3.triangle) dynArray * (int * Vec3.ray3) dynArray -> (int * Hit) dynArray) (_ : string, args) = 
+	fun runExperiment (render : (Tri3.triangle) dynArray * Vec3.ray3 dynArray -> Hit dynArray) (_ : string, args) = 
 		let 
 			val inputscene = List.nth (args,0)
 			val rendersize = valOf (Int.fromString (List.nth (args,1)))
@@ -124,16 +113,16 @@ structure Runtime = struct
 						  left = (~0.354306,0.75588,~0.550542), 
 						  fovx = Math.pi*0.66}
 			val (n,gen) = RayGenerator.Pinhole.makeRays {width=rendersize, height=rendersize} params
-			val rays = (n, tabulate (n,fn i => (i,gen i)))
+			val rays = (n, tabulate (n, gen))
 			val geomRaw = OBJReader.readObj inputscene
 			val geom : (Tri3.triangle) dynArray = (length geomRaw, fromList geomRaw)
             fun shader (g,_) = 1.0 + Real.abs (Vec3.dot (Tri3.normal g) (1.0,0.0,0.0))
 			val (rSize, result) = render (geom,rays)
 			
-			val min = fold result rSize (fn ((_,h),y) => case h of Depth.Finite (d,_) => Real.min (d,y) | Infty => y) Real.posInf
-			val max = fold result rSize (fn ((_,h),y) => case h of Depth.Finite (d,_) => Real.max (d,y) | Infty => y) Real.negInf
+			val min = fold result rSize (fn (h,y) => case h of Depth.Finite (d,_) => Real.min (d,y) | Infty => y) Real.posInf
+			val max = fold result rSize (fn (h,y) => case h of Depth.Finite (d,_) => Real.max (d,y) | Infty => y) Real.negInf
 			val rcp = 255.0 / (max-min)
-			fun shade (_, h) = case h of Depth.Finite (d,_) => (Real.floor((d - min) * rcp),100,100) | Infty => (0,255,0)
+			fun shade h = case h of Depth.Finite (d,_) => (Real.floor((d - min) * rcp),100,100) | Infty => (0,255,0)
 			val converted = fold result rSize (fn (x,y) => (shade x)::y) [] 
 		in
 			PpmWriter.writePicture outputfile {width = #width size, height = #height size, buffer = Vector.fromList converted};

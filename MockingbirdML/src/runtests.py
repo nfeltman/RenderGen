@@ -1,9 +1,10 @@
 import os
 
 testrange = [
-(1,30),
-(2,10),
-(3,50),
+#(1,30),
+#(2,10),
+#(3,50),
+(5,30),
 ]
 
 print "COMPILING ALL RENDERERS"

@@ -17,10 +17,10 @@ struct
 	  | trDomainType base (P.Dbounded (t,d)) = Tprod [trBoundType t, trDomainType base d]
 	
 	fun trType (P.Tgeoms d) = trDomainType (Tarray Tgeom) d
-	  | trType (P.Tsamps d) = trDomainType (Tarray (Tprod [Tint, Tray])) d
+	  | trType (P.Tsamps d) = trDomainType (Tarray (Tray)) d
 	  | trType P.Tint = Tint
 	  | trType P.Tbool = Tbool
-	  | trType (P.Thit d) = trDomainType (Tarray (Tprod [Tint, Thit])) d
+	  | trType (P.Thit d) = trDomainType (Tarray (Thit)) d
 	  | trType (P.Tprod p) = Tprod (map trType p) 
 	
 	fun pint i = Eop0 (P0int i)
@@ -43,46 +43,35 @@ struct
 		| P.EsizeGt (arr, i) => Eop2(P2gt, Eop1 (P1getSize, trExpr arr), pint i)
 		| P.EallocBottomHits (s) => 
 				let
-					val kr = Variable.newvar "kr"
-					val newRegion = Elam (kr, Tprod [Tint, Tray], 
-							Etuple [Eproj(0, Evar kr), Eop0 P0botHit])
+					val newRegion = Elam (Variable.newvar "dummy", Tray, Eop0 P0botHit)
 				in
 					Emap ("hitInit_", 1, newRegion, trExpr s)
 				end
 		| P.EbreakG (dec, source) => Eop1 (P1breakG dec, trExpr source)
 		| P.EbreakS (dec, source) => Eop1 (P1breakS dec, trExpr source)
 		| P.EboundG e => Eop1 (P1boundG, trExpr e)
-		| P.EboundS e => Eproj(1, Eop2 (P2getElement, trExpr e, pint 0))
+		| P.EboundS e => Eop2 (P2getElement, trExpr e, pint 0)
 		| P.EcloserHits (e1, e2) => 
 				let
 					val h = Variable.newvar "hs"
-					val h1 = Variable.newvar "kh1"
-					val newRegion = Elam (h, Tprod[Tprod [Tint, Tray], Tprod [Tint, Tray]],
-							Elet (h1, Eproj(0, Evar h),
-							Etuple [
-								Eproj(0, Evar h1),
-								Eop2 (P2closerHit, Eproj(1, Evar h1), Eproj(1, Eproj(1, Evar h)))
-							])
-						)
+					val newRegion = Elam (h, Tprod[Tray, Tray],
+								Eop2 (P2closerHit, Eproj(0, Evar h), Eproj(1, Evar h))
+							)
 				in
 					Emap ("closer_", 2, newRegion, Etuple[trExpr e1, trExpr e2])
 				end
 		| P.EunionHits (h1, h2) => Eop2 (P2unionHits, trExpr h1, trExpr h2)
 		| P.Ehit (g,s) => 
 				let
-					val gsVar = Variable.newvar "gs"
 					val hArr = Variable.newvar "h1"
-					val sk1 = Variable.newvar "sk1"
 				in
 					Elet (hArr, Eop1 (P1allocHitsArray, pint 1),
-					Elet (sk1, Eop2 (P2getElement, trExpr s, pint 0), 
 					Elet (Variable.newvar "dummy", 
 						 Eop3 (P3setElement, Evar hArr, pint 0, 
-							Etuple [
-								Eproj (0,Evar sk1),
-								Eop2 (P2hit, Eop2 (P2getElement, trExpr g, pint 0), Eproj (1, Evar sk1))
-							]),
-					Evar hArr)))
+							Eop2 (P2hit, 
+								Eop2 (P2getElement, trExpr g, pint 0), 
+								Eop2 (P2getElement, trExpr s, pint 0))),
+					Evar hArr))
 				end
 		| P.Eint i => pint i
 		| P.EallocEmptyHits => Eop1 (P1allocHitsArray, pint 0)

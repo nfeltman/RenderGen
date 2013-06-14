@@ -12,6 +12,8 @@ struct
 		fun chain4 (w,x,y,z) = Echain ((chain3 (w,x,y)),z)
 	
 		val alpha = Variable.newvar "alpha"
+		val alphad = Variable.newvar "alphaDec"
+		val alphat = Variable.newvar "alphaTy"
 		
 		val examples = [
 		
@@ -84,30 +86,26 @@ struct
 			)
 		),
 		
-		( "Recursive Geometry Decomposition for Each Ray",
+		( "Recursive Geometry Decomposition for Each Ray (ray bounds recalculated)",
 			Echain (
 				EbreakS (Tflat, OneS), 
 				Emmr (SampCase, 
-					Echain (
-						EboundS Tflat,
-						Efix (alpha, (GeoSamps (Tflat, Tbounded Tflat), Hits Tflat),
-							Echain ( 
-								EbreakG (Tbounded Tflat, Dbound Dflat), 
-								Etest (
-									Echain (
-										EunboundG (Tflat, Tbounded Tflat) , 
-										EsizeCase (GeoCase, 2, 
-											Echain (
-												EbreakG (Tbounded Tflat, Dlayer (TwoGP, Dflat)),
-												Emmr (GeoCase, 
-													Elabel alpha
-												)
-											), 
-											Echain ( 
-                                                EunboundS (Tflat, Tflat), 
-                                                Ehit
-                                            )
-										)
+					Efix (alpha, (GeoSamps (Tflat, Tflat), Hits Tflat),
+						chain3 (
+							EboundS Tflat,
+							EbreakG (Tbounded Tflat, Dbound Dflat), 
+							Etest (
+								chain3 (
+									EunboundG (Tflat, Tbounded Tflat) , 
+									EunboundS (Tflat, Tflat), 
+									EsizeCase (GeoCase, 1, 
+										Echain (
+											EbreakG (Tflat, Dlayer (TwoGP, Dflat)),
+											Emmr (GeoCase, 
+												Elabel alpha
+											)
+										), 
+										Ehit
 									)
 								)
 							)
@@ -116,6 +114,35 @@ struct
 				)
 			)
 		)
+		(*
+		( "Raytracer with BVH (ray bounds recalculated)",
+			chain3 (
+				EbreakS (Tflat, OneS), 
+				EbreakG (Tbounded Tflat, Dfix (alphad, DsizeCase (1, Dbound (Dlayer (TwoGP, Dvar alphad)), Dflat))), 
+				Emmr (SampCase, 
+					Efix (alpha, (GeoSamps (Tfix (alphat, DsizeCase (1, Dbound (Dlayer (TwoGP, Dvar alphad)), Tflat), Hits Tflat),
+						chain3 (
+							EboundS Tflat,
+							Etest (
+								chain3 (
+									EunboundG (Tflat, Tbounded Tflat) , 
+									EunboundS (Tflat, Tflat), 
+									EsizeCase (GeoCase, 1, 
+										Echain (
+											EbreakG (Tflat, ),
+											Emmr (GeoCase, 
+												Elabel alpha
+											)
+										), 
+										Ehit
+									)
+								)
+							)
+						)
+					)
+				)
+			)
+		)*)
 		]
     end
 	
@@ -123,19 +150,20 @@ struct
 				Normalize.translate ex (
 				CheckOrder.inferType ex)) 
 	
-	fun orderToDeblock ex = SubstSingletons.substProgram (Deblock.translate (orderToPoint ex))
-	fun orderToSML s ex = PrintMbSML.printToFile s (LetNormalize.normalize (PrimitivizeSML.translate (orderToDeblock ex)))
+	fun orderToDeblock ex = (*SubstSingletons.substProgram*) (Deblock.translate (orderToPoint ex))
+	fun orderToSML ex = (LetNormalize.normalize (PrimitivizeSML.translate (orderToDeblock ex)))
 	
 	fun compile i outfile = 
 			let
 				val ex = OrderExamples.examples
 				val _ = print ("Compiling renderer " ^ (Int.toString i) ^ "/" ^ (Int.toString (length ex)) ^ "...")
 				val source = (#2 (List.nth (ex,i-1)))
-				val res = orderToSML outfile source
+				val res = orderToSML source
+				val _ = PrintMbSML.printToFile outfile res
 				val _ = print "success.\n"
 			in
 				()
-			end		
+			end
 			
 	fun main (prog_name, args) =
 			case args of

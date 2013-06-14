@@ -2,32 +2,22 @@ Group is
 	  ../Util.sml
 	  variable.sig
 	  variable.sml
-      abstractSyntax.sml
-      abstractSyntax.sig
       commonSyntax.sml
 	  
-      mbFilter.sml
+(*      mbFilter.sml *)
       mbOrder.sml
-(*    mbNormal.sml *)
 	  mbPointed.sml
-(*	  mbDetupled.sml *)
 	  mbDeblocked.sml
 	  mbsml.sml
-(*	  mbbc.sml *)
       
 	  checkOrder.sml
 	  normalize.sml
-(*	  pointify.sml *)
-(*	  detuple.sml *)
 	  deblock.sml
 	  substSingletons.sml
 	  primitivizembsml.sml
-	(*  primitivizembbc.sml  *)
       letNormalize.sml
-(*	  printmbbc.sml *)
 	  printmbsml.sml 
 	  
-	(*  normalToSML.sml *)
       
       $/basis.cm
 	  
