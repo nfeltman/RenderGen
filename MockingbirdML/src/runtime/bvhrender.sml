@@ -10,7 +10,7 @@ datatype openNode	= BvhBranch of closedNode * closedNode
 					| BvhLeaf of Tri3.triangle
 withtype closedNode	= Box3.neBound * openNode
 
-fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : (int * Vec3.ray3) dynArray) : ((int * Hit) dynArray) = 
+fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : Vec3.ray3 dynArray) : (Hit dynArray) = 
 	let
 		fun build ((n,g),box) = 
 			case n of
@@ -28,7 +28,6 @@ fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : (int *
 		
 		val _ = print "building\n"
 		val bvh = build ((numTris,tris), findBounds numTris tris)
-		fun trace (k,r) = (k, traverseOpen bvh r)
 		
 		fun s (_,BvhBranch (c1,c2)) = s c1 + s c2
 		  | s (_,BvhLeaf _) = 1
@@ -39,7 +38,7 @@ fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : (int *
 		val _ = print ";  done building \n"
 		  
 	in
-		(numrays, MbArray.tabulate (numrays, fn i => trace (MbArray.sub (rays,i))))
+		(numrays, MbArray.tabulate (numrays, fn i => traverseOpen bvh (MbArray.sub (rays,i))))
 	end
 
 end

@@ -39,16 +39,11 @@ structure Runtime = struct
 					if xl > yl andalso xl > zl then (fn (x,_,_) => x < xm)
 					else if yl > zl then (fn (_,y,_) => y < ym)
 					else (fn (_,_,z) => z < zm)
-				
-				fun partition 0 a n1 = n1
-				  | partition n a n1 =
-					if filt (Tri3.centroid (first a)) then partition (n-1) (offset (a,1)) (n1+1)
-					else (swap (a,0,n-1); partition (n-1) a n1)
-				
+								
 				val n1 = 
 					if n < 2 then raise RuntimeTypeError 
 					else if eq (xl,0.0) andalso eq (yl, 0.0) andalso eq (zl, 0.0) then Int.div (n,2)
-					else partition n a 0
+					else partition (filt o Tri3.centroid) a n
 					
 				val a2 = offset (a,n1)
 				val n2 = n - n1
@@ -122,7 +117,7 @@ structure Runtime = struct
 			val min = fold result rSize (fn (h,y) => case h of Depth.Finite (d,_) => Real.min (d,y) | Infty => y) Real.posInf
 			val max = fold result rSize (fn (h,y) => case h of Depth.Finite (d,_) => Real.max (d,y) | Infty => y) Real.negInf
 			val rcp = 255.0 / (max-min)
-			fun shade h = case h of Depth.Finite (d,_) => (Real.floor((d - min) * rcp),100,100) | Infty => (0,255,0)
+			fun shade h = case h of Depth.Finite (d,_) => (100,Real.floor((d - min) * rcp),100) | Infty => (0,0,255)
 			val converted = fold result rSize (fn (x,y) => (shade x)::y) [] 
 		in
 			PpmWriter.writePicture outputfile {width = #width size, height = #height size, buffer = Vector.fromList converted};

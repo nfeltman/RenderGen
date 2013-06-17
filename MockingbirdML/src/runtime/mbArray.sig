@@ -15,5 +15,7 @@ sig
 	val tabulate : int * (int -> 'a) -> 'a arr
 	val fromList : 'a list -> 'a arr
 	val fold : 'a arr -> int -> ('a * 'b -> 'b) -> 'b -> 'b
+	val app : ('a -> unit) -> 'a arr -> int -> unit
+	val partition : ('a -> bool) -> 'a arr -> int -> int
 
 end

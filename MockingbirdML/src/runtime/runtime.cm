@@ -6,6 +6,7 @@ Group is
       writeimg.sml
 	  runtime.sml 
 	  bvhrender.sml
+	  dacrt.sml
 	  mbArray.sml
 	  mbArray.sig
 	  ppmWriter.sig
