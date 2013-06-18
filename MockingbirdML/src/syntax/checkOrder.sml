@@ -51,9 +51,9 @@ struct
 						let 
 							val newLabel = Variable.addSuffix l "_type"
 						in 
-							sameD (Tfix (newLabel, chD expr ((l,newLabel)::g))) t (BadType "decompFix")
+							sameD (Tfix (newLabel, chD d ((l,newLabel)::g))) t (BadType "decompFix")
 						end
-                    | Dlabel l => Tvar (findLabel l g)
+                    | Dvar l => Tvar (findLabel l g)
 				
 				fun chE expr g =
 					case expr of
@@ -96,8 +96,10 @@ struct
                     | Efix (label, ty, e) => sameT (chE e ((label,ty)::g)) ty (BadType "fix")
                     | Elabel (label) => findLabel label g
 					| EunrollG (s,x,t) => (GeoSamps (Tfix (x,t),s), GeoSamps (subst x (Tfix (x,t)) t, s))
+					
+				val ty = chE e []
 			in
-				chE e []
+				ty
 			end
     
     

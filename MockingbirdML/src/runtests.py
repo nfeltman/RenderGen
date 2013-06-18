@@ -1,10 +1,13 @@
 import os
 
+# Runtime.runExperiment DacrtRenderer.render ("",["../models/teapot.obj","500","../outputs/testrenderD.ppm"]);
+
 testrange = [
 #(1,30),
 #(2,10),
 #(3,50),
-(5,30),
+#(5,30),
+(6,20),
 ]
 
 print "COMPILING ALL RENDERERS"

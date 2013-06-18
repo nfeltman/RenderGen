@@ -113,26 +113,29 @@ struct
 					)
 				)
 			)
-		)
-		(*
+		),
+		
+		let
+			fun bvhLayer v = Tbounded (Tsum (Tarray v, Tflat))
+			val bvhType = Tfix (alphat, bvhLayer (Tvar alphat))
+			val unrolled = bvhLayer bvhType
+		in
 		( "Raytracer with BVH (ray bounds recalculated)",
 			chain3 (
 				EbreakS (Tflat, OneS), 
-				EbreakG (Tbounded Tflat, Dfix (alphad, DsizeCase (1, Dbound (Dlayer (TwoGP, Dvar alphad)), Dflat))), 
+				EbreakG (Tarray Tflat, Dfix (alphad, bvhType, Dbound (DsizeCase (1, Dlayer (TwoGP, Dvar alphad), Dflat)))), 
 				Emmr (SampCase, 
-					Efix (alpha, (GeoSamps (Tfix (alphat, DsizeCase (1, Dbound (Dlayer (TwoGP, Dvar alphad)), Tflat), Hits Tflat),
+					Efix (alpha, (GeoSamps (bvhType, Tflat), Hits Tflat),
 						chain3 (
-							EboundS Tflat,
+							EunrollG (Tflat, alphat, bvhLayer (Tvar alphat)),
+							EboundS (unrolled),
 							Etest (
 								chain3 (
-									EunboundG (Tflat, Tbounded Tflat) , 
-									EunboundS (Tflat, Tflat), 
-									EsizeCase (GeoCase, 1, 
-										Echain (
-											EbreakG (Tflat, ),
-											Emmr (GeoCase, 
-												Elabel alpha
-											)
+									EunboundS (unrolled, Tflat), 
+									EunboundG (Tsum (Tarray bvhType, Tflat), Tflat), 
+									ErememberCase (
+										Emmr (GeoCase, 
+											Elabel alpha
 										), 
 										Ehit
 									)
@@ -142,7 +145,8 @@ struct
 					)
 				)
 			)
-		)*)
+		)
+		end
 		]
     end
 	

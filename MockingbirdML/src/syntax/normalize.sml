@@ -159,8 +159,8 @@ struct
 					in
 						Emap ("layer_", 1, Elam (elem, Tint, trD e (Evar elem)), EbreakG (prim, carry))
 					end
-                | S.Dfix (label, eType, e) => raise NotYetImplemented
-                | S.Dlabel label => raise NotYetImplemented
+                | S.Dfix (label, _, e) => raise NotYetImplemented
+                | S.Dvar label => raise NotYetImplemented
 		
 			val inputVar = Variable.newvar "arg"
 			val (inType, outType) = wholeType
