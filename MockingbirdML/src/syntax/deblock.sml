@@ -11,17 +11,18 @@ struct
     
 	fun trBoundType P.Bray = Tray
 	  | trBoundType P.Bbox = Tbox
-	
-	fun trDomainType base P.Dflat = base
-	  | trDomainType base (P.Darray d) = Tarray (trDomainType base d)
-	  | trDomainType base (P.Dbounded (t,d)) = Tprod [trBoundType t, trDomainType base d]
-	
-	fun trType (P.Tgeoms d) = trDomainType (Tarray Tgeom) d
-	  | trType (P.Tsamps d) = trDomainType (Tarray (Tray)) d
+		
+	fun trType P.TgeomsFlat = Tarray Tgeom
+	  | trType P.TsampsFlat = Tarray Tray
 	  | trType P.Tint = Tint
 	  | trType P.Tbool = Tbool
-	  | trType (P.Thit d) = trDomainType (Tarray (Thit)) d
-	  | trType (P.Tprod p) = Tprod (map trType p) 
+	  | trType P.ThitsFlat = Tarray Thit
+	  | trType (P.Tbound b) = trBoundType b
+	  | trType (P.Tarray t) = Tarray (trType t)
+	  | trType (P.Tprod p) = Tprod (map trType p)
+	  | trType (P.Tsum (t1,t2)) = Tsum (trType t1, trType t2)
+	  | trType (P.Tfix (v,t)) = Tfix (v, trType t)
+	  | trType (P.Tvar v) = Tvar v
 	
 	fun pint i = Eop0 (P0int i)
 	

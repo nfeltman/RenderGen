@@ -13,6 +13,9 @@ struct
 						| Tbox
 						| Tarray of valType
 						| Tprod of valType list
+						| Tsum of valType * valType
+						| Tfix of variable * valType
+						| Tvar of variable
 	
 	datatype value 		= Vvar of variable 
 	

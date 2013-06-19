@@ -9,15 +9,15 @@ struct
 	exception TypeMismatch
     exception NotYetImplemented
 	
-	fun trDomainType b S.Tflat = Dflat 
-	  | trDomainType b (S.Tarray d) = Darray (trDomainType b d)
-	  | trDomainType b (S.Tsum _) =  raise NotYetImplemented
-	  | trDomainType b (S.Tbounded d) = Dbounded (b, trDomainType b d)
-	  | trDomainType b (S.Tfix _) =  raise NotYetImplemented
-	  | trDomainType b (S.Tvar _) =  raise NotYetImplemented
+	fun trDomainType flatType b S.Tflat = flatType 
+	  | trDomainType flatType b (S.Tarray d) = Tarray (trDomainType flatType b d)
+	  | trDomainType flatType b (S.Tsum (d1,d2)) = Tsum (trDomainType flatType b d1, trDomainType flatType b d2)
+	  | trDomainType flatType b (S.Tbounded d) = Tprod [Tbound b, trDomainType flatType b d]
+	  | trDomainType flatType b (S.Tfix (v,d)) =  Tfix (v, trDomainType flatType b d)
+	  | trDomainType flatType b (S.Tvar v) =  Tvar v
 	
-	fun trType (GeoSamps (d1, d2)) = Tprod [Tgeoms (trDomainType Bbox d1), Tsamps (trDomainType Bray d2)]
-	  | trType (Hits d) = Thit (trDomainType Bbox d)
+	fun trType (GeoSamps (d1, d2)) = Tprod [trDomainType TgeomsFlat Bbox d1, trDomainType TsampsFlat Bray d2]
+	  | trType (Hits d) = trDomainType ThitsFlat Bbox d
 	  | trType (Frags _) = raise NotYetImplemented
 	
 	fun translate e wholeType =
@@ -39,14 +39,14 @@ struct
 								  (GeoCase, _) => 
 										Elet (const, Eproj (1, Evar gs),
 										Efold ("mapG_", 
-											Elam (x, Tprod [Tint, Thit Dflat],
+											Elam (x, Tprod [Tint, ThitsFlat],
 												EcloserHits (Eproj(1, Evar x), tr e (Etuple [Eproj(0, Evar x), Evar const]))), 
 											EallocBottomHits (Eproj (1, Evar gs)), 
 											Eproj (0, Evar gs)))
 								| (SampCase, _) => 
 										Elet (const, Eproj (0, Evar gs),
 										Efold ("mapS_", 
-											Elam (x, Tprod [Tint, Thit Dflat],
+											Elam (x, Tprod [Tint, ThitsFlat],
 												EunionHits (Eproj(1, Evar x), tr e (Etuple [Evar const, Eproj(0, Evar x)]))), 
 											EallocEmptyHits, 
 											Eproj (1, Evar gs)))
@@ -159,8 +159,14 @@ struct
 					in
 						Emap ("layer_", 1, Elam (elem, Tint, trD e (Evar elem)), EbreakG (prim, carry))
 					end
-                | S.Dfix (label, _, e) => raise NotYetImplemented
-                | S.Dvar label => raise NotYetImplemented
+                | S.Dfix (label, outType, e) => 
+					let
+						val arg = Variable.newvar "arg"
+					in
+						addFunc (Func (trDomainType TgeomsFlat Bbox outType, label, (TgeomsFlat, arg), trD e (Evar arg)));
+						Ecall (label, carry)
+					end
+                | S.Dvar label =>  Ecall (label, carry)
 		
 			val inputVar = Variable.newvar "arg"
 			val (inType, outType) = wholeType

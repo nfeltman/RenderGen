@@ -13,6 +13,9 @@ struct
 						| Tbool
 						| Tarray of valType
 						| Tprod of valType list
+						| Tsum of valType * valType
+						| Tfix of variable * valType
+						| Tvar of variable
 	
 	datatype region 	= Elam of variable * valType * expr
 	

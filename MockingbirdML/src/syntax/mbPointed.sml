@@ -7,17 +7,18 @@ struct
 	
 	datatype boundType	= Bray
 						| Bbox
-	
-	datatype domainType = Dflat
-						| Dbounded of boundType * domainType
-						| Darray of domainType
-	
-    datatype valType    = Tgeoms of domainType
-						| Tsamps of domainType
+		
+    datatype valType    = TgeomsFlat
+						| TsampsFlat
 						| Tint
 						| Tbool
-						| Thit of domainType
+						| ThitsFlat
+						| Tbound of boundType
+						| Tarray of valType
 						| Tprod of valType list
+						| Tsum of valType * valType
+						| Tfix of variable * valType
+						| Tvar of variable
 	
 	datatype region 	= Elam of variable * valType * expr
 	

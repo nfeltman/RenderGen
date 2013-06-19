@@ -7,7 +7,6 @@ struct
     
 	exception NotImplemented
 	exception TypeMismatch
-	exception ContinueOutsideLoop
 	
 	val map = List.map
 	
@@ -15,6 +14,9 @@ struct
 	  | getGBreakFunction TwoGP = "performTwoGP"
 	fun getSBreakFunction OneS = "performOneS"
 	  | getSBreakFunction _ = raise NotImplemented
+	
+	fun trVar var = Variable.toString var
+	fun getVar s = trVar (Variable.newvar s)
 	
 	fun trType P.Tgeom = Tgeom
 	  | trType P.Tray = Tsamp
@@ -24,7 +26,11 @@ struct
 	  | trType P.Tbox = Tbox
 	  | trType (P.Tarray t) = Tprod [Tint, Tarray (trType t)]
 	  | trType (P.Tprod el) = Tprod (map trType el)
+	  | trType (P.Tsum (t1,t2)) = Tsum (trType t1, trType t2)
+	  | trType (P.Tfix (v,t)) = Tfix (trVar v, trType t)
+	  | trType (P.Tvar v) = Tvar (trVar v)
 	
+	(*
 	fun getInhabitant t = 
 		case t of
 		  Tgeom => Evar "zeroTri"
@@ -35,9 +41,9 @@ struct
 		| Tbox => Evar "zeroBox"
 		| Tarray u => Ecall ("alloc",Etuple [Eint 0, getInhabitant u])
 		| Tprod ts => Etuple (map getInhabitant ts)
-	
-	fun trVar var = Variable.toString var
-	fun getVar s = trVar (Variable.newvar s)
+		| Tsum (t1,t2) => raise NotImplemented
+		| Tfix (v,t) => raise NotImplemented
+		| Tvar v => raise NotImplemented *)
 	
 	fun trExpr expr =
 		case expr of 

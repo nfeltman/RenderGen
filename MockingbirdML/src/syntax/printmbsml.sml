@@ -64,6 +64,9 @@ struct
 			  | pType (Tarray t) = (pType t; p " arr")
 			  | pType (Tprod []) = p "unit"
 			  | pType (Tprod l) = (p "("; pList pType " * " l; p ")")
+			  | pType (Tsum (t1,t2)) = p "??????"
+			  | pType (Tfix (v,t)) = p "??????"
+			  | pType (Tvar v) = p "??????"
 		in 
 			(
 				p "structure GeneratedRenderer = struct"; pLine ();

@@ -11,6 +11,7 @@ Group is
 	  mbArray.sig
 	  ppmWriter.sig
 	  ppmWriter.sml
+	  anonTypes.sml
 
       ../geometry/geometry.cm
       $/basis.cm
