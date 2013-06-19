@@ -71,7 +71,19 @@ struct
 							))
 						end
 						
-				| (_, S.ErememberCase (e1, e2)) => raise NotYetImplemented
+				| (_, S.ErememberCaseG (e1, e2)) =>
+						let
+							val gs = Variable.newvar "gs"
+							val left = Variable.newvar "left"
+							val right = Variable.newvar "right"
+						in
+							Elet (gs, carry, 
+							Ecase (
+								Eproj (0, Evar gs),
+								left, tr e1 (Etuple [Evar left, Eproj (1, Evar gs)]),
+								right, tr e2 (Etuple [Evar right, Eproj (1, Evar gs)])
+							))
+						end
 				| (_, S.Etest e) =>
 						let
 							val gs = Variable.newvar "gs"
@@ -137,12 +149,28 @@ struct
 						Ecall (label, carry)
 					end
                 | (_, S.Elabel label) => Ecall (label, carry)
-                | (_, S.EunrollG (s,x,t)) => raise NotYetImplemented
+                | (_, S.EunrollG (_,x,t)) => 
+						let
+							val gs = Variable.newvar "gs" 
+						in
+							Elet (gs, carry,
+							Etuple [Eunroll (x, trDomainType TgeomsFlat Bbox t, Eproj (0,Evar gs)), Eproj(1, Evar gs)])
+						end
 			  
 			and trD eSource carry = 
 				case eSource of 
 				  S.Dflat => carry
-				| S.DsizeCase (i, e1, e2) => raise NotYetImplemented
+				| S.DsizeCase (i, e1, e2) => 
+					let
+						val g = Variable.newvar "g"
+					in
+						Elet (g, carry,
+						Eif (
+							EsizeGt (Evar g, i),
+							Einj(true, trD e1 (Evar g)),
+							Einj(false, trD e2 (Evar g))
+						))
+					end
 				| S.Dbound e => 
 					let
 						val d = Variable.newvar "d"
@@ -159,11 +187,14 @@ struct
 					in
 						Emap ("layer_", 1, Elam (elem, Tint, trD e (Evar elem)), EbreakG (prim, carry))
 					end
-                | S.Dfix (label, outType, e) => 
+                | S.Dfix (label, (v,t), e) => 
 					let
 						val arg = Variable.newvar "arg"
+						val trT = trDomainType TgeomsFlat Bbox t
 					in
-						addFunc (Func (trDomainType TgeomsFlat Bbox outType, label, (TgeomsFlat, arg), trD e (Evar arg)));
+						addFunc (Func (Tfix (v,trT), label, (TgeomsFlat, arg), 
+							Eroll (v, trT,trD e (Evar arg))
+						));
 						Ecall (label, carry)
 					end
                 | S.Dvar label =>  Ecall (label, carry)

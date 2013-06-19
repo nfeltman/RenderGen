@@ -5,7 +5,7 @@ struct
 	
 	open MbSML
 
-	fun printToFunc (p : string -> unit) program = 
+	fun printToFunc (p : string -> unit) (decs, program) = 
 		let
 			val prefix = ref ""
 			
@@ -34,6 +34,11 @@ struct
 				| Evar v => p v
 				| Eint i => p (Int.toString i)
 				| EbotHit => p "bottomHit"
+				| Ecase (e, v1, e1, v2, e2) => ( tabIn();
+					pLine(); p "case "; pExprFree e; p " of" ;
+					pLine(); p "  AsLeft "; p v1; p " => ("; pExprFree e1; p ")"; 
+					pLine(); p "| AsRight "; p v2; p " => ("; pExprFree e2; p ")";
+					tabOut())
 				| other => 
 					(tabIn(); pLine(); 
 						p "let"; tabIn(); 
@@ -64,13 +69,19 @@ struct
 			  | pType (Tarray t) = (pType t; p " arr")
 			  | pType (Tprod []) = p "unit"
 			  | pType (Tprod l) = (p "("; pList pType " * " l; p ")")
-			  | pType (Tsum (t1,t2)) = p "??????"
-			  | pType (Tfix (v,t)) = p "??????"
-			  | pType (Tvar v) = p "??????"
+			  | pType (Tsum (t1,t2)) = (p "("; pType t1; p ","; pType t2; p ") anonSum")
+			  | pType (Tvar v) = p v
+			
+			fun pRecDec (x,v,t) = (
+				p "structure "; 
+				p x; p " = Recur(type "; p v; p " r = "; pType t; p ")"; 
+				pLine ())
 		in 
 			(
 				p "structure GeneratedRenderer = struct"; pLine ();
 				p "open Runtime"; pLine ();
+				p "open AnonTypes"; pLine ();
+				List.app pRecDec decs;
 				p "val render = "; tabIn(); pLine (); 
 				pExprFree program;  tabOut(); pLine ();
 				p "end"; pLine ()

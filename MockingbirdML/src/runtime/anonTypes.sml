@@ -11,5 +11,4 @@ struct
 	fun unroll (T z : t) = z : (t A.r)
 	fun roll (z : t A.r) = (T z) : t
 end
-
 end

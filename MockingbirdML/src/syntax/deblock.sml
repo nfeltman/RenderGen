@@ -37,8 +37,11 @@ struct
 		| P.Evar v => Evar v
 		| P.Ecall (label, arg) => Eop1 (P1call label, trExpr arg)
 		| P.Einj (lr,e) => Einj (lr, trExpr e)
+		| P.Ecase (e, v1, e1, v2, e2) => Ecase (trExpr e, v1, trExpr e1, v2, trExpr e2)
 		| P.Etuple es => Etuple (map trExpr es)
 		| P.Eproj (i, e) => Eproj (i, trExpr e)
+		| P.Eunroll (v,t,e) => Eunroll (v, trType t, trExpr e)
+		| P.Eroll (v,t,e) => Eroll (v, trType t, trExpr e)
 		
 		| P.Eisect (g,s) => Eop2 (P2isectBoxRay, trExpr g, trExpr s)
 		| P.EsizeGt (arr, i) => Eop2(P2gt, Eop1 (P1getSize, trExpr arr), pint i)

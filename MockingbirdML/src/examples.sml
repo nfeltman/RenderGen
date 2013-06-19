@@ -123,7 +123,7 @@ struct
 		( "Raytracer with BVH (ray bounds recalculated)",
 			chain3 (
 				EbreakS (Tflat, OneS), 
-				EbreakG (Tarray Tflat, Dfix (alphad, bvhType, Dbound (DsizeCase (1, Dlayer (TwoGP, Dvar alphad), Dflat)))), 
+				EbreakG (Tarray Tflat, Dfix (alphad, (alphat, bvhLayer (Tvar alphat)), Dbound (DsizeCase (1, Dlayer (TwoGP, Dvar alphad), Dflat)))), 
 				Emmr (SampCase, 
 					Efix (alpha, (GeoSamps (bvhType, Tflat), Hits Tflat),
 						chain3 (
@@ -133,7 +133,7 @@ struct
 								chain3 (
 									EunboundS (unrolled, Tflat), 
 									EunboundG (Tsum (Tarray bvhType, Tflat), Tflat), 
-									ErememberCase (
+									ErememberCaseG (
 										Emmr (GeoCase, 
 											Elabel alpha
 										), 
@@ -155,7 +155,9 @@ struct
 				CheckOrder.inferType ex)) 
 	
 	fun orderToDeblock ex = (*SubstSingletons.substProgram*) (Deblock.translate (orderToPoint ex))
-	fun orderToSML ex = (LetNormalize.normalize (PrimitivizeSML.translate (orderToDeblock ex)))
+	fun orderToSML ex = ((* LetNormalize.normalize *) (PrimitivizeSML.translate (orderToDeblock ex)))
+	
+	fun test () = PrintMbSML.printToScreen (orderToSML (#2 (List.nth (OrderExamples.examples,5))))
 	
 	fun compile i outfile = 
 			let

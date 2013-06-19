@@ -18,7 +18,20 @@ struct
 	fun trVar var = Variable.toString var
 	fun getVar s = trVar (Variable.newvar s)
 	
-	fun trType P.Tgeom = Tgeom
+	val recdecs : ((P.variable * P.valType) * recdec) list ref = ref []
+	
+	fun lookupRecDec (vt as (v,t)) = 
+			case Util.find (!recdecs) vt of
+			  SOME (rd,_,_) => rd
+			| NONE => 
+				let 
+					val rd = getVar "RD"
+				in
+					recdecs := (vt,(rd,"'"^(trVar v),trType t)):: !recdecs;
+					rd
+				end
+	
+	and trType P.Tgeom = Tgeom
 	  | trType P.Tray = Tsamp
 	  | trType P.Tint = Tint
 	  | trType P.Thit = Thit
@@ -27,8 +40,8 @@ struct
 	  | trType (P.Tarray t) = Tprod [Tint, Tarray (trType t)]
 	  | trType (P.Tprod el) = Tprod (map trType el)
 	  | trType (P.Tsum (t1,t2)) = Tsum (trType t1, trType t2)
-	  | trType (P.Tfix (v,t)) = Tfix (trVar v, trType t)
-	  | trType (P.Tvar v) = Tvar (trVar v)
+	  | trType (P.Tfix vt) = Tvar ((lookupRecDec vt) ^ ".t")
+	  | trType (P.Tvar v) = Tvar ("'" ^ (trVar v))
 	
 	(*
 	fun getInhabitant t = 
@@ -157,11 +170,20 @@ struct
 		| P.Evar v => Evar (trVar v)
 		| P.Eproj (i,e) => Eproj (i, trExpr e)
 		| P.Etuple el => Etuple (map trExpr el)
-		| P.Einj (lr, e) => Ecall (if lr then "injL" else "injR", trExpr e)
+		| P.Einj (lr, e) => Ecall (if lr then "AsLeft" else "AsRight", trExpr e)
+		| P.Ecase (e, v1, e1, v2, e2) => Ecase (trExpr e, trVar v1, trExpr e1, trVar v2, trExpr e2)
+		| P.Eunroll (v,t,e) => Ecall ((lookupRecDec (v,t)) ^ ".unroll", trExpr e)
+		| P.Eroll (v,t,e) => Ecall ((lookupRecDec (v,t)) ^ ".roll", trExpr e)
 	
 	fun trFunction (P.Func (_, name, (ty,var), rootExpr)) = 
 			(trVar name, trVar var, trType ty, trExpr rootExpr)
 	
-	fun translate ((mainFunc as P.Func (_,name,_,_)), rest) = 
-		EfuncDefs (trFunction mainFunc, map trFunction rest, Ecall ("runExperiment", Evar (trVar name)))
+	fun translate ((mainFunc as P.Func (_,name,_,_)), rest) = (
+		let 
+			val _ = recdecs := [];
+			val e = EfuncDefs (trFunction mainFunc, map trFunction rest, Ecall ("runExperiment", Evar (trVar name)))
+		in
+			(map #2 (!recdecs), e)
+		end
+		)
 end 

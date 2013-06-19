@@ -29,8 +29,11 @@ struct
 						| Evar of variable
 						| Ecall of funcLabel * expr
 						| Einj of bool * expr
+						| Ecase of expr * variable * expr * variable * expr
 						| Etuple of expr list
 						| Eproj of int * expr
+						| Eunroll of variable * valType * expr
+						| Eroll of variable * valType * expr
 						
 						| Eisect of expr * expr
 						| EsizeGt of expr * int

@@ -26,7 +26,10 @@ struct
 						| Etuple of expr list 
 						| Eproj of int * expr
 						| Einj of bool * expr
+						| Ecase of expr * variable * expr * variable * expr
 						| Eif of expr * expr * expr
+						| Eunroll of variable * valType * expr
+						| Eroll of variable * valType * expr
 						
 						| Eop0 of primop0
 						| Eop1 of primop1 * expr

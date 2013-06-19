@@ -14,7 +14,6 @@ struct
 						| Tarray of valType
 						| Tprod of valType list
 						| Tsum of valType * valType
-						| Tfix of variable * valType
 						| Tvar of variable
 	
 	datatype value 		= Vvar of variable 
@@ -25,6 +24,7 @@ struct
 						| Eif of expr * expr * expr
 						| Etuple of expr list
 						| Eproj of int * expr
+						| Ecase of expr * variable * expr * variable * expr
 						| EgetElement of expr * expr
 						| EsetElement of expr * expr * expr
 						| Ecall of funcLabel * expr
@@ -37,6 +37,6 @@ struct
 						| Bgt
 						
 	withtype func		= funcLabel * variable * valType * expr
-	
+	and 	 recdec		= variable * variable * valType
 end 
 
