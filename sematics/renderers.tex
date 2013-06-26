@@ -16,6 +16,10 @@
 \newcommand {\sizeRange} {\langle\mathit{sizeRange}\rangle}
 \newcommand {\gbar} {~~|~~}
 
+
+\newcommand {\lcata}{\llparenthesis}
+\newcommand {\rcata}{\rrparenthesis}
+
 %source nodes 
 \newcommand {\chain}{\mathtt{>>}}
 \newcommand {\rightFish}{\mathtt{>=>}}
@@ -142,14 +146,14 @@ e &= e~\chain~e \\
 &\gbar \test \{ e \} \\
 &\gbar \filt \{ e \} \\
 &\gbar \mathtt{ifsizeG}(>n)~e \mathtt{~else~} e \\
-&\gbar \buildG \{ d_G \} \\
-&\gbar \buildS \{ d_S \} \\
-&\gbar \unboundG \{ e \} \\
-&\gbar \unboundS \{ e \} \\
+&\gbar \buildG ( d_G ) \\
+&\gbar \buildS ( d_S ) \\
+&\gbar \unboundG \\
+&\gbar \unboundS \\
 &\gbar \mmrG \{ e \} \\
 &\gbar \mmrS \{ e \} \\
 \\
-d_\alpha &= \flatD \\
+d_\alpha &= \mathtt{id} \\
 &\gbar p_\alpha~\rightFish~d_\alpha \\
 &\gbar \fix~x.~d_\alpha \\
 &\gbar x \\
@@ -177,10 +181,22 @@ p_S &= \oneS~|~\sampP \\
 \infer {\Gamma\vdash \fix~x.e : \tau}{\Gamma, x:\tau \vdash e : \tau} \\
 \infer {\Gamma\vdash x : \tau}{\Gamma(x) = \tau} \\
 \infer {\Gamma\vdash \test \{ e \} : \geosamp~\#\delta_1~\#\delta_2 \to \sigma}{\Gamma \vdash e : \geosamp~\#\delta_1~\#\delta_2  \to \sigma} \\
-\infer {\Gamma \vdash \isect : \geosamp~\ast~\ast \to \hit \ast} {\cdot} \\
-\infer {\Gamma \vdash \mmrG (d) \{ e \} : \geosamp~[\delta_1]~\delta_2 \to \hit \ast} {\Gamma \vdash e : \geosamp~\delta_1~\delta_2 \to \hit \ast }
+\infer {\Gamma \vdash \isect : \geosamp~\ast~\ast \to \hit~\ast} {\cdot} \\
+\infer {\Gamma \vdash \mmrG \{ e \} : \geosamp~[\delta_1]~\delta_2 \to \hit~\ast} {\Gamma \vdash e : \geosamp~\delta_1~\delta_2 \to \hit~\ast }\\
+\infer {\mathtt{ifsizeG}(>n)~e_1 \mathtt{~else~} e_2 : \geosamp~\delta_1~\delta_2 \to \sigma} {\Gamma \vdash e_1 : \geosamp~\delta_1~\delta_2 \to \sigma & \Gamma \vdash e_2 : \geosamp~\delta_1~\delta_2 \to \sigma} \\
+\infer { \unboundG : \geosamp~\#\delta_1~\delta_2 \to \geosamp~\delta_1~\delta_2} {\cdot}\\
+\infer { \unboundS : \geosamp~\delta_1~\#\delta_2 \to \geosamp~\delta_1~\delta_2} {\cdot}
 \end{gather}
 
+\subsection {Big Step Semantics}
+\begin{gather}
+\infer {(e_1 \chain e_2)~v \Downarrow v''}{e_1~ v \Downarrow v' & e_2~ v' \Downarrow v''} \\
+\infer { \buildG (d)~(g,s) \Downarrow_G (g',s)}{d~g \Downarrow_G g'} \\
+\infer { \bound (d)~g \Downarrow_G (box(g'),v)}{d~g \Downarrow_G g'} \\
+\infer { \bound (p >=> d)~g \Downarrow_G [g_1', g_2',...,g_n']}{p(g) =[g_1, g_2,...,g_n] & d~g_i \Downarrow_G g_i'} \\
+\infer { \test \{ e \}~((b_1,g),(b_2,s)) \Downarrow v}{intersects(b_1,b_2) & e~((b_1,g),(b_2,s)) \Downarrow v}
+\end{gather}
+\\
 
 \end{document}
 
