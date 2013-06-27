@@ -170,8 +170,8 @@ p_S &= \oneS~|~\sampP \\
 &\gbar [\delta] \\
 &\gbar \# \delta \\
 &\gbar \delta + \delta \\
-&\gbar \fix~x.~\delta \\
-&\gbar x \\
+&\gbar \mu~\alpha.~\delta \\
+&\gbar \alpha \\
 \end{align*}
 
 \subsection{Typing Rules}
@@ -185,16 +185,21 @@ p_S &= \oneS~|~\sampP \\
 \infer {\Gamma \vdash \mmrG \{ e \} : \geosamp~[\delta_1]~\delta_2 \to \hit~\ast} {\Gamma \vdash e : \geosamp~\delta_1~\delta_2 \to \hit~\ast }\\
 \infer {\mathtt{ifsizeG}(>n)~e_1 \mathtt{~else~} e_2 : \geosamp~\delta_1~\delta_2 \to \sigma} {\Gamma \vdash e_1 : \geosamp~\delta_1~\delta_2 \to \sigma & \Gamma \vdash e_2 : \geosamp~\delta_1~\delta_2 \to \sigma} \\
 \infer { \unboundG : \geosamp~\#\delta_1~\delta_2 \to \geosamp~\delta_1~\delta_2} {\cdot}\\
-\infer { \unboundS : \geosamp~\delta_1~\#\delta_2 \to \geosamp~\delta_1~\delta_2} {\cdot}
+\infer { \unboundS : \geosamp~\delta_1~\#\delta_2 \to \geosamp~\delta_1~\delta_2} {\cdot}\\
+\infer { \buildG (d): \geosamp~\ast~\delta_2 \to \geosamp~\delta_1~\delta_2} {d : \delta_1}\\
+\infer { \buildS (d): \geosamp~\delta_1~\ast \to \geosamp~\delta_1~\delta_2} {d : \delta_2}
 \end{gather}
 
 \subsection {Big Step Semantics}
 \begin{gather}
 \infer {(e_1 \chain e_2)~v \Downarrow v''}{e_1~ v \Downarrow v' & e_2~ v' \Downarrow v''} \\
-\infer { \buildG (d)~(g,s) \Downarrow_G (g',s)}{d~g \Downarrow_G g'} \\
+\infer { \hit (d)~([g],[s]) \Downarrow [h]}{h = intersect(g,s)} \\
+\infer { \buildG (d)~(g,s) \Downarrow (g',s)}{d~g \Downarrow_G g'} \\
 \infer { \bound (d)~g \Downarrow_G (box(g'),v)}{d~g \Downarrow_G g'} \\
 \infer { \bound (p >=> d)~g \Downarrow_G [g_1', g_2',...,g_n']}{p(g) =[g_1, g_2,...,g_n] & d~g_i \Downarrow_G g_i'} \\
-\infer { \test \{ e \}~((b_1,g),(b_2,s)) \Downarrow v}{intersects(b_1,b_2) & e~((b_1,g),(b_2,s)) \Downarrow v}
+\infer { \test \{ e \}~((b_1,g),(b_2,s)) \Downarrow v}{intersects(b_1,b_2) & e~((b_1,g),(b_2,s)) \Downarrow v} \\
+\infer { \mmrG \{ e \}~([g_1,\ldots,g_n],s) \Downarrow v}{e~(g_i,s) \Downarrow v_i & v = v_1 \oplus \cdots \oplus v_n}\\
+\infer { \mmrS \{ e \}~(g,[s_1,\ldots,s_n]) \Downarrow v}{e~(g,s_i) \Downarrow v_i & v = v_1 \cup \cdots \cup v_n}
 \end{gather}
 \\
 
