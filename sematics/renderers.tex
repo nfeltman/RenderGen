@@ -19,6 +19,8 @@
 
 \newcommand {\lcata}{\llparenthesis}
 \newcommand {\rcata}{\rrparenthesis}
+\newcommand {\lhylo}{\llbracket}
+\newcommand {\rhylo}{\rrbracket}
 
 %source nodes 
 \newcommand {\chain}{\mathtt{>>}}
@@ -34,9 +36,11 @@
 \newcommand {\bmrh}{\mathtt{BreakMapReduceH}}
 \newcommand {\buildG}{\mathtt{buildG}}
 \newcommand {\buildS}{\mathtt{buildS}}
+\newcommand {\id}{\mathtt{id}}
 \newcommand {\unboundG}{\mathtt{unboundG}}
 \newcommand {\unboundS}{\mathtt{unboundS}}
 \newcommand {\mmrG}{\mathtt{mmrG}}
+\newcommand {\caseG}{\mathtt{caseG}}
 \newcommand {\mmrS}{\mathtt{mmrS}}
 \newcommand {\oneS}{\mathtt{1S}}
 \newcommand {\oneG}{\mathtt{1G}}
@@ -47,17 +51,20 @@
 \newcommand {\geosamp}{\mathtt{GeoSamp}}
 \newcommand {\hit}{\mathtt{Hit}}
 \newcommand {\frag}{\mathtt{Frag}}
+\newcommand {\semimap}{\mathtt{semimap}}
+\newcommand {\map}{\mathtt{map}}
 
 %semantics
 \newcommand {\calG}{\mathcal{G}}
 \newcommand {\calS}{\mathcal{S}}
 \newcommand {\calK}{\mathcal{K}}
-\newcommand {\bound}{\mathit{bound}}
+\newcommand {\bound}{\mathtt{bound}}
 
 
 % Equation spacing
 \newcommand {\inferenceSpacing}{\setlength{\jot}{3ex}}
 \newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
+\newcommand {\tab}{~~~~~~}
 
 \title{\Large\textbf{Mockingbird Semantics}}
 \author{Nicolas Feltman}
@@ -138,7 +145,6 @@
 \normalSpacing
 \subsection{Grammar}
 \begin{align*}
-\\
 e &= e~\chain~e \\
 &\gbar \fix~x.~e \\
 &\gbar x \\
@@ -191,17 +197,100 @@ p_S &= \oneS~|~\sampP \\
 \end{gather}
 
 \subsection {Big Step Semantics}
+\begin{align*}
+g &= [t, \ldots, t] \\
+&\gbar [g, \ldots, g]\\
+&\gbar (bound, g)\\
+&\gbar inL (g)\\
+&\gbar inR (g)\\
+s &= [r, \ldots, r] \\
+&\gbar [s, \ldots, s]\\
+&\gbar (bound, s)\\
+&\gbar inL (s)\\
+&\gbar inR (s)\\
+v &= (g,s) 
+\end{align*}
+
 \begin{gather}
 \infer {(e_1 \chain e_2)~v \Downarrow v''}{e_1~ v \Downarrow v' & e_2~ v' \Downarrow v''} \\
-\infer { \hit (d)~([g],[s]) \Downarrow [h]}{h = intersect(g,s)} \\
+\infer { \isect ~([g],[s]) \Downarrow [h]}{h = intersect(g,s)} \\
 \infer { \buildG (d)~(g,s) \Downarrow (g',s)}{d~g \Downarrow_G g'} \\
 \infer { \bound (d)~g \Downarrow_G (box(g'),v)}{d~g \Downarrow_G g'} \\
-\infer { \bound (p >=> d)~g \Downarrow_G [g_1', g_2',...,g_n']}{p(g) =[g_1, g_2,...,g_n] & d~g_i \Downarrow_G g_i'} \\
+\infer { (p >=> d)~g \Downarrow_G [g_1', g_2',...,g_n']}{p(g) =[g_1, g_2,...,g_n] & d~g_i \Downarrow_G g_i'} \\
 \infer { \test \{ e \}~((b_1,g),(b_2,s)) \Downarrow v}{intersects(b_1,b_2) & e~((b_1,g),(b_2,s)) \Downarrow v} \\
 \infer { \mmrG \{ e \}~([g_1,\ldots,g_n],s) \Downarrow v}{e~(g_i,s) \Downarrow v_i & v = v_1 \oplus \cdots \oplus v_n}\\
-\infer { \mmrS \{ e \}~(g,[s_1,\ldots,s_n]) \Downarrow v}{e~(g,s_i) \Downarrow v_i & v = v_1 \cup \cdots \cup v_n}
+\infer { \mmrS \{ e \}~(g,[s_1,\ldots,s_n]) \Downarrow v}{e~(g,s_i) \Downarrow v_i & v = v_1 \cup \cdots \cup v_n}\\
+\infer { \caseG \{ e_1 | e_2 \}~(inL(g),s) \Downarrow v}{e_1~(g,s) \Downarrow v}\\
+\infer { \caseG \{ e_1 | e_2 \}~(inR(g),s) \Downarrow v}{e_2~(g,s) \Downarrow v}
 \end{gather}
-\\
+
+\section{Examples}
+\normalSpacing
+We start with the source for the repeat-work raytracer.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab\fix~x. \\
+&\tab\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\tab \buildG(\bound (\mathtt{id})) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundS >> \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \mathtt{ifsizeG}(>1)~\buildG (\twoGP >=> \id) >> \mmrG \{x\} \\
+&\tab\tab\tab \mathtt{else}~\isect \\
+&\tab \tab \} \\
+&\}
+\end{align*}
+And here's the bvh-accelerated raytracer.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~\twoGP >=> z~\mathtt{else}~\id)) >> \\
+&\mmrS \{ \\
+&\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\fix~x. \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \mathtt {case}~\mmrG\{x\}~|~(\unboundS>>\isect) \\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Now here's the dumb raytracer expressed in another language:
+\begin{align*}
+&\%S (\oneS) >> \\
+&*mapOverS* \{ \\
+&\tab\fix~x. \\
+&\tab\tab \%G(boundBox) >> \\
+&\tab\tab \%S(boundRay) >> \\
+&\tab\tab \mathtt{if}~\%GS(intersect)~\mathtt{then} \\
+&\tab\tab\tab \%G(unbound) >> \\
+&\tab\tab\tab \%S(unbound) >> \\
+&\tab\tab\tab \mathtt{if}~\%G(sizeGT1)~\mathtt{then}\\
+&\tab\tab\tab\tab \%G(2GP) >> \semimap_G^{2}(x) >> \%H(closer) \\
+&\tab\tab\tab \mathtt{else}\\
+&\tab\tab\tab\tab \%GS(hit)  \\
+&\tab\tab \mathtt{else} \\
+&\tab\tab\tab \%S(allMiss)\\
+&\}
+\end{align*}
+And the bvh-accelerated raytracer:
+\begin{align*}
+&\%S (\oneS) >> \\
+&\%G(\fix~z.~ boundBox >> \map^{\times \overline{B}} ( \\
+&\tab\tab\tab \mathtt{if}~(sizeGT1)~\mathtt{then}\\
+&\tab\tab\tab\tab 2GP >> \map^{2}(x) >> \iota_1 \\
+&\tab\tab\tab \mathtt{else}~\iota_2 ) >> \\
+&*mapOverS* \{ \\
+&\tab \%S(boundRay) >> \\
+&\tab\fix~x. \\
+&\tab\tab \mathtt{if}~\%GS(intersect)~\mathtt{then} \\
+&\tab\tab\tab \%G(unbound) >> \\
+&\tab\tab\tab \mathtt {case} \\
+&\tab\tab\tab ~~(\semimap_G^{2}(x) >> \%H(closer)) \\
+&\tab\tab\tab |~(\%S(unbound)>>\%GS(\isect)) \\
+&\tab\tab \mathtt{else} \\
+&\tab\tab\tab \%S(allMiss)\\
+&\}
+\end{align*}
 
 \end{document}
 
