@@ -241,24 +241,107 @@ We start with the source for the repeat-work raytracer.
 &\tab \tab \} \\
 &\}
 \end{align*}
-And here's the bvh-accelerated raytracer.
+We now precompute the 2GP split.
 \begin{align*}
 &\buildS (\oneS) >> \\
-&\buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~\twoGP >=> z~\mathtt{else}~\id)) >> \\
+&\mmrS \{ \\
+&\tab\fix~x. \\
+&\tab\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\tab \buildG(\bound (\mathtt{id})) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundS >> \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \buildG (\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id) >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Reorder the bounding and unbounding to make the next step less daunting.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab\fix~x. \\
+&\tab\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\tab \buildG(\bound (\mathtt{id})) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \buildG (\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id) >> \\
+&\tab\tab\tab \unboundS >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Pull through the bound-test-unbound (I have to show this all at once, since the intermediate stages are inexpressible in this language).
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab\fix~x. \\
+&\tab\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\tab \buildG (\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id)) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \unboundS >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Push the unboundS through the case and into the mmrG.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab\fix~x. \\
+&\tab\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\tab \buildG (\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id)) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{\unboundS >> x\}~|~(\unboundS >> \isect)\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Lift out the buildS.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab\fix~x. \\
+&\tab\tab \buildG (\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id)) >> \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~(\unboundS >> \isect)\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Lift the buildG through the fix.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\mmrS \{ \\
+&\tab \buildS(\bound (\mathtt{id})) >> \\
+&\tab \buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> z)~\mathtt{else}~\id)) >> \\
+&\tab\fix~x. \\
+&\tab\tab\test \{ \\
+&\tab\tab\tab \unboundG >> \\
+&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~(\unboundS >> \isect)\\
+&\tab \tab \} \\
+&\}
+\end{align*}
+Finally list the bvh build through mmrS and we have the bvh-accelerated raytracer.
+\begin{align*}
+&\buildS (\oneS) >> \\
+&\buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> z)~\mathtt{else}~\id)) >> \\
 &\mmrS \{ \\
 &\tab \buildS(\bound (\mathtt{id})) >> \\
 &\tab\fix~x. \\
 &\tab\tab\test \{ \\
 &\tab\tab\tab \unboundG >> \\
-&\tab\tab\tab \mathtt {case}~\mmrG\{x\}~|~(\unboundS>>\isect) \\
+&\tab\tab\tab \mathtt {caseG}~\mmrG\{x\}~|~(\unboundS>>\isect) \\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Now here's the dumb raytracer expressed in another language:
 \begin{align*}
-&\%S (\oneS) >> \\
-&*mapOverS* \{ \\
-&\tab\fix~x. \\
+&\fix~y. \\
+&\tab \%G. \\
+&\tab \fix~x. \\
 &\tab\tab \%G(boundBox) >> \\
 &\tab\tab \%S(boundRay) >> \\
 &\tab\tab \mathtt{if}~\%GS(intersect)~\mathtt{then} \\
@@ -270,7 +353,7 @@ Now here's the dumb raytracer expressed in another language:
 &\tab\tab\tab\tab \%GS(hit)  \\
 &\tab\tab \mathtt{else} \\
 &\tab\tab\tab \%S(allMiss)\\
-&\}
+&
 \end{align*}
 And the bvh-accelerated raytracer:
 \begin{align*}
