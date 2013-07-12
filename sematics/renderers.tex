@@ -228,7 +228,7 @@ v &= (g,s)
 \normalSpacing
 We start with the source for the repeat-work raytracer.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab\fix~x. \\
 &\tab\tab \buildS(\bound (\mathtt{id})) >> \\
@@ -243,7 +243,7 @@ We start with the source for the repeat-work raytracer.
 \end{align*}
 We now precompute the 2GP split.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab\fix~x. \\
 &\tab\tab \buildS(\bound (\mathtt{id})) >> \\
@@ -252,13 +252,13 @@ We now precompute the 2GP split.
 &\tab\tab\tab \unboundS >> \\
 &\tab\tab\tab \unboundG >> \\
 &\tab\tab\tab \buildG (\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id) >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{x\}~|~\isect\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Reorder the bounding and unbounding to make the next step less daunting.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab\fix~x. \\
 &\tab\tab \buildS(\bound (\mathtt{id})) >> \\
@@ -267,13 +267,13 @@ Reorder the bounding and unbounding to make the next step less daunting.
 &\tab\tab\tab \unboundG >> \\
 &\tab\tab\tab \buildG (\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id) >> \\
 &\tab\tab\tab \unboundS >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{x\}~|~\isect\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Pull through the bound-test-unbound (I have to show this all at once, since the intermediate stages are inexpressible in this language).
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab\fix~x. \\
 &\tab\tab \buildS(\bound (\mathtt{id})) >> \\
@@ -281,52 +281,52 @@ Pull through the bound-test-unbound (I have to show this all at once, since the 
 &\tab\tab\test \{ \\
 &\tab\tab\tab \unboundG >> \\
 &\tab\tab\tab \unboundS >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~\isect\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{x\}~|~\isect\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Push the unboundS through the case and into the mmrG.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab\fix~x. \\
 &\tab\tab \buildS(\bound (\mathtt{id})) >> \\
 &\tab\tab \buildG (\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id)) >> \\
 &\tab\tab\test \{ \\
 &\tab\tab\tab \unboundG >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{\unboundS >> x\}~|~(\unboundS >> \isect)\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{\unboundS >> x\}~|~(\unboundS >> \isect)\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Lift out the buildS.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab \buildS(\bound (\mathtt{id})) >> \\
 &\tab\fix~x. \\
 &\tab\tab \buildG (\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> \id)~\mathtt{else}~\id)) >> \\
 &\tab\tab\test \{ \\
 &\tab\tab\tab \unboundG >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~(\unboundS >> \isect)\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{x\}~|~(\unboundS >> \isect)\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Lift the buildG through the fix.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\mmrS \{ \\
 &\tab \buildS(\bound (\mathtt{id})) >> \\
 &\tab \buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> z)~\mathtt{else}~\id)) >> \\
 &\tab\fix~x. \\
 &\tab\tab\test \{ \\
 &\tab\tab\tab \unboundG >> \\
-&\tab\tab\tab \mathtt{caseG}(>1)~\mmrG \{x\}~|~(\unboundS >> \isect)\\
+&\tab\tab\tab \mathtt{caseG}~\mmrG \{x\}~|~(\unboundS >> \isect)\\
 &\tab \tab \} \\
 &\}
 \end{align*}
 Finally list the bvh build through mmrS and we have the bvh-accelerated raytracer.
 \begin{align*}
-&\buildS (\oneS) >> \\
+&\buildS (\oneS >=> \id) >> \\
 &\buildG (\fix~z.~\bound(\mathtt{ifsizeG}(>1)~(\twoGP >=> z)~\mathtt{else}~\id)) >> \\
 &\mmrS \{ \\
 &\tab \buildS(\bound (\mathtt{id})) >> \\
@@ -337,7 +337,27 @@ Finally list the bvh build through mmrS and we have the bvh-accelerated raytrace
 &\tab \tab \} \\
 &\}
 \end{align*}
+
 Now here's the dumb raytracer expressed in another language:
+\begin{align*}
+&\fix~y. \\
+&\tab \map^{(G\times)} >> push^{(G\times)}_{S} >> \\
+&\tab \fix~x. \\
+&\tab\tab \%G(boundBox) >> \\
+&\tab\tab \%S(boundRay) >> \\
+&\tab\tab \mathtt{if}~\%GS(intersect)~\mathtt{then} \\
+&\tab\tab\tab \%G(unbound) >> \\
+&\tab\tab\tab \%S(unbound) >> \\
+&\tab\tab\tab \mathtt{if}~\%G(sizeGT1)~\mathtt{then}\\
+&\tab\tab\tab\tab \%G(2GP) >> \semimap_G^{2}(x) >> \%H(closer) \\
+&\tab\tab\tab \mathtt{else}\\
+&\tab\tab\tab\tab \%GS(hit)  \\
+&\tab\tab \mathtt{else} \\
+&\tab\tab\tab \%S(allMiss)
+\end{align*}
+
+
+Now here's the dumb raytracer expressed in yet another language:
 \begin{align*}
 &\fix~y. \\
 &\tab \%G. \\
@@ -375,5 +395,13 @@ And the bvh-accelerated raytracer:
 &\}
 \end{align*}
 
-\end{document}
+\section{Splitting}
+\begin{gather}
+\infer {e \rightsquigarrow [e,x.x]}{\cdot} \\
+\infer {(e_1,e_2) \rightsquigarrow [(p_1,p_2),x.\mathtt{let}~(x_1,x_2)=x~\mathtt{in}~(r_1,r_2)]}{e_1 \rightsquigarrow [p_1,x_1.r_1] & e_2 \rightsquigarrow [p_2,x_2.r_2]} \\
+\infer {f~e \rightsquigarrow [p,x.f~r]}{e \rightsquigarrow [p,x.r]} \\
+\infer {\mathtt{case}~e_1~\mathtt{of}~v_2=>e_2~|~v_3=>e_3 \rightsquigarrow [(\mathtt{case}~e_1~\mathtt{of}~v_2=>p_2~|~v_3=>p_3), x.(\mathtt{case}~x~\mathtt{of}~x_2=>r_2~|~x_3=>r_3)]}{e_2 \rightsquigarrow [p_2,x_2.r_2] & e_3 \rightsquigarrow [p_3,x_3.r_3]} \\
+\infer {\mathtt{eval}~f~x=e~\mathtt{with}~e_2 \rightsquigarrow [\mathtt{eval}~f_2~x=e~\mathtt{with}~e_2, x.]}{e \rightsquigarrow [p,x.r]} 
+\end{gather}
 
+\end{document}
