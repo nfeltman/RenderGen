@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{amssymb,amsthm}
+\usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
+\parindent 0pt
+\parskip .75em
+
+% bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\stage} {\langle\mathit{stage}\rangle}
+\newcommand {\expr} {\langle\mathit{expr}\rangle}
+\newcommand {\var} {\langle\mathit{var}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+% nodes
+\newcommand {\bbone} {\mathbbm 1}
+\newcommand {\bbtwo} {\mathbbm 2}
+\newcommand {\pause} {\tt pause}
+\newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
+
+% transitions
+\newcommand {\splits} {\rightsquigarrow}
+
+% Equation spacing
+\newcommand {\inferenceSpacing}{\setlength{\jot}{3ex}}
+\newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
+\newcommand {\tab}{~~~~~~}
+
+\title{\Large\textbf{A Language for Staging}}
+\author{Nicolas Feltman}
+\begin{document}
+\maketitle
+
+\section{Language Def}
+
+\subsection{Grammar}
+\begin{align*}
+\stage &= \bbone~|~\bbtwo \\
+\expr &= f~\expr \\
+&\gbar ()_{\stage} \\
+&\gbar (\expr, \expr) \\
+&\gbar \pi_1~\expr \\
+&\gbar \pi_2~\expr \\
+&\gbar \letin {\var}{\expr}{\expr} \\
+&\gbar \var \\
+&\gbar \pause~\expr \\
+\end{align*}
+
+\section{Stage Types}
+\inferenceSpacing
+\begin{gather}
+\infer {\Gamma\vdash ()_\sigma : \sigma}{\cdot} \\
+\infer {\Gamma\vdash f~e : \sigma}{\Gamma\vdash e : \sigma} \\
+\infer {\Gamma\vdash \pi_i~e : \sigma}{\Gamma\vdash e : \sigma} \\
+\infer {\Gamma\vdash (e_1,e_2) : \sigma}{\Gamma\vdash e_1 : \sigma & \Gamma\vdash e_2 : \sigma} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : \sigma_2}{\Gamma\vdash e_1 : \sigma_1 & \Gamma,x:\sigma_1\vdash e_2 : \sigma_2 & \sigma_1 \le \sigma_2} \\
+\infer {\Gamma\vdash x : \sigma}{\Gamma(x) = \sigma} \\
+\infer {\Gamma\vdash \pause~e : \bbtwo}{\Gamma\vdash e : \bbone}
+\end{gather}
+
+\section{Stage Splitting}
+\subsection {Single Stage Conversion}
+\subsection {Multiple Stage Splitting}
+\begin{gather}
+\infer {\Gamma \vdash ()_\bbone \splits [(),x.x]}{\cdot} \\
+\infer {\Gamma \vdash ()_\bbtwo \splits [(),\_.()]}{\cdot} \\
+\infer {\Gamma \vdash f~e \splits [e,x.f~r]}{\Gamma \vdash e \splits [p,x.r]} \\
+\infer {\Gamma \vdash \pi_i~e \splits [e,x.\pi_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
+\infer {\Gamma \vdash (e_1,e_2) \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1},\letin{x_2}{\pi_2~l}{r_2})]}{\Gamma \vdash e_1 \splits [p_1,x_1,r_1] & \Gamma \vdash e_2 \splits [p_2,x_2,r_2]} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : \sigma_2}{\Gamma\vdash e_1 : \sigma_1 & \Gamma,x:\sigma_1\vdash e_2 : \sigma_2} \\
+\infer {\Gamma\vdash x \splits [(),\_.x]}{\Gamma(x) = \bbtwo} \\
+\end{gather}
+
+\end{document}
