@@ -70,8 +70,9 @@
 \infer {\Gamma \vdash f~e \splits [e,x.f~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash \pi_i~e \splits [e,x.\pi_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash (e_1,e_2) \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1},\letin{x_2}{\pi_2~l}{r_2})]}{\Gamma \vdash e_1 \splits [p_1,x_1,r_1] & \Gamma \vdash e_2 \splits [p_2,x_2,r_2]} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : \sigma_2}{\Gamma\vdash e_1 : \sigma_1 & \Gamma,x:\sigma_1\vdash e_2 : \sigma_2} \\
-\infer {\Gamma\vdash x \splits [(),\_.x]}{\Gamma(x) = \bbtwo} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \Rightarrow e_1' & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
+\infer {\Gamma\vdash x \splits [(),\_.x]}{\Gamma(x) = \bbtwo}
 \end{gather}
 
 \end{document}
