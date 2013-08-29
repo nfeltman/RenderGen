@@ -1,78 +1,193 @@
-\documentclass{article}
+\documentclass[11pt]{article}
 \usepackage{amsmath}
 \usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
 \usepackage{amssymb,amsthm}
-\usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
+\usepackage[margin=1in,nohead]{geometry}
 \parindent 0pt
 \parskip .75em
 
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
 \newcommand {\stage} {\langle\mathit{stage}\rangle}
-\newcommand {\expr} {\langle\mathit{expr}\rangle}
+\newcommand {\ptype} {\langle\mathit{ptype}\rangle}
+\newcommand {\type} {\langle\mathit{type}\rangle}
+\newcommand {\expr} {\langle\mathit{exp}\rangle}
 \newcommand {\var} {\langle\mathit{var}\rangle}
+\newcommand {\context} {\langle\mathit{cont}\rangle}
 \newcommand {\gbar} {~~|~~}
 
 % nodes
 \newcommand {\bbone} {\mathbbm 1}
 \newcommand {\bbtwo} {\mathbbm 2}
-\newcommand {\pause} {\tt pause}
+\newcommand {\at} {{\tt~@~}}
+\newcommand {\pause} {{\tt pause}}
 \newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
+\newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
+\newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
 
 % transitions
 \newcommand {\splits} {\rightsquigarrow}
 
 % Equation spacing
-\newcommand {\inferenceSpacing}{\setlength{\jot}{3ex}}
+\newcommand {\inferenceSpacing}{\setlength{\jot}{1.8ex}}
 \newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
 \newcommand {\tab}{~~~~~~}
 
-\title{\Large\textbf{A Language for Staging}}
+%language names
+\newcommand {\wstage} {\textsc{Stag}}
+\newcommand {\wostage} {\textsc{Doe}}
+
+\title{\Large\textbf{Staging as a Mechanism for Algorithm Derivation}}
 \author{Nicolas Feltman}
 \begin{document}
 \maketitle
 
-\section{Language Def}
+\section{Introduction}
 
-\subsection{Grammar}
+This document presents some preliminary work on a staged language, \wstage, useful for deriving complicated algorithms.  Section \ref{sec:current} covers the work on the language so far.  We then compare this to some relevent literature in Section \ref{sec:lit}.  In Section \ref{sec:ext}, we give a proposal for how to move forward with the language.
+
+\section{Current Work}
+\label{sec:current}
+
+\subsection{Terms, Types, and Stages}
+A grammar for \wstage~is shown in Figure \ref{fig:gram}.  It is currently a zeroth-order language, having no mechanisms to introduce functions.  As a stopgap, we have included a notion of ``external functions'' which can be eliminated through application, but have no introduction forms.  These functional definiciencies aside, the language supports both products and sums.
+
+Types in the language are split into two parts: the {\it pretype} and the {\it stage}.  The pretype is just the standard algebraic data type that we all know and love; it indicates {\it what} a term will reduce to.  The stage, currently at the coarse granularity of $\bbone$ and $\bbtwo$, is an indication of {\it when} a term will be fully computed.
+
+The rules relating types and terms are given in Figure \ref{fig:staging}.  The structure of the core typing judgement is entirely standard.  The nullary terms (currently just the unit value) are all explicitly annotated with a stage.  The non-nullary terms essentially preserve the stage of their inputs, except for $\pause$, which transtions an expression from $\bbone$ to $\bbtwo$.  From this, it is apparent that a stage $\bbone$ term cannot depend on any stage $\bbtwo$ terms.  This property can be justified by the notion that the program gets ``more reduced'' as time goes on, and that a term can be no more reduced than those it depends on.
+
+\wstage~has one additional peculiar feature.  The predicate of a case statement can be stage $\bbtwo$ while the branches have subterms with stage $\bbone$.  This implies that some computation in a branch must be performed even before we know which branch to take.  This feature, called {\it speculation}, will be explored more later.
+
+\begin{figure}
+\caption{\wstage~Grammar}
+\label{fig:gram}
+\centering
 \begin{align*}
 \stage &= \bbone~|~\bbtwo \\
-\expr &= f~\expr \\
+\ptype &= \text{unit}~|~\ptype \times \ptype~|~\ptype + \ptype \\
+\type &= \ptype \at \stage \\
+\expr &= \langle\mathit{func}\rangle~\expr \\
 &\gbar ()_{\stage} \\
 &\gbar (\expr, \expr) \\
 &\gbar \pi_1~\expr \\
 &\gbar \pi_2~\expr \\
+&\gbar \iota_1~\expr \\
+&\gbar \iota_2~\expr \\
 &\gbar \letin {\var}{\expr}{\expr} \\
 &\gbar \var \\
+&\gbar {\tt case}~\expr~{\tt of}~\var.\expr~`{\tt |}\text{'}~\var.\expr \\
 &\gbar \pause~\expr \\
+\context &= \cdot \\
+&\gbar \context, \var : \type
 \end{align*}
+\end{figure}
 
-\section{Stage Types}
+\begin{figure}
+\caption{Typing Rules}
+\label{fig:staging}
 \inferenceSpacing
 \begin{gather}
-\infer {\Gamma\vdash ()_\sigma : \sigma}{\cdot} \\
-\infer {\Gamma\vdash f~e : \sigma}{\Gamma\vdash e : \sigma} \\
-\infer {\Gamma\vdash \pi_i~e : \sigma}{\Gamma\vdash e : \sigma} \\
-\infer {\Gamma\vdash (e_1,e_2) : \sigma}{\Gamma\vdash e_1 : \sigma & \Gamma\vdash e_2 : \sigma} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : \sigma_2}{\Gamma\vdash e_1 : \sigma_1 & \Gamma,x:\sigma_1\vdash e_2 : \sigma_2 & \sigma_1 \le \sigma_2} \\
-\infer {\Gamma\vdash x : \sigma}{\Gamma(x) = \sigma} \\
-\infer {\Gamma\vdash \pause~e : \bbtwo}{\Gamma\vdash e : \bbone}
+\infer {\Gamma\vdash ()_\sigma : \text{unit}\at\sigma}{\cdot} \\
+\infer {\Gamma\vdash f~e : B\at\sigma}{\Gamma\vdash e : A\at\sigma & f : A \to B} \\
+\infer {\Gamma\vdash \pi_1~e : A \at \sigma}{\Gamma\vdash e : A\times B \at \sigma} \\
+\infer {\Gamma\vdash \pi_2~e : B \at \sigma}{\Gamma\vdash e : A\times B \at \sigma} \\
+\infer {\Gamma\vdash \iota_1~e : A+B\at\sigma}{\Gamma\vdash e : A\at\sigma} \\
+\infer {\Gamma\vdash \iota_1~e : A+B\at\sigma}{\Gamma\vdash e : B\at\sigma} \\
+\infer {\Gamma\vdash (e_1,e_2) : A\times B \at \sigma}{\Gamma\vdash e_1 : A \at \sigma & \Gamma\vdash e_2 : B \at \sigma} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbone}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash e_2 : \bbone} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash e_2 : \bbtwo} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbtwo & \Gamma,x:A \at \bbtwo \vdash e_2 : \bbtwo} \\
+\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbone}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbone & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbone} \\
+\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbtwo} \\
+\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbtwo & \Gamma,x_2:A\at\bbtwo \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbtwo \vdash e_3 : C\at\bbtwo} \\
+\infer {\Gamma\vdash x : A\at\sigma}{x : A\at\sigma \in \Gamma} \\
+\infer {\Gamma\vdash \pause~e : A\at\bbtwo}{\Gamma\vdash e : A\at\bbone}
 \end{gather}
+\end{figure}
 
-\section{Stage Splitting}
-\subsection {Single Stage Conversion}
-\subsection {Multiple Stage Splitting}
+\subsection{Evaluation}
+This section is not complete.  Were it complete, it would contain a definition of values (which we predict to be unchanged by the staging system), and a big-step sematics relating terms to values.  The big-step evaluation should be indexed by the stage at which it completes.  That is, we have both $\Downarrow_\bbone$ and $\Downarrow_\bbtwo$.  Also, the bigstep semantics will reflect that speculation occurs down both branches of a case as part of  $\Downarrow_\bbone$ reduction.
+
+\subsection{Stage Splitting}
+
+The core operation of interest is the process of ``stage splitting," wherein a term with stage $\bbtwo$ is converted to a precomputed part, and a residual that depends on that precomputed part.  Specifically, we introduce a judgement ``$\Gamma \vdash e \splits [p,x.r]$'', which can be read ``under the context $\Gamma$, $e$ stage-splits into a precomputation $p$, and a residual $r$ which is open on $x$''.  The idea is that $p$ contains the parts of $e$ that are stage $\bbone$, $r$ contains the parts of $e$ that are stage $\bbtwo$, and the reduced value of $p$ is bound to $x$ when evaluating $r$. 
+
+Note that the precomputation and residual are not actually terms in \wstage.  They are actually terms in a simpler language, called \wostage, which is essentially \wstage~without the staging constructs.  The grammar for \wostage~is shown in Figure \ref{fig:gram2}.  The typing rules are not shown, but can be guessed.
+
+The full rules for splitting are shown in Figure \ref{fig:splitting}.
+
+\begin{figure}
+\caption{\wstage~Grammar}
+\label{fig:gram2}
+\centering
+\begin{align*}
+\stage &= \bbone~|~\bbtwo \\
+\ptype &= \text{unit}~|~\ptype \times \ptype~|~\ptype + \ptype \\
+\type &= \ptype \at \stage \\
+\expr &= \langle\mathit{func}\rangle~\expr \\
+&\gbar ()_{\stage} \\
+&\gbar (\expr, \expr) \\
+&\gbar \pi_1~\expr \\
+&\gbar \pi_2~\expr \\
+&\gbar \iota_1~\expr \\
+&\gbar \iota_2~\expr \\
+&\gbar \letin {\var}{\expr}{\expr} \\
+&\gbar \var \\
+&\gbar {\tt case}~\expr~{\tt of}~\var.\expr~`{\tt |}\text{'}~\var.\expr \\
+&\gbar \pause~\expr \\
+\context &= \cdot \\
+&\gbar \context, \var : \type
+\end{align*}
+\end{figure}
+
+\begin{figure*}
+\caption{Term Splitting}
+\label{fig:splitting}
+\inferenceSpacing
 \begin{gather}
-\infer {\Gamma \vdash ()_\bbone \splits [(),x.x]}{\cdot} \\
 \infer {\Gamma \vdash ()_\bbtwo \splits [(),\_.()]}{\cdot} \\
+\infer {\Gamma\vdash x \splits [(),\_.x]}{\Gamma(x) = \bbtwo}\\
 \infer {\Gamma \vdash f~e \splits [p,x.f~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash \pi_i~e \splits [p,x.\pi_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
+\infer {\Gamma \vdash \iota_i~e \splits [p,x.\iota_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash (e_1,e_2) \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1},\letin{x_2}{\pi_2~l}{r_2})]}{\Gamma \vdash e_1 \splits [p_1,x_1,r_1] & \Gamma \vdash e_2 \splits [p_2,x_2,r_2]} \\
 \infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \Rightarrow e_1' & \Gamma, x:\bbone \vdash e_2 \splits [p_2,y_2.r_2]} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
-\infer {\Gamma\vdash x \splits [(),\_.x]}{\Gamma(x) = \bbtwo}
+\infer { \Gamma\vdash \letin {x}{e_1}{e_2}  \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
+\infer 
+	{\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} \splits \left[\left(\tallcase {e_1'}{x_2.\iota_1~p_2}{x_3.\iota_2~p_3}\right), l.\caseof{l}{y_2.r_2}{y_3.r_3}\right]}
+	{\Gamma\vdash e_1 \Rightarrow e_1' 
+	& \Gamma,x_2:\bbone \vdash e_2 \splits [p_2,y_2,r_2] 
+	& \Gamma,x_3:\bbone \vdash e_3 \splits [p_3,y_3,r_3]} \\
+\infer 
+	{\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} \splits \left[(p_1,(p_2,p_3)), l.
+		\left(\tallcase{(\letin {y_1}{\pi_1 l}{r_1})}{x_2.\letin {y_2}{\pi_1\pi_2 l}{r_2}} {x_3.\letin {y_3}{\pi_2\pi_2 l}{r_3}} \right)
+	\right] }
+	{ \Gamma \vdash e_1 \splits [p_1,y_1,r_1]
+	& \Gamma,x_2:\bbtwo \vdash e_2 \splits [p_2,y_2,r_2] 
+	& \Gamma,x_3:\bbtwo \vdash e_3 \splits [p_3,y_3,r_3]} 
 \end{gather}
+\end{figure*}
+
+\subsection{Implementation}
+
+I have an implementation of stage-splitting in SML.  Currently, the code only keeps track of stage, and not the pre-type.
+
+[Add results.]
+
+\section{Related Work}
+\label{sec:lit}
+
+\section{Paths For Extension}
+\label{sec:ext}
+\subsection {Functions}
+This language will obviously need functions (aside from the currect ``external functions" stopgap).  I'm confident that we could add a second-class function system on top of this, and everything would go well.  That said, it would be much more interesting to add true first-class functions.  Either way, a required feature of these functions would be the ability to cross stage boundaries.  For instance, we'd probably see functions types like ``$(A\at\bbone\to B\at\bbtwo)\at\bbone$''.
+\subsection {Split-Phase Sums and Products}
+With functions added, we'd certainly want to support functions with multiple arguments at different phase.  The type of this might look like ``$(A\at\bbone \times B\at \bbtwo \to C\at\bbtwo)$''.  But this is unsettling, since under our current rules the domain ``$A\at\bbone \times B\at \bbtwo$'' isn't even allowed!  There are two possible solutions here.  The more hackish route would be to define the domain of a function as a list of arguments, each with its own phase.  The principled route would be to give meaning to all split-phase products, wherever they appear.  If we chose to support first-class functions and true split-phase products, then a good measure of success would be the definability of the {\tt curry} and {\tt uncurry} functions for any phase combination. Hopefully, split-phase sums wouldn't be much harder that such products.  
+\subsection {N-Ary Staging}
+Another goal, which seems orthogonal to those above, would be to allow any number of stages (rather than the current 2) such that the $\pause$ operator increments the stage of its argument by 1.  In this case, the current splitting operation would become part of the inductive step of a multi-stage split.  
+\subsection {Stage Polymorphism}
+Finally, it seems that we'd want the ability to abstract over stage.  In the 2-level language, it probably doesn't make sense to define both ``${\it fsum1} :  {\tt float \at \bbone \times float \at \bbone \to float \at \bbone}$'' and ``${\it fsum2} :  {\tt float} \at \bbtwo \times {\tt float} \at \bbtwo \to {\tt float} \at \bbtwo$''.  Perhaps's we'd want something like  ``${\it fsum} :  \forall n.{\tt float} \at n \times {\tt float} \at n \to {\tt float} \at n$''.  It's also possible that we really want just the {\it fsum1} definition, and function application will ``lift'' up to later stages as appropriate.
 
 \end{document}
