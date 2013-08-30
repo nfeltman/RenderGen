@@ -28,7 +28,8 @@
 \newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
 
 % transitions
-\newcommand {\splits} {\rightsquigarrow}
+\newcommand {\translates} {\overset{\bbone}\rightsquigarrow}
+\newcommand {\splits} {\overset{\bbtwo}\rightsquigarrow}
 
 % Equation spacing
 \newcommand {\inferenceSpacing}{\setlength{\jot}{1.8ex}}
@@ -71,10 +72,8 @@ The rules relating types and terms are given in Figure \ref{fig:staging}.  The s
 \expr &= \langle\mathit{func}\rangle~\expr \\
 &\gbar ()_{\stage} \\
 &\gbar (\expr, \expr) \\
-&\gbar \pi_1~\expr \\
-&\gbar \pi_2~\expr \\
-&\gbar \iota_1~\expr \\
-&\gbar \iota_2~\expr \\
+&\gbar \pi_1~\expr \gbar \pi_2~\expr \\
+&\gbar \iota_1~\expr \gbar \iota_2~\expr \\
 &\gbar \letin {\var}{\expr}{\expr} \\
 &\gbar \var \\
 &\gbar {\tt case}~\expr~{\tt of}~\var.\expr~`{\tt |}\text{'}~\var.\expr \\
@@ -94,11 +93,11 @@ The rules relating types and terms are given in Figure \ref{fig:staging}.  The s
 \infer {\Gamma\vdash \pi_1~e : A \at \sigma}{\Gamma\vdash e : A\times B \at \sigma} \\
 \infer {\Gamma\vdash \pi_2~e : B \at \sigma}{\Gamma\vdash e : A\times B \at \sigma} \\
 \infer {\Gamma\vdash \iota_1~e : A+B\at\sigma}{\Gamma\vdash e : A\at\sigma} \\
-\infer {\Gamma\vdash \iota_1~e : A+B\at\sigma}{\Gamma\vdash e : B\at\sigma} \\
+\infer {\Gamma\vdash \iota_2~e : A+B\at\sigma}{\Gamma\vdash e : B\at\sigma} \\
 \infer {\Gamma\vdash (e_1,e_2) : A\times B \at \sigma}{\Gamma\vdash e_1 : A \at \sigma & \Gamma\vdash e_2 : B \at \sigma} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbone}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash e_2 : \bbone} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash e_2 : \bbtwo} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbtwo & \Gamma,x:A \at \bbtwo \vdash e_2 : \bbtwo} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbone}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash B\at e_2 : \bbone} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash B\at e_2 : \bbtwo} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbtwo & \Gamma,x:A \at \bbtwo \vdash B\at e_2 : \bbtwo} \\
 \infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbone}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbone & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbone} \\
 \infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbtwo} \\
 \infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbtwo & \Gamma,x_2:A\at\bbtwo \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbtwo \vdash e_3 : C\at\bbtwo} \\
@@ -114,33 +113,47 @@ This section is not complete.  Were it complete, it would contain a definition o
 
 The core operation of interest is the process of ``stage splitting," wherein a term with stage $\bbtwo$ is converted to a precomputed part, and a residual that depends on that precomputed part.  Specifically, we introduce a judgement ``$\Gamma \vdash e \splits [p,x.r]$'', which can be read ``under the context $\Gamma$, $e$ stage-splits into a precomputation $p$, and a residual $r$ which is open on $x$''.  The idea is that $p$ contains the parts of $e$ that are stage $\bbone$, $r$ contains the parts of $e$ that are stage $\bbtwo$, and the reduced value of $p$ is bound to $x$ when evaluating $r$. 
 
-Note that the precomputation and residual are not actually terms in \wstage.  They are actually terms in a simpler language, called \wostage, which is essentially \wstage~without the staging constructs.  The grammar for \wostage~is shown in Figure \ref{fig:gram2}.  The typing rules are not shown, but can be guessed.
-
-The full rules for splitting are shown in Figure \ref{fig:splitting}.
+Note that the precomputation and residual are not actually terms in \wstage.  They are terms in a simpler language, called \wostage, which is essentially \wstage~without the staging constructs.  The grammar for \wostage~is shown in Figure \ref{fig:gram2}.  The typing rules for \wostage~are not shown, but can be guessed.
 
 \begin{figure}
-\caption{\wstage~Grammar}
+\caption{\wostage~Grammar}
 \label{fig:gram2}
 \centering
 \begin{align*}
-\stage &= \bbone~|~\bbtwo \\
-\ptype &= \text{unit}~|~\ptype \times \ptype~|~\ptype + \ptype \\
-\type &= \ptype \at \stage \\
+\type &= \text{unit}~|~\type \times \type~|~\type + \type \\
 \expr &= \langle\mathit{func}\rangle~\expr \\
-&\gbar ()_{\stage} \\
+&\gbar () \\
 &\gbar (\expr, \expr) \\
-&\gbar \pi_1~\expr \\
-&\gbar \pi_2~\expr \\
-&\gbar \iota_1~\expr \\
-&\gbar \iota_2~\expr \\
+&\gbar \pi_1~\expr 
+\gbar \pi_2~\expr \\
+&\gbar \iota_1~\expr 
+\gbar \iota_2~\expr \\
 &\gbar \letin {\var}{\expr}{\expr} \\
 &\gbar \var \\
 &\gbar {\tt case}~\expr~{\tt of}~\var.\expr~`{\tt |}\text{'}~\var.\expr \\
-&\gbar \pause~\expr \\
 \context &= \cdot \\
 &\gbar \context, \var : \type
 \end{align*}
 \end{figure}
+
+The full rules for splitting are shown in Figure \ref{fig:splitting}.  In two of the rules, I reference another judgement, of the form ``$\Gamma \vdash e \translates e'$''.  This means that the one-stage \wstage~term $e$ simply translates to a \wostage~term $e'$.  There are no surprises in how this works, so the details are omitted.
+
+Even without a semantics done, we can think of two theorems that should hold true of stage splitting.  Namely, that good types in lead to good types out.  Explicitly:
+
+\begin{center}
+\begin{tabular}{lll}
+If $\Gamma \vdash e:\tau \at \bbone$ &~~~~~~~~~~~~~~ & If $\Gamma \vdash e:\tau \at \bbtwo$ \\
+then $\Gamma \vdash e \translates e'$ && then $\Gamma \vdash e \splits [p,x.r]$ \\
+and $\Gamma \vdash e':\tau$ && and $\Gamma_\bbone \vdash p:\tau'$\\
+ && and $\Gamma_\bbtwo, x:\tau' \vdash r:\tau$
+\end{tabular}
+\end{center}
+Note that I'm implicitly abusing the identical structures of pretypes in \wstage~and types in \wostage.  Also, for any stage $\sigma$, we define $\Gamma_\sigma$ as,
+\begin{align}
+(\cdot)_\sigma &= \cdot \\
+(\Gamma,x:\tau\at\sigma)_\sigma &= \Gamma_\sigma, \tau \\
+(\Gamma,x:\tau\at\sigma')_\sigma &= \Gamma_\sigma &\text{where } \sigma \not= \sigma'
+\end{align}
 
 \begin{figure*}
 \caption{Term Splitting}
@@ -153,11 +166,11 @@ The full rules for splitting are shown in Figure \ref{fig:splitting}.
 \infer {\Gamma \vdash \pi_i~e \splits [p,x.\pi_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash \iota_i~e \splits [p,x.\iota_i~r]}{\Gamma \vdash e \splits [p,x.r]} \\
 \infer {\Gamma \vdash (e_1,e_2) \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1},\letin{x_2}{\pi_2~l}{r_2})]}{\Gamma \vdash e_1 \splits [p_1,x_1,r_1] & \Gamma \vdash e_2 \splits [p_2,x_2,r_2]} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \Rightarrow e_1' & \Gamma, x:\bbone \vdash e_2 \splits [p_2,y_2.r_2]} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \translates e_1' & \Gamma, x:\bbone \vdash e_2 \splits [p_2,y_2.r_2]} \\
 \infer { \Gamma\vdash \letin {x}{e_1}{e_2}  \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
 \infer 
 	{\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} \splits \left[\left(\tallcase {e_1'}{x_2.\iota_1~p_2}{x_3.\iota_2~p_3}\right), l.\caseof{l}{y_2.r_2}{y_3.r_3}\right]}
-	{\Gamma\vdash e_1 \Rightarrow e_1' 
+	{\Gamma\vdash e_1 \translates e_1' 
 	& \Gamma,x_2:\bbone \vdash e_2 \splits [p_2,y_2,r_2] 
 	& \Gamma,x_3:\bbone \vdash e_3 \splits [p_3,y_3,r_3]} \\
 \infer 
@@ -178,13 +191,34 @@ I have an implementation of stage-splitting in SML.  Currently, the code only ke
 
 \section{Related Work}
 \label{sec:lit}
+\subsection{Partial Evaluation}
+One can immediately see a connection between this work and partial evaluation. Both involve the idea of specializing a piece of code to some of it's inputs, leaving a residual that depends only on the remaining inputs.  But stage splitting is actually only part of partial evaluation.  At it's core, stage splitting is ``factor out the first stage, reduce it to a value, and express the second stage abstractly over that value," whereas partial evaluation is ``factor out the first stage, reduce it to a value, and specialize the code of the second stage to that value."  Expressed equationally,
+\begin{center}
+\begin{tabular}{rll}
+{\bf Partial Evaluation}:& $p(f,a)=f_a$ &s.t. $f_a(b) = f(a,b)$ \\
+{\bf Stage Splitting}:& $s(f)=(f_1,f_2)$ &s.t. $f_2(f_1(a),b) = f(a,b)$
+\end{tabular}
+\end{center}
+Immediately, we note that stage splitting has broader application than partial evaluation, since the latter requires that $p$ (specifically, some code-specializing apparatus) and $a$ be available at the same time.  If this requirement is satisfied, then we can compare apples to apples by creating a partial evaluator out of a stage splitter:
+	\[f_a = (\letin {x}{f_1(a)}{\lambda b.f_2(x,b)})\]
+From this view, we see that partial evaluators are more powerful because they can avoid memeory loads, prune unused branches, and even duplicate recursive code for further specialization.  These are largely free wins, except for the recursive code generation, which might have large space costs.
+
+\subsection{Temporal Logic}
+
+There are two papers (called ``circle'' and ``square'') by Rowan Davies which give a justification for binding time analysis in modal logics.  Those papers feel stylistically similar to this work.  Circle, in addition to its other contributions, gives a particularly good account of the difference between its style (which we use), and the rest of the literature. 
+
+There's an important question that our work will need to answer about the difference between the logic that our type system induces and those of Davies.  In particular, what does it mean that our language has no {\tt prev} operator?
+
+\subsection{Speculation}
+
+I can find nothing in the literature that looks like our speculation.  That's probably because speculation is unsafe (especially around side effects), and so it would be a terrible idea in a system without lots of programmer direction.
 
 \section{Paths For Extension}
 \label{sec:ext}
 \subsection {Functions}
 This language will obviously need functions (aside from the currect ``external functions" stopgap).  I'm confident that we could add a second-class function system on top of this, and everything would go well.  That said, it would be much more interesting to add true first-class functions.  Either way, a required feature of these functions would be the ability to cross stage boundaries.  For instance, we'd probably see functions types like ``$(A\at\bbone\to B\at\bbtwo)\at\bbone$''.
 \subsection {Split-Phase Sums and Products}
-With functions added, we'd certainly want to support functions with multiple arguments at different phase.  The type of this might look like ``$(A\at\bbone \times B\at \bbtwo \to C\at\bbtwo)$''.  But this is unsettling, since under our current rules the domain ``$A\at\bbone \times B\at \bbtwo$'' isn't even allowed!  There are two possible solutions here.  The more hackish route would be to define the domain of a function as a list of arguments, each with its own phase.  The principled route would be to give meaning to all split-phase products, wherever they appear.  If we chose to support first-class functions and true split-phase products, then a good measure of success would be the definability of the {\tt curry} and {\tt uncurry} functions for any phase combination. Hopefully, split-phase sums wouldn't be much harder that such products.  
+With functions added, we'd certainly want to support functions with multiple arguments at different phase.  The type of this might look like ``$(A\at\bbone \times B\at \bbtwo \to C\at\bbtwo)$''.  But this is unsettling, since under our current rules the domain ``$A\at\bbone \times B\at \bbtwo$'' isn't even allowed!  There are two possible solutions here.  The more hackish route would be to define the domain of a function as a list of arguments, each with its own phase.  The principled route would be to give meaning to all split-phase products, wherever they appear.  If we chose to support first-class functions and true split-phase products, then a good measure of success would be the definability of the {\tt curry} and {\tt uncurry} functions for any phase combination. Hopefully, split-phase sums wouldn't be much harder than such products.  
 \subsection {N-Ary Staging}
 Another goal, which seems orthogonal to those above, would be to allow any number of stages (rather than the current 2) such that the $\pause$ operator increments the stage of its argument by 1.  In this case, the current splitting operation would become part of the inductive step of a multi-stage split.  
 \subsection {Stage Polymorphism}
