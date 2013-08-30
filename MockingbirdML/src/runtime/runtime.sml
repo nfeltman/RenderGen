@@ -13,11 +13,21 @@ structure Runtime = struct
 	type fragEntity = (real Depth.depthed) keyBag
 	*)
 	
-	open MbArray
-	
+	(* Arrays *)
+	type 'a arr = ('a option) MbArray.arr
 	type 'a dynArray = int * 'a arr
-	type Hit = (real * real) Depth.depthed
+	fun sub x = valOf (MbArray.sub x)
+	fun first x = valOf (MbArray.first x)
+	val offset = MbArray.offset
+	fun partition f = MbArray.partition (f o valOf)
+	fun alloc (x, z) = MbArray.alloc (x, SOME z)
+	fun tabulate (x, f) = MbArray.tabulate (x, SOME o f)
+	fun fromList l = MbArray.fromList (map SOME l)	
+	fun setElem (a,i,x) = MbArray.setElem (a,i, SOME x)
+	fun fold a n f = MbArray.fold a n (fn (x,y) => f (valOf x, y))
+	fun allocHits n = (n, MbArray.tabulate (n, fn _ => NONE))
 	
+	(* Bounds *)
 	fun findBounds n t = 
 		if n < 1 then raise RuntimeTypeError
 		else if n = 1 then Box3.boundTri (first t) 
@@ -48,35 +58,24 @@ structure Runtime = struct
 				val a2 = offset (a,n1)
 				val n2 = n - n1
 				
-				(*
-				val _ = (print "mins = "; print (Vec3.toString (x1,y1,z1)); print "\n")
-				val _ = (print "maxs = "; print (Vec3.toString (x2,y2,z2)); print "\n")
-				val _ = (print "lens = "; print (Vec3.toString lens); print "\n")
-				val _ = (print "cens = "; print (Vec3.toString mid); print "\n")
-				val _ = (print "c1 = "; print (Vec3.toString (Tri3.centroid (sub (a,0)))); print "\n")
-				val _ = (print "c2 = "; print (Vec3.toString (Tri3.centroid (sub (a,1)))); print "\n")
-				val _ = (print "c3 = "; print (Vec3.toString (Tri3.centroid (sub (a,2)))); print "\n")
-				val _ = (print "n = "; print (Int.toString n); print "; ")
-				val _ = (print "n1 = "; print (Int.toString n1); print "; ")
-				val _ = (print "n2 = "; print (Int.toString n2); print "\n\n") *)
-				
 				val _ = if n1 = 0 orelse n2 = 0 then raise RuntimeTypeError else ()
 			in
 				(((n1,a), findBounds n1 a),((n2,a2), findBounds n2 a2))
 			end
 	
 	(* Primitive Ops *)
+	type box = Box3.NE_SL.t
 	fun isect (g,s) = Tri3.intersectRay g s
-	fun isectBoxRay (b : Box3.NE_SL.t , r : Vec3.ray3) = 
+	fun isectBoxRay (b : box, r : Vec3.ray3) = 
 			case Box3.isect b r of
 			  Interval.NonEmpty _ => true
 			| Interval.Empty => false
 	
 	(* Hits *)
+	type Hit = (real * real) Depth.depthed
 	val bottomHit : Hit = Depth.Infty
-	fun allocHits n = (n, tabulate (n, fn _ => (bottomHit)))
 	fun closer (h1,h2) = Depth.min h1 h2
-	fun unionHits ((size1,hArr1: Hit arr),(size2,hArr2: Hit arr)) : Hit dynArray = 
+	fun unionHits ((size1,hArr1),(size2,hArr2)) : Hit dynArray = 
 		let
 			fun incr a = offset (a,1)
 			fun setRest m 0 _ = m

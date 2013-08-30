@@ -7,7 +7,7 @@ testrange = [
 #(2,10),
 #(3,50),
 #(5,30),
-(6,20),
+(6,150),
 ]
 
 print "COMPILING ALL RENDERERS"

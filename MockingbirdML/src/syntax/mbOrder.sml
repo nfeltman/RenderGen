@@ -19,13 +19,13 @@ struct
 					| DsizeCase of int * decG * decG
 					| Dbound of decG
 					| Dlayer of primDecompG * decG
-					| Dfix of label * domainType * decG
+					| Dfix of label * (label * domainType) * decG
 					| Dvar of label
 
 	datatype expr	= Echain of expr * expr
 					| Emmr of caseDomain * expr
 					| EsizeCase of caseDomain * int * expr * expr
-					| ErememberCase of expr * expr
+					| ErememberCaseG of expr * expr
 					| Etest of expr
 					| EfiltS of expr
 					| EbreakG of domainType * decG

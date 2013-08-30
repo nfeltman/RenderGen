@@ -5,7 +5,7 @@ struct
 
 exception InvariantException
 open Runtime
-
+(*
 fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : (Vec3.ray3) dynArray) : (Hit dynArray) = 
 	let
 		open MbArray
@@ -30,5 +30,5 @@ fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : (Vec3.
 		trace ((numTris,tris), findBounds numTris tris) (numrays, raysInit);
 		(numrays, res)
 	end
-
+*)
 end

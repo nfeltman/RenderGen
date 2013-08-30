@@ -9,7 +9,7 @@ open Runtime
 datatype openNode	= BvhBranch of closedNode * closedNode
 					| BvhLeaf of Tri3.triangle
 withtype closedNode	= Box3.neBound * openNode
-
+(*
 fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : Vec3.ray3 dynArray) : (Hit dynArray) = 
 	let
 		fun build ((n,g),box) = 
@@ -40,5 +40,5 @@ fun render ((numTris, tris) : (Tri3.triangle) dynArray, (numrays, rays) : Vec3.r
 	in
 		(numrays, MbArray.tabulate (numrays, fn i => traverseOpen bvh (MbArray.sub (rays,i))))
 	end
-
+*)
 end

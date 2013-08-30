@@ -51,7 +51,7 @@ struct
 						let 
 							val newLabel = Variable.addSuffix l "_type"
 						in 
-							sameD (Tfix (newLabel, chD d ((l,newLabel)::g))) t (BadType "decompFix")
+							sameD (Tfix (newLabel, chD d ((l,newLabel)::g))) (Tfix t) (BadType "decompFix")
 						end
                     | Dvar l => Tvar (findLabel l g)
 				
@@ -73,7 +73,7 @@ struct
 							case (chE e1 g, chE e2 g) of 
 							  (t1 as (GeoSamps _, _), t2 as (GeoSamps _, _)) => sameT t1 t2 (BadType "sizeCase")
 							| _ => raise (BadType "sizeCase"))
-                    | ErememberCase (e1, e2) => (
+                    | ErememberCaseG (e1, e2) => (
 							case (chE e1 g, chE e2 g) of 
 							  ((GeoSamps (t1,u1), v1), (GeoSamps (t2,u2), v2)) => 
 									(GeoSamps (Tsum (t1,t2), sameD u1 u2 (BadType "rememberCase")), sameS v1 v2 (BadType "rememberCase"))
