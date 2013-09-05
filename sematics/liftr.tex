@@ -95,19 +95,43 @@ The rules relating types and terms are given in Figure \ref{fig:staging}.  The s
 \infer {\Gamma\vdash \iota_1~e : A+B\at\sigma}{\Gamma\vdash e : A\at\sigma} \\
 \infer {\Gamma\vdash \iota_2~e : A+B\at\sigma}{\Gamma\vdash e : B\at\sigma} \\
 \infer {\Gamma\vdash (e_1,e_2) : A\times B \at \sigma}{\Gamma\vdash e_1 : A \at \sigma & \Gamma\vdash e_2 : B \at \sigma} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbone}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash B\at e_2 : \bbone} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash B\at e_2 : \bbtwo} \\
-\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbtwo & \Gamma,x:A \at \bbtwo \vdash B\at e_2 : \bbtwo} \\
-\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbone}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbone & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbone} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \sigma}{\Gamma\vdash e_1 : A \at \sigma & \Gamma,x:A \at \sigma \vdash B : e_2 \at \sigma} \\
+\infer {\Gamma\vdash \letin {x}{e_1}{e_2} : B \at \bbtwo}{\Gamma\vdash e_1 : A \at \bbone & \Gamma,x:A \at \bbone \vdash B : e_2 \at \bbtwo} \\
+\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\sigma}{\Gamma\vdash e_1 : A+B\at\sigma & \Gamma,x_2:A\at\sigma \vdash e_2 : C\at\sigma & \Gamma,x_3:B\at\sigma \vdash e_3 : C\at\sigma} \\
 \infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbone & \Gamma,x_2:A\at\bbone \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbone \vdash e_3 : C\at\bbtwo} \\
-\infer {\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\at\bbtwo}{\Gamma\vdash e_1 : A+B\at\bbtwo & \Gamma,x_2:A\at\bbtwo \vdash e_2 : C\at\bbtwo & \Gamma,x_3:B\at\bbtwo \vdash e_3 : C\at\bbtwo} \\
 \infer {\Gamma\vdash x : A\at\sigma}{x : A\at\sigma \in \Gamma} \\
 \infer {\Gamma\vdash \pause~e : A\at\bbtwo}{\Gamma\vdash e : A\at\bbone}
 \end{gather}
 \end{figure}
 
 \subsection{Evaluation}
-This section is not complete.  Were it complete, it would contain a definition of values (which we predict to be unchanged by the staging system), and a big-step sematics relating terms to values.  The big-step evaluation should be indexed by the stage at which it completes.  That is, we have both $\Downarrow_\bbone$ and $\Downarrow_\bbtwo$.  Also, the bigstep semantics will reflect that speculation occurs down both branches of a case as part of  $\Downarrow_\bbone$ reduction.
+The evaluation is given in Figure \ref{fig:eval}.  Were it complete, it would contain a definition of values (which we predict to be unchanged by the staging system), and a big-step sematics relating terms to values.  The big-step evaluation should be indexed by the stage at which it completes.  That is, we have both $\Downarrow_\bbone$ and $\Downarrow_\bbtwo$.  Also, the bigstep semantics will reflect that speculation occurs down both branches of a case as part of  $\Downarrow_\bbone$ reduction.
+
+\newcommand {\downsig} {\Downarrow_\sigma} 
+\newcommand {\downone} {\Downarrow_\bbone} 
+\newcommand {\downtwo} {\Downarrow_\bbtwo} 
+\newcommand {\downp} {\Downarrow_p} 
+\begin{figure}
+\caption{Typing Rules}
+\label{fig:eval}
+\inferenceSpacing
+\begin{gather}
+\infer {()_\sigma \downsig ()}{\cdot} \\
+\infer {f~e \downsig v' }{e \downsig v & f~v \Downarrow v'} \\
+\infer {\pi_1~e \downsig v_1 }{e \downsig (v_1, v_2)} \\
+\infer {\pi_2~e \downsig v_2 }{e \downsig (v_1, v_2)} \\
+\infer {\iota_1~e \downsig \iota_1~v}{e \downsig v} \\
+\infer {\iota_2~e \downsig \iota_2~v}{e \downsig v} \\
+\infer { (e_1,e_2) \downsig (v_1, v_2)}{e_1 \downsig v_1 & e_2 \downsig v_2} \\
+\infer {\letin {x}{e_1}{e_2} \downsig v_2}{e_1 \downsig v_1 & [v'/x] e_2 \downsig v_2} \\
+\infer {\letin {x}{e_1}{e_2} \downp v_2}{e_1 \downone v_1 & [v'/x] e_2 \downp v_2} \\
+\infer {\letin {x}{e_1}{e_2} \downp \letin {x}{v_1}{v_2}}{e_1 \downp v_1 & e_2 \downp v_2} \\
+\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downsig v}{e \downsig (\iota_i~v) & [v/x_i]e_i \downsig v} \\
+\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downp v}{e \downone (\iota_i~v) & [v/x_i]e_i \downp v} \\
+\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downp \caseof {v}{x_1.v_1}{x_2.v_2}}{e \downp v & e_1 \downp v_1 & e_2 \downp v_2} \\
+\infer {\pause~e \downtwo }{e : A\at\bbone}
+\end{gather}
+\end{figure}
 
 \subsection{Stage Splitting}
 
