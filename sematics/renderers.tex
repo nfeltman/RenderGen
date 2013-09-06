@@ -397,10 +397,27 @@ And the bvh-accelerated raytracer:
 
 \section{Splitting}
 \begin{gather}
-\infer {e \rightsquigarrow [e,x.x]}{\cdot} \\
+% @ sign
+\infer {@e \rightsquigarrow [e, x.x]}{e \text{ has no @}} \\
+% variable
+\infer {v \rightsquigarrow [(), \_.v]}{\cdot} \\
+% constant
+\infer {c \rightsquigarrow [(), \_.c]}{c \text{ is a constant}} \\
+% tuple
 \infer {(e_1,e_2) \rightsquigarrow [(p_1,p_2),x.\mathtt{let}~(x_1,x_2)=x~\mathtt{in}~(r_1,r_2)]}{e_1 \rightsquigarrow [p_1,x_1.r_1] & e_2 \rightsquigarrow [p_2,x_2.r_2]} \\
+% case without @
+\infer {
+\begin{array}{r}
+\mathtt{case}~e_1~\mathtt{of}~v_2=>e_2~|~v_3=>e_3 \rightsquigarrow  [(\mathtt{case}~e_1~\mathtt{of}~v_2=>injL~p_2~|~v_3=>injR~p_3), \\ x.(\mathtt{case}~x~\mathtt{of}~x_2=>r_2~|~x_3=>r_3)]\end{array}
+}{e_1 \text{ has no @} & e_2 \rightsquigarrow [p_2,x_2.r_2] & e_3 \rightsquigarrow [p_3,x_3.r_3]} \\
+% case with one @
+\infer {
+\mathtt{case}~e_1~\mathtt{of}~@=>e_2~|~v_3=>e_3 \rightsquigarrow  [p_2,
+x_2.(\mathtt{case}~e_1~\mathtt{of}~\_=>r_2~|~v_3=>e_3)] 
+}{e_1 \text{ has no @} & e_2 \rightsquigarrow [p_2,x_2.r_2]} \\
+% function app
 \infer {f~e \rightsquigarrow [p,x.f~r]}{e \rightsquigarrow [p,x.r]} \\
-\infer {\mathtt{case}~e_1~\mathtt{of}~v_2=>e_2~|~v_3=>e_3 \rightsquigarrow [(\mathtt{case}~e_1~\mathtt{of}~v_2=>p_2~|~v_3=>p_3), x.(\mathtt{case}~x~\mathtt{of}~x_2=>r_2~|~x_3=>r_3)]}{e_2 \rightsquigarrow [p_2,x_2.r_2] & e_3 \rightsquigarrow [p_3,x_3.r_3]} \\
+% function def
 \infer {\mathtt{eval}~f~x=e~\mathtt{with}~e_2 \rightsquigarrow [\mathtt{eval}~f_2~x=e~\mathtt{with}~e_2, x.]}{e \rightsquigarrow [p,x.r]} 
 \end{gather}
 
