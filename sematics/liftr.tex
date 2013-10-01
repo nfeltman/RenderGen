@@ -3,6 +3,7 @@
 \usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
+\usepackage{mathpartir}
 \usepackage{amssymb,amsthm}
 \usepackage[margin=1in,nohead]{geometry}
 \parindent 0pt
@@ -189,24 +190,41 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 \end{align}
 
 \begin{figure*}
-\caption{Term Splitting}
+\caption{Basic Splitting}
 \label{fig:splitting}
 \inferenceSpacing
-%\begin{gather}
-%\infer {\gdt x : A\splits [(),\_.x]}{x : A^\bbtwo \in \Gamma} \\
-%\infer {\gdt (\lambda x:A.e) : A \to B \splits [p,l.\lambda x:A.r]}{\Gamma,x:A^\bbtwo \vdash e : B \splits [p,l.r]} \\
-%\infer {\gdt e_1~e_2 : B \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2})]}
-%	{\gdt e_1 : A \to B \splits [p_1,l_1.r_1] 
-%	& \gdt e_2 : A \splits [p_2,l_2.r_2]} \\
-%\infer {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \\
-%\infer {\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
-%	{ \gdt e_1 : A \splits [p_1,l_1.r_1] 
-%	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \\
-%\infer {\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \\
-%\infer {\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} \\
-%\infer {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \\
-%\infer {\gdt \pause~e : A \splits [e,l.l]}{\gdo e : A& A \text{~transferable}} 
-%\end{gather}
+\begin{gather}
+\infer {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \\
+\infer {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \\
+\infer {\gdt \pause~e : A \splits [e,l.l]}{\gdo e : A& A \text{~transferable}} 
+\end{gather}
+\end{figure*}
+
+
+\begin{figure*}
+\caption{Product Splitting}
+\label{fig:splitting}
+\inferenceSpacing
+\begin{gather}
+\infer {\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \\
+\infer {\gdo (e_1,e_2) : A\times B \splito [((\pi_1 c, \pi_1 c),(\pi_2 c_1, \pi_2 c_2)), l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})] }
+	{ \gdo e_1 : A \splito [c_1,l_1.r_1] 
+	&\gdo e_2 : B \splito [c_2,l_2.r_2]} \\
+\infer {\gdo \pi_1~e : A \splito [(\pi_1~p),l.\pi_1~r] }{\gdo e : A\times B \splito [c,l.r] } \\
+\infer {\gdo \pi_2~e : B \splito [\pi_2~p,l.\pi_2~r] }{\gdo e : A\times B \splito [c,l.r]} \\
+\infer {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \\
+\infer {\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
+	{ \gdt e_1 : A \splits [p_1,l_1.r_1] 
+	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \\
+\infer {\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \\
+\infer {\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} 
+\end{gather}
+\end{figure*}
+
+\begin{figure*}
+\caption{Function Splitting}
+\label{fig:splitting}
+\inferenceSpacing
 \begin{gather}
 \infer {\gdo x : A\splito [(x,()),\_.x]}{x : A^\bbone \in \Gamma} \\
 \infer {\gdo (\lambda x:A.e) : A \to B \splito [(\lambda x:|A|_\bbone.c,()),\_.(\lambda (x,l):|A|_\bbtwo\times \tau.r)]}
@@ -216,29 +234,38 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 	l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2},\pi_3~l) \end{array} \right ] }
 	{\gdo e_1 : A \to B \splito [c_1,l_1.r_1] 
 	& \gdo e_2 : A \splito [c_2,l_2.r_2]} \\
-\infer {\gdo () : \text{unit} \splits [(),\_.()]}{\cdot} \\
-\infer {\gdo (e_1,e_2) : A\times B \splito [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
-	{ \gdo e_1 : A \splito [p_1,l_1.r_1] 
-	&\gdo e_2 : B \splito [p_2,l_2.r_2]} \\
-\infer {\gdo \pi_1~e : A \splito [\pi_1~p,l.\pi_1~r] }{\gdo e : A\times B \splito [p,l.r] } \\
-\infer {\gdo \pi_2~e : B \splito [\pi_2~p,l.\pi_2~r] }{\gdo e : A\times B \splito [p,l.r]} \\
-\infer {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } 
+\infer {\gdt x : A\splits [(),\_.x]}{x : A^\bbtwo \in \Gamma} \\
+\infer {\gdt (\lambda x:A.e) : A \to B \splits [p,l.\lambda x:A.r]}{\Gamma,x:A^\bbtwo \vdash e : B \splits [p,l.r]} \\
+\infer {\gdt e_1~e_2 : B \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2})]}
+	{\gdt e_1 : A \to B \splits [p_1,l_1.r_1] 
+	& \gdt e_2 : A \splits [p_2,l_2.r_2]}
+\end{gather}
+\end{figure*}
+
+\begin{figure*}
+\caption{Sum Splitting}
+\label{fig:splitting}
+\inferenceSpacing
+\begin{gather}
+\infer 
+	{\gdo \caseof {e_1}{x_2.e_2}{x_3.e_3} :C \splito 
+	\left[\left(\tallcase {\pi_1c_2}{x_2.\letin{y}{c_2}{(\pi_1 y,\iota_1(\pi_2 y))}}{x_3.\letin{y}{c_3}{(\pi_1 y,\iota_2(\pi_2 y))}}\right), 
+	l.\left(\tallcase{l}{l_2.r_2}{l_3.r_3}\right)\right]}
+	{\gdo e_1 : A+B \splito [c_2, l_2.r_2]
+	& \Gamma,x_2:A^\bbone \vdash^\bbone e_2 : C \splito [c_2,l_2.r_2] 
+	& \Gamma,x_3:B^\bbone \vdash^\bbone e_3 : C \splito [c_3,l_3.r_3]} \\
+\infer 
+	{\gdt \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\splits \left[(p_1,(p_2,p_3)), l.
+		\left(\tallcase{(\letin {l_1}{\pi_1 l}{r_1})}{x_2.\letin {l_2}{\pi_1(\pi_2 l)}{r_2}} {x_3.\letin {l_3}{\pi_2(\pi_2 l)}{r_3}} \right)
+	\right] }
+	{ \gdt e_1 : A+B \splits [p_1,l_1.r_1]
+	& \Gamma,x_2:A^\bbtwo \vdash^\bbtwo e_2 : C \splits [p_2,l_2.r_2] 
+	& \Gamma,x_3:B^\bbtwo \vdash^\bbtwo e_3 : C \splits [p_3,l_3.r_3]} 
 \end{gather}
 \end{figure*}
 %\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \translates e_1' & \Gamma, x:\bbone \vdash e_2 \splits [p_2,y_2.r_2]} \\
 %\infer { \Gamma\vdash \letin {x}{e_1}{e_2}  \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
-%\infer 
-%	{\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} \splits \left[\left(\tallcase {e_1'}{x_2.\iota_1~p_2}{x_3.\iota_2~p_3}\right), l.\caseof{l}{y_2.r_2}{y_3.r_3}\right]}
-%	{\Gamma\vdash e_1 \translates e_1' 
-%	& \Gamma,x_2:\bbone \vdash e_2 \splits [p_2,y_2,r_2] 
-%	& \Gamma,x_3:\bbone \vdash e_3 \splits [p_3,y_3,r_3]} \\
-%\infer 
-%	{\Gamma\vdash \caseof {e_1}{x_2.e_2}{x_3.e_3} \splits \left[(p_1,(p_2,p_3)), l.
-%		\left(\tallcase{(\letin {y_1}{\pi_1 l}{r_1})}{x_2.\letin {y_2}{\pi_1\pi_2 l}{r_2}} {x_3.\letin {y_3}{\pi_2\pi_2 l}{r_3}} \right)
-%	\right] }
-%	{ \Gamma \vdash e_1 \splits [p_1,y_1,r_1]
-%	& \Gamma,x_2:\bbtwo \vdash e_2 \splits [p_2,y_2,r_2] 
-%	& \Gamma,x_3:\bbtwo \vdash e_3 \splits [p_3,y_3,r_3]} 
+
 
 \subsection{Implementation}
 
