@@ -12,9 +12,10 @@
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
 \newcommand {\stage} {\langle\mathit{stage}\rangle}
-\newcommand {\ptype} {\langle\mathit{ptype}\rangle}
-\newcommand {\type} {\langle\mathit{type}\rangle}
-\newcommand {\expr} {\langle\mathit{exp}\rangle}
+\newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
+\newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
+\newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
+\newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
 \newcommand {\var} {\langle\mathit{var}\rangle}
 \newcommand {\context} {\langle\mathit{cont}\rangle}
 \newcommand {\gbar} {~~|~~}
@@ -44,6 +45,7 @@
 \newcommand {\tab}{~~~~~~}
 
 %language names
+\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
 \newcommand {\wstage} {\textsc{Stag}}
 \newcommand {\wostage} {\textsc{Doe}}
 
@@ -54,15 +56,16 @@
 
 \section{Introduction}
 
-This document presents some preliminary work on a staged language, \wstage, useful for deriving complicated algorithms.  Section \ref{sec:current} covers the work on the language so far.  We then compare this to some relevent literature in Section \ref{sec:lit}.  In Section \ref{sec:ext}, we give a proposal for how to move forward with the language.
+Add intro in a bit.
 
-\section{Current Work}
-\label{sec:current}
+\section{\lang~Definition}
+\label{sec:def}
 
-\subsection{Terms, Types, and Stages}
-A grammar for \wstage~is shown in Figure \ref{fig:gram}.  It is currently a zeroth-order language, having no mechanisms to introduce functions.  As a stopgap, we have included a notion of ``external functions'' which can be eliminated through application, but have no introduction forms.  These functional definiciencies aside, the language supports both products and sums.
+In this section I define \lang, a two-stage language.  Throughout this document, I will use $\bbone$ and $\bbtwo$ to refer to the two stages.  A grammer for the terms, types, and contexts of \lang\ is shown in Figure \ref{fig:gram}.  Although both stages of \lang\ contain products, sums, and functions, I have chosen to seperate the stages syntactically to emphasize that this need not be the case.
 
-Types in the language are split into two parts: the {\it pretype} and the {\it stage}.  The pretype is just the standard algebraic data type that we all know and love; it indicates {\it what} a term will reduce to.  The stage, currently at the coarse granularity of $\bbone$ and $\bbtwo$, is an indication of {\it when} a term will be fully computed.
+You'll notice that there are three seperate mechanisms by which one stage can refer to another: $\next$, $\prev$, and $\pause$.  Specifically, $\next$ allows a stage $\bbone$ term to reference computation that will occur in the future, at stage $\bbtwo$, whereas $\prev$ and $\pause$ allow a stage $\bbtwo$ computation to refer back to stage $\bbone$.  The precise meaning of these constructs will be explored in future sections.
+
+\section{Typing}
 
 The rules relating types and terms are given in Figure \ref{fig:staging}.  The structure of the core typing judgement is entirely standard.  The nullary terms (currently just the unit value) are all explicitly annotated with a stage.  The non-nullary terms essentially preserve the stage of their inputs, except for $\pause$, which transtions an expression from $\bbone$ to $\bbtwo$.  From this, it is apparent that a stage $\bbone$ term cannot depend on any stage $\bbtwo$ terms.  This property can be justified by the notion that the program gets ``more reduced'' as time goes on, and that a term can be no more reduced than those it depends on.
 
@@ -73,22 +76,37 @@ The rules relating types and terms are given in Figure \ref{fig:staging}.  The s
 \label{fig:gram}
 \centering
 \begin{align*}
-\stage &= \bbone~|~\bbtwo \\
-\type &= \text{unit} \\
-&\gbar \type \times \type \\
-&\gbar \type \to \type \\
-&\gbar \fut \type \\
-\expr &= () \\
-&\gbar (\expr, \expr) \\
-&\gbar \pi_1~\expr \gbar \pi_2~\expr \\
-&\gbar \lambda \var.\expr \\
+\typeo &= \text{unit} \\
+&\gbar \typeo \times \typeo \\
+&\gbar \typeo + \typeo \\
+&\gbar \typeo \to \typeo \\
+&\gbar \fut \typet \\
+\typet &= \text{unit} \\
+&\gbar \typet \times \typeo \\
+&\gbar \typet + \typet \\
+&\gbar \typet \to \typet \\
+\expro &= \lambda \var.\expro \\
 &\gbar \var \\
-&\gbar \expr~\expr \\
-&\gbar \pause~\expr \\
-&\gbar \next~\expr \\
-&\gbar \prev~\expr \\
+&\gbar \expro~\expro \\
+&\gbar () \\
+&\gbar (\expro, \expro) \\
+&\gbar \pi_1~\expro \gbar \pi_2~\expro \\
+&\gbar \iota_1~\expro \gbar \iota_2~\expro \\
+&\gbar {\tt case}~\expro ~{\tt of}~\var.\expro~{\tt `|}\text{'}~\var.\expro \\
+&\gbar \next~\exprt \\
+\exprt &= \lambda \var.\exprt \\
+&\gbar \var \\
+&\gbar \exprt~\exprt \\
+&\gbar () \\
+&\gbar (\exprt, \exprt) \\
+&\gbar \pi_1~\exprt \gbar \pi_2~\exprt \\
+&\gbar \iota_1~\exprt \gbar \iota_2~\exprt \\
+&\gbar {\tt case}~\exprt ~{\tt of}~\var.\exprt~{\tt `|}\text{'}~\var.\exprt \\
+&\gbar \pause~\expro \\
+&\gbar \prev~\expro \\
 \context &= \cdot \\
-&\gbar \context, \var : \type ^{\stage}
+&\gbar \context, \var : \typeo ^\bbone \\
+&\gbar \context, \var : \typet ^\bbtwo
 \end{align*}
 \end{figure}
 
@@ -149,26 +167,6 @@ The core operation of interest is the process of ``stage splitting," wherein a t
 
 Note that the precomputation and residual are not actually terms in \wstage.  They are terms in a simpler language, called \wostage, which is essentially \wstage~without the staging constructs.  The grammar for \wostage~is shown in Figure \ref{fig:gram2}.  The typing rules for \wostage~are not shown, but can be guessed.
 
-\begin{figure}
-\caption{\wostage~Grammar}
-\label{fig:gram2}
-\centering
-\begin{align*}
-\type &= \text{unit}~|~\type \times \type~|~\type + \type \\
-\expr &= \langle\mathit{func}\rangle~\expr \\
-&\gbar () \\
-&\gbar (\expr, \expr) \\
-&\gbar \pi_1~\expr 
-\gbar \pi_2~\expr \\
-&\gbar \iota_1~\expr 
-\gbar \iota_2~\expr \\
-&\gbar \letin {\var}{\expr}{\expr} \\
-&\gbar \var \\
-&\gbar {\tt case}~\expr~{\tt of}~\var.\expr~`{\tt |}\text{'}~\var.\expr \\
-\context &= \cdot \\
-&\gbar \context, \var : \type
-\end{align*}
-\end{figure}
 
 The full rules for splitting are shown in Figure \ref{fig:splitting}.  In two of the rules, I reference another judgement, of the form ``$\Gamma \vdash e \splito e'$''.  This means that the one-stage \wstage~term $e$ simply translates to a \wostage~term $e'$.  There are no surprises in how this works, so the details are omitted.
 
@@ -191,7 +189,7 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 
 \begin{figure*}
 \caption{Basic Splitting}
-\label{fig:splitting}
+\label{fig:splitBasic}
 \inferenceSpacing
 \begin{gather}
 \infer {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \\
@@ -203,7 +201,7 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 
 \begin{figure*}
 \caption{Product Splitting}
-\label{fig:splitting}
+\label{fig:splitProduct}
 \inferenceSpacing
 \begin{gather}
 \infer {\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \\
@@ -223,7 +221,7 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 
 \begin{figure*}
 \caption{Function Splitting}
-\label{fig:splitting}
+\label{fig:splitFunction}
 \inferenceSpacing
 \begin{gather}
 \infer {\gdo x : A\splito [(x,()),\_.x]}{x : A^\bbone \in \Gamma} \\
@@ -244,7 +242,7 @@ Note that I'm implicitly abusing the identical structures of pretypes in \wstage
 
 \begin{figure*}
 \caption{Sum Splitting}
-\label{fig:splitting}
+\label{fig:splitSum}
 \inferenceSpacing
 \begin{gather}
 \infer 
