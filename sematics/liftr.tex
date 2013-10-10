@@ -18,30 +18,39 @@
 \newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
 \newcommand {\var} {\langle\mathit{var}\rangle}
 \newcommand {\context} {\langle\mathit{cont}\rangle}
+\newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
+\newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
+\newcommand {\resi} {\langle\mathit{res}\rangle}
 \newcommand {\gbar} {~~|~~}
-\newcommand {\fut} {\bigcirc}
 
 % nodes
 \newcommand {\bbone} {\mathbbm 1}
 \newcommand {\bbtwo} {\mathbbm 2}
-\newcommand {\at} {{\tt~@~}}
 \newcommand {\pause} {{\tt save}}
 \newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
+\newcommand {\fut} {\bigcirc}
+\newcommand {\transfers} {\nearrow}
 \newcommand {\gds} {{\Gamma \vdash^\sigma}}
 \newcommand {\gdo} {{\Gamma \vdash^\bbone}}
 \newcommand {\gdt} {{\Gamma \vdash^\bbtwo}}
 \newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
 \newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
 \newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
+\newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
+\newcommand {\valprod} [2] {{\bf (}{#1},{#2}{\bf )}}
+\newcommand {\valleft} {{\bf \iota}_1}
+\newcommand {\valright} {{\bf \iota}_2}
+\newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
+\newcommand {\valres} {{\bf res}}
 
 % transitions
 \newcommand {\splito} {\overset{\bbone}\rightsquigarrow}
 \newcommand {\splits} {\overset{\bbtwo}\rightsquigarrow}
 
 % Equation spacing
-\newcommand {\inferenceSpacing}{\setlength{\jot}{1.8ex}}
-\newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
+%\newcommand {\inferenceSpacing}{\setlength{\jot}{1.8ex}}
+%\newcommand {\normalSpacing}{\setlength{\jot}{1ex}}
 \newcommand {\tab}{~~~~~~}
 
 %language names
@@ -56,220 +65,291 @@
 
 \section{Introduction}
 
-Add intro in a bit.
+[Not done.]
 
 \section{\lang~Definition}
 \label{sec:def}
 
-In this section I define \lang, a two-stage language.  Throughout this document, I will use $\bbone$ and $\bbtwo$ to refer to the two stages.  A grammer for the terms, types, and contexts of \lang\ is shown in Figure \ref{fig:gram}.  Although both stages of \lang\ contain products, sums, and functions, I have chosen to seperate the stages syntactically to emphasize that this need not be the case.
+In this section I define \lang, a two-stage language.  Throughout this document, I will use $\bbone$ and $\bbtwo$ to refer to the two stages.  
+
+\subsection{Syntax}
+
+A grammer for the terms, types, and contexts of \lang\ is shown in Figure \ref{fig:gram}.  Although both stages of \lang\ contain products, sums, and functions, I have chosen to seperate the stages syntactically to emphasize that this need not be the case.
 
 You'll notice that there are three seperate mechanisms by which one stage can refer to another: $\next$, $\prev$, and $\pause$.  Specifically, $\next$ allows a stage $\bbone$ term to reference computation that will occur in the future, at stage $\bbtwo$, whereas $\prev$ and $\pause$ allow a stage $\bbtwo$ computation to refer back to stage $\bbone$.  The precise meaning of these constructs will be explored in future sections.
 
-\section{Typing}
-
-The rules relating types and terms are given in Figure \ref{fig:staging}.  The structure of the core typing judgement is entirely standard.  The nullary terms (currently just the unit value) are all explicitly annotated with a stage.  The non-nullary terms essentially preserve the stage of their inputs, except for $\pause$, which transtions an expression from $\bbone$ to $\bbtwo$.  From this, it is apparent that a stage $\bbone$ term cannot depend on any stage $\bbtwo$ terms.  This property can be justified by the notion that the program gets ``more reduced'' as time goes on, and that a term can be no more reduced than those it depends on.
-
-\wstage~has one additional peculiar feature.  The predicate of a case statement can be stage $\bbtwo$ while the branches have subterms with stage $\bbone$.  This implies that some computation in a branch must be performed even before we know which branch to take.  This feature, called {\it speculation}, will be explored more later.
-
 \begin{figure}
-\caption{\wstage~Grammar}
+\caption{\lang~Syntax}
 \label{fig:gram}
 \centering
-\begin{align*}
-\typeo &= \text{unit} \\
+\begin{tabular}{ll} 
+$\begin{aligned}
+\typeo &::= \text{unit} \\
 &\gbar \typeo \times \typeo \\
 &\gbar \typeo + \typeo \\
 &\gbar \typeo \to \typeo \\
-&\gbar \fut \typet \\
-\typet &= \text{unit} \\
+&\gbar \fut \typet 
+\end{aligned} $  
+& 
+$\begin{aligned}
+\typet &::= \text{unit} \\
 &\gbar \typet \times \typeo \\
 &\gbar \typet + \typet \\
-&\gbar \typet \to \typet \\
-\expro &= \lambda \var.\expro \\
+&\gbar \typet \to \typet 
+\end{aligned} $  
+\\ 
+$\begin{aligned}
+\expro &::= \lam{\var}{\typeo}{\expro} \\
 &\gbar \var \\
 &\gbar \expro~\expro \\
 &\gbar () \\
 &\gbar (\expro, \expro) \\
 &\gbar \pi_1~\expro \gbar \pi_2~\expro \\
 &\gbar \iota_1~\expro \gbar \iota_2~\expro \\
-&\gbar {\tt case}~\expro ~{\tt of}~\var.\expro~{\tt `|}\text{'}~\var.\expro \\
-&\gbar \next~\exprt \\
-\exprt &= \lambda \var.\exprt \\
+&\gbar \begin{array}{l} {\tt case}~\expro ~{\tt of}\\~~~\var.\expro~{\tt `|}\text{'}~\var.\expro \end{array} \\
+&\gbar \next~\exprt 
+\end{aligned} $ 
+& 
+$\begin{aligned}
+\exprt &::= \lam{\var}{\typet}{\exprt} \\
 &\gbar \var \\
 &\gbar \exprt~\exprt \\
 &\gbar () \\
 &\gbar (\exprt, \exprt) \\
 &\gbar \pi_1~\exprt \gbar \pi_2~\exprt \\
 &\gbar \iota_1~\exprt \gbar \iota_2~\exprt \\
-&\gbar {\tt case}~\exprt ~{\tt of}~\var.\exprt~{\tt `|}\text{'}~\var.\exprt \\
+&\gbar \begin{array}{l} {\tt case}~\exprt ~{\tt of}\\~~~\var.\exprt~{\tt `|}\text{'}~\var.\exprt \end{array} \\
 &\gbar \pause~\expro \\
-&\gbar \prev~\expro \\
-\context &= \cdot \\
+&\gbar \prev~\expro 
+\end{aligned} $ 
+\\ 
+$\begin{aligned}
+\valo &::=() \\
+&\gbar \valprod {\valo} {\valo} \\
+&\gbar \valleft~\valo \\
+&\gbar \valright~\valo \\
+&\gbar \vallam {\var} {\expro} \\
+&\gbar \valres~\resi
+\end{aligned} $  
+& 
+$\begin{aligned}
+\valt &::=() \\
+&\gbar \valprod {\valt} {\valt} \\
+&\gbar \valleft~\valt \\
+&\gbar \valright~\valt \\
+&\gbar \vallam {\var} {\exprt} 
+\end{aligned} $
+\\
+$\begin{aligned}
+\context &::= \mathrm{empty} \\
 &\gbar \context, \var : \typeo ^\bbone \\
 &\gbar \context, \var : \typet ^\bbtwo
-\end{align*}
+\end{aligned} $
+\end{tabular}
 \end{figure}
+
+\subsection{Static Semantics}
+
+[Not done.]
 
 \begin{figure}
-\caption{Typing Rules}
+\caption{\lang~Static Semantics}
 \label{fig:staging}
-\inferenceSpacing
-\begin{gather}
-\infer {\gds () : \text{unit}}{\cdot} \\
-\infer {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \\
-\infer {\gds \pi_1~e : A}{\gds e : A\times B} \\
-\infer {\gds \pi_2~e : B}{\gds e : A\times B} \\
-\infer {\gds (\lambda x:A.e) : A \to B}{\Gamma,x:A^\sigma \vdash e : B} \\
-\infer {\gds x : A}{x : A^\sigma \in \Gamma} \\
-\infer {\gds e_1~e_2 : B}{\gds e_1 : A \to B & \gds e_2 : A} \\
-\infer {\Gamma \vdash^\bbtwo \pause~e : A}{\Gamma \vdash^\bbone e : A} \\
-\infer {\Gamma \vdash^\bbone \next~e : \fut A}{\Gamma \vdash^\bbtwo e : A} \\
-\infer {\Gamma \vdash^\bbtwo \prev~e : A}{\Gamma \vdash^\bbone e : \fut A} 
+\begin{mathpar}
+\infer [\mathrm{hyp}] {\gds x : A}{x : A^\sigma \in \Gamma} \and
+\infer [\to\mathrm{I}] {\gds (\lam{x}{A}{e}) : A \to B}{\Gamma,x:A^\sigma \vdash e : B} \and
+\infer [\to\mathrm{E}] {\gds e_1~e_2 : B}{\gds e_1 : A \to B & \gds e_2 : A} \and
+\infer [\mathrm{unit}] {\gds () : \text{unit}}{\cdot} \and
+\infer [\times\mathrm{I}] {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \and
+\infer [\times\mathrm{E_1}] {\gds \pi_1~e : A}{\gds e : A\times B} \and
+\infer [\times\mathrm{E_2}] {\gds \pi_2~e : B}{\gds e : A\times B} \and
 %\infer {\gds \letin {x}{e_1}{e_2} : B}{\gds e_1 : A & \Gamma,x:A^\sigma \vdash B : e_2} \\
-%\infer {\gds \iota_1~e : A+B}{\gds e : A} \\
-%\infer {\gds \iota_2~e : A+B}{\gds e : B} \\
-%\infer {\gds \caseof {e_1}{x_2.e_2}{x_3.e_3} : C}{\gds e_1 : A+B & \Gamma,x_2:A^\sigma \vdash^\sigma e_2 : C & \Gamma,x_3:B^\sigma \vdash^\sigma e_3 : C} 
-\end{gather}
+\infer [+\mathrm{I_1}] {\gds \iota_1~e : A+B}{\gds e : A} \and
+\infer [+\mathrm{I_2}] {\gds \iota_2~e : A+B}{\gds e : B} \and
+\infer [+\mathrm{E}] {\gds \caseof {e_1}{x_2.e_2}{x_3.e_3} : C}{\gds e_1 : A+B & \Gamma,x_2:A^\sigma \vdash^\sigma e_2 : C & \Gamma,x_3:B^\sigma \vdash^\sigma e_3 : C} \\
+\infer [\fut\mathrm{I}] {\Gamma \vdash^\bbone \next~e : \fut A}{\Gamma \vdash^\bbtwo e : A} \and
+\infer [\fut\mathrm{E}] {\Gamma \vdash^\bbtwo \prev~e : A}{\Gamma \vdash^\bbone e : \fut A} \and
+\infer [\mathrm{save}] {\Gamma \vdash^\bbtwo \pause~e : A'}{\Gamma \vdash^\bbone e : A & A \transfers A' } \and
+\infer [\mathrm{unit}\transfers] {\text{unit} \transfers \text{unit}}{\cdot } \and
+\infer [\times\transfers] {A \times B \transfers A' \times B'}{A \transfers A' & B \transfers B'} \and
+\infer [+\transfers] {A + B \transfers A' + B'}{A \transfers A' & B \transfers B'}
+\end{mathpar}
 \end{figure}
 
-\subsection{Evaluation}
+\subsection{Dynamic Semantics}
 The evaluation is given in Figure \ref{fig:eval}.  Were it complete, it would contain a definition of values (which we predict to be unchanged by the staging system), and a big-step sematics relating terms to values.  The big-step evaluation should be indexed by the stage at which it completes.  That is, we have both $\Downarrow_\bbone$ and $\Downarrow_\bbtwo$.  Also, the bigstep semantics will reflect that speculation occurs down both branches of a case as part of  $\Downarrow_\bbone$ reduction.
 
-\newcommand {\downsig} {\Downarrow_\sigma} 
 \newcommand {\downone} {\Downarrow_\bbone} 
 \newcommand {\downtwo} {\Downarrow_\bbtwo} 
-\newcommand {\downp} {\Downarrow_p} 
+\newcommand {\downsig} {\Downarrow_\sigma} 
+\newcommand {\spec} {\downarrow} 
 \begin{figure}
-\caption{Typing Rules}
+\caption{\lang~Dynamic Semantics}
 \label{fig:eval}
-\inferenceSpacing
-\begin{gather}
-\infer {()_\sigma \downsig ()}{\cdot} \\
-\infer {f~e \downsig v' }{e \downsig v & f~v \Downarrow v'} \\
-\infer {\pi_1~e \downsig v_1 }{e \downsig (v_1, v_2)} \\
-\infer {\pi_2~e \downsig v_2 }{e \downsig (v_1, v_2)} \\
-\infer {\iota_1~e \downsig \iota_1~v}{e \downsig v} \\
-\infer {\iota_2~e \downsig \iota_2~v}{e \downsig v} \\
-\infer { (e_1,e_2) \downsig (v_1, v_2)}{e_1 \downsig v_1 & e_2 \downsig v_2} \\
-\infer {\letin {x}{e_1}{e_2} \downsig v_2}{e_1 \downsig v_1 & [v'/x] e_2 \downsig v_2} \\
-\infer {\letin {x}{e_1}{e_2} \downp v_2}{e_1 \downone v_1 & [v'/x] e_2 \downp v_2} \\
-\infer {\letin {x}{e_1}{e_2} \downp \letin {x}{v_1}{v_2}}{e_1 \downp v_1 & e_2 \downp v_2} \\
-\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downsig v}{e \downsig (\iota_i~v) & [v/x_i]e_i \downsig v} \\
-\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downp v}{e \downone (\iota_i~v) & [v/x_i]e_i \downp v} \\
-\infer {\caseof {e}{x_1.e_1}{x_2.e_2} \downp \caseof {v}{x_1.v_1}{x_2.v_2}}{e \downp v & e_1 \downp v_1 & e_2 \downp v_2} \\
-\infer {\pause~e \downtwo }{e : A\at\bbone}
-\end{gather}
+\begin{mathpar}
+\infer [\lambda \downsig] {\lam{x}{\tau}{e} \downsig \vallam{x}{e}}{\cdot} \and
+\infer [\mathrm{app} \downsig] {e_1~e_2 \downsig [N/x]M}{e_1 \downsig \vallam{x}{M} & e_2 \downsig N} \\
+\infer [\mathrm{unit} \downsig] {() \downsig ()}{\cdot} \and
+\infer [(,) \downsig] { (e_1,e_2) \downsig \valprod{v_1}{v_2}}{e_1 \downsig v_1 & e_2 \downsig v_2} \\
+\infer [\pi_1 \downsig] {\pi_1~e \downsig v_1 }{e \downsig \valprod{v_1}{v_2}} \and
+\infer [\pi_2 \downsig] {\pi_2~e \downsig v_2 }{e \downsig \valprod{v_1}{v_2}} \and
+\infer [\iota_1 \downsig] {\iota_1~e \downsig \valleft~v}{e \downsig v} \and
+\infer [\iota_2 \downsig] {\iota_2~e \downsig \valright~v}{e \downsig v} \and
+\infer [\mathrm{case}_1 \downone] {\caseof {e}{x_1.e_1}{x_2.e_2} \downone v'}{e \downone \valleft~v & [v/x_1]e_1 \downone v'} \and
+\infer [\mathrm{case}_1 \downtwo] {\caseof {e}{x_1.e_1}{x_2.e_2} \downtwo v'}{e \downtwo \valleft~v & [v/x_1]e_1 \downtwo v' & e_2 \spec} \and
+\infer [\mathrm{case}_2 \downone] {\caseof {e}{x_1.e_1}{x_2.e_2} \downone v'}{e \downone \valright~v & [v/x_2]e_2 \downone v'} \and
+\infer [\mathrm{case}_2 \downtwo] {\caseof {e}{x_1.e_1}{x_2.e_2} \downtwo v'}{e \downtwo \valright~v & e_1 \spec & [v/x_2]e_2 \downtwo v'} \and
+\infer {\next~e \downone \valres~v}{e \downtwo v} \and
+\infer {\prev~e \downtwo v}{e \downone \valres~v} \and 
+\infer {\pause~e \downtwo v}{e \downone v} \\
+\infer [\mathrm{var} \spec]{x \spec }{\cdot} \and
+\infer [\lambda \spec]{\lam{x}{\tau}{e} \spec }{e \spec} \and
+\infer [\mathrm{app} \spec] {e_1~e_2 \spec}{e_1 \spec & e_2 \spec} \and
+\infer [\mathrm{unit} \spec]{() \spec }{\cdot} \and
+\infer [\mathrm{app} \spec] {(e_1,e_2) \spec}{e_1 \spec & e_2 \spec} \and
+\infer [\pi_i \spec]{\pi_i~e \spec }{e \spec} \and
+\infer [\iota_i \spec]{\iota_i~e \spec }{e \spec} \and
+\infer [\mathrm{case} \spec] {\caseof {e}{x_1.e_1}{x_2.e_2} \spec}{e_1 \spec & e_2 \spec} \and
+\infer {\prev~e \spec}{e \downone \valres~v} \and 
+\infer {\pause~e \spec}{e \downone v}
+\end{mathpar}
 \end{figure}
 
-\subsection{Stage Splitting}
+\section{Stage Splitting}
 
-The core operation of interest is the process of ``stage splitting," wherein a term with stage $\bbtwo$ is converted to a precomputed part, and a residual that depends on that precomputed part.  Specifically, we introduce a judgement ``$\Gamma \vdash e \splits [p,x.r]$'', which can be read ``under the context $\Gamma$, $e$ stage-splits into a precomputation $p$, and a residual $r$ which is open on $x$''.  The idea is that $p$ contains the parts of $e$ that are stage $\bbone$, $r$ contains the parts of $e$ that are stage $\bbtwo$, and the reduced value of $p$ is bound to $x$ when evaluating $r$. 
+The core operation of interest is the process of ``stage splitting," wherein a term is split into its constituent stage $\bbone$ and stage $\bbtwo$ parts, each expressed in a simpler language.  Specifically, we introduce two judgements.  The simpler judgement is 
+\[\gdt e : A \splits [p,x.r]\] 
+which can be read ``under the context $\Gamma$, $e$ (which has type $A$ at stage $\bbtwo$) stage-splits into a precomputation $p$, and a residual $r$ which is open on $x$''.  The idea is that $p$ contains the parts of $e$ that are stage $\bbone$, $r$ contains the parts of $e$ that are stage $\bbtwo$, and the reduced value of $p$ is bound to $x$ when evaluating $r$.  There's also the slightly more complicated version for stage 1:
+\[\gdo e : A \splito [c,x.r]\]
+which can be read as [\ldots]
 
-Note that the precomputation and residual are not actually terms in \wstage.  They are terms in a simpler language, called \wostage, which is essentially \wstage~without the staging constructs.  The grammar for \wostage~is shown in Figure \ref{fig:gram2}.  The typing rules for \wostage~are not shown, but can be guessed.
+\subsection {Goals}
 
+There are a few theorems that should hold true of stage splitting.  Firstly, that good types in lead to good types out.  Explicitly:
+[Took this out for now.]
+%
+%\begin{center}
+%\begin{tabular}{lll}
+%If $\gdo e:\tau $ &~~~~~~~~~~~~~~ & If $\gdt e:\tau$ \\
+%then $\gdo e \splito e'$ && then $\gdt e \splits [p,x.r]$ \\
+%and $\Gamma \vdash e':\tau$ && and $\Gamma_\bbone \vdash p:\tau'$\\
+% && and $\Gamma_\bbtwo, x:\tau' \vdash r:\tau$
+%\end{tabular}
+%\end{center}
+%Note that I'm implicitly abusing the identical structures of pretypes in \wstage~and types in \wostage.  Also, for any stage $\sigma$, we define $\Gamma_\sigma$ as,
+%\begin{align}
+%(\cdot)_\sigma &= \cdot \\
+%(\Gamma,x:\tau^\sigma)_\sigma &= \Gamma_\sigma, \tau \\
+%(\Gamma,x:\tau^{\sigma'})_\sigma &= \Gamma_\sigma &\text{where } \sigma \not= \sigma'
+%\end{align}
 
-The full rules for splitting are shown in Figure \ref{fig:splitting}.  In two of the rules, I reference another judgement, of the form ``$\Gamma \vdash e \splito e'$''.  This means that the one-stage \wstage~term $e$ simply translates to a \wostage~term $e'$.  There are no surprises in how this works, so the details are omitted.
-
-Even without a semantics done, we can think of two theorems that should hold true of stage splitting.  Namely, that good types in lead to good types out.  Explicitly:
-
-\begin{center}
-\begin{tabular}{lll}
-If $\Gamma \vdash e:\tau \at \bbone$ &~~~~~~~~~~~~~~ & If $\Gamma \vdash e:\tau \at \bbtwo$ \\
-then $\Gamma \vdash e \splito e'$ && then $\Gamma \vdash e \splits [p,x.r]$ \\
-and $\Gamma \vdash e':\tau$ && and $\Gamma_\bbone \vdash p:\tau'$\\
- && and $\Gamma_\bbtwo, x:\tau' \vdash r:\tau$
-\end{tabular}
-\end{center}
-Note that I'm implicitly abusing the identical structures of pretypes in \wstage~and types in \wostage.  Also, for any stage $\sigma$, we define $\Gamma_\sigma$ as,
-\begin{align}
-(\cdot)_\sigma &= \cdot \\
-(\Gamma,x:\tau\at\sigma)_\sigma &= \Gamma_\sigma, \tau \\
-(\Gamma,x:\tau\at\sigma')_\sigma &= \Gamma_\sigma &\text{where } \sigma \not= \sigma'
-\end{align}
+\subsection {Splitting}
+The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig:splitProduct}, \ref{fig:splitFunction}, and \ref{fig:splitSum}.
 
 \begin{figure*}
 \caption{Basic Splitting}
 \label{fig:splitBasic}
-\inferenceSpacing
-\begin{gather}
-\infer {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \\
-\infer {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \\
-\infer {\gdt \pause~e : A \splits [e,l.l]}{\gdo e : A& A \text{~transferable}} 
-\end{gather}
+\begin{mathpar}
+\infer [\fut\mathrm{I}\splito] {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \and
+\infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \and
+\infer [\mathrm{save}\splits] {\gdt \pause~e : A' \splits [e,l.l]}{\gdo e : A& A \transfers A'} 
+\end{mathpar}
 \end{figure*}
 
 
 \begin{figure*}
 \caption{Product Splitting}
 \label{fig:splitProduct}
-\inferenceSpacing
-\begin{gather}
-\infer {\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \\
-\infer {\gdo (e_1,e_2) : A\times B \splito [((\pi_1 c, \pi_1 c),(\pi_2 c_1, \pi_2 c_2)), l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})] }
+\begin{mathpar}
+\infer [\mathrm{unit}\splito] 
+	{\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \and
+\infer [\mathrm{unit}\splits]
+	 {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \and
+\infer [\times\mathrm{I}\splito] 
+	{\gdo (e_1,e_2) : A\times B \splito [((\pi_1 c, \pi_1 c),(\pi_2 c_1, \pi_2 c_2)), l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})] }
 	{ \gdo e_1 : A \splito [c_1,l_1.r_1] 
-	&\gdo e_2 : B \splito [c_2,l_2.r_2]} \\
-\infer {\gdo \pi_1~e : A \splito [(\pi_1~p),l.\pi_1~r] }{\gdo e : A\times B \splito [c,l.r] } \\
-\infer {\gdo \pi_2~e : B \splito [\pi_2~p,l.\pi_2~r] }{\gdo e : A\times B \splito [c,l.r]} \\
-\infer {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \\
-\infer {\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
+	&\gdo e_2 : B \splito [c_2,l_2.r_2]} \and
+\infer [\times\mathrm{I}\splits] 
+	{\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
 	{ \gdt e_1 : A \splits [p_1,l_1.r_1] 
-	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \\
-\infer {\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \\
-\infer {\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} 
-\end{gather}
+	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \and
+\infer [\times\mathrm{E_1}\splito] 
+	{\gdo \pi_1~e : A \splito [(\pi_1(\pi_1c),\pi_2 c),l.\pi_1~r] }{\gdo e : A\times B \splito [c,l.r] } \and
+\infer [\times\mathrm{E_1}\splits] 
+	{\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \and
+\infer [\times\mathrm{E_2}\splito] 
+	{\gdo \pi_2~e : B \splito [(\pi_2(\pi_1c),\pi_2 c),l.\pi_2~r] }{\gdo e : A\times B \splito [c,l.r]} \and
+\infer [\times\mathrm{E_2}\splits] 
+	{\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} 
+\end{mathpar}
 \end{figure*}
 
 \begin{figure*}
 \caption{Function Splitting}
 \label{fig:splitFunction}
-\inferenceSpacing
-\begin{gather}
-\infer {\gdo x : A\splito [(x,()),\_.x]}{x : A^\bbone \in \Gamma} \\
-\infer {\gdo (\lambda x:A.e) : A \to B \splito [(\lambda x:|A|_\bbone.c,()),\_.(\lambda (x,l):|A|_\bbtwo\times \tau.r)]}
-	{\Gamma,x:A^\bbone \vdash e : B \splito [c,l.r]} \\
-\infer {\gdo e_1~e_2 : B \splito 
+\begin{mathpar}
+\infer [\mathrm{hyp}\splito] 
+	{\gdo x : A\splito [(x,()),\_.x]}{x : A^\bbone \in \Gamma} \and
+\infer [\mathrm{hyp}\splits] 
+	{\gdt x : A\splits [(),\_.x]}{x : A^\bbtwo \in \Gamma} \and
+\infer [\to\mathrm{I}\splito] 
+	{\gdo (\lam{x}{A}{e}) : A \to B \splito \left[\begin{array}{l}(\lam{x}{|A|_\bbone}{c},()),\\ \_.(\lam{(x,l)}{|A|_\bbtwo\times \tau}{r})\end{array}\right]}
+	{\Gamma,x:A^\bbone \vdash^\bbone e : B \splito [c,l.r]} \and
+\infer [\to\mathrm{I}\splits] 
+	{\gdt (\lam{x}{A}{e}) : A \to B \splits [p,l.\lam{x}{A}{r}]}
+	{\Gamma,x:A^\bbtwo \vdash^\bbtwo e : B \splits [p,l.r]} \and
+\infer [\to\mathrm{E}\splito] 
+	{\gdo e_1~e_2 : B \splito 
 	\left[ \begin{array}{l}\letin{y}{(\pi_1 c_1) (\pi_1 c2)}{(\pi_1 y,(\pi_2 c_1,\pi_2 c_2, \pi_2 y))}, \\
 	l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2},\pi_3~l) \end{array} \right ] }
 	{\gdo e_1 : A \to B \splito [c_1,l_1.r_1] 
-	& \gdo e_2 : A \splito [c_2,l_2.r_2]} \\
-\infer {\gdt x : A\splits [(),\_.x]}{x : A^\bbtwo \in \Gamma} \\
-\infer {\gdt (\lambda x:A.e) : A \to B \splits [p,l.\lambda x:A.r]}{\Gamma,x:A^\bbtwo \vdash e : B \splits [p,l.r]} \\
-\infer {\gdt e_1~e_2 : B \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2})]}
+	& \gdo e_2 : A \splito [c_2,l_2.r_2]} \and
+\infer [\to\mathrm{E}\splits] 
+	{\gdt e_1~e_2 : B \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2})]}
 	{\gdt e_1 : A \to B \splits [p_1,l_1.r_1] 
 	& \gdt e_2 : A \splits [p_2,l_2.r_2]}
-\end{gather}
+\end{mathpar}
 \end{figure*}
 
 \begin{figure*}
 \caption{Sum Splitting}
 \label{fig:splitSum}
-\inferenceSpacing
-\begin{gather}
-\infer 
-	{\gdo \caseof {e_1}{x_2.e_2}{x_3.e_3} :C \splito 
+\begin{mathpar}
+\infer [+\mathrm{I_1}\splito] 
+	{\gdo \iota_1~e : A+B \splito [(\iota_1(\pi_1c),\pi_2 c),l.\iota_1~r] }
+	{\gdo e : A \splito [c,l.r] } \and
+\infer [+\mathrm{I_1}\splits] 
+	{\gdt \iota_1~e : A+B \splits [p,l.\iota_1~r] }
+	{\gdt e : A \splits [p,l.r] } \and
+\infer [+\mathrm{I_2}\splito] 
+	{\gdo \iota_2~e : A+B \splito [(\iota_2(\pi_1c),\pi_2 c),l.\iota_2~r] }
+	{\gdo e : A \splito [c,l.r] } \and
+\infer [+\mathrm{I_2}\splits] 
+	{\gdt \iota_2~e : A+B \splits [p,l.\iota_2~r] }
+	{\gdt e : A \splits [p,l.r] } \and
+\infer [+\mathrm{E}\splito]
+	{\gdo \left( \tallcase {e_1}{x_2.e_2}{x_3.e_3} \right) :C \splito 
 	\left[\left(\tallcase {\pi_1c_2}{x_2.\letin{y}{c_2}{(\pi_1 y,\iota_1(\pi_2 y))}}{x_3.\letin{y}{c_3}{(\pi_1 y,\iota_2(\pi_2 y))}}\right), 
 	l.\left(\tallcase{l}{l_2.r_2}{l_3.r_3}\right)\right]}
 	{\gdo e_1 : A+B \splito [c_2, l_2.r_2]
 	& \Gamma,x_2:A^\bbone \vdash^\bbone e_2 : C \splito [c_2,l_2.r_2] 
-	& \Gamma,x_3:B^\bbone \vdash^\bbone e_3 : C \splito [c_3,l_3.r_3]} \\
-\infer 
-	{\gdt \caseof {e_1}{x_2.e_2}{x_3.e_3} : C\splits \left[(p_1,(p_2,p_3)), l.
-		\left(\tallcase{(\letin {l_1}{\pi_1 l}{r_1})}{x_2.\letin {l_2}{\pi_1(\pi_2 l)}{r_2}} {x_3.\letin {l_3}{\pi_2(\pi_2 l)}{r_3}} \right)
+	& \Gamma,x_3:B^\bbone \vdash^\bbone e_3 : C \splito [c_3,l_3.r_3]} \and
+\infer [+\mathrm{E}\splits]
+	{\gdt \left( \tallcase {e_1}{x_2.e_2}{x_3.e_3}\right) : C \splits 
+	\left[(p_1,(p_2,p_3)), 
+	l.\left(\tallcase{(\letin {l_1}{\pi_1 l}{r_1})}{x_2.\letin {l_2}{\pi_1(\pi_2 l)}{r_2}} {x_3.\letin {l_3}{\pi_2(\pi_2 l)}{r_3}} \right)
 	\right] }
 	{ \gdt e_1 : A+B \splits [p_1,l_1.r_1]
 	& \Gamma,x_2:A^\bbtwo \vdash^\bbtwo e_2 : C \splits [p_2,l_2.r_2] 
 	& \Gamma,x_3:B^\bbtwo \vdash^\bbtwo e_3 : C \splits [p_3,l_3.r_3]} 
-\end{gather}
+\end{mathpar}
 \end{figure*}
 %\infer {\Gamma\vdash \letin {x}{e_1}{e_2} \splits [\letin {x}{e'_1}{p_2}, y_2.r_2] }{\Gamma\vdash e_1 \translates e_1' & \Gamma, x:\bbone \vdash e_2 \splits [p_2,y_2.r_2]} \\
 %\infer { \Gamma\vdash \letin {x}{e_1}{e_2}  \splits [(p_1,p_2), l.\letin {x}{(\letin {y_1}{\pi_1~l}{r_1})}{\letin {y_2}{\pi_2~l}{r_2}}] }{\Gamma\vdash e_1 \splits [p_1,y_1.r_1] & \Gamma, x:\sigma_1 \vdash e_2 \splits [p_2,y_2.r_2]} \\
 
+\section{Implementation and Examples}
 
-\subsection{Implementation}
-
-I have an implementation of stage-splitting in SML.  Currently, the code only keeps track of stage, and not the pre-type.
-
-[Add results.]
+[Work in progress.]
 
 \section{Related Work}
 \label{sec:lit}
@@ -282,14 +362,8 @@ One can immediately see a connection between this work and partial evaluation. B
 \end{tabular}
 \end{center}
 Immediately, we note that stage splitting has broader application than partial evaluation, since the latter requires that $p$ (specifically, some code-specializing apparatus) and $a$ be available at the same time.  If this requirement is satisfied, then we can compare apples to apples by creating a partial evaluator out of a stage splitter:
-	\[f_a = (\letin {x}{f_1(a)}{\lambda b.f_2(x,b)})\]
+	\[f_a = (\letin {x}{f_1(a)}{\lam{b}{?}{f_2(x,b)}})\]
 From this view, we see that partial evaluators are more powerful because they can avoid memeory loads, prune unused branches, and even duplicate recursive code for further specialization.  These are largely free wins, except for the recursive code generation, which might have large space costs.
-
-\subsection{Temporal Logic}
-
-There are two papers (called ``circle'' and ``square'') by Rowan Davies which give a justification for binding time analysis in modal logics.  Those papers feel stylistically similar to this work.  Circle, in addition to its other contributions, gives a particularly good account of the difference between its style (which we use), and the rest of the literature. 
-
-There's an important question that our work will need to answer about the difference between the logic that our type system induces and those of Davies.  In particular, what does it mean that our language has no {\tt prev} operator?
 
 \subsection{Speculation}
 
