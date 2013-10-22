@@ -1,6 +1,14 @@
 Group is
 	  common.sml
+	  
+	  (* lambdaPSF *)
 	  lambdaPSF.sml
+	  
+	  (* lambda12 *)
       lambda12.sml
+      typecheck12.sml
+	  
+	  (* transformations *)
+	  elision.sml
 	  
       $/basis.cm

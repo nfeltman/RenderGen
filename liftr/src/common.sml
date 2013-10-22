@@ -5,8 +5,12 @@ struct
 datatype var = string
 datatype LR = Left | Right
 
-datatype contEntry = Stage1 of type1 | Stage2 of type2
+exception UnboundVar of var
 type 'a context = (var * 'a) list
 
+fun extendContext g v t = (v,t) :: g
+
+fun lookup [] v = raise (UnboundVar v)
+  | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
 
 end
