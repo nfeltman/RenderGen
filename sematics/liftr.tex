@@ -26,7 +26,7 @@
 % nodes
 \newcommand {\bbone} {\mathbbm 1}
 \newcommand {\bbtwo} {\mathbbm 2}
-\newcommand {\pause} {{\tt save}}
+\newcommand {\pause} {{\tt hold}}
 \newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
 \newcommand {\fut} {\bigcirc}
@@ -169,7 +169,7 @@ $\begin{aligned}
 \infer [+\mathrm{E}] {\gds \caseof {e_1}{x_2.e_2}{x_3.e_3} : C}{\gds e_1 : A+B & \Gamma,x_2:A^\sigma \vdash^\sigma e_2 : C & \Gamma,x_3:B^\sigma \vdash^\sigma e_3 : C} \\
 \infer [\fut\mathrm{I}] {\Gamma \vdash^\bbone \next~e : \fut A}{\Gamma \vdash^\bbtwo e : A} \and
 \infer [\fut\mathrm{E}] {\Gamma \vdash^\bbtwo \prev~e : A}{\Gamma \vdash^\bbone e : \fut A} \and
-\infer [\mathrm{save}] {\Gamma \vdash^\bbtwo \pause~e : A'}{\Gamma \vdash^\bbone e : A & A \transfers A' } \and
+\infer [\mathrm{hold}] {\Gamma \vdash^\bbone \pause~e : \fut A'}{\Gamma \vdash^\bbone e : A & A \transfers A' } \and
 \infer [\mathrm{unit}\transfers] {\text{unit} \transfers \text{unit}}{\cdot } \and
 \infer [\times\transfers] {A \times B \transfers A' \times B'}{A \transfers A' & B \transfers B'} \and
 \infer [+\transfers] {A + B \transfers A' + B'}{A \transfers A' & B \transfers B'}
@@ -201,7 +201,7 @@ The evaluation is given in Figure \ref{fig:eval}.  Were it complete, it would co
 \infer [\mathrm{case}_2 \downtwo] {\caseof {e}{x_1.e_1}{x_2.e_2} \downtwo v'}{e \downtwo \valright~v & e_1 \spec & [v/x_2]e_2 \downtwo v'} \and
 \infer {\next~e \downone \valres~v}{e \downtwo v} \and
 \infer {\prev~e \downtwo v}{e \downone \valres~v} \and 
-\infer {\pause~e \downtwo v}{e \downone v} \\
+\infer {\pause~e \downone \valres~v'}{e \downone v & v \nearrow v'} \\
 \infer [\mathrm{var} \spec]{x \spec }{\cdot} \and
 \infer [\lambda \spec]{\lam{x}{\tau}{e} \spec }{e \spec} \and
 \infer [\mathrm{app} \spec] {e_1~e_2 \spec}{e_1 \spec & e_2 \spec} \and
@@ -210,8 +210,7 @@ The evaluation is given in Figure \ref{fig:eval}.  Were it complete, it would co
 \infer [\pi_i \spec]{\pi_i~e \spec }{e \spec} \and
 \infer [\iota_i \spec]{\iota_i~e \spec }{e \spec} \and
 \infer [\mathrm{case} \spec] {\caseof {e}{x_1.e_1}{x_2.e_2} \spec}{e_1 \spec & e_2 \spec} \and
-\infer {\prev~e \spec}{e \downone \valres~v} \and 
-\infer {\pause~e \spec}{e \downone v}
+\infer {\prev~e \spec}{e \downone \valres~v} 
 \end{mathpar}
 \end{figure}
 
@@ -252,7 +251,7 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 \begin{mathpar}
 \infer [\fut\mathrm{I}\splito] {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \and
 \infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \and
-\infer [\mathrm{save}\splits] {\gdt \pause~e : A' \splits [e,l.l]}{\gdo e : A& A \transfers A'} 
+\infer [\mathrm{save}\splits] {\gdo \pause~e : \fut A' \splito [((),\pi_1 c),l.l]}{\gdo e : A \splito [c,\_.r] & A \transfers A'} 
 \end{mathpar}
 \end{figure*}
 
