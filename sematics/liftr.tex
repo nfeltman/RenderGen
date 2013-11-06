@@ -93,7 +93,7 @@ $\begin{aligned}
 & 
 $\begin{aligned}
 \typet &::= \text{unit} \\
-&\gbar \typet \times \typeo \\
+&\gbar \typet \times \typet \\
 &\gbar \typet + \typet \\
 &\gbar \typet \to \typet 
 \end{aligned} $  
@@ -119,8 +119,7 @@ $\begin{aligned}
 &\gbar \pi_1~\exprt \gbar \pi_2~\exprt \\
 &\gbar \iota_1~\exprt \gbar \iota_2~\exprt \\
 &\gbar \begin{array}{l} {\tt case}~\exprt ~{\tt of}\\~~~\var.\exprt~{\tt `|}\text{'}~\var.\exprt \end{array} \\
-&\gbar \pause~\expro \\
-&\gbar \prev~\expro 
+&\gbar \prev~\expro
 \end{aligned} $ 
 \\ 
 $\begin{aligned}
@@ -209,8 +208,7 @@ The evaluation is given in Figure \ref{fig:eval}.  Were it complete, it would co
 \infer [\mathrm{app} \spec] {(e_1,e_2) \spec}{e_1 \spec & e_2 \spec} \and
 \infer [\pi_i \spec]{\pi_i~e \spec }{e \spec} \and
 \infer [\iota_i \spec]{\iota_i~e \spec }{e \spec} \and
-\infer [\mathrm{case} \spec] {\caseof {e}{x_1.e_1}{x_2.e_2} \spec}{e_1 \spec & e_2 \spec} \and
-\infer {\prev~e \spec}{e \downone \valres~v} 
+\infer [\mathrm{case} \spec] {\caseof {e}{x_1.e_1}{x_2.e_2} \spec}{e_1 \spec & e_2 \spec}
 \end{mathpar}
 \end{figure}
 
@@ -225,22 +223,28 @@ which can be read as [\ldots]
 \subsection {Goals}
 
 There are a few theorems that should hold true of stage splitting.  Firstly, that good types in lead to good types out.  Explicitly:
-[Took this out for now.]
-%
-%\begin{center}
-%\begin{tabular}{lll}
-%If $\gdo e:\tau $ &~~~~~~~~~~~~~~ & If $\gdt e:\tau$ \\
-%then $\gdo e \splito e'$ && then $\gdt e \splits [p,x.r]$ \\
-%and $\Gamma \vdash e':\tau$ && and $\Gamma_\bbone \vdash p:\tau'$\\
-% && and $\Gamma_\bbtwo, x:\tau' \vdash r:\tau$
-%\end{tabular}
-%\end{center}
-%Note that I'm implicitly abusing the identical structures of pretypes in \wstage~and types in \wostage.  Also, for any stage $\sigma$, we define $\Gamma_\sigma$ as,
-%\begin{align}
-%(\cdot)_\sigma &= \cdot \\
-%(\Gamma,x:\tau^\sigma)_\sigma &= \Gamma_\sigma, \tau \\
-%(\Gamma,x:\tau^{\sigma'})_\sigma &= \Gamma_\sigma &\text{where } \sigma \not= \sigma'
-%\end{align}
+
+\begin{center}
+\begin{tabular}{lll}
+If $\gdo e:\tau $ &~~~~~~~~~~~~~~ & If $\gdt e:A$ \\
+then $\gdo e \splito  [c,x.r]$ && then $\gdt e \splits [p,x.r]$ \\
+and $\Gamma_\bbone \vdash c:|A|_\bbone\times\tau$ && and $\Gamma_\bbone \vdash p:\tau$\\
+and $\Gamma_\bbtwo, x:\tau \vdash r:A$ && and $\Gamma_\bbtwo, x:\tau \vdash r:A$
+\end{tabular}
+\end{center}
+We define $\Gamma_\bbtwo$ as,
+\begin{align}
+(\cdot)_\bbtwo &= \cdot \\ 
+(\Gamma,x:A^\bbone)_\bbtwo &= \Gamma_\bbtwo, x:|A|_\bbtwo\\
+(\Gamma,x:A^\bbtwo)_\bbtwo &= \Gamma_\bbtwo, x:A
+\end{align}
+and we define $\Gamma_\bbone$ as,
+\begin{align}
+(\cdot)_\bbone &= \cdot \\ 
+(\Gamma,x:A^\bbone)_\bbone &= \Gamma_\bbtwo, x:|A|_\bbone \\
+(\Gamma,x:A^\bbtwo)_\bbone &= \Gamma_\bbtwo
+\end{align}
+
 
 \subsection {Splitting}
 The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig:splitProduct}, \ref{fig:splitFunction}, and \ref{fig:splitSum}.
@@ -250,8 +254,7 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 \label{fig:splitBasic}
 \begin{mathpar}
 \infer [\fut\mathrm{I}\splito] {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \and
-\infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \and
-\infer [\mathrm{save}\splits] {\gdo \pause~e : \fut A' \splito [((),\pi_1 c),l.l]}{\gdo e : A \splito [c,\_.r] & A \transfers A'} 
+\infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]}
 \end{mathpar}
 \end{figure*}
 
