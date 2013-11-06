@@ -17,18 +17,17 @@ and type2		= T2unit
 				
 				
 datatype expr1	= E1var of var
-				| E1lam of var * type1 * expr1
+				| E1lam of type1 * (var * expr1)
 				| E1app of expr1 * expr1
 				| E1unit
 				| E1tuple of expr1 * expr1
 				| E1pi of LR * expr1
 				| E1inj of LR * type1 * expr1
 				| E1case of expr1 * (var * expr1) * (var * expr1)
-			(*	| E1hold of expr1 *)
 				| E1next of expr2
 
 and expr2		= E2var of var
-				| E2lam of var * type2 * expr2
+				| E2lam of type2 * (var * expr2)
 				| E2app of expr2 * expr2
 				| E2unit
 				| E2tuple of expr2 * expr2

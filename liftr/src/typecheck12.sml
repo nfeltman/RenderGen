@@ -9,7 +9,7 @@ exception TypeError
 
 fun t1eq T1unit T1unit = true
   | t1eq (T1prod (t1,t2)) (T1prod (u1,u2)) = (t1eq t1 u1) andalso (t1eq t2 u2)
-  | t1eq (T1sum (t1,t2)) (T1sum (u1,u2)) = (t1eq t1 u1) andalso (t1eq t2 u2)
+  | t1eq (T1sum (t1,t2))  (T1sum (u1,u2))  = (t1eq t1 u1) andalso (t1eq t2 u2)
   | t1eq (T1func (t1,t2)) (T1func (u1,u2)) = (t1eq t1 u1) andalso (t1eq t2 u2)
   | t1eq (T1fut t) (T1fut u) = (t2eq t u)
   | t1eq _ _ = false
@@ -20,71 +20,62 @@ and t2eq T2unit T2unit = true
   | t2eq (T2func (t1,t2)) (T2func (u1,u2)) = (t2eq t1 u1) andalso (t2eq t2 u2)
   | t2eq _ _ = false
 
-fun t1assertSame a b = if t1eq a b then a else raise TypeError
-fun t2assertSame a b = if t2eq a b then a else raise TypeError
-  
+fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
+fun t1assertSame (a,b) = if t1eq a b then a else raise TypeError
+fun t2assertSame (a,b) = if t2eq a b then a else raise TypeError
+
+fun unstage1 (Stage1 t) = t
+  | unstage1 _ = raise TypeError
+fun unstage2 (Stage2 t) = t
+  | unstage2 _ = raise TypeError
+fun unprod1 (T1prod ab) = ab
+  | unprod1 _ = raise TypeError
+fun unsum1 (T1sum ab) = ab
+  | unsum1 _ = raise TypeError
+fun unfun1 (T1sum ab) = ab
+  | unfun1 _ = raise TypeError
+fun unfut (T1fut t) = t
+  | unfut _ = raise TypeError
+fun unprod2 (T2prod ab) = ab
+  | unprod2 _ = raise TypeError
+fun unsum2 (T2sum ab) = ab
+  | unsum2 _ = raise TypeError
+fun unfun2 (T2sum ab) = ab
+  | unfun2 _ = raise TypeError
+
 fun typeCheck1 gamma exp = 
-	case exp of 
-	  E1var (v) => (
-		case lookup gamma v of
-		  Stage1 ty => ty
-		| Stage2 _ => raise TypeError)
-	| E1lam (v,t,e) => T1func (t, typeCheck1 (extendContext gamma v (Stage1 t)) e)
-	| E1app (e1,e2) => (
-		case (typeCheck1 gamma e1, typeCheck1 gamma e2) of
-		  (T1func (a,b), c) => if t1eq a c then b else raise TypeError
-		| _ => raise TypeError )
-	| E1unit => T1unit
-	| E1tuple (e1,e2) => T1prod (typeCheck1 gamma e1, typeCheck1 gamma e2)
-	| E1pi (lr, e) => (
-		case (lr, typeCheck1 gamma e) of
-		  (Left, T1prod (t,_)) => t
-		| (Right, T1prod (_,t)) => t
-		| _ => raise TypeError )
-	| E1inj (lr, t, e) => (
-		case (lr, typeCheck1 gamma e) of
-		  (Left, tl) => T1sum (tl, t)
-		| (Right, tr) => T1sum (t, tr))
-	| E1case (e1,(v2,e2),(v3,e3)) => (
-		case typeCheck1 gamma e1 of
-		  T1sum (a,b) => t1assertSame 
-						(typeCheck1 (extendContext gamma v2 (Stage1 a)) e2)
-						(typeCheck1 (extendContext gamma v2 (Stage1 b)) e2)
-		| _ => raise TypeError)
-	| E1next e => T1fut (typeCheck2 gamma e)
+	let
+		val check = typeCheck1 gamma
+		fun checkbranch t (v,e) = typeCheck1 (extendContext gamma v (Stage1 t)) e
+	in
+		case exp of 
+		  E1var v => unstage1 (lookup gamma v)
+		| E1lam (t,b) => T1func (t, checkbranch t b)
+		| E1app (e1,e2) => checkFun t1eq (unfun1 (check e1), check e2)
+		| E1unit => T1unit
+		| E1tuple (e1,e2) => T1prod (check e1, check e2)
+		| E1pi (lr, e) => projLR lr (unprod1 (check e)) 
+		| E1inj (lr, t, e) => T1sum (injLR lr (check e) t)
+		| E1case (e1,b1,b2) => t1assertSame (zip2 checkbranch (unsum1 (check e1)) (b1,b2))
+		| E1next e => T1fut (typeCheck2 gamma e)
+	end
 	
 and typeCheck2 gamma exp = 
-	case exp of 
-	  E2var (v) => (
-		case lookup gamma v of
-		  Stage1 _ => raise TypeError
-		| Stage2 ty => ty)
-	| E2lam (v,t,e) => T2func (t, typeCheck2 (extendContext gamma v (Stage2 t)) e)
-	| E2app (e1,e2) => (
-		case (typeCheck2 gamma e1, typeCheck2 gamma e2) of
-		  (T2func (a,b), c) => if t2eq a c then b else raise TypeError
-		| _ => raise TypeError )
-	| E2unit => T2unit
-	| E2tuple (e1,e2) => T2prod (typeCheck2 gamma e1, typeCheck2 gamma e2)
-	| E2pi (lr, e) => (
-		case (lr, typeCheck2 gamma e) of
-		  (Left, T2prod (t,_)) => t
-		| (Right, T2prod (_,t)) => t
-		| _ => raise TypeError )
-	| E2inj (lr, t, e) => (
-		case (lr, typeCheck2 gamma e) of
-		  (Left, tl) => T2sum (tl, t)
-		| (Right, tr) => T2sum (t, tr) )
-	| E2case (e1,(v2,e2),(v3,e3)) => (
-		case typeCheck2 gamma e1 of
-		  T2sum (a,b) => t2assertSame 
-						(typeCheck2 (extendContext gamma v2 (Stage2 a)) e2)
-						(typeCheck2 (extendContext gamma v2 (Stage2 b)) e2)
-		| _ => raise TypeError)
-	| E2prev e => (
-		case typeCheck1 gamma e of
-		  T1fut t => t
-		| _ => raise TypeError)
+	let
+		val check = typeCheck2 gamma
+		fun checkbranch t (v,e) = typeCheck2 (extendContext gamma v (Stage2 t)) e
+	in
+		case exp of 
+		  E2var v => unstage2 (lookup gamma v)
+		| E2lam (t,b) => T2func (t, checkbranch t b)
+		| E2app (e1,e2) => checkFun t2eq (unfun2 (check e1), check e2)
+		| E2unit => T2unit
+		| E2tuple (e1,e2) => T2prod (check e1, check e2)
+		| E2pi (lr, e) => projLR lr (unprod2 (check e)) 
+		| E2inj (lr, t, e) => T2sum (injLR lr (check e) t)
+		| E2case (e1,b1,b2) => t2assertSame (zip2 checkbranch (unsum2 (check e1)) (b1,b2))
+		| E2prev e => unfut (typeCheck1 gamma e)
+	end
 
 and transfer T1unit = T2unit
   | transfer (T1prod (t1,t2)) = T2prod (transfer t1, transfer t2)

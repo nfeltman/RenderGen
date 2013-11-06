@@ -10,5 +10,6 @@ Group is
 	  
 	  (* transformations *)
 	  elision.sml
+	  stageSplit.sml
 	  
       $/basis.cm
