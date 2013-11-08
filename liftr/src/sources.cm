@@ -9,7 +9,10 @@ Group is
       typecheck12.sml
 	  
 	  (* transformations *)
-	  elision.sml
-	  stageSplit.sml
+	(*  elision.sml*)
+	  stageSplit.sml 
+	  
+	  (* test code *)
+	  examples.sml
 	  
       $/basis.cm

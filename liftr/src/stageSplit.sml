@@ -6,6 +6,8 @@ open LangCommon
 open LambdaPSF
 open Typecheck12
 
+exception NotImplemented
+
 fun fresh () = "l"
 fun dummy () = "dummy"
 
@@ -17,7 +19,7 @@ fun mapbr f (c,(l,r)) = (c,(l,f r))
 val Eunit = Etuple []
 fun bind _ _ = Eunit
 
-fun freshPi split () = 
+fun freshPi () = 
 	let
 		val l = fresh ()
 	in
@@ -36,18 +38,18 @@ fun splitSubsBase split () =
 fun stageSplit1 exp = 
 	let
 		val split = stageSplit1
-		val splitBindBase splitBind e i = 
+		fun splitBindBase splitBind e i = 
 			let
 				val v = fresh ()
 				val (c,bound) = splitBind e i
 			in
 				(Epi (0, Evar v), Epi (1, Evar v), fn rest => bind c (v, rest), bound)
 			end
-		fun splitSubs () = mapSnd (fn => splitBindBase splitBind) (splitSubsBase split ())
+		fun splitSubs () = mapSnd splitBindBase (splitSubsBase split ())
 	in
 		case exp of 
-		  E2var v => (Etuple [Evar v, Eunit], (dummy (), Evar v))
-		| E2lam (t,(x,e)) => 
+		  E1var v => (Etuple [Evar v, Eunit], (dummy (), Evar v))
+	(*	| E2lam (t,(x,e)) => 
 			let
 				val (c,lr) = split e
 				val (y, pi) = freshPi ()
@@ -68,9 +70,20 @@ fun stageSplit1 exp =
 					letc1 (letc2 (bind (Eapp (c11, c21)) (y, Etuple [pi 0, Etuple [c12,c22,pi 1]]))), 
 					(l, Eapp (bound1, Etuple [bound2, Epi(2, Evar l)]))
 				)
+			end *)
+		| E1call (f, e) => 
+			let
+				val (y, pi) = freshPi ()
+				val (l,splitDecompBind) = splitSubs ()
+				val (c1,c2,letc,bound) = splitDecompBind e 0
+			in
+				(
+					letc (bind (Eapp (Epi (0, Evar f), c1)) (y, Etuple [pi 0, Etuple [c2,pi 1]])), 
+					(l, Eapp (Epi (1, Evar f), Etuple [bound, Epi(2, Evar l)]))
+				)
 			end
-		| E2unit => (Etuple [Eunit, Eunit], (dummy (), Eunit))
-		| E2tuple (e1, e2) => 
+		| E1unit => (Etuple [Eunit, Eunit], (dummy (), Eunit))
+		| E1tuple (e1, e2) => 
 			let
 				val (l,splitDecompBind) = splitSubs ()
 				val (c11,c12,letc1,bound1) = splitDecompBind e1 0
@@ -81,7 +94,7 @@ fun stageSplit1 exp =
 					(l, Etuple [bound1, bound2])
 				)
 			end
-		| E2pi (side, e) => 
+		| E1pi (side, e) => 
 			let
 				val (v, pi) = freshPi ()
 				val (c, lr) = split e
@@ -92,7 +105,7 @@ fun stageSplit1 exp =
 					mapSnd proj lr
 				)
 			end
-		| E2inj (side, _, e) => 
+		| E1inj (side, _, e) => 
 			let
 				val (v, pi) = freshPi ()
 				val (c, lr) = split e
@@ -103,16 +116,16 @@ fun stageSplit1 exp =
 					mapSnd (inj Tgap) lr
 				)
 			end
-		| E2case (p,(x1,e1),(x2,e2)) => 
-			let
+		| E1case (p,(x1,e1),(x2,e2)) => raise NotImplemented
+			(*let
 				val (l, splitDecompBind) = splitSubs ()
 				val (pp, boundP) = splitDecompBind p  0
 				val (c11, c12, letc1, bound1) = splitDecompBind e1 1
 				val (c21, c22, letc2, bound2) = splitDecompBind e2 2
 			in
 				(Etuple [pp, p1, p2], (l, Ecase (boundP, (x1,bound1), (x2,bound2))))
-			end
-		| E2prev e => mapp (fn c => Epi (1, c)) (stageSplit1 e)
+			end*)
+		| E1next e => mapp (fn c => Epi (1, c)) (stageSplit2 e)
 	end
 	
 and stageSplit2 exp = 
@@ -131,8 +144,9 @@ and stageSplit2 exp =
 	in
 		case exp of 
 		  E2var v => (Eunit, (dummy (), Evar v))
-		| E2lam (t,(x,e)) => mapbr (fn r => Elam (Tgap,(x,r))) (split e)
-		| E2app e12 => splitBin e12 Eapp
+	(*	| E2lam (t,(x,e)) => mapbr (fn r => Elam (Tgap,(x,r))) (split e)
+		| E2app e12 => splitBin e12 Eapp *)
+		| E2call (f, e) => mapbr (fn r => Eapp (Evar f, r)) (split e)
 		| E2unit => (Eunit, (dummy (), Eunit))
 		| E2tuple e12 => splitBin e12 (fn (a,b) => Etuple [a,b])
 		| E2pi (lr, e) => mapbr (fn r => Epi (case lr of Left => 0 | Right => 1, r)) (split e)

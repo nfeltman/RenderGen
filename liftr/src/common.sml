@@ -14,6 +14,8 @@ fun injLR Left  a t = (a,t)
 exception UnboundVar of var
 type 'a context = (var * 'a) list
 
+val empty = []
+
 fun extendContext g v t = (v,t) :: g
 
 fun lookup [] v = raise (UnboundVar v)
