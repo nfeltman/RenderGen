@@ -33,19 +33,26 @@ fun splitSubsBase split () =
 	in
 		(l, splitBind)
 	end
-
+	
 (* assume here that the expression already type-checks *)
 fun stageSplit1 exp = 
 	let
 		val split = stageSplit1
 		fun splitBindBase splitBind e i = 
 			let
-				val v = fresh ()
+				val (v,pi) = freshPi ()
 				val (c,bound) = splitBind e i
 			in
-				(Epi (0, Evar v), Epi (1, Evar v), fn rest => bind c (v, rest), bound)
+				(pi 0, pi 1, fn rest => bind c (v, rest), bound)
 			end
 		fun splitSubs () = mapSnd splitBindBase (splitSubsBase split ())
+		fun id x = x
+		fun bindMap e f g = 
+			let
+				val (v,pi) = freshPi ()
+			in
+				bind e (v, Etuple[f (pi 0), g (pi 1)])
+			end
 	in
 		case exp of 
 		  E1var v => (Etuple [Evar v, Eunit], (dummy (), Evar v))
@@ -90,7 +97,7 @@ fun stageSplit1 exp =
 				val (c21,c22,letc2,bound2) = splitDecompBind e2 1
 			in
 				(
-					letc1 (letc2 (Etuple [Etuple[c11,c21], Etuple[c12,c22]])), 
+					(letc1 o letc2) (Etuple [Etuple[c11,c21], Etuple[c12,c22]]), 
 					(l, Etuple [bound1, bound2])
 				)
 			end
@@ -101,7 +108,7 @@ fun stageSplit1 exp =
 				fun proj x = Epi (case side of Left => 0 | Right => 1, x)
 			in
 				(
-					bind c (v, Etuple[proj (pi 0), pi 1]), 
+					bindMap c proj id, 
 					mapSnd proj lr
 				)
 			end
@@ -112,19 +119,31 @@ fun stageSplit1 exp =
 				fun inj t x = Einj (side, t, x)
 			in
 				(
-					bind c (v, Etuple[inj Tgap (pi 0), pi 1]), 
+					bindMap c (inj Tgap) id, 
 					mapSnd (inj Tgap) lr
 				)
 			end
-		| E1case (p,(x1,e1),(x2,e2)) => raise NotImplemented
-			(*let
-				val (l, splitDecompBind) = splitSubs ()
-				val (pp, boundP) = splitDecompBind p  0
-				val (c11, c12, letc1, bound1) = splitDecompBind e1 1
-				val (c21, c22, letc2, bound2) = splitDecompBind e2 2
+		| E1case (p,(x1,e1),(x2,e2)) =>
+			let
+				val (c, cpi) = freshPi ()
+				val (d, dpi) = freshPi ()
+				val (cp, lr) = split e
+				val (c1, (l1,r1)) = split e1
+				val (c2, (l2,r2)) = split e2
+				fun inj side x = Einj (side, Tgap, x)
 			in
-				(Etuple [pp, p1, p2], (l, Ecase (boundP, (x1,bound1), (x2,bound2))))
-			end*)
+				(
+					bind cp (c, 
+							bindMap
+							Ecase(cpi 0, 
+								(x1, bindMap e1 id (inj Left)), 
+								(x2, bindMap e2 id (inj Right))
+							)
+							id (fn y => Etuple [cpi 1,y])
+						), 
+					...
+				)
+			end
 		| E1next e => mapp (fn c => Epi (1, c)) (stageSplit2 e)
 	end
 	
