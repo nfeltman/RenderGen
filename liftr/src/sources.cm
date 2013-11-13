@@ -1,14 +1,18 @@
 Group is
 	  common.sml
 	  
-	  (* lambdaPSF *)
-	  lambdaPSF.sml
+	  (* lambda12c *)
+      lambda12c.sml
 	  
 	  (* lambda12 *)
       lambda12.sml
       typecheck12.sml
 	  
+	  (* lambdaPSF *)
+	  lambdaPSF.sml
+	  
 	  (* transformations *)
+	  propstage.sml
 	(*  elision.sml*)
 	  stageSplit.sml 
 	  

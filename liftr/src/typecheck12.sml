@@ -84,19 +84,16 @@ and typeCheck2 gamma exp =
 	end
 	
 fun checkProgram p = 
-	let
-		fun baseContext (FuncDec1(f,t1,t2,_,_)::fs) = 
-				extendContext (baseContext fs) f (Func1 (t1,t2))
-		  | baseContext (FuncDec2(f,t1,t2,_,_)::fs) = 
-				extendContext (baseContext fs) f (Func2 (t1,t2))
-		  | baseContext [] = empty
-		val allFuncs = baseContext p
-		fun checkFunc (FuncDec1(f,t1,t2,v,e)) = 
-				(t1assertSame (t2, typeCheck1 (extendContext allFuncs v (Stage1 t1)) e); ())
-		  | checkFunc (FuncDec2(f,t1,t2,v,e)) = 
-				(t2assertSame (t2, typeCheck2 (extendContext allFuncs v (Stage2 t1)) e); ())
+	let		
+		fun checkFunc _ [] = ()
+		  | checkFunc g (FuncDec1(f,t1,t2,v,e) :: fs) = 
+				(t1assertSame (t2, typeCheck1 (extendContext g v (Stage1 t1)) e); 
+				checkFunc (extendContext g f (Func1 (t1,t2))) fs)
+		  | checkFunc g (FuncDec2(f,t1,t2,v,e) :: fs) = 
+				(t2assertSame (t2, typeCheck2 (extendContext g v (Stage2 t1)) e); 
+				checkFunc (extendContext g f (Func2 (t1,t2))) fs)
 	in
-		app checkFunc p
+		checkFunc empty p
 	end
 
 end
