@@ -1,0 +1,55 @@
+Let 'set' be some base type in both 1 and 2.  Define holdSet analogously to holdInt.
+Let the following functions be in the context:
+
+triSplit : set -> unit + int * set * set   @ 1
+compare : int * int -> unit + unit + unit  @ 2
+
+============================
+
+fun searchDir (s : set, x : $int) : $bool =
+	next {
+		let s2 = prev {holdSet s} in
+		let x2 = prev {x} in
+		(...)
+	}
+
+fun search (s : set, x : $int) : $bool =
+	case triSplit s of
+	  _ => 
+		next {false}
+	| (n,l,g) => 
+		next {
+			case compare ( prev {x}, prev {holdInt n}) of 
+			  _ (* LT *) => prev {searchDir (l, x)}
+			| _ (* EQ *) => true
+			| _ (* GT *) => prev {searchDir (g, x)}
+		}
+		
+===================================================================================
+
+fun searchDir (s : set, x : unit) : unit * set = ((),s)
+
+fun search (s : set, x : unit) : unit * (unit + int * set * set) =
+	case triSplit s of
+		  _ => 
+			((), injL ())
+		| (n,l,g) => 
+			let pL = #2 (searchDir (l, x)) in
+			let pG = #2 (searchDir (g, x)) in
+			((), injR (n, pL, pG))
+
+===================================================================================
+
+fun searchDir ((s : unit, x : int), p : set) : bool =
+	let s2 = p in
+	let x2 = x in
+	(...)
+		
+fun search ((s : unit, x : int), p : (unit + int * set * set)) : bool =
+	case p of
+	  _ => false
+	| (pn,pl,pg) => 
+		case compare (x, pn) of 
+		  _ (* LT *) => searchDir (((), x), pl)
+		| _ (* EQ *) => true
+		| _ (* GT *) => searchDir (((), x), pg)

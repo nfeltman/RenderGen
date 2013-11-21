@@ -1,0 +1,47 @@
+Let 'set' be some base type in both 1 and 2.  Define holdSet analogously to holdInt.
+Let the following functions be in the context:
+
+triSplit : set -> unit + int * set * set   @ 1
+compare : int * int -> unit + unit + unit  @ 2
+
+============================
+
+fun search (s : set, x : $int) : $bool =
+	case triSplit s of
+	  _ => 
+		next {false}
+	| (n,l,g) => 
+		next {
+			case compare ( prev {x}, prev {holdInt n}) of 
+			  _ (* LT *) => prev {search (l, x)}
+			| _ (* EQ *) => true
+			| _ (* GT *) => prev {search (g, x)}
+		}
+		
+===================================================================================
+
+fun search (s : set, x : unit) : unit * (mu a => unit + int * a * a) =
+	let (v, p) = 
+		case triSplit s of
+		  _ => 
+			((), injL ())
+		| (n,l,g) => 
+			let pL = #2 (searchDir (l, x)) in
+			let pG = #2 (searchDir (g, x)) in
+			((), injR (n, pL, pG))
+	in
+		(v, roll p)
+
+
+===================================================================================
+		
+		
+fun search ((s : unit, x : int), p : (mu a => unit + int * a * a)) : bool =
+	let p2 = unroll p in
+	case p2 of
+	  _ => false
+	| (pn,pl,pg) => 
+		case compare (x, pn) of 
+		  _ (* LT *) => search (((), x), pl)
+		| _ (* EQ *) => true
+		| _ (* GT *) => search (((), x), pg)

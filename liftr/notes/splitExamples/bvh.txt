@@ -1,0 +1,27 @@
+
+trySplit : set -> tri + set * set
+makeBound : set -> box
+isectBox : ray * box -> unit + unit
+isectTri : ray * tri -> hit
+mergeHit : hit * hit -> hit
+inf : hit
+
+============================
+
+fun trace (g : set, r : $ray) : $hit =
+	next {
+		case isectBox (prev {r}, prev {holdBox (makeBound g)}) of 
+		  _ (* hits *) => 
+				prev {
+					case trySplit g of
+					  t => 
+						next { 
+							isectTri (prev{r}, prev { holdTri t }) 
+						}
+					| (g1,g2) => 
+						next {
+							mergeHit (prev {trace (g1, r)}, prev {trace (g2, r)})
+						}
+				}
+		| _ (* miss *) => inf
+	}
