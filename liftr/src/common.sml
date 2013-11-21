@@ -20,6 +20,11 @@ fun extendContext g v t = (v,t) :: g
 
 fun lookup [] v = raise (UnboundVar v)
   | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
+
+
+fun listeq eq (x::xs) (y::ys) = (eq x y) andalso (listeq eq xs ys)
+  | listeq eq [] [] = true
+  | listeq _ _ _ = false
   
 fun zip2 f (a,b) (c,d) = (f a c, f b d)
 fun trn ((a,b),(c,d)) = ((a,c),(b,d))

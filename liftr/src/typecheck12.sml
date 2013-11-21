@@ -21,8 +21,7 @@ and t2eq T2unit T2unit = true
   | t2eq _ _ = false
 
 fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
-fun t1assertSame (a,b) = if t1eq a b then a else raise TypeError
-fun t2assertSame (a,b) = if t2eq a b then a else raise TypeError
+fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 
 fun unstage1 (Stage1 t) = t
   | unstage1 _ = raise TypeError
@@ -36,7 +35,7 @@ fun unprod1 (T1prod ab) = ab
   | unprod1 _ = raise TypeError
 fun unsum1 (T1sum ab) = ab
   | unsum1 _ = raise TypeError
-(*fun unfun1 (T1sum ab) = ab
+(*fun unfun1 (T1fun ab) = ab
   | unfun1 _ = raise TypeError*)
 fun unfut (T1fut t) = t
   | unfut _ = raise TypeError
@@ -44,7 +43,7 @@ fun unprod2 (T2prod ab) = ab
   | unprod2 _ = raise TypeError
 fun unsum2 (T2sum ab) = ab
   | unsum2 _ = raise TypeError
-(*fun unfun2 (T2sum ab) = ab
+(*fun unfun2 (T2fun ab) = ab
   | unfun2 _ = raise TypeError*)
 
 fun typeCheck1 gamma exp = 
@@ -61,7 +60,7 @@ fun typeCheck1 gamma exp =
 		| E1tuple (e1,e2) => T1prod (check e1, check e2)
 		| E1pi (lr, e) => projLR lr (unprod1 (check e)) 
 		| E1inj (lr, t, e) => T1sum (injLR lr (check e) t)
-		| E1case (e1,b1,b2) => t1assertSame (zip2 checkbranch (unsum1 (check e1)) (b1,b2))
+		| E1case (e1,b1,b2) => assertSame t1eq (zip2 checkbranch (unsum1 (check e1)) (b1,b2))
 		| E1next e => T1fut (typeCheck2 gamma e)
 	end
 	
@@ -79,7 +78,7 @@ and typeCheck2 gamma exp =
 		| E2tuple (e1,e2) => T2prod (check e1, check e2)
 		| E2pi (lr, e) => projLR lr (unprod2 (check e)) 
 		| E2inj (lr, t, e) => T2sum (injLR lr (check e) t)
-		| E2case (e1,b1,b2) => t2assertSame (zip2 checkbranch (unsum2 (check e1)) (b1,b2))
+		| E2case (e1,b1,b2) => assertSame t2eq (zip2 checkbranch (unsum2 (check e1)) (b1,b2))
 		| E2prev e => unfut (typeCheck1 gamma e)
 	end
 	
@@ -87,7 +86,7 @@ fun checkProgram p =
 	let		
 		fun checkFunc _ [] = ()
 		  | checkFunc g (FuncDec1(f,t1,t2,v,e) :: fs) = 
-				(t1assertSame (t2, typeCheck1 (extendContext g v (Stage1 t1)) e); 
+				(assertSame t1eq (t2, typeCheck1 (extendContext g v (Stage1 t1)) e); 
 				checkFunc (extendContext g f (Func1 (t1,t2))) fs)
 	(*	  | checkFunc g (FuncDec2(f,t1,t2,v,e) :: fs) = 
 				(t2assertSame (t2, typeCheck2 (extendContext g v (Stage2 t1)) e); 

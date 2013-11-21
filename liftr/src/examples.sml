@@ -36,6 +36,8 @@ fun runtests () =
 				val propegated = PropStage.propProgram p
 				val _ = Typecheck12.checkProgram propegated
 				val (split1, split2) = StageSplit.splitProg propegated
+				val _ = TypecheckPSF.typeCheck split1
+				val _ = TypecheckPSF.typeCheck split2
 			in
 				()
 			end
