@@ -19,7 +19,7 @@ datatype expr	= Evar of var
 				| Enext of expr
 				| Eprev of expr
 
-datatype topLevelFunc = FuncDec1 of var * ty * ty * var * expr | FuncDec2 of var * ty * ty * var * expr 
+datatype topLevelFunc = FuncDec1 of var * ty * ty * var * expr (*| FuncDec2 of var * ty * ty * var * expr *)
 type program = topLevelFunc list
 
 end

@@ -30,8 +30,8 @@ fun unstage2 (Stage2 t) = t
   | unstage2 _ = raise TypeError
 fun unfunc1 (Func1 ab) = ab
   | unfunc1 _ = raise TypeError
-fun unfunc2 (Func2 ab) = ab
-  | unfunc2 _ = raise TypeError
+(*fun unfunc2 (Func2 ab) = ab
+  | unfunc2 _ = raise TypeError *)
 fun unprod1 (T1prod ab) = ab
   | unprod1 _ = raise TypeError
 fun unsum1 (T1sum ab) = ab
@@ -74,7 +74,7 @@ and typeCheck2 gamma exp =
 		  E2var v => unstage2 (lookup gamma v)
 	(*	| E2lam (t,b) => T2func (t, checkbranch t b)
 		| E2app (e1,e2) => checkFun t2eq (unfun2 (check e1), check e2)*)
-		| E2call (f, e) => checkFun t2eq (unfunc2 (lookup gamma f), check e)
+	(*	| E2call (f, e) => checkFun t2eq (unfunc2 (lookup gamma f), check e) *)
 		| E2unit => T2unit
 		| E2tuple (e1,e2) => T2prod (check e1, check e2)
 		| E2pi (lr, e) => projLR lr (unprod2 (check e)) 
@@ -89,9 +89,9 @@ fun checkProgram p =
 		  | checkFunc g (FuncDec1(f,t1,t2,v,e) :: fs) = 
 				(t1assertSame (t2, typeCheck1 (extendContext g v (Stage1 t1)) e); 
 				checkFunc (extendContext g f (Func1 (t1,t2))) fs)
-		  | checkFunc g (FuncDec2(f,t1,t2,v,e) :: fs) = 
+	(*	  | checkFunc g (FuncDec2(f,t1,t2,v,e) :: fs) = 
 				(t2assertSame (t2, typeCheck2 (extendContext g v (Stage2 t1)) e); 
-				checkFunc (extendContext g f (Func2 (t1,t2))) fs)
+				checkFunc (extendContext g f (Func2 (t1,t2))) fs) *)
 	in
 		checkFunc empty p
 	end

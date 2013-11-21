@@ -35,7 +35,7 @@ and propBr2 (v,e) = (v, prop2 e)
 and prop2 exp = 
 	case exp of 
 	  Evar v => E2var v
-	| Ecall (v,e) => E2call (v, prop2 e)
+	| Ecall (v,e) => raise StagePropException (* E2call (v, prop2 e) *)
 	| Eunit => E2unit
 	| Etuple (e1,e2) => E2tuple (prop2 e1, prop2 e2)
 	| Epi (lr, e) => E2pi (lr, prop2 e)
@@ -48,8 +48,8 @@ fun propProgram p =
 	let		
 		fun propFunc (Lambda12c.FuncDec1 (f,t1,t2,v,e)) = 
 				Lambda12.FuncDec1 (f, propTy1 t1, propTy1 t2, v, prop1 e)
-		  | propFunc (Lambda12c.FuncDec2 (f,t1,t2,v,e)) = 
-				Lambda12.FuncDec2 (f, propTy2 t1, propTy2 t2, v, prop2 e)
+	(*	  | propFunc (Lambda12c.FuncDec2 (f,t1,t2,v,e)) = 
+				Lambda12.FuncDec2 (f, propTy2 t1, propTy2 t2, v, prop2 e) *)
 	in
 		map propFunc p
 	end

@@ -31,10 +31,17 @@ val prog3 = [hold1, hold2, hold3]
 
 fun runtests () = 
 	let
-		val checkProgram = Typecheck12.checkProgram o PropStage.propProgram
-		val _ = checkProgram prog1
-		val _ = checkProgram prog2
-		val _ = checkProgram prog3
+		fun testProgram p = 
+			let
+				val propegated = PropStage.propProgram p
+				val _ = Typecheck12.checkProgram propegated
+				val (split1, split2) = StageSplit.splitProg propegated
+			in
+				()
+			end
+		val _ = testProgram prog1
+		val _ = testProgram prog2
+		val _ = testProgram prog3
 	in
 		"All pass."
 	end

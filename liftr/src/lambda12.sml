@@ -30,7 +30,7 @@ datatype expr1	= E1var of var
 and expr2		= E2var of var
 		(*		| E2lam of type2 * (var * expr2)
 				| E2app of expr2 * expr2 *)
-				| E2call of var * expr2
+		(*		| E2call of var * expr2 *)
 				| E2unit
 				| E2tuple of expr2 * expr2
 				| E2pi of LR * expr2
@@ -38,10 +38,10 @@ and expr2		= E2var of var
 				| E2case of expr2 * (var * expr2) * (var * expr2)
 				| E2prev of expr1
 
-datatype contEntry = Stage1 of type1 | Stage2 of type2 | Func1 of type1 * type1 | Func2 of type2 * type2
+datatype contEntry = Stage1 of type1 | Stage2 of type2 | Func1 of type1 * type1 (* | Func2 of type2 * type2 *)
 type cont = contEntry context
 
-datatype topLevelFunc = FuncDec1 of var * type1 * type1 * var * expr1 | FuncDec2 of var * type2 * type2 * var * expr2 
+datatype topLevelFunc = FuncDec1 of var * type1 * type1 * var * expr1 (*| FuncDec2 of var * type2 * type2 * var * expr2 *)
 type program = topLevelFunc list
 
 end
