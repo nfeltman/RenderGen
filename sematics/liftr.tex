@@ -302,7 +302,7 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 	{\Gamma,x:A^\bbtwo \vdash^\bbtwo e : B \splits [p,l.r]} \and
 \infer [\to\mathrm{E}\splito] 
 	{\gdo e_1~e_2 : B \splito 
-	\left[ \begin{array}{l}\letin{y}{(\pi_1 c_1) (\pi_1 c2)}{(\pi_1 y,(\pi_2 c_1,\pi_2 c_2, \pi_2 y))}, \\
+	\left[ \begin{array}{l}\letin{y}{(\pi_1 c_1) (\pi_1 c_2)}{(\pi_1 y,(\pi_2 c_1,\pi_2 c_2, \pi_2 y))}, \\
 	l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2},\pi_3~l) \end{array} \right ] }
 	{\gdo e_1 : A \to B \splito [c_1,l_1.r_1] 
 	& \gdo e_2 : A \splito [c_2,l_2.r_2]} \and
@@ -310,6 +310,25 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 	{\gdt e_1~e_2 : B \splits [(p_1,p_2), l.(\letin{x_1}{\pi_1~l}{r_1})(\letin{x_2}{\pi_2~l}{r_2})]}
 	{\gdt e_1 : A \to B \splits [p_1,l_1.r_1] 
 	& \gdt e_2 : A \splits [p_2,l_2.r_2]}
+\end{mathpar}
+\end{figure*}
+
+\begin{figure*}
+\caption{Second-Class Function Splitting}
+\label{fig:splitFunction}
+\begin{mathpar}
+\infer [\mathrm{hyp}\splito] 
+	{\gdo x : A\splito [(x,()),\_.x]}{x : A^\bbone \in \Gamma} \and
+\infer [\mathrm{hyp}\splits] 
+	{\gdt x : A\splits [(),\_.x]}{x : A^\bbtwo \in \Gamma} \and
+\infer [\to\mathrm{I}\splito] 
+	{\gdo (\lam{x}{A}{e}) : A \to B \splito \left[\begin{array}{l}\lam{x}{|A|_\bbone}{c},\\ (\lam{(x,l)}{|A|_\bbtwo\times \tau}{r})\end{array}\right]}
+	{\Gamma,x:A^\bbone \vdash^\bbone e : B \splito [c,l.r]} \and
+\infer [\to\mathrm{E}\splito] 
+	{\gdo f~e : B \splito 
+	\left[ \begin{array}{l}\letin{y}{f (\pi_1 c)}{(\pi_1 y,(\pi_2 c, \pi_2 y))}, \\
+	l.f(\letin{x}{\pi_1~l}{r},\pi_2~l) \end{array} \right ] }
+	{f : A \to B \in \Gamma & \gdo e : A \splito [c,l.r]} 
 \end{mathpar}
 \end{figure*}
 
@@ -331,8 +350,12 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 	{\gdt e : A \splits [p,l.r] } \and
 \infer [+\mathrm{E}\splito]
 	{\gdo \left( \tallcase {e_1}{x_2.e_2}{x_3.e_3} \right) :C \splito 
-	\left[\left(\tallcase {\pi_1c_2}{x_2.\letin{y}{c_2}{(\pi_1 y,\iota_1(\pi_2 y))}}{x_3.\letin{y}{c_3}{(\pi_1 y,\iota_2(\pi_2 y))}}\right), 
-	l.\left(\tallcase{l}{l_2.r_2}{l_3.r_3}\right)\right]}
+	\left[
+		\begin{array}{l}
+		\letin{z}{\left(\tallcase {\pi_1c_2}{x_2.\letin{y}{c_2}{(\pi_1 y,\iota_1(\pi_2 y))}}{x_3.\letin{y}{c_3}{(\pi_1 y,\iota_2(\pi_2 y))}}\right)}{(\pi_1 z, (\pi_2 c, \pi_2 z))}, \\
+		l.\left(\tallcase{\letin{l_1}{\pi_1 l}{r_1}}{x_2.\caseof{\pi_2 l}{l_2.r_2}{\_.{\tt error}}}{x_3.\caseof{\pi_2 l}{\_.{\tt error}}{l_3.r_3}}\right)
+		\end{array}
+	\right]}
 	{\gdo e_1 : A+B \splito [c_2, l_2.r_2]
 	& \Gamma,x_2:A^\bbone \vdash^\bbone e_2 : C \splito [c_2,l_2.r_2] 
 	& \Gamma,x_3:B^\bbone \vdash^\bbone e_3 : C \splito [c_3,l_3.r_3]} \and
