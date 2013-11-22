@@ -2,6 +2,51 @@
 structure PrintPSF = 
 struct
 
+open LangCommon
+open LambdaPSF
+
+fun printTypeHelper (p : string -> unit) level ty = 
+	let
+		val g = printTypeHelper p
+		fun prio nextLevel f = 
+			if nextLevel > level 
+			then (p "("; f (); p ")")
+			else f ()
+	in
+		case ty of
+		  Tprod [] => p "unit"
+		| Tprod (t0::ts) => prio 1 (fn () => (g 0 t0; app (fn t => (p " * "; g 0 t)) ts))
+		| Tsum (t1,t2) => prio 1 (fn () => (g 0 t1; p " + "; g 0 t2))
+		| Tfunc (t1,t2) => prio 2 (fn () => (g 1 t1; p " -> "; g 2 t2))
+	end
+
+fun printType p = printTypeHelper p 2
+
+fun printTermHelper (p : string -> unit) level e = 
+	let
+		val g = printTermHelper p
+		fun prio nextLevel f = 
+			if nextLevel > level 
+			then (p "("; f (); p ")")
+			else f ()
+	in
+		case e of
+		  Evar v => p v
+		| Elam (t, (v, e)) => prio 2 (fn () => (p "fn "; p v; p " : "; printType p t; p " => "; g 2 e))
+		| Eapp (e1, e2) => prio 1 (fn () => (g 1 e1; p " "; g 0 e2))
+		| Etuple [] => p "()"
+		| Etuple (e0::es) => (p "("; g 2 e0; app (fn e => (p ", "; g 2 e)) es; p ")")
+		| Epi (i,e) => prio 1 (fn () => (p "#"; p (Int.toString (i+1)); g 0 e))
+		| Einj (Left, _, e) => prio 1 (fn () => (p "inL"; g 0 e))
+		| Einj (Right, _, e) => prio 1 (fn () => (p "inR"; g 0 e))
+		| Ecase (e1,(v2,e2),(v3,e3)) => prio 2 (fn () => (p "case "; g 2 e1; p " of "; p v2; p " => "; g 2 e2; p " | "; p v3; p " => "; g 2 e3))
+		| Elet (e1,(v,e2)) => prio 2 (fn () => (p "let "; p v; p " = "; g 2 e1; p " in "; g 2 e2))
+		| Eerror => p "error"
+	end
+	
+fun printTerm p = printTermHelper p 2
+
+fun test () = (printType print (Tfunc (Tfunc (Tprod [],Tprod []),Tfunc (Tprod [],Tprod []))); print "\n")
 
 (* Tprod of ty list
 				| Tsum of ty * ty

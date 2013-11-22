@@ -36,14 +36,18 @@ fun runtests () =
 				val propegated = PropStage.propProgram p
 				val _ = Typecheck12.checkProgram propegated
 				val (split1, split2) = StageSplit.splitProg propegated
+				val _ = PrintPSF.printTerm print split1
+				val _ = print "\n========\n"
+				val _ = PrintPSF.printTerm print split2
+				val _ = print "\n========\n"
 				val _ = TypecheckPSF.typeCheck split1
 				val _ = TypecheckPSF.typeCheck split2
 			in
 				()
 			end
-		val _ = testProgram prog1
+	(*	val _ = testProgram prog1 *)
 		val _ = testProgram prog2
-		val _ = testProgram prog3
+	(*	val _ = testProgram prog3 *)
 	in
 		"All pass."
 	end
