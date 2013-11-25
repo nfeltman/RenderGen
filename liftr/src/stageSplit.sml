@@ -20,8 +20,8 @@ fun secondImage T1unit = Tprod []
   | secondImage (T1sum (t1,t2)) = Tsum (firstImage t1, firstImage t2)
   | secondImage (T1fut t) = trType2 t
 
-fun fresh () = "l"
-fun dummy () = "dummy"
+fun fresh () = Variable.newvar "l"
+fun dummy () = Variable.newvar "dummy"
 
 (* map precomp / residual *)
 fun mapSnd f (a,b) = (a, f b)
@@ -95,7 +95,7 @@ fun stageSplit1 gamma exp =
 						bindProj (Eapp (Evar f, argVal)) (fn (resVal,resBoun) => 
 							Etuple [resVal, Etuple [argPre,resBoun]]
 					)), 
-					lookup gamma f,
+					Tprod[t, lookup gamma f],
 					(link, Eapp (Evar f, Etuple [bound, Epi(1, Evar link)]))
 				)
 			end

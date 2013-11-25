@@ -1,4 +1,7 @@
 Group is
+	  (* common stuff *)
+	  variable.sig
+	  variable.sml
 	  common.sml
 	  
 	  (* lambda12c *)
