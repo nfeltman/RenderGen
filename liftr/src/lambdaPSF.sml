@@ -16,7 +16,7 @@ datatype expr	= Evar of var
 				| Einj of LR * ty * expr
 				| Ecase of expr * (var * expr) * (var * expr)
 				| Elet of expr * (var * expr)
-				| Eerror
+				| Eerror of ty
 				
 type cont = ty context
 
