@@ -4,10 +4,11 @@ struct
 
 open LangCommon
 
-datatype ty		= Tunit
+datatype ty		= Tint
+				| Tunit
 				| Tprod of ty * ty
 				| Tsum of ty * ty
-				| Tfut of ty		
+				| Tfut of ty
 				
 datatype expr	= Evar of var
 				| Ecall of var * expr
@@ -18,6 +19,7 @@ datatype expr	= Evar of var
 				| Ecase of expr * (var * expr) * (var * expr)
 				| Enext of expr
 				| Eprev of expr
+				| Ebinop of Prims.binops * expr * expr
 
 datatype topLevelFunc = FuncDec1 of var * ty * ty * var * expr (*| FuncDec2 of var * ty * ty * var * expr *)
 type program = topLevelFunc list

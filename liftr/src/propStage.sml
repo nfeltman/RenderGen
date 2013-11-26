@@ -8,12 +8,14 @@ open Lambda12
 
 exception StagePropException
 
-fun propTy1 Tunit = T1unit
+fun propTy1 Tint = T1int
+  | propTy1 Tunit = T1unit
   | propTy1 (Tprod (t1,t2)) = T1prod (propTy1 t1, propTy1 t2)
   | propTy1 (Tsum (t1,t2)) = T1sum (propTy1 t1, propTy1 t2)
   | propTy1 (Tfut t) = T1fut (propTy2 t)
   
-and propTy2 Tunit = T2unit
+and propTy2 Tint = T2int
+  | propTy2 Tunit = T2unit
   | propTy2 (Tprod (t1,t2)) = T2prod (propTy2 t1, propTy2 t2)
   | propTy2 (Tsum (t1,t2)) = T2sum (propTy2 t1, propTy2 t2)
   | propTy2 (Tfut t) = raise StagePropException
@@ -28,6 +30,7 @@ and prop1 exp =
 	| Epi (lr, e) => E1pi (lr, prop1 e)
 	| Einj (lr, t, e) => E1inj (lr, propTy1 t, prop1 e)
 	| Ecase (e,b1,b2) => E1case (prop1 e, propBr1 b1, propBr1 b2)
+	| Ebinop (bo,e1,e2) => E1binop(bo, prop1 e1, prop1 e2)
 	| Eprev e => raise StagePropException
 	| Enext e => E1next (prop2 e)
 
@@ -41,6 +44,7 @@ and prop2 exp =
 	| Epi (lr, e) => E2pi (lr, prop2 e)
 	| Einj (lr, t, e) => E2inj (lr, propTy2 t, prop2 e)
 	| Ecase (e,b1,b2) => E2case (prop2 e, propBr2 b1, propBr2 b2)
+	| Ebinop (bo,e1,e2) => E2binop(bo, prop2 e1, prop2 e2)
 	| Eprev e => E2prev (prop1 e)
 	| Enext e => raise StagePropException
 

@@ -6,20 +6,24 @@ open LangCommon
 open LambdaPSF
 open Typecheck12
 
-fun trType2 T2unit = Tprod []
+fun trType2 T2int = Tint
+  | trType2 T2unit = Tprod []
   | trType2 (T2prod (t1,t2)) = Tprod [trType2 t1, trType2 t2]
   | trType2 (T2sum (t1,t2)) = Tsum (trType2 t1, trType2 t2)
 
-fun firstImage T1unit = Tprod []
+fun firstImage T1int = Tint
+  | firstImage T1unit = Tprod []
   | firstImage (T1prod (t1,t2)) = Tprod [firstImage t1, firstImage t2]
   | firstImage (T1sum (t1,t2)) = Tsum (firstImage t1, firstImage t2)
   | firstImage (T1fut _) = Tprod []
 
-fun secondImage T1unit = Tprod []
+fun secondImage T1int = Tprod []
+  | secondImage T1unit = Tprod []
   | secondImage (T1prod (t1,t2)) = Tprod [firstImage t1, firstImage t2]
   | secondImage (T1sum (t1,t2)) = Tsum (firstImage t1, firstImage t2)
   | secondImage (T1fut t) = trType2 t
-
+  
+  
 fun fresh () = Variable.newvar "l"
 fun dummy () = Variable.newvar "dummy"
 
@@ -50,7 +54,7 @@ fun splitSubsBase split () =
 	in
 		(l, splitBind)
 	end
-
+	
 (* assume here that the expression already type-checks *)
 fun stageSplit1 gamma exp = 
 	let
@@ -175,6 +179,13 @@ fun stageSplit1 gamma exp =
 					t1
 				)
 			end
+		| E1binop (bo,e1,e2) =>
+			(
+				Etuple[Ebinop(bo, Epi(0, #1 (split e1)), Epi(0, #1 (split e2))), Etuple[]],
+				Tprod[], 
+				(dummy (), Etuple[]),
+				#3 (Prim1.getTypes bo)
+			)
 		| E1next e => 
 			let
 				val (p, tb, lr, t) = stageSplit2 gamma e
@@ -222,6 +233,7 @@ and stageSplit2 gamma exp =
 						(x2,bind (pi 2) lr2))
 				),t1)
 			end
+		| E2binop (bo,e1,e2) => splitBin (e1,e2) (fn (a,_,b,_) => (Ebinop(bo,a,b), #3 (Prim2.getTypes bo)))
 		| E2prev e => 
 			let
 				val (c, tb, lr, t) = stageSplit1 gamma e
