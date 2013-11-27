@@ -5,6 +5,7 @@ struct
 open LangCommon
 
 datatype type1	= T1int
+				| T1bool
 				| T1unit
 				| T1prod of type1 * type1
 				| T1sum of type1 * type1
@@ -12,6 +13,7 @@ datatype type1	= T1int
 				| T1fut of type2
 				
 and type2		= T2int
+				| T2bool
 				| T2unit
 				| T2prod of type2 * type2
 				| T2sum of type2 * type2

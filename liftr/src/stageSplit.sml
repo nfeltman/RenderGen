@@ -7,17 +7,20 @@ open LambdaPSF
 open Typecheck12
 
 fun trType2 T2int = Tint
+  | trType2 T2bool = Tbool
   | trType2 T2unit = Tprod []
   | trType2 (T2prod (t1,t2)) = Tprod [trType2 t1, trType2 t2]
   | trType2 (T2sum (t1,t2)) = Tsum (trType2 t1, trType2 t2)
 
 fun firstImage T1int = Tint
+  | firstImage T1bool = Tbool
   | firstImage T1unit = Tprod []
   | firstImage (T1prod (t1,t2)) = Tprod [firstImage t1, firstImage t2]
   | firstImage (T1sum (t1,t2)) = Tsum (firstImage t1, firstImage t2)
   | firstImage (T1fut _) = Tprod []
 
 fun secondImage T1int = Tprod []
+  | secondImage T1bool = Tprod []
   | secondImage T1unit = Tprod []
   | secondImage (T1prod (t1,t2)) = Tprod [firstImage t1, firstImage t2]
   | secondImage (T1sum (t1,t2)) = Tsum (firstImage t1, firstImage t2)

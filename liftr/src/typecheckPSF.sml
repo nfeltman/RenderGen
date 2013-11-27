@@ -2,7 +2,7 @@
 structure TypecheckPSF = 
 struct
 
-structure Prim = Prims.PrimTyper (struct type t = LambdaPSF.ty val Tint = LambdaPSF.Tint end)
+structure Prim = Prims.PrimTyper (struct type t = LambdaPSF.ty val Tint = LambdaPSF.Tint val Tbool = LambdaPSF.Tbool end)
 
 open LangCommon
 open LambdaPSF
@@ -10,6 +10,7 @@ open LambdaPSF
 exception TypeError
 
 fun teq Tint Tint = true
+  | teq Tbool Tbool = true
   | teq (Tprod ts1) (Tprod ts2) = listeq teq ts1 ts2
   | teq (Tsum  (t1,t2)) (Tsum  (u1,u2)) = (teq t1 u1) andalso (teq t2 u2)
   | teq (Tfunc (t1,t2)) (Tfunc (u1,u2)) = (teq t1 u1) andalso (teq t2 u2)

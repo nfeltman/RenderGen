@@ -7,14 +7,18 @@ open Lambda12
 
 exception TypeError
 
-fun t1eq T1unit T1unit = true
+fun t1eq T1int T1int = true
+  | t1eq T1bool T1bool = true
+  | t1eq T1unit T1unit = true
   | t1eq (T1prod (t1,t2)) (T1prod (u1,u2)) = (t1eq t1 u1) andalso (t1eq t2 u2)
   | t1eq (T1sum (t1,t2))  (T1sum (u1,u2))  = (t1eq t1 u1) andalso (t1eq t2 u2)
 (*  | t1eq (T1func (t1,t2)) (T1func (u1,u2)) = (t1eq t1 u1) andalso (t1eq t2 u2)*)
   | t1eq (T1fut t) (T1fut u) = (t2eq t u)
   | t1eq _ _ = false
   
-and t2eq T2unit T2unit = true
+and t2eq T2int T2int = true
+  | t2eq T2bool T2bool = true
+  | t2eq T2unit T2unit = true
   | t2eq (T2prod (t1,t2)) (T2prod (u1,u2)) = (t2eq t1 u1) andalso (t2eq t2 u2)
   | t2eq (T2sum  (t1,t2)) (T2sum  (u1,u2)) = (t2eq t1 u1) andalso (t2eq t2 u2)
 (*  | t2eq (T2func (t1,t2)) (T2func (u1,u2)) = (t2eq t1 u1) andalso (t2eq t2 u2)*)
@@ -47,8 +51,8 @@ fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
 fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 fun binSame eq (a,b) (c,d,e) = if (eq a c) andalso (eq b d) then e else raise TypeError
 
-structure Prim1 = Prims.PrimTyper (struct type t = type1 val Tint = T1int end)
-structure Prim2 = Prims.PrimTyper (struct type t = type2 val Tint = T2int end)
+structure Prim1 = Prims.PrimTyper (struct type t = type1 val Tint = T1int val Tbool = T1bool end)
+structure Prim2 = Prims.PrimTyper (struct type t = type2 val Tint = T2int val Tbool = T2bool end)
 		
 fun typeCheck1 gamma exp = 
 	let

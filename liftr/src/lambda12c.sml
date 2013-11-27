@@ -6,6 +6,7 @@ open LangCommon
 
 datatype ty		= Tint
 				| Tunit
+				| Tbool
 				| Tprod of ty * ty
 				| Tsum of ty * ty
 				| Tfut of ty

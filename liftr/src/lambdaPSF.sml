@@ -5,6 +5,7 @@ struct
 open LangCommon
 
 datatype ty		= Tint
+				| Tbool
 				| Tprod of ty list
 				| Tsum of ty * ty
 				| Tfunc of ty * ty

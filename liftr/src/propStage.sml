@@ -9,12 +9,14 @@ open Lambda12
 exception StagePropException
 
 fun propTy1 Tint = T1int
+  | propTy1 Tbool = T1bool
   | propTy1 Tunit = T1unit
   | propTy1 (Tprod (t1,t2)) = T1prod (propTy1 t1, propTy1 t2)
   | propTy1 (Tsum (t1,t2)) = T1sum (propTy1 t1, propTy1 t2)
   | propTy1 (Tfut t) = T1fut (propTy2 t)
   
 and propTy2 Tint = T2int
+  | propTy2 Tbool = T2bool
   | propTy2 Tunit = T2unit
   | propTy2 (Tprod (t1,t2)) = T2prod (propTy2 t1, propTy2 t2)
   | propTy2 (Tsum (t1,t2)) = T2sum (propTy2 t1, propTy2 t2)
