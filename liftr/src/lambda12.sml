@@ -30,15 +30,8 @@ datatype expr1	= E1var of var
 				| E1inj of LR * type1 * expr1
 				| E1case of expr1 * (var * expr1) * (var * expr1)
 				| E1next of expr2
-<<<<<<< HEAD
-<<<<<<< HEAD
 				| E1error of type1
-=======
 				| E1binop of Prims.binops * expr1 * expr1
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
-=======
-				| E1binop of Prims.binops * expr1 * expr1
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 
 and expr2		= E2var of var
 		(*		| E2lam of type2 * (var * expr2)
@@ -50,15 +43,8 @@ and expr2		= E2var of var
 				| E2inj of LR * type2 * expr2
 				| E2case of expr2 * (var * expr2) * (var * expr2)
 				| E2prev of expr1
-<<<<<<< HEAD
-<<<<<<< HEAD
 				| E2error of type2
-=======
 				| E2binop of Prims.binops * expr2 * expr2
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
-=======
-				| E2binop of Prims.binops * expr2 * expr2
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 
 datatype contEntry = Stage1 of type1 | Stage2 of type2 | Func1 of type1 * type1 (* | Func2 of type2 * type2 *)
 type cont = contEntry context

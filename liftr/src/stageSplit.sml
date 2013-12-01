@@ -30,9 +30,12 @@ fun secondImage T1int = Tprod []
 fun fresh () = Variable.newvar "l"
 fun dummy () = Variable.newvar "dummy"
 
+exception BadType
 datatype entry = Func1 of type1 * ty * type1 | Val1 of type1 | Val2 of type2
 fun unval1 (Val1 t) = t
+  | unval1 _ = raise BadType
 fun unval2 (Val2 t) = t
+  | unval2 _ = raise BadType
 
 (* map precomp / residual *)
 fun mapSnd f (a,b) = (a, f b)
@@ -189,6 +192,13 @@ fun stageSplit1 gamma exp =
 				(dummy (), Etuple[]),
 				#3 (Prim1.getTypes bo)
 			)
+		| E1error t => 
+			let
+				val first = firstImage t
+				val second = secondImage t
+			in
+				(Eerror (Tprod [first, Tprod[]]), Tprod[], (dummy (), Eerror second), t)
+			end
 		| E1next e => 
 			let
 				val (p, tb, lr, t) = stageSplit2 gamma e
@@ -237,6 +247,7 @@ and stageSplit2 gamma exp =
 				),t1)
 			end
 		| E2binop (bo,e1,e2) => splitBin (e1,e2) (fn (a,_,b,_) => (Ebinop(bo,a,b), #3 (Prim2.getTypes bo)))
+		| E2error t => (Eerror (Tprod []), Tprod[], (dummy (), Eerror (trType2 t)), t)
 		| E2prev e => 
 			let
 				val (c, tb, lr, t) = stageSplit1 gamma e

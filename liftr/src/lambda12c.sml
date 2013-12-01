@@ -20,15 +20,8 @@ datatype expr	= Evar of var
 				| Ecase of expr * (var * expr) * (var * expr)
 				| Enext of expr
 				| Eprev of expr
-<<<<<<< HEAD
-<<<<<<< HEAD
 				| Eerror of ty
-=======
 				| Ebinop of Prims.binops * expr * expr
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
-=======
-				| Ebinop of Prims.binops * expr * expr
->>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 
 datatype topLevelFunc = FuncDec1 of var * ty * ty * var * expr (*| FuncDec2 of var * ty * ty * var * expr *)
 type program = topLevelFunc list
