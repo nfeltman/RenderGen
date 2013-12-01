@@ -14,7 +14,9 @@ fun printTypeHelper (p : string -> unit) level ty =
 			else f ()
 	in
 		case ty of
-		  Tprod [] => p "unit"
+		  Tint => p "int"
+		| Tbool => p "bool"
+		| Tprod [] => p "unit"
 		| Tprod (t0::ts) => prio 1 (fn () => (g 0 t0; app (fn t => (p " * "; g 0 t)) ts))
 		| Tsum (t1,t2) => prio 1 (fn () => (g 0 t1; p " + "; g 0 t2))
 		| Tfunc (t1,t2) => prio 2 (fn () => (g 1 t1; p " -> "; g 2 t2))
@@ -29,19 +31,21 @@ fun printTermHelper (p : string -> unit) level e =
 			if nextLevel > level 
 			then (p "("; f (); p ")")
 			else f ()
+		val toString = Variable.toString
 	in
 		case e of
-		  Evar v => p v
-		| Elam (t, (v, e)) => prio 2 (fn () => (p "fn "; p v; p " : "; printType p t; p " => "; g 2 e))
+		  Evar v => p (toString v)
+		| Elam (t, (v, e)) => prio 2 (fn () => (p "fn "; p (toString v); p " : "; printType p t; p " => "; g 2 e))
 		| Eapp (e1, e2) => prio 1 (fn () => (g 1 e1; p " "; g 0 e2))
 		| Etuple [] => p "()"
 		| Etuple (e0::es) => (p "("; g 2 e0; app (fn e => (p ", "; g 2 e)) es; p ")")
-		| Epi (i,e) => prio 1 (fn () => (p "#"; p (Int.toString (i+1)); g 0 e))
-		| Einj (Left, _, e) => prio 1 (fn () => (p "inL"; g 0 e))
-		| Einj (Right, _, e) => prio 1 (fn () => (p "inR"; g 0 e))
-		| Ecase (e1,(v2,e2),(v3,e3)) => prio 2 (fn () => (p "case "; g 2 e1; p " of "; p v2; p " => "; g 2 e2; p " | "; p v3; p " => "; g 2 e3))
-		| Elet (e1,(v,e2)) => prio 2 (fn () => (p "let "; p v; p " = "; g 2 e1; p " in "; g 2 e2))
-		| Eerror => p "error"
+		| Epi (i,e) => prio 1 (fn () => (p "#"; p (Int.toString (i+1)); p " "; g 0 e))
+		| Einj (Left, t, e) => prio 1 (fn () => (p "inL ("; printType p t; p ")"; g 0 e))
+		| Einj (Right, t, e) => prio 1 (fn () => (p "inR ("; printType p t; p ") "; g 0 e))
+		| Ecase (e1,(v2,e2),(v3,e3)) => prio 2 (fn () => (p "case "; g 2 e1; p " of "; p (toString v2); p " => "; g 2 e2; p " | "; p (toString v3); p " => "; g 2 e3))
+		| Elet (e1,(v,e2)) => prio 2 (fn () => (p "let "; p (toString v); p " = "; g 2 e1; p " in "; g 2 e2))
+		| Ebinop (bo, e1, e2) => prio 1 (fn () => (g 2 e1; p " op "; g 2 e2))
+		| Eerror _ => p "error"
 	end
 	
 fun printTerm p = printTermHelper p 2

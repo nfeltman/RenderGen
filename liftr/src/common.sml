@@ -2,7 +2,7 @@
 structure LangCommon = 
 struct
 
-type var = string
+type var = Variable.variable
 datatype LR = Left | Right
 
 fun projLR Left  (a,_) = a
