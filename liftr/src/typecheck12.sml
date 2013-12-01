@@ -70,7 +70,11 @@ fun typeCheck1 gamma exp =
 		| E1inj (lr, t, e) => T1sum (injLR lr (check e) t)
 		| E1case (e1,b1,b2) => assertSame t1eq (zip2 checkbranch (unsum1 (check e1)) (b1,b2))
 <<<<<<< HEAD
+<<<<<<< HEAD
 		| E1error t => t
+=======
+		| E1binop (bo, e1, e2) => binSame t1eq (check e1, check e2) (Prim1.getTypes bo)
+>>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 =======
 		| E1binop (bo, e1, e2) => binSame t1eq (check e1, check e2) (Prim1.getTypes bo)
 >>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
@@ -93,7 +97,11 @@ and typeCheck2 gamma exp =
 		| E2inj (lr, t, e) => T2sum (injLR lr (check e) t)
 		| E2case (e1,b1,b2) => assertSame t2eq (zip2 checkbranch (unsum2 (check e1)) (b1,b2))
 <<<<<<< HEAD
+<<<<<<< HEAD
 		| E2error t => t
+=======
+		| E2binop (bo, e1, e2) => binSame t2eq (check e1, check e2) (Prim2.getTypes bo)
+>>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 =======
 		| E2binop (bo, e1, e2) => binSame t2eq (check e1, check e2) (Prim2.getTypes bo)
 >>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880

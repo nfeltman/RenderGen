@@ -21,7 +21,11 @@ datatype expr	= Evar of var
 				| Enext of expr
 				| Eprev of expr
 <<<<<<< HEAD
+<<<<<<< HEAD
 				| Eerror of ty
+=======
+				| Ebinop of Prims.binops * expr * expr
+>>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 =======
 				| Ebinop of Prims.binops * expr * expr
 >>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880

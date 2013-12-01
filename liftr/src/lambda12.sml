@@ -31,7 +31,11 @@ datatype expr1	= E1var of var
 				| E1case of expr1 * (var * expr1) * (var * expr1)
 				| E1next of expr2
 <<<<<<< HEAD
+<<<<<<< HEAD
 				| E1error of type1
+=======
+				| E1binop of Prims.binops * expr1 * expr1
+>>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 =======
 				| E1binop of Prims.binops * expr1 * expr1
 >>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
@@ -47,7 +51,11 @@ and expr2		= E2var of var
 				| E2case of expr2 * (var * expr2) * (var * expr2)
 				| E2prev of expr1
 <<<<<<< HEAD
+<<<<<<< HEAD
 				| E2error of type2
+=======
+				| E2binop of Prims.binops * expr2 * expr2
+>>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
 =======
 				| E2binop of Prims.binops * expr2 * expr2
 >>>>>>> 42bffa4e7912b8d71bffd749d495656dd889b880
