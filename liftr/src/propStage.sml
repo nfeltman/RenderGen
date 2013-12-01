@@ -29,6 +29,7 @@ and prop1 exp =
 	| Einj (lr, t, e) => E1inj (lr, propTy1 t, prop1 e)
 	| Ecase (e,b1,b2) => E1case (prop1 e, propBr1 b1, propBr1 b2)
 	| Eprev e => raise StagePropException
+	| Eerror t => E1error (propTy1 t)
 	| Enext e => E1next (prop2 e)
 
 and propBr2 (v,e) = (v, prop2 e)
@@ -42,6 +43,7 @@ and prop2 exp =
 	| Einj (lr, t, e) => E2inj (lr, propTy2 t, prop2 e)
 	| Ecase (e,b1,b2) => E2case (prop2 e, propBr2 b1, propBr2 b2)
 	| Eprev e => E2prev (prop1 e)
+	| Eerror t => E2error (propTy2 t)
 	| Enext e => raise StagePropException
 
 fun propProgram p = 

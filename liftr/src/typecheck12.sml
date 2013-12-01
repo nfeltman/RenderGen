@@ -61,6 +61,7 @@ fun typeCheck1 gamma exp =
 		| E1pi (lr, e) => projLR lr (unprod1 (check e)) 
 		| E1inj (lr, t, e) => T1sum (injLR lr (check e) t)
 		| E1case (e1,b1,b2) => assertSame t1eq (zip2 checkbranch (unsum1 (check e1)) (b1,b2))
+		| E1error t => t
 		| E1next e => T1fut (typeCheck2 gamma e)
 	end
 	
@@ -79,6 +80,7 @@ and typeCheck2 gamma exp =
 		| E2pi (lr, e) => projLR lr (unprod2 (check e)) 
 		| E2inj (lr, t, e) => T2sum (injLR lr (check e) t)
 		| E2case (e1,b1,b2) => assertSame t2eq (zip2 checkbranch (unsum2 (check e1)) (b1,b2))
+		| E2error t => t
 		| E2prev e => unfut (typeCheck1 gamma e)
 	end
 	
