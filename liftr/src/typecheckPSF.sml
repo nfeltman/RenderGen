@@ -42,6 +42,8 @@ fun typeCheckS gamma exp =
 		| Ecase (e1,b1,b2) => tyAssertSame (zip2 checkbranch (unsum (check e1)) (b1,b2))
 		| Elet (e, b) => checkbranch (check e) b
 		| Ebinop (bo, e1, e2) => binSame teq (check e1, check e2) (Prim.getTypes bo)
+		| Eroll e => raise TypeError
+		| Eunroll e => raise TypeError
 		| Eerror t => t
 	end
 
