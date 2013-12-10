@@ -1,0 +1,47 @@
+context includes
+
+type list // equiv to "rec a. unit + int * a", but actually a base type for now
+val  unrollList : list -> unit + int * list
+
+============================
+
+fun countsumH (li : list, runsum : int, n : $int, x : $int) : $bool =
+	next {
+		if prev {holdInt runsum} > prev {x} then
+			n
+		else
+			prev {
+				case unrollList l of
+				  _ => next {n}
+				| (h,t) => countSumH (t, runsum+h, next{n+1}, x)
+			}
+	}
+
+fun countsum (l : list, x: $int) : $bool = countsumH (l, 0, next{0}, x)
+		
+===================================================================================
+
+fun countsumH (li : list, runsum : int, n : unit, x : unit) : unit * (rec a. int * (unit + a)) =
+	let (v, p) = 
+		case unrollList l of
+		  _ => ((), inL ())
+		| (h,t) => let (rv,rp) = countSumH (t, next {runsum+h}, next{n+1}, x) in (rv, inR rp)
+	in
+	(v, roll (runsum, p))
+
+fun countsum (l : list, x: unit) : unit * rec a. int * (unit + a) = countsumH (l, 0, unit, x)
+
+===================================================================================
+		
+		
+fun countsumH ((li : unit, runsum : unit, n : int, x : int), p : rec a. int * (unit + a)) : bool =
+	let p2 = unroll p in
+		if #1 p2 > x then
+			n
+		else
+			case #2 p2 of
+			  _ => n
+			| rest => countSumH (((), (), n+1, x), rest)
+	}
+
+fun countsum ((l : unit, x: int), p: rec a. int * (unit + a)) : $bool = countsumH ((l, (), 0, x), p)
