@@ -6,36 +6,59 @@
 \usepackage{qtree}
 \usepackage{amssymb,amsthm}
 \usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
-\parindent 0pt
 
 
-\title{\Large\textbf{General Automatic Stage Separation with Applications to Algorithm Derivation}}
+\title{\Large\textbf{General Stage Untangling with Applications to Algorithm Derivation}}
 \author{Nicolas Feltman et al.}
 \begin{document}
 \maketitle
 \section{Introduction}
-Often when programming high-performance systems, a programmer will wish to specialize a bivariate function to one of its inputs.  This need may arise because one input varies at a higher frequency than the other, and we wish to avoid repeated calculation. It may also be that one input is available at a time when computational resources are less expensive.  It's even possible that knowledge of an input could allow further code optimizations that would have otherwise been unwise to speculate.  Broadly, the solutions to this specialization problem can be called {\it staging}, in that different parts of the code are intended to run at different points in time, {\it i.e.} stages.  The general theme is to do some work with the {\em immediate input}, producing an intermediate result, and then finish the rest of the computation once the {\em delayed input} is available.  In particular, these staging techniques include:
+Often when programming high-performance systems, a programmer will wish to specialize a bivariate function $f : \alpha \times \beta \to \gamma$ to one of its inputs, $x : \alpha$, while leaving the other, $y : \beta$, for later.  This need may arise because $x$ varies at a higher frequency than $y$, and we would wish to avoid repeated calculation. It may also be the case that $x$ is available at a time when computational resources are less expensive than when $y$ becomes available.  It's even possible that knowledge of $x$ allows further code optimizations that would have otherwise been unwise to speculate.  
+
+Consider two examples: the discrete Fourier transform (DFT) and a raytracer.  In the DFT case we say that $x : \mathbb{N}$ is the dimension of the transformation, $y : \mathbb{R}^x $ is the data to be transformed, and $f$ simply computes the DFT.  Much of the structure of modern DFT algorithms depends on $x$ (for both mathematical decomposition and cache performance reasons) but not on $y$, so a great deal of work could be done to specialize the algorithm to a particular number of dimensions.  In the raytracer case, we say that $x : \mathtt{Geom}$ is a specification of the scene geometry (perhaps a list of triangles), $y : \mathtt{Ray}$ is a ray cast from some point in the scene, and $f$ computes the first intersection of the ray and the geometry.  In modern raytracers, we may cast millions of rays without varying the scene geometry, so it could be advantageous to precompute as much of the algorithm as possible based on only scene geometry.
+
+We say that the problems above exhibit a {\em staged} structure, in that they can be broken down into parts that run at different points in time ({\em i.e.}~stages).  There are a variety of techniques to take advantage of this staged structure.  The general theme is to do some work with the immedaite input ($x$), producing an intermediate result, and then finish the rest of the computation once the delayed input ($y$) is available.  We consider three techniques: program generation, partial evaluation, and pass separation.  Each technique has broader applicability than the previous, but is less aggressive of an optimization.
+
+\subsection {Program Generation} 
+A common solution is to write code that writes code.  Essentially, second-stage computations are represented by second-stage code, and second-stage code is a value that can be passed around and manipulated by first-stage code.  To use the terminology from above: this first stage code is a function that takes in $x$ and outputs second stage function, which itself takes in $y$ and outputs the final answer. Note that this is essentially a manual process, in that the programmer must know the function $f$ which is being specialized.  Using the equational notation of [Jones 96], where ``$\llbracket h \rrbracket~z$'' means the ``the code $h$ interpreted as a function and applied to input $z$," we say that a programmer defines a program generator $g$ that satisfies 
+\[
+\llbracket \llbracket g \rrbracket~x\rrbracket~y =\llbracket f \rrbracket~(x,y)
+\] 
+for all $x$ and $y$. When well supported by the language (see terra, metaml) this technique is often called {\em metaprogramming}.  Of course, even without first class support, one can represent the second stage code using strings or other data types.  Defined so broadly, program generation includes all compilers, where $f$ is a hypothetical interpretter, $g$ is the actual compiler, $x$ is a program in the source language, and $y$ is the input to $x$.  Program generation has also been used to implement the DFT example in the form of FFTW [cite this].  
+
+The benefit of the program generation technique is full control, even up to the ability to use domain-specific optimizations.  This comes at the cost of essentially being a manual operation.  
+
+\subsection {Partial Evaluation} 
+The idea of partial evaluation is to {\em automatically} specialize the code of $f$ to the supplied input, in a manner similar to standard evaluation.  In particular this means defining a program $pe$, called a partial evaluator, to which we can pass the implementation of a function $f$ along with $f$'s immediate input $x$, and get back a version of $f$ that is {\em specialized} to $x$.  This specialized version, also called a {\em residual}, is often denoted as $f_x$.  Equationally, we have
+\begin{align*}
+\llbracket pe\rrbracket~(f,x) &= f_x \\
+\llbracket f_x\rrbracket~y &= \llbracket f\rrbracket~(x,y)
+\end{align*}
+ for all $f$, $x$, and $y$.  As seminally observed by [Futamura 71], partially evaluating an interpretter on a source program is equivalent to compiling that program to whatever language the interpretter was written in!  This has the benefit of being an automatic process, although the effective compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
+
+Partial evaluation is a more general technique than program generation, in that the partial evaluator is defined once and works for all $f$s that need to be specialized.  Of course, the partial evaluator has no domain knowledge of the program it is splitting, so it cannot be nearly as aggressive as a program generator might be.  The two techniques are similar in that they both require the first input $x$ to do their specializing action.
+
+\subsection {Pass Separation} 
+The final technique, pass separation, is conceptually the simplest.  The idea is to define a program called $ps$, for {\em pass separator}. It works by cleaving the function $f:\alpha \times \beta \to \gamma$ into two functions $f_1 : \alpha \to \tau$ and $f_2 : \beta \times \tau \to \gamma$ for some type $\tau$, where $f_1$ builds a data structure (of type $\tau$) from $x$, and $f_2$ consumes that data structure as well as $y$ to produce the standard ouput.  In analogy to partial evaluation, we call $f_2$ the {\em residual}.  Equationally, this is
+\begin{align*}
+\llbracket pe\rrbracket~f &= (f_1,f_2) \\
+\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) &= \llbracket f\rrbracket~(x,y)
+\end{align*}
+for all $f$, $x$, and $y$.  This technique, performed manually, is a common exercise for every programmer.  In can be considered the general form of common compiler optimizations such as loop hoisting, an example considered later.  Like partial evaluation, pass separation is an automatic operation, but unlike both partial evaluation and program generation, pass separation does not require the value of the first argument, $x$, to properly specialize $f$.  This makes pass separation the most widely applicable of the staging techniques, at the cost of being able to perform aggressive optimizations in the residual that might depend on the first argument. 
+
+In this work we present a pass separation algorithm for a fragment of ML.  Specifically, our formulation can separate terms containing sums and recursion, which have not appeared previously in the stage seperation literature.  We anticipate that the algorithm will also be able to also separate this language extended with with first-class functions, although this is left as future work.  Additionally, our presentation is more explicitly type-motivated than those that have come before.
+
+\section{Binding-Time Analysis and Stage Untangling}
+
+The pass separation problem can naturally be decomposed into two subproblems:
 \begin{itemize}
-\item {\bf Program Generation} A common solution is to generate code in some target language that itself will take in the second stage input.  Using the equational notation of [Jones 96], we say that a programmer defines $\mathit{genf}$ in a language $C$ so that \[[[\mathit{genf}]_C~x]_T~y = [f]_L~(x,y)\] for all $x$ and $y$. Examples of this technique include most compilers (where $f$ is a hypothetical interpretter, and the first stage input is the source program), or even specialized compilers like Spiral (where the first stage is simply the dimension of the DFT).  The benefit of this technique is full control, and the fact that implementations of the target language $T$ may be inherently faster than those of $L$.  The drawbacks of this technique are that it is essentially a manual operation, and that correctness of $\mathit{genf}$ with respect to $\mathit{f}$ is difficult to prove.
-\item {\bf Partial Evaluation} The idea of partial evaluation is to automatically specialize the code of $f$ to the supplied input, in a manner similar to standard evaluation.  In particular, this means defining a program in language $C$ called $pe$, which we call a partial evaluator for language $L$.  This means that we can pass to $pe$ the implementation of a function $f$ along with $f$'s immediate input $x$, and get back a version of $f$ that is {\em specialized} to $x$.  This specialized version, also called a {\em residual}, is often denoted as $f_x$.  Equationally, we have
-\begin{align*}
-[pe]_C~(f,x) &= f_x \\
-[f_x]_L~y &= [f]_L~(x,y)
-\end{align*}
- for all $f$, $x$, and $y$.  As seminally observed by [Futamura 71], a partial evaluator and interpretter can be used together to achieve the same result as manual code generation, automatically!  Using the $\mathtt{fftw}$ example, we see that $\mathtt{dft} = pe~(\mathtt{fft},x)$, where $x$ is the dimension of the dft.  This has the benefit of being an automatic process, although the generated compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
-\item {\bf Stage Separation} The final technique, stage separation, is conceptually the simplest.  The idea is to define in $C$ a program called $ps$, which is a path separator for language $L$. It works by cleaving the $L$-function $f$ into two $L$-functions $f_1$ and $f_2$, where $f_1$ builds a data structure from the available input, and $f_2$ consumes that data structure as well as the delayed input to produce the standard ouput.  Equationally, this is
-\begin{align*}
-[pe]_C~f &= (f_1,f_2) \\
-[f_2]_L~([f_1]_L~x,y) &= [f]_L~(x,y)
-\end{align*}
-for all $f$, $x$, and $y$.  This technique, performed manually, is a common exercise for every programmer.  In can be considered the general form of many common compiler optimizations such as loop hoisting, an example we will consider later.  The key difference between stage separation and partial evaluation is that the former is performed in absence of the first input.  This suggests that stage seperation is applicable in more scenarios than partial evaluation, at the cost of being less aggressive.  Also, whereas stage seperation creates a data structure to represent the intermediate progress of a computation, partial evaluation usually embeds that datastructure in the code of the residual [some related work says it can alleviate this].  For these reasons, stage splitting should be thought of as a mechanism for {\em algorithmic} optimization, rather than {\em systematic} optimization.
+\item Decide which parts of the definition of $f$ belong to which stage and produce an annotated version of $f$.
+\item Use the annotated version of $f$ to produce $f_1$ and $f_2$.  
 \end{itemize}
-In this work we present a stage separation algorithm for a fragment of ML.  Specifically, our formulation can separate terms containing sums and recursion, which have not appeared previously in the stage seperation literature.  We anticipate that the algorithm will also be able to also separate this language extended with with first-class functions, although this is left as future work.  Additionally, our presentation is more explicitly type-motivated than those that have come before.
 
-\section{Binding Time Analysis}
-Previous research has observed that the stage separation problem, as defined above, is inherently ambiguous (indeed, this is true of all the staging techniques).  That is, there can exist multiple ways to partition $f$ into $f_1$ and $f_2$ that satisfy $f_2(f_1(x),y) = f(x,y)$.  For a trivial example, we can set $f_1$ to be the identity and $f_2$ to be $f$.  We can resolve this ambiguity by requiring that $f$ be given to us in a form which unambiguously specifies the part of the computation to be considered first-stage, and the part of the computation to be considered second-stage.  The particular form that we employ, introduced later, is suggested by [Pfenning and Davies 2001], which explores the connection between staging phenomena and modal type systems.  That work also shows the equivalence of the form we use and others, such as the two-level languages of [nielson$^2$].  
+An analogous form of this decomposition exists in the partial evaluation literature, wherein the first subproblem is known as {\em binding-time analysis}.  The second subproblem, in which the difference between pass separation and partial evaluation is more manifest, does not seem to yet have a name.  We call it {\em stage untangling}.  Unlike previous work in pass separation, we focuses entirely on the stage untangling problem by assuming that $f$ is given to us in an annotated form. 
 
-The process of adding staging annotations to an otherwise ambiguous computation is called {\it binding time analysis}.  We do not explore binding time analysis in this work, and instead assume that complete annotations are given by the programmer or by some analyzer.
+Previous research has observed that the pass separation problem is inherently ambiguous in that the equations defined above do not fully specify the definition of $pe$.  That is, there can exist multiple ways to partition $f$ into $f_1$ and $f_2$ that satisfy $\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) = \llbracket f\rrbracket~(x,y)$.  For a trivial example, we can set $f_1$ to be the identity and $f_2$ to be $f$. Fortunately, this ambiguity is contained entirely within the binding-time analysis portion of pass separation; stage untangling is entirely determined.
 
 \section{$\lambda^{12}$}
 
@@ -70,11 +93,14 @@ Sums, as done, are bad.
 Not much to discuss.  It exsists.  Talk about how crufty the naive transformation is.
 
 \section{Related Work in Stage Seperation}
-Stage seperation was introduced in [Jorring and Scherlis 86], then called ``pass seperation."  They gave an algorithm that simultaneously performed a binding time analysis and stage seperation for a recursive first-order language with if statements and primitive operations (essentially, the core of Java).
+Pass seperation was introduced in [Jorring and Scherlis 86].  They motivating pass separation as a technique using hand-separated examples, butstopped short of providing an algorithm to do this automatically.
+
+[Knoblock and Ruf 96] does BTA and PS for non-recursive imperative shader programs.  They pay a lot of attention to the size of the intermediate data structure, since memory is at a premium in their shaders.
+
+They gave an algorithm that simultaneously performed a binding time analysis and stage seperation for a recursive first-order language with if statements and primitive operations (essentially, the core of Java).
 
 [Hannan 94] gives an algorithm for simultaneous binding time analysis and stage seperation for a class of languages called "abstract machines".
 
-[Knoblock and Ruf 96] does BTA and PS for non-recursive imperative shader programs.  They pay a lot of attention to the size of the intermediate data structure, since memory is at a premium in their shaders.
 
 \end{document}
 
