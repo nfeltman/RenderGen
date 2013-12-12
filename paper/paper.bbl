@@ -1,0 +1,57 @@
+\begin{thebibliography}{1}
+
+\bibitem{davies96}
+Rowan Davies.
+\newblock A temporal-logic approach to binding-time analysis.
+\newblock In {\em LICS}, pages 184--195, 1996.
+
+\bibitem{davies01}
+Rowan Davies and Frank Pfenning.
+\newblock A modal analysis of staged computation.
+\newblock {\em J. ACM}, 48(3):555--604, 2001.
+
+\bibitem{devito13}
+Zachary DeVito, James Hegarty, Alex Aiken, Pat Hanrahan, and Jan Vitek.
+\newblock Terra: A multi-stage language for high-performance computing.
+\newblock In {\em Proceedings of the 34th ACM SIGPLAN Conference on Programming
+  Language Design and Implementation}, PLDI '13, pages 105--116, New York, NY,
+  USA, 2013. ACM.
+
+\bibitem{FFTW05}
+Matteo Frigo and Steven~G. Johnson.
+\newblock The design and implementation of {FFTW3}.
+\newblock {\em Proceedings of the IEEE}, 93(2):216--231, 2005.
+\newblock Special issue on ``Program Generation, Optimization, and Platform
+  Adaptation''.
+
+\bibitem{futamura71}
+Y.~Futamura.
+\newblock Partial evaluation of computation process -- an approach to a
+  compiler-compiler.
+\newblock {\em Systems, Computers, Controls}, 2(5):45--50, 1971.
+
+\bibitem{hannan94}
+John Hannan.
+\newblock Operational semantics-directed compilers and machine architectures.
+\newblock {\em ACM Trans. Program. Lang. Syst.}, 16(4):1215--1247, 1994.
+
+\bibitem{jones96}
+Neil~D. Jones.
+\newblock An introduction to partial evaluation.
+\newblock {\em ACM Comput. Surv.}, 28(3):480--503, September 1996.
+
+\bibitem{jorring}
+Ulrik J{\o}rring and William~L. Scherlis.
+\newblock Compilers and staging transformations.
+\newblock In {\em Proceedings of the 13th ACM SIGACT-SIGPLAN Symposium on
+  Principles of Programming Languages}, POPL '86, pages 86--96, New York, NY,
+  USA, 1986. ACM.
+
+\bibitem{knoblock}
+Todd~B. Knoblock and Erik Ruf.
+\newblock Data specialization.
+\newblock In {\em Proceedings of the ACM SIGPLAN 1996 Conference on Programming
+  Language Design and Implementation}, PLDI '96, pages 215--225, New York, NY,
+  USA, 1996. ACM.
+
+\end{thebibliography}

@@ -5,6 +5,7 @@
 \usepackage{proof}
 \usepackage{qtree}
 \usepackage{amssymb,amsthm}
+\usepackage{cite}
 \usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
 
 
@@ -20,11 +21,11 @@ Consider two examples: the discrete Fourier transform (DFT) and a raytracer.  In
 We say that the problems above exhibit a {\em staged} structure, in that they can be broken down into parts that run at different points in time ({\em i.e.}~stages).  There are a variety of techniques to take advantage of this staged structure.  The general theme is to do some work with the immedaite input ($x$), producing an intermediate result, and then finish the rest of the computation once the delayed input ($y$) is available.  We consider three techniques: program generation, partial evaluation, and pass separation.  Each technique has broader applicability than the previous, but is less aggressive of an optimization.
 
 \subsection {Program Generation} 
-A common solution is to write code that writes code.  Essentially, second-stage computations are represented by second-stage code, and second-stage code is a value that can be passed around and manipulated by first-stage code.  To use the terminology from above: this first stage code is a function that takes in $x$ and outputs second stage function, which itself takes in $y$ and outputs the final answer. Note that this is essentially a manual process, in that the programmer must know the function $f$ which is being specialized.  Using the equational notation of [Jones 96], where ``$\llbracket h \rrbracket~z$'' means the ``the code $h$ interpreted as a function and applied to input $z$," we say that a programmer defines a program generator $g$ that satisfies 
+A common solution is to write code that writes code.  Essentially, second-stage computations are represented by second-stage code, and second-stage code is a value that can be passed around and manipulated by first-stage code.  To use the terminology from above: this first stage code is a function that takes in $x$ and outputs second stage function, which itself takes in $y$ and outputs the final answer. Note that this is essentially a manual process, in that the programmer must know the function $f$ which is being specialized.  Using the equational notation of \cite{jones96}, where ``$\llbracket h \rrbracket~z$'' means the ``the code $h$ interpreted as a function and applied to input $z$," we say that a programmer defines a program generator $g$ that satisfies 
 \[
 \llbracket \llbracket g \rrbracket~x\rrbracket~y =\llbracket f \rrbracket~(x,y)
 \] 
-for all $x$ and $y$. When well supported by the language (see terra, metaml) this technique is often called {\em metaprogramming}.  Of course, even without first class support, one can represent the second stage code using strings or other data types.  Defined so broadly, program generation includes all compilers, where $f$ is a hypothetical interpretter, $g$ is the actual compiler, $x$ is a program in the source language, and $y$ is the input to $x$.  Program generation has also been used to implement the DFT example in the form of FFTW [cite this].  
+for all $x$ and $y$. When well supported by the language (\cite{devito13}, [some metaml citation]) this technique is often called {\em metaprogramming}.  Of course, even without first class support, one can represent the second stage code using strings or other data types.  Defined so broadly, program generation includes all compilers, where $f$ is a hypothetical interpretter, $g$ is the actual compiler, $x$ is a program in the source language, and $y$ is the input to $x$.  Program generation has also been used to implement the DFT example in the form of FFTW \cite{FFTW05}.  
 
 The benefit of the program generation technique is full control, even up to the ability to use domain-specific optimizations.  This comes at the cost of essentially being a manual operation.  
 
@@ -34,7 +35,7 @@ The idea of partial evaluation is to {\em automatically} specialize the code of 
 \llbracket pe\rrbracket~(f,x) &= f_x \\
 \llbracket f_x\rrbracket~y &= \llbracket f\rrbracket~(x,y)
 \end{align*}
- for all $f$, $x$, and $y$.  As seminally observed by [Futamura 71], partially evaluating an interpretter on a source program is equivalent to compiling that program to whatever language the interpretter was written in!  This has the benefit of being an automatic process, although the effective compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
+ for all $f$, $x$, and $y$.  As seminally observed by \cite{futamura71}, partially evaluating an interpretter on a source program is equivalent to compiling that program to whatever language the interpretter was written in!  This has the benefit of being an automatic process, although the effective compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
 
 Partial evaluation is a more general technique than program generation, in that the partial evaluator is defined once and works for all $f$s that need to be specialized.  Of course, the partial evaluator has no domain knowledge of the program it is splitting, so it cannot be nearly as aggressive as a program generator might be.  The two techniques are similar in that they both require the first input $x$ to do their specializing action.
 
@@ -86,21 +87,26 @@ Talk about why the current set up for functions alleviates the boundary-type gue
 
 \subsection{Issue with sums}
 
-Sums, as done, are bad.
+Sums result in dependant types, which is cool.
 
 \section {Implementation}
 
 Not much to discuss.  It exsists.  Talk about how crufty the naive transformation is.
 
 \section{Related Work in Stage Seperation}
-Pass seperation was introduced in [Jorring and Scherlis 86].  They motivating pass separation as a technique using hand-separated examples, butstopped short of providing an algorithm to do this automatically.
 
-[Knoblock and Ruf 96] does BTA and PS for non-recursive imperative shader programs.  They pay a lot of attention to the size of the intermediate data structure, since memory is at a premium in their shaders.
+Our starting language, $\lambda^{12}$, is essentially a two-stage version of $\lambda^\bigcirc$ from \cite{davies96}, but beefed up with products, sums, and fixed-points.  That work motivates $\lambda^\bigcirc$ as an image of linear temporal logic under the Curry-Howard correspondence, and it makes the argument that $\lambda^\bigcirc$ is a good model for binding time analysis.  Although $\lambda^\bigcirc$ was designed with partial evaluation in mind, it turns out to be a good model for pass separation as well.  In contrast, \cite{davies01} presents $\lambda^\Box$, which is based off of branching temporal logic.  As that work shows, $\lambda^\Box$ is a good system for program generation, although we find the closed-code requirement to be more restricting than we need.
 
-They gave an algorithm that simultaneously performed a binding time analysis and stage seperation for a recursive first-order language with if statements and primitive operations (essentially, the core of Java).
+Pass seperation was introduced in \cite{jorring}.  They focused on motivating pass separation as a technique for compiler generation, and hinted at wider applicability.  Their approach was not mechanized or automated in any sense, and their examples were separated by hand.  We believe that out work represents the fulfillment of their prediction that ``the [pass separation] approach will elude full automation for some time."
 
-[Hannan 94] gives an algorithm for simultaneous binding time analysis and stage seperation for a class of languages called "abstract machines".
+\cite{hannan94} also uses a pass separation technique for generating compiler/evaluator pairs from interpretters specified as term-rewrite systems.  This heavy restriction on the form of the input prevents generalization of their style of pass separation.  [I don't know enough about term-rewrite systems yet to be able to comment further.]  Their method, while amenable to mechanization, was not actually implemented.
 
+\cite{knoblock} represents the first attempt at fully automatic pass separation for code approaching general-purpose.  In particular, they implemented pass separation for a C-like shading language including basic arithmetic and if statements.  The main goal of their work, like ours, was to minimize recomputation. That said, their starting language was sufficiently restricted for recursive boundary types to be inexpressible.  Given that memory is at a premium in shading languages, so much of that work was also focused on minimizing the memory-footprint of the boundary type.
+
+\bibliography{paper}
+\bibliographystyle{plain}
 
 \end{document}
+
+
 
