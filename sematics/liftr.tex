@@ -9,6 +9,11 @@
 \parindent 0pt
 \parskip .75em
 
+% core conventions and language names
+\newcommand {\bbone} {\mathbbm 1}
+\newcommand {\bbtwo} {\mathbbm 2}
+\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
+
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
 \newcommand {\stage} {\langle\mathit{stage}\rangle}
@@ -24,8 +29,6 @@
 \newcommand {\gbar} {~~|~~}
 
 % nodes
-\newcommand {\bbone} {\mathbbm 1}
-\newcommand {\bbtwo} {\mathbbm 2}
 \newcommand {\pause} {{\tt hold}}
 \newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
@@ -54,7 +57,6 @@
 \newcommand {\tab}{~~~~~~}
 
 %language names
-\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
 \newcommand {\wstage} {\textsc{Stag}}
 \newcommand {\wostage} {\textsc{Doe}}
 
@@ -352,11 +354,17 @@ The full rules for splitting are shown in Figures \ref{fig:splitBasic}, \ref{fig
 	{\gdo \left( \tallcase {e_1}{x_2.e_2}{x_3.e_3} \right) :C \splito 
 	\left[
 		\begin{array}{l}
-		\letin{z}{\left(\tallcase {\pi_1c_2}{x_2.\letin{y}{c_2}{(\pi_1 y,\iota_1(\pi_2 y))}}{x_3.\letin{y}{c_3}{(\pi_1 y,\iota_2(\pi_2 y))}}\right)}{(\pi_1 z, (\pi_2 c, \pi_2 z))}, \\
-		l.\left(\tallcase{\letin{l_1}{\pi_1 l}{r_1}}{x_2.\caseof{\pi_2 l}{l_2.r_2}{\_.{\tt error}}}{x_3.\caseof{\pi_2 l}{\_.{\tt error}}{l_3.r_3}}\right)
+		\letin{c}{c_1}{\left(\tallcase {\pi_1c_2}
+			{x_2.\letin{y}{c_2}{(\pi_1 y, (\iota_1(\pi_2 y), \pi_2 c))}}
+			{x_3.\letin{y}{c_3}{(\pi_1 y, (\iota_2(\pi_2 y), \pi_2 c))}}
+		\right)}, \\
+		l.\left(\tallcase{\pi_1 l}
+			{l_2.\letin{x_2}{(\letin{c_1}{\pi_2 l}{r_1})}{r_2}}
+			{l_3.\letin{x_3}{(\letin{c_1}{\pi_2 l}{r_1})}{r_3}}
+		\right)
 		\end{array}
 	\right]}
-	{\gdo e_1 : A+B \splito [c_2, l_2.r_2]
+	{\gdo e_1 : A+B \splito [c_1, l_1.r_1]
 	& \Gamma,x_2:A^\bbone \vdash^\bbone e_2 : C \splito [c_2,l_2.r_2] 
 	& \Gamma,x_3:B^\bbone \vdash^\bbone e_3 : C \splito [c_3,l_3.r_3]} \and
 \infer [+\mathrm{E}\splits]
