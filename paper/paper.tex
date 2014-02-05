@@ -1,93 +1,416 @@
 \documentclass{article}
-\usepackage{tikz}
 \usepackage{amsmath}
+\usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
-\usepackage{qtree}
 \usepackage{amssymb,amsthm}
 \usepackage{cite}
+\usepackage{mathpartir}
 \usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
 
+% core conventions and language names
+\newcommand {\bbone} {\mathbbm 1}
+\newcommand {\bbtwo} {\mathbbm 2}
+\newcommand {\corelang} {$\mathrm{L}^{\bbone\bbtwo}$}
+\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
+\newcommand {\coremono} {L}
+\newcommand {\mono} {$\lambda$}
+
+% bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\stage} {\langle\mathit{stage}\rangle}
+\newcommand {\type} {\langle\mathit{type}\rangle}
+\newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
+\newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
+\newcommand {\expr} {\langle\mathit{exp}\rangle}
+\newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
+\newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
+\newcommand {\val} {\langle\mathit{val}\rangle}
+\newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
+\newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
+\newcommand {\var} {\langle\mathit{var}\rangle}
+\newcommand {\context} {\langle\mathit{cont}\rangle}
+\newcommand {\inte} {\langle\mathit{int}\rangle}
+\newcommand {\resi} {\langle\mathit{res}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+% nodes
+\newcommand {\pause} {{\tt hold}}
+\newcommand {\next} {{\tt next}}
+\newcommand {\prev} {{\tt prev}}
+\newcommand {\fut} {\bigcirc}
+\newcommand {\transfers} {\nearrow}
+\newcommand {\gds} {{\Gamma \vdash^\sigma}}
+\newcommand {\gdo} {{\Gamma \vdash^\bbone}}
+\newcommand {\gdt} {{\Gamma \vdash^\bbtwo}}
+\newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
+\newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
+\newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
+\newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}
+\newcommand {\tallif} [3] {\begin{array}{l} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
+\newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
+\newcommand {\valprod} [2] {{\bf (}{#1},{#2}{\bf )}}
+\newcommand {\valleft} {{\bf \iota}_1}
+\newcommand {\valright} {{\bf \iota}_2}
+\newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
+\newcommand {\valdum} {{\bf dummy}}
+
+%judgements
+\newcommand {\splito} {\overset{\bbone}\rightsquigarrow}
+\newcommand {\splits} {\overset{\bbtwo}\rightsquigarrow}
 
 \title{\Large\textbf{General Stage Untangling with Applications to Algorithm Derivation}}
 \author{Nicolas Feltman et al.}
 \begin{document}
 \maketitle
 \section{Introduction}
-Often when programming high-performance systems, a programmer will wish to specialize a bivariate function $f : \alpha \times \beta \to \gamma$ to one of its inputs, $x : \alpha$, while leaving the other, $y : \beta$, for later.  This need may arise because $x$ varies at a higher frequency than $y$, and we would wish to avoid repeated calculation. It may also be the case that $x$ is available at a time when computational resources are less expensive than when $y$ becomes available.  It's even possible that knowledge of $x$ allows further code optimizations that would have otherwise been unwise to speculate.  
 
-Consider two examples: the discrete Fourier transform (DFT) and a raytracer.  In the DFT case we say that $x : \mathbb{N}$ is the dimension of the transformation, $y : \mathbb{R}^x $ is the data to be transformed, and $f$ simply computes the DFT.  Much of the structure of modern DFT algorithms depends on $x$ (for both mathematical decomposition and cache performance reasons) but not on $y$, so a great deal of work could be done to specialize the algorithm to a particular number of dimensions.  In the raytracer case, we say that $x : \mathtt{Geom}$ is a specification of the scene geometry (perhaps a list of triangles), $y : \mathtt{Ray}$ is a ray cast from some point in the scene, and $f$ computes the first intersection of the ray and the geometry.  In modern raytracers, we may cast millions of rays without varying the scene geometry, so it could be advantageous to precompute as much of the algorithm as possible based on only scene geometry.
+Many computational tasks are premised on the notion of multiple domains, places and times at which computation occurs.  Yet programming languages traditionally view their execution environments as monolithic, specifying the What and the How, but not the When nor the Where.   As always, where the language falls short, a programmer instead must bear the burden.  Inevitably, this comes at the cost of expressivity, safety, or both.  In this work, we present a language for specifying certain multi-domain computations, sacrificing neither the expresivity nor the safety that programmers have come to expect in single-domain languages.
 
-We say that the problems above exhibit a {\em staged} structure, in that they can be broken down into parts that run at different points in time ({\em i.e.}~stages).  There are a variety of techniques to take advantage of this staged structure.  The general theme is to do some work with the immedaite input ($x$), producing an intermediate result, and then finish the rest of the computation once the delayed input ($y$) is available.  We consider three techniques: program generation, partial evaluation, and pass separation.  Each technique has broader applicability than the previous, but is less aggressive of an optimization.
+Consider the programming of a pipeline system.  Generally in such a system, data comes in to one processor, is transformed to an intermediate result, and then fed to later processors, possibly with some buffering, duplication, and reording in between.  We can view an algorithm for such as system as one computation, split accross two spatial domains (processors).  For a concrete example, we draw inspiration from graphics systems.  Lets say that we want to map a function $f : \mathrm{PixelCoord} \to \mathrm{Color}$ over every pixel on a 1024x768 screen.   Due to geometric coherence inherent in the problem, it's often advantageous to compute some information at the level of coarse 32x32 tiles (e.g. a list of the scene primitives which interact with that part of the screen) whose results can be used to accelerate the final per-pixel calculation.  In adition to yielding algorithmic benefits, this decomposition strategy maps well to parallel hardware.
 
-\subsection {Program Generation} 
-A common solution is to write code that writes code.  Essentially, second-stage computations are represented by second-stage code, and second-stage code is a value that can be passed around and manipulated by first-stage code.  To use the terminology from above: this first stage code is a function that takes in $x$ and outputs second stage function, which itself takes in $y$ and outputs the final answer. Note that this is essentially a manual process, in that the programmer must know the function $f$ which is being specialized.  Using the equational notation of \cite{jones96}, where ``$\llbracket h \rrbracket~z$'' means the ``the code $h$ interpreted as a function and applied to input $z$," we say that a programmer defines a program generator $g$ that satisfies 
-\[
-\llbracket \llbracket g \rrbracket~x\rrbracket~y =\llbracket f \rrbracket~(x,y)
-\] 
-for all $x$ and $y$. When well supported by the language (\cite{devito13}, [some metaml citation]) this technique is often called {\em metaprogramming}.  Of course, even without first class support, one can represent the second stage code using strings or other data types.  Defined so broadly, program generation includes all compilers, where $f$ is a hypothetical interpretter, $g$ is the actual compiler, $x$ is a program in the source language, and $y$ is the input to $x$.  Program generation has also been used to implement the DFT example in the form of FFTW \cite{FFTW05}.  
+Often when programming high-performance systems, a programmer will wish to specialize a bivariate function $f : \alpha \times \beta \to \gamma$ to one of its inputs, $x : \alpha$, while leaving the other, $y : \beta$, for later.  This need may arise because $x$ varies at a higher frequency than $y$, and we would wish to avoid repeated calculation. It may also be the case that $x$ is available at a time when computational resources are less expensive than when $y$ becomes available.  Here we say that the calculation is split accross two temporal domains.  Pulling another example from graphics, we consider a raytracer wherein $x : \mathtt{Geom}$ is a specification of the scene geometry (perhaps a list of triangles), $y : \mathtt{Ray}$ is a ray cast from some point in the scene, and $f$ computes the first intersection of the ray and the geometry.  In modern raytracers, we may cast millions of rays without varying the scene geometry, so it could be advantageous to precompute as much of the algorithm as possible based on only scene geometry.
 
-The benefit of the program generation technique is full control, even up to the ability to use domain-specific optimizations.  This comes at the cost of essentially being a manual operation.  
+In addition to the partitioning of a calculation across multiple domains, the examples above exhibit one further similarity: communication between domains is one-directional.  In the spatial case, information always flows from one processor to the next, but never backwards.  In the temporal case too, information made available at the second time cannot be observed earlier (indeed this seems to be a defining feature of time, generally).  For this reason, we refer to the domains as stages.  This property, that information flow is acyclic, informs the rest of this paper.
 
-\subsection {Partial Evaluation} 
-The idea of partial evaluation is to {\em automatically} specialize the code of $f$ to the supplied input, in a manner similar to standard evaluation.  In particular this means defining a program $pe$, called a partial evaluator, to which we can pass the implementation of a function $f$ along with $f$'s immediate input $x$, and get back a version of $f$ that is {\em specialized} to $x$.  This specialized version, also called a {\em residual}, is often denoted as $f_x$.  Equationally, we have
-\begin{align*}
-\llbracket pe\rrbracket~(f,x) &= f_x \\
-\llbracket f_x\rrbracket~y &= \llbracket f\rrbracket~(x,y)
-\end{align*}
- for all $f$, $x$, and $y$.  As seminally observed by \cite{futamura71}, partially evaluating an interpretter on a source program is equivalent to compiling that program to whatever language the interpretter was written in!  This has the benefit of being an automatic process, although the effective compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
+[Talk about how languages without inherent support for domains must instead tackle the problem by writing various passes/shaders. This is bad because it's not compositional.  For instance, I cannot write a function that talks about multiple stages at once.]
 
-Partial evaluation is a more general technique than program generation, in that the partial evaluator is defined once and works for all $f$s that need to be specialized.  Of course, the partial evaluator has no domain knowledge of the program it is splitting, so it cannot be nearly as aggressive as a program generator might be.  The two techniques are similar in that they both require the first input $x$ to do their specializing action.
+[Because of the acyclic nature of the problem, we can take algorithms specified in our multi-domain language and tease them apart, essentially recovering the old way of doing things.  This is called stage untangling.  It gets us all the safety and expression without messing up the rest of the compiler.]
 
-\subsection {Pass Separation} 
-The final technique, pass separation, is conceptually the simplest.  The idea is to define a program called $ps$, for {\em pass separator}. It works by cleaving the function $f:\alpha \times \beta \to \gamma$ into two functions $f_1 : \alpha \to \tau$ and $f_2 : \beta \times \tau \to \gamma$ for some type $\tau$, where $f_1$ builds a data structure (of type $\tau$) from $x$, and $f_2$ consumes that data structure as well as $y$ to produce the standard ouput.  In analogy to partial evaluation, we call $f_2$ the {\em residual}.  Equationally, this is
-\begin{align*}
-\llbracket pe\rrbracket~f &= (f_1,f_2) \\
-\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) &= \llbracket f\rrbracket~(x,y)
-\end{align*}
-for all $f$, $x$, and $y$.  This technique, performed manually, is a common exercise for every programmer.  In can be considered the general form of common compiler optimizations such as loop hoisting, an example considered later.  Like partial evaluation, pass separation is an automatic operation, but unlike both partial evaluation and program generation, pass separation does not require the value of the first argument, $x$, to properly specialize $f$.  This makes pass separation the most widely applicable of the staging techniques, at the cost of being able to perform aggressive optimizations in the residual that might depend on the first argument. 
+[Talk about standard partial evaluation and pass separation, then place our work in the second, modulo binding time analysis.]
 
-In this work we present a pass separation algorithm for a fragment of ML.  Specifically, our formulation can separate terms containing sums and recursion, which have not appeared previously in the stage seperation literature.  We anticipate that the algorithm will also be able to also separate this language extended with with first-class functions, although this is left as future work.  Additionally, our presentation is more explicitly type-motivated than those that have come before.
+%\subsection {Program Generation} 
+%A common solution is to write code that writes code.  Essentially, second-stage computations are represented by second-stage code, and second-stage code is a value that can be passed around and manipulated by first-stage code.  To use the terminology from above: this first stage code is a function that takes in $x$ and outputs second stage function, which itself takes in $y$ and outputs the final answer. Note that this is essentially a manual process, in that the programmer must know the function $f$ which is being specialized.  Using the equational notation of \cite{jones96}, where ``$\llbracket h \rrbracket~z$'' means the ``the code $h$ interpreted as a function and applied to input $z$," we say that a programmer defines a program generator $g$ that satisfies 
+%\[
+%\llbracket \llbracket g \rrbracket~x\rrbracket~y =\llbracket f \rrbracket~(x,y)
+%\] 
+%for all $x$ and $y$. When well supported by the language (\cite{devito13}, [some metaml citation]) this technique is often called {\em metaprogramming}.  Of course, even without first class support, one can represent the second stage code using strings or other data types.  Defined so broadly, program generation includes all compilers, where $f$ is a hypothetical interpretter, $g$ is the actual compiler, $x$ is a program in the source language, and $y$ is the input to $x$.  Program generation has also been used to implement the DFT example in the form of FFTW \cite{FFTW05}.  
+%
+%The benefit of the program generation technique is full control, even up to the ability to use domain-specific optimizations.  This comes at the cost of essentially being a manual operation.  
+%
+%\subsection {Partial Evaluation} 
+%The idea of partial evaluation is to {\em automatically} specialize the code of $f$ to the supplied input, in a manner similar to standard evaluation.  In particular this means defining a program $pe$, called a partial evaluator, to which we can pass the implementation of a function $f$ along with $f$'s immediate input $x$, and get back a version of $f$ that is {\em specialized} to $x$.  This specialized version, also called a {\em residual}, is often denoted as $f_x$.  Equationally, we have
+%\begin{align*}
+%\llbracket pe\rrbracket~(f,x) &= f_x \\
+%\llbracket f_x\rrbracket~y &= \llbracket f\rrbracket~(x,y)
+%\end{align*}
+% for all $f$, $x$, and $y$.  As seminally observed by \cite{futamura71}, partially evaluating an interpretter on a source program is equivalent to compiling that program to whatever language the interpretter was written in!  This has the benefit of being an automatic process, although the effective compiler is only as good as the partial evaluator.  Much of the subsequent work in partial evaluators has been with the purpose of chasing this goal.
+%
+%Partial evaluation is a more general technique than program generation, in that the partial evaluator is defined once and works for all $f$s that need to be specialized.  Of course, the partial evaluator has no domain knowledge of the program it is splitting, so it cannot be nearly as aggressive as a program generator might be.  The two techniques are similar in that they both require the first input $x$ to do their specializing action.
+%
+%\subsection {Pass Separation} 
+%The final technique, pass separation, is conceptually the simplest.  The idea is to define a program called $ps$, for {\em pass separator}. It works by cleaving the function $f:\alpha \times \beta \to \gamma$ into two functions $f_1 : \alpha \to \tau$ and $f_2 : \beta \times \tau \to \gamma$ for some type $\tau$, where $f_1$ builds a data structure (of type $\tau$) from $x$, and $f_2$ consumes that data structure as well as $y$ to produce the standard ouput.  In analogy to partial evaluation, we call $f_2$ the {\em residual}.  Equationally, this is
+%\begin{align*}
+%\llbracket pe\rrbracket~f &= (f_1,f_2) \\
+%\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) &= \llbracket f\rrbracket~(x,y)
+%\end{align*}
+%for all $f$, $x$, and $y$.  This technique, performed manually, is a common exercise for every programmer.  In can be considered the general form of common compiler optimizations such as loop hoisting, an example considered later.  Like partial evaluation, pass separation is an automatic operation, but unlike both partial evaluation and program generation, pass separation does not require the value of the first argument, $x$, to properly specialize $f$.  This makes pass separation the most widely applicable of the staging techniques, at the cost of being able to perform aggressive optimizations in the residual that might depend on the first argument. 
+%
+%In this work we present a pass separation algorithm for a fragment of ML.  Specifically, our formulation can separate terms containing sums and recursion, which have not appeared previously in the stage seperation literature.  We anticipate that the algorithm will also be able to also separate this language extended with with first-class functions, although this is left as future work.  Additionally, our presentation is more explicitly type-motivated than those that have come before.
+%
+%\section{Binding-Time Analysis and Stage Untangling}
+%
+%The pass separation problem can naturally be decomposed into two subproblems:
+%\begin{itemize}
+%\item Decide which parts of the definition of $f$ belong to which stage and produce an annotated version of $f$.
+%\item Use the annotated version of $f$ to produce $f_1$ and $f_2$.  
+%\end{itemize}
+%
+%An analogous form of this decomposition exists in the partial evaluation literature, wherein the first subproblem is known as {\em binding-time analysis}.  The second subproblem, in which the difference between pass separation and partial evaluation is more manifest, does not seem to yet have a name.  We call it {\em stage untangling}.  Unlike previous work in pass separation, we focuses entirely on the stage untangling problem by assuming that $f$ is given to us in an annotated form. 
+%
+%Previous research has observed that the pass separation problem is inherently ambiguous in that the equations defined above do not fully specify the definition of $pe$.  That is, there can exist multiple ways to partition $f$ into $f_1$ and $f_2$ that satisfy $\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) = \llbracket f\rrbracket~(x,y)$.  For a trivial example, we can set $f_1$ to be the identity and $f_2$ to be $f$. Fortunately, this ambiguity is contained entirely within the binding-time analysis portion of pass separation; stage untangling is entirely determined.
 
-\section{Binding-Time Analysis and Stage Untangling}
+\section{A Simple Two-Stage Language}
 
-The pass separation problem can naturally be decomposed into two subproblems:
-\begin{itemize}
-\item Decide which parts of the definition of $f$ belong to which stage and produce an annotated version of $f$.
-\item Use the annotated version of $f$ to produce $f_1$ and $f_2$.  
-\end{itemize}
+We'll start by analyzing a simple two-stage language called \corelang.  We say it is simple in that it supports boolean, integer, and product types, as well as let bindings, if expressions, and various primitive operations.  Notably, we leave out functions, fixed point operators, and full sum types. 
 
-An analogous form of this decomposition exists in the partial evaluation literature, wherein the first subproblem is known as {\em binding-time analysis}.  The second subproblem, in which the difference between pass separation and partial evaluation is more manifest, does not seem to yet have a name.  We call it {\em stage untangling}.  Unlike previous work in pass separation, we focuses entirely on the stage untangling problem by assuming that $f$ is given to us in an annotated form. 
+The grammar for \corelang is given in Figure \ref{fig:coreSyntax}
 
-Previous research has observed that the pass separation problem is inherently ambiguous in that the equations defined above do not fully specify the definition of $pe$.  That is, there can exist multiple ways to partition $f$ into $f_1$ and $f_2$ that satisfy $\llbracket f_2\rrbracket~(\llbracket f_1\rrbracket~x,y) = \llbracket f\rrbracket~(x,y)$.  For a trivial example, we can set $f_1$ to be the identity and $f_2$ to be $f$. Fortunately, this ambiguity is contained entirely within the binding-time analysis portion of pass separation; stage untangling is entirely determined.
+\begin{figure}
+\caption{\corelang~Syntax}
+\label{fig:coreSyntax}
+\centering
+\begin{tabular}{ll} 
+$\begin{aligned}
+\typeo &::= \text{unit}~|~\text{int}~|~\text{bool} \\
+&\gbar \typeo \times \typeo \\
+&\gbar \fut \typet 
+\end{aligned} $  
+& 
+$\begin{aligned}
+\typet &::=  \text{unit}~|~\text{int}~|~\text{bool} \\
+&\gbar \typet \times \typet \\
+&
+\end{aligned} $  
+\\ 
+$\begin{aligned}
+\expro &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false}  \\
+&\gbar \letin{\var}{\expro}{\expro} \\
+&\gbar \var \\
+&\gbar (\expro, \expro) \\
+&\gbar \pi_1~\expro \gbar \pi_2~\expro \\
+&\gbar \ifthen {\expro}{\expro}{\expro} \\
+&\gbar \next~\exprt 
+\end{aligned} $ 
+& 
+$\begin{aligned}
+\exprt &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false} \\
+&\gbar \letin{\var}{\exprt}{\exprt} \\
+&\gbar \var \\
+&\gbar (\exprt, \exprt) \\
+&\gbar \pi_1~\exprt \gbar \pi_2~\exprt \\
+&\gbar \ifthen {\exprt}{\exprt}{\exprt} \\
+&\gbar \prev~\expro
+\end{aligned} $
+\\ 
+$\begin{aligned}
+\valo &::= \valdum \\
+&\gbar ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+&\gbar \valprod {\valo} {\valo}
+\end{aligned} $  
+& 
+$\begin{aligned}
+\context &::= \mathrm{empty} \\
+&\gbar \context, \var : \typeo ^\bbone \\
+&\gbar \context, \var : \typet ^\bbtwo
+\end{aligned} $
+\end{tabular}
+\end{figure}
 
-\section{$\lambda^{12}$}
+\subsection{Static Semantics}
 
-(Introduce the language, talk about its type system and maybe its evaluation.)
+Introduce the type system.  We got it from \cite{davies96}.
 
-\section{Examples}
+\begin{figure}
+\caption{\corelang~Static Semantics}
+\label{fig:coreStatics}
+\begin{mathpar}
+\infer [\mathrm{unit}] {\gds () : \text{unit}}{\cdot} \and
+\infer [\mathrm{int}] {\gds i : \text{int}}{\cdot} \and
+\infer [\mathrm{bool_1}] {\gds \mathtt{true} : \text{bool}}{\cdot} \and
+\infer [\mathrm{bool_2}] {\gds \mathtt{false} : \text{bool}}{\cdot} \and
+\infer [\mathrm{let}] {\letin{x}{e_1}{e_2} : B}{\gds e_1 : A & \Gamma,x:A^\sigma \vdash e_2 : B} \and
+\infer [\mathrm{hyp}] {\gds x : A}{x : A^\sigma \in \Gamma} \and
+\infer [\times\mathrm{I}] {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \and
+\infer [\times\mathrm{E_1}] {\gds \pi_1~e : A}{\gds e : A\times B} \and
+\infer [\times\mathrm{E_2}] {\gds \pi_2~e : B}{\gds e : A\times B} \and
+\infer [\mathrm{if}] {\gds \ifthen{e_1}{e_2}{e_3} : A}{\gds e_1 : \mathrm{bool} & \gds e_2 : A & \gds e_3 : A} \and
+\infer [\fut\mathrm{I}] {\Gamma \vdash^\bbone \next~e : \fut A}{\Gamma \vdash^\bbtwo e : A} \and
+\infer [\fut\mathrm{E}] {\Gamma \vdash^\bbtwo \prev~e : A}{\Gamma \vdash^\bbone e : \fut A} \and
+\end{mathpar}
+\end{figure}
 
-Some examples to get us comfortable with the language.
+\subsection{Erasure Dynamic Semantics}
 
-\subsection{loop hoisting}
+Check Figure \ref{fig:erasureSemantics}
 
-\section{Stage Seperaion Algorithm}
+\newcommand{\downer}{\Downarrow}
 
-Talk about the goal of the transformation.  Introduce the general form with open variables and a context, which is {\em not} the simplistic $f_1$, $f_2$ thing.  Stress the first image/second image/boundary type stuff.
+\begin{figure}
+\caption{\corelang~Erasure Dynamic Semantics}
+\label{fig:erasureSemantics}
+\begin{mathpar}
+\infer [\mathrm{unit}] { () \downer {\bf ()}}{\cdot} \and
+\infer [\mathrm{int}] {i \downer i}{\cdot} \and
+\infer [\mathrm{bool_1}] {\mathtt{true} \downer {\bf true}}{\cdot} \and
+\infer [\mathrm{bool_2}] {\mathtt{false}\downer {\bf false}}{\cdot} \and
+\infer [\mathrm{let}] {\letin{x}{e_1}{e_2} \downer v_2}{e_1 \downer v_1 & [v_1/x]e_2 \downer v_2} \and
+\infer [\times\mathrm{I}] {(e_1,e_2) \downer (v_1,v_2)}{e_1 \downer v_1 & e_2 \downer v_2} \and
+\infer [\times\mathrm{E_1}] {\pi_1~e \downer v_1}{e \downer (v_1,v_2)} \and
+\infer [\times\mathrm{E_2}] {\pi_2~e \downer v_2}{e\downer (v_1,v_2)} \and
+\infer [\mathrm{if_1}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf true} & e_2 \downer v} \and
+\infer [\mathrm{if_2}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf false} & e_3 \downer v} \\
+\infer [\fut\mathrm{I}] {\next~e \downer v}{e \downer v} \and
+\infer [\fut\mathrm{E}] {\prev~e \downer v}{e \downer v} 
+\end{mathpar}
+\end{figure}
 
-\subsection {Type translation}
+%\subsection{Better Dynamic Semantics}
+%
+%Introduce the dynamics semantics.  Figure \ref{fig:coreDynamics}.  It's small step.  We figured this out on our own, but it really should exist in the partial evaluation literature somewhere.
+%
+%\newcommand {\stepo} {\hookrightarrow_\bbone} 
+%\newcommand {\stept} {\hookrightarrow_\bbtwo} 
+%\newcommand {\pco} {~\mathrm{pc}\bbone} 
+%\newcommand {\fco} {~\mathrm{fc}\bbone} 
+%\newcommand {\pct} {~\mathrm{pc}\bbtwo} 
+%\newcommand {\fct} {~\mathrm{fc}\bbtwo} 
+%
+%\begin{figure}
+%\caption{\corelang~Partially Computed Values (pc$\bbone$ and pc$\bbtwo$)}
+%\label{fig:coreDynamics}
+%\begin{mathpar}
+%\infer {() \pco}{\cdot} \and
+%\infer {i \pco}{\cdot} \and
+%\infer {b \pco}{\cdot} \and
+%\infer {(v_1, v_2) \pco}{v_1 \pco & v_2 \pco} \and
+%\infer {\next~e \pco}{e \pct} \\
+%\infer {() \pct}{\cdot} \and
+%\infer {i \pct}{\cdot} \and
+%\infer {b \pct}{\cdot} \and
+%\infer {(v_1, v_2) \pct}{v_1 \pct & v_2 \pct} \and
+%\infer {\pi_i e \pct}{e \pct} \and
+%\infer {x \pct}{\cdot} \and
+%\infer {\letin{x}{e_1}{e_2} \pct}{e_1 \pct & e_2 \pct} \and
+%\infer {\ifthen{e_1}{e_2}{e_3} \pct}{e_1 \pct & e_2 \pct & e_3 \pct} \and
+%\infer {\prev~e \pct}{e \pco} 
+%\end{mathpar}
+%\end{figure}
+%
+%\begin{figure}
+%\caption{\corelang~Fully Computed Values (fc$\bbone$ and fc$\bbtwo$)}
+%\label{fig:coreDynamics}
+%\begin{mathpar}
+%\infer {() \fco}{\cdot} \and
+%\infer {i \fco}{\cdot} \and
+%\infer {b \fco}{\cdot} \and
+%\infer {(v_1, v_2) \fco}{v_1 \fco & v_2 \fco} \and
+%\infer {\next~e \fco}{e \fct} \\
+%\infer {() \fct}{\cdot} \and
+%\infer {i \fct}{\cdot} \and
+%\infer {b \fct}{\cdot} \and
+%\infer {(v_1, v_2) \fct}{v_1 \fct & v_2 \fct} 
+%\end{mathpar}
+%\end{figure}
+%
+%\begin{figure}
+%\caption{\corelang~Transitions}
+%\label{fig:coreDynamics}
+%\begin{mathpar}
+%\infer {\ifthen{e_1}{e_2}{e_3} \stepo \ifthen{e_1'}{e_2}{e_3}}{e_1 \stepo e_1'}  \\
+%\infer {\ifthen{\tt true}{e_2}{e_3} \stepo e_2}{\cdot} \and 
+%\infer {\ifthen{\tt false}{e_2}{e_3} \stepo e_3}{\cdot}  \\
+%\infer {\ifthen{e_1}{e_2}{e_3} \stept \ifthen{e_1'}{e_2}{e_3}}{e_1 \stept e_1' & e_2 \pct & e_3 \pct}  \\
+%\infer {\ifthen{\tt true}{e_2}{e_3} \stept e_2}{e_2 \pct & e_3 \pct} \and 
+%\infer {\ifthen{\tt false}{e_2}{e_3} \stept e_3}{e_2 \pct & e_3 \pct} \\
+%\infer {\letin{x}{e_1}{e_2} \stepo \letin{x}{e_1'}{e_2}}{e_1 \stepo e_1'} \and
+%\infer {\letin{x}{e_1}{e_2} \stepo [e_1/x]e_2}{e_1 \fco} \and
+%\infer {\letin{x}{e_1}{e_2} \stept \letin{x}{e_1'}{e_2}}{e_1 \stept e_1'} \and
+%\infer {\letin{x}{e_1}{e_2} \stept [e_1/x]e_2}{e_1 \fct} \and
+%\infer {x \downtwo x}{\cdot} \and
+%\infer {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \and
+%\infer {\ifthen{e_1}{e_2}{e_3} \downone [v,r]}{e_1 \downone {\bf true} & e_2 \downone [v,r]} \and
+%\infer {\ifthen{e_1}{e_2}{e_3} \downone [v,r]}{e_1 \downone {\bf false} & e_3 \downone [v,r]} \and
+%\infer {\ifthen{e_1}{e_2}{e_3} \downtwo [v, \ifthen{r_1}{r_2}{r_3}]}{e_1 \downtwo [\valdum,r_1] & e_2 \downtwo [v_2,r_2] & e_3 \downtwo [v_3,r_3]} \and
+%\infer {\next~e \downone [\valdum,r]}{e \downtwo r} \and
+%\infer {\prev~e \downtwo r}{e \downone [\valdum, r]} \and
+%\end{mathpar}
+%\end{figure}
 
-\subsection{Term translation}
+%\subsection{Good Theorems About the Language Alone}
+%
+%\begin{enumerate}
+%\item Type Safety.
+%\item Unidirectional Flow. [Essentially, you cannot write a program that goes back in time.]
+%\item Erasure property.  [If you ignore the nexts and prevs, the result is weakly equivalent.] [This was proven for a denotational semantics in some Jones paper that I need to find...]
+%\end{enumerate}
 
-State the main theorems we want to be true.  Refer to the 
+\subsection{Splitting}
 
-\subsection{Functions}
+Introduce \coremono, in figure \ref{fig:baseSyntax}.  We're gonna split into two terms of that.
 
-Talk about why the current set up for functions alleviates the boundary-type guessing problem.
+\begin{figure}
+\caption{\coremono~Syntax}
+\label{fig:baseSyntax}
+\centering
+\begin{tabular}{ll} 
+$\begin{aligned}
+\expr &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false} \\
+&\gbar \letin{\var}{\expr}{\expr} \\
+&\gbar \var \\
+&\gbar (\expr, \expr) \\
+&\gbar \pi_1~\expr \gbar \pi_2~\expr \\
+&\gbar \ifthen {\expr}{\expr}{\expr} 
+\end{aligned} $
+& 
+$\begin{aligned}
+\type &::=  \text{unit}~|~\text{int}~|~\text{bool} \\
+&\gbar \type \times \type 
+\\
+\val &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+&\gbar \valprod {\val} {\val} 
+\\
+\context &::= \mathrm{empty} \\
+&\gbar \context, \var : \type
+\end{aligned} $
+\end{tabular}
+\end{figure}
 
-\subsection{Issue with sums}
 
-Sums result in dependant types, which is cool.
+\begin{figure*}
+\caption{Splitting}
+\label{fig:split}
+\begin{mathpar}
+\infer [\mathrm{unit}\splito] 
+	{\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \and
+\infer [\mathrm{unit}\splits]
+	 {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \and
+\infer [\times\mathrm{I}\splito] 
+	{\gdo (e_1,e_2) : A\times B \splito [((\pi_1 c, \pi_1 c),(\pi_2 c_1, \pi_2 c_2)), l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})] }
+	{ \gdo e_1 : A \splito [c_1,l_1.r_1] 
+	&\gdo e_2 : B \splito [c_2,l_2.r_2]} \and
+\infer [\times\mathrm{I}\splits] 
+	{\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
+	{ \gdt e_1 : A \splits [p_1,l_1.r_1] 
+	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \and
+\infer [\times\mathrm{E_1}\splito] 
+	{\gdo \pi_1~e : A \splito [(\pi_1(\pi_1c),\pi_2 c),l.\pi_1~r] }{\gdo e : A\times B \splito [c,l.r] } \and
+\infer [\times\mathrm{E_1}\splits] 
+	{\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \and
+\infer [\times\mathrm{E_2}\splito] 
+	{\gdo \pi_2~e : B \splito [(\pi_2(\pi_1c),\pi_2 c),l.\pi_2~r] }{\gdo e : A\times B \splito [c,l.r]} \and
+\infer [\times\mathrm{E_2}\splits] 
+	{\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} \and
+\infer [\fut\mathrm{I}\splito] {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \and
+\infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \and
+\infer [+\mathrm{E}\splito]
+	{\gdo \left( \tallif {e_1}{e_2}{e_3} \right) :A \splito 
+	\left[
+		\begin{array}{l}
+		\left(\tallif {\pi_1c_1}
+			{\letin{y}{c_2}{(\pi_1 y, \iota_1(\pi_2 y))}}
+			{\letin{y}{c_3}{(\pi_1 y, \iota_2(\pi_2 y))}}
+		\right), \\
+		l.\left(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
+		\right)
+		\end{array}
+	\right]}
+	{\gdo e_1 : {\rm bool} \splito [c_1, l_1.r_1]
+	& \gdo e_2 : A \splito [c_2,l_2.r_2]
+	& \gdo e_3 : A \splito [c_3,l_3.r_3]} \and
+%\infer [+\mathrm{E}\splito]
+%	{\gdo \left( \tallif {e_1}{e_2}{e_3} \right) :A \splito 
+%	\left[
+%		\begin{array}{l}
+%		\letin{c}{c_1}{\left(\tallif {\pi_1c}
+%			{\letin{y}{c_2}{(\pi_1 y, (\iota_1(\pi_2 y), \pi_2 c))}}
+%			{\letin{y}{c_3}{(\pi_1 y, (\iota_2(\pi_2 y), \pi_2 c))}}
+%		\right)}, \\
+%		l.\left(\letin{c_1}{\pi_2 l}{r_1}; 
+%			\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
+%		\right)
+%		\end{array}
+%	\right]}
+%	{\gdo e_1 : {\rm bool} \splito [c_1, l_1.r_1]
+%	& \gdo e_2 : A \splito [c_2,l_2.r_2]
+%	& \gdo e_3 : A \splito [c_3,l_3.r_3]} \and
+\infer [+\mathrm{E}\splits]
+	{\gdt \left( \tallif {e_1}{e_2}{e_3}\right) : A \splits 
+	\left[(p_1,p_2,p_3), 
+	l.\left(\tallif{(\letin {l_1}{\pi_1 l}{r_1})}{(\letin {l_2}{\pi_2 l}{r_2})} {(\letin {l_3}{\pi_3 l}{r_3})} \right)
+	\right] }
+	{ \gdt e_1 : {\rm bool} \splits [p_1,l_1.r_1]
+	& \gdt e_2 : A \splits [p_2,l_2.r_2] 
+	& \gdt e_3 : A \splits [p_3,l_3.r_3]} 
+\end{mathpar}
+\end{figure*}
+
+\subsection {Splitting Theorems}
+
+\begin{enumerate}
+\item It always pops out a well typed term.
+\item Meaning is preserved, up to some translation.
+\end{enumerate}
 
 \section {Implementation}
 
