@@ -52,12 +52,15 @@
 \newcommand {\valprod} [2] {{\bf (}{#1},{#2}{\bf )}}
 \newcommand {\valleft} {{\bf \iota}_1}
 \newcommand {\valright} {{\bf \iota}_2}
+\newcommand {\valnext} {{\bf next}}
 \newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
 \newcommand {\valdum} {{\bf dummy}}
 
 %judgements
 \newcommand {\splito} {\overset{\bbone}\rightsquigarrow}
 \newcommand {\splits} {\overset{\bbtwo}\rightsquigarrow}
+\newcommand {\vsplito} {\overset{\bbone}\rightsquigarrow}
+\newcommand {\vsplits} {\overset{\bbtwo}\rightsquigarrow}
 
 \title{\Large\textbf{General Stage Untangling with Applications to Algorithm Derivation}}
 \author{Nicolas Feltman et al.}
@@ -164,11 +167,17 @@ $\begin{aligned}
 \end{aligned} $
 \\ 
 $\begin{aligned}
-\valo &::= \valdum \\
-&\gbar ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
-&\gbar \valprod {\valo} {\valo}
-\end{aligned} $  
+\valo &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+&\gbar \valprod {\valo} {\valo} \\
+&\gbar \valnext~\valt
+\end{aligned} $
 & 
+$\begin{aligned}
+\valt &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+&\gbar \valprod {\valt} {\valt} \\
+& 
+\end{aligned} $
+\\
 $\begin{aligned}
 \context &::= \mathrm{empty} \\
 &\gbar \context, \var : \typeo ^\bbone \\
@@ -220,8 +229,8 @@ Check Figure \ref{fig:erasureSemantics}
 \infer [\times\mathrm{E_2}] {\pi_2~e \downer v_2}{e\downer (v_1,v_2)} \and
 \infer [\mathrm{if_1}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf true} & e_2 \downer v} \and
 \infer [\mathrm{if_2}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf false} & e_3 \downer v} \\
-\infer [\fut\mathrm{I}] {\next~e \downer v}{e \downer v} \and
-\infer [\fut\mathrm{E}] {\prev~e \downer v}{e \downer v} 
+\infer [\fut\mathrm{I}] {\next~e \downer \valnext~v}{e \downer v} \and
+\infer [\fut\mathrm{E}] {\prev~e \downer v}{e \downer \valnext~v} 
 \end{mathpar}
 \end{figure}
 
@@ -338,8 +347,24 @@ $\begin{aligned}
 
 
 \begin{figure*}
-\caption{Splitting}
-\label{fig:split}
+\caption{Value Splitting}
+\label{fig:valSplit}
+\begin{mathpar}
+\infer [\mathrm{unit}\vsplito]	{() \vsplito [(), ()]}{\cdot} \and
+\infer [\mathrm{int}\vsplits]	{i \vsplito [i,()]}{\cdot} \and
+\infer [\mathrm{bool}\vsplits]	{b \vsplito [b,()]}{\cdot} \and
+\infer [\mathrm{bool}\vsplits]	
+	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
+	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
+\infer [\mathrm{bool}\vsplits]
+	{\valnext~v \vsplito [(),v']}
+	{v \vsplits v'} \and
+\end{mathpar}
+\end{figure*}
+
+\begin{figure*}
+\caption{Term Splitting}
+\label{fig:termSplit}
 \begin{mathpar}
 \infer [\mathrm{unit}\splito] 
 	{\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \and
