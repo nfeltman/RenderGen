@@ -1,0 +1,80 @@
+% core conventions and language names
+\newcommand {\bbone} {\mathbbm 1}
+\newcommand {\bbtwo} {\mathbbm 2}
+\newcommand {\corelang} {$\mathrm{L}^{\bbone\bbtwo}$}
+\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
+\newcommand {\coremono} {L}
+\newcommand {\mono} {$\lambda$}
+\newcommand {\rmunit} {{\rm unit}}
+
+% bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\stage} {\langle\mathit{stage}\rangle}
+\newcommand {\type} {\langle\mathit{type}\rangle}
+\newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
+\newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
+\newcommand {\expr} {\langle\mathit{exp}\rangle}
+\newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
+\newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
+\newcommand {\val} {\langle\mathit{val}\rangle}
+\newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
+\newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
+\newcommand {\var} {\langle\mathit{var}\rangle}
+\newcommand {\emptyC} {\bullet}
+\newcommand {\contextot} {\langle\bbone\bbtwo\text{-}\mathit{cont}\rangle}
+\newcommand {\context} {\langle\mathit{cont}\rangle}
+\newcommand {\inte} {\langle\mathit{int}\rangle}
+\newcommand {\bool} {\langle\mathit{bool}\rangle}
+\newcommand {\resi} {\langle\mathit{res}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+% nodes
+\newcommand {\pause} {{\tt hold}}
+\newcommand {\next} {{\tt next}}
+\newcommand {\prev} {{\tt prev}}
+\newcommand {\fut} {\bigcirc}
+\newcommand {\inl} {{\tt inl}}
+\newcommand {\inr} {{\tt inr}}
+\newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
+\newcommand {\talllet} [3] {\begin{array}{l} {\tt let}~{#1} = {#2}~{\tt in} \\ {#3}\end{array}}
+\newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
+\newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
+\newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}
+\newcommand {\tallif} [3] {\begin{array}{l} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
+\newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
+\newcommand {\valprod} [2] {\llparenthesis{#1},{#2}\rrparenthesis}
+\newcommand {\valinl} {{\bf inl}}
+\newcommand {\valinr} {{\bf inr}}
+\newcommand {\valnext} {{\bf next}}
+\newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
+\newcommand {\valdum} {{\bf dummy}}
+
+%judgements
+\newcommand {\typesone} [3] [\Gamma] { {#1} \Vdash {#2}:{#3}}
+\newcommand {\typestwo} [3] [\Gamma] { {#1} \VDash {#2}:{#3}}
+\newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
+
+\newcommand {\reduceone} [2] {{#1} \Downarrow_\bbone {#2}}
+\newcommand {\reducetwo} [2] {{#1} \Downarrow_\bbtwo {#2}}
+\newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
+\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
+\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
+
+\newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
+\newcommand {\vsplits} {\overset{\bbtwo}\curvearrowbotright}
+\newcommand {\tsplito} {\overset{\bbone}\curvearrowright}
+\newcommand {\tsplits} {\overset{\bbtwo}\curvearrowright}
+\newcommand {\csplit} {\curvearrowright}
+
+\newcommand {\splitone} [4] [\Gamma] { {#1} \Vdash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
+\newcommand {\splittwo} [4] [\Gamma] { {#1} \VDash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
+\newcommand {\splitonesub} [2] [] {\splitone {e_{#1}}{#2}{c_{#1}, l_{#1}.r_{#1}}}
+\newcommand {\splittwosub} [2] [] {\splittwo {e_{#1}}{#2}{p_{#1}, l_{#1}.r_{#1}}}
+
+%inference extension
+\newcommand {\infertypesone} [3] [\mathrm{NONAME}]{ \infer [#1\text{-}\bbone] {#2}{#3}}
+\newcommand {\infertypestwo} [3] [\mathrm{NONAME}]{ \infer [#1\text{-}\bbtwo] {#2}{#3}}
+\newcommand {\inferreduceone} [3] [\mathrm{NONAME}]{ \infer [#1\Downarrow_\bbone] {#2}{#3}}
+\newcommand {\inferreducetwo} [3] [\mathrm{NONAME}]{ \infer [#1\Downarrow_\bbtwo] {#2}{#3}}
+\newcommand {\infersplitone} [3] [\mathrm{NONAME}]{ \infer [#1 \overset{\bbone}\rightsquigarrow] {#2}{#3}}
+\newcommand {\infersplittwo} [3] [\mathrm{NONAME}]{ \infer [#1 \overset{\bbtwo}\rightsquigarrow] {#2}{#3}}

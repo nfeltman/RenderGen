@@ -3,64 +3,13 @@
 \usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
-\usepackage{amssymb,amsthm}
+\usepackage{amssymb}
+\usepackage{mathabx}
 \usepackage{cite}
 \usepackage{mathpartir}
 \usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
 
-% core conventions and language names
-\newcommand {\bbone} {\mathbbm 1}
-\newcommand {\bbtwo} {\mathbbm 2}
-\newcommand {\corelang} {$\mathrm{L}^{\bbone\bbtwo}$}
-\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
-\newcommand {\coremono} {L}
-\newcommand {\mono} {$\lambda$}
-
-% bnf stuff
-\newcommand {\myit} [1]{\operatorname{\it{#1}}}
-\newcommand {\stage} {\langle\mathit{stage}\rangle}
-\newcommand {\type} {\langle\mathit{type}\rangle}
-\newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
-\newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
-\newcommand {\expr} {\langle\mathit{exp}\rangle}
-\newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
-\newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
-\newcommand {\val} {\langle\mathit{val}\rangle}
-\newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
-\newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
-\newcommand {\var} {\langle\mathit{var}\rangle}
-\newcommand {\context} {\langle\mathit{cont}\rangle}
-\newcommand {\inte} {\langle\mathit{int}\rangle}
-\newcommand {\resi} {\langle\mathit{res}\rangle}
-\newcommand {\gbar} {~~|~~}
-
-% nodes
-\newcommand {\pause} {{\tt hold}}
-\newcommand {\next} {{\tt next}}
-\newcommand {\prev} {{\tt prev}}
-\newcommand {\fut} {\bigcirc}
-\newcommand {\transfers} {\nearrow}
-\newcommand {\gds} {{\Gamma \vdash^\sigma}}
-\newcommand {\gdo} {{\Gamma \vdash^\bbone}}
-\newcommand {\gdt} {{\Gamma \vdash^\bbtwo}}
-\newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
-\newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
-\newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
-\newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}
-\newcommand {\tallif} [3] {\begin{array}{l} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
-\newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
-\newcommand {\valprod} [2] {{\bf (}{#1},{#2}{\bf )}}
-\newcommand {\valleft} {{\bf \iota}_1}
-\newcommand {\valright} {{\bf \iota}_2}
-\newcommand {\valnext} {{\bf next}}
-\newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
-\newcommand {\valdum} {{\bf dummy}}
-
-%judgements
-\newcommand {\splito} {\overset{\bbone}\rightsquigarrow}
-\newcommand {\splits} {\overset{\bbtwo}\rightsquigarrow}
-\newcommand {\vsplito} {\overset{\bbone}\rightsquigarrow}
-\newcommand {\vsplits} {\overset{\bbtwo}\rightsquigarrow}
+\input {macros}
 
 \title{\Large\textbf{General Stage Untangling with Applications to Algorithm Derivation}}
 \author{Nicolas Feltman et al.}
@@ -125,9 +74,13 @@ In addition to the partitioning of a calculation across multiple domains, the ex
 
 \section{A Simple Two-Stage Language}
 
-We'll start by analyzing a simple two-stage language called \corelang.  We say it is simple in that it supports boolean, integer, and product types, as well as let bindings, if expressions, and various primitive operations.  Notably, we leave out functions, fixed point operators, and full sum types. 
+We'll start by analyzing a simple two-stage language called \corelang.  We say it is simple in that it supports boolean, integer, and product types, as well as let bindings, if expressions, and various primitive operations.  Notably, we leave out functions, fixed point operators, and full sum types, which will be added later.
 
-The grammar for \corelang is given in Figure \ref{fig:coreSyntax}
+The grammar for types, terms, values, and contexts in \corelang are given in Figure \ref{fig:coreSyntax}.  The first thing to notice is that stage $\bbone$ and stage $\bbtwo$ code are syntactically seperated at the type, term, and value levels, despite heavy overlap.  It would be tempting to merge the two stages into one syntactic class and maintain the stage invariants with the typing judgements.  Such a trick would reduce the total number of rules presented later, but at the cost of making those rules type derivation-directed, rather than syntax directed.  Alternatively, we chose to have one context merged accross both stages, rather than one context for each stage.  The intended effect of this decision is for bindings in one stage to shadow binding to the same variables in the other stage.  The reasons for this will become clear later.
+
+At the type and value levels, stage $\bbone$ can refer to stage $\bbtwo$, but stage $\bbtwo$ cannot refer back to stage $\bbone$.  Alternatively, the two stages are mutually recursive at the term level.  These two patterns together fulfill the promise of {\em mixed code, staged evalutation}.
+
+In the rest of this document, I will tend to use $\{A,B,C\}$ for types, $\{v,u,w,t\}$ for values, $\{x,y\}$ for variables, $e$ for terms, $i$ for integers, and $b$ for booleans.
 
 \begin{figure}
 \caption{\corelang~Syntax}
@@ -147,7 +100,7 @@ $\begin{aligned}
 \end{aligned} $  
 \\ 
 $\begin{aligned}
-\expro &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false}  \\
+\expro &::= ()~|~\inte~|~\bool  \\
 &\gbar \letin{\var}{\expro}{\expro} \\
 &\gbar \var \\
 &\gbar (\expro, \expro) \\
@@ -157,7 +110,7 @@ $\begin{aligned}
 \end{aligned} $ 
 & 
 $\begin{aligned}
-\exprt &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false} \\
+\exprt &::= ()~|~\inte~|~\bool \\
 &\gbar \letin{\var}{\exprt}{\exprt} \\
 &\gbar \var \\
 &\gbar (\exprt, \exprt) \\
@@ -167,70 +120,131 @@ $\begin{aligned}
 \end{aligned} $
 \\ 
 $\begin{aligned}
-\valo &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+\valo &::= ()~|~\inte~|~\bool \\
 &\gbar \valprod {\valo} {\valo} \\
 &\gbar \valnext~\valt
 \end{aligned} $
 & 
 $\begin{aligned}
-\valt &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
+\valt &::= ()~|~\inte~|~\bool \\
 &\gbar \valprod {\valt} {\valt} \\
 & 
 \end{aligned} $
 \\
 $\begin{aligned}
-\context &::= \mathrm{empty} \\
-&\gbar \context, \var : \typeo ^\bbone \\
-&\gbar \context, \var : \typet ^\bbtwo
+\contextot &::=\emptyC \\
+&\gbar \contextot, \var : \typeo ^\bbone \\
+&\gbar \contextot, \var : \typet ^\bbtwo
 \end{aligned} $
 \end{tabular}
 \end{figure}
 
 \subsection{Static Semantics}
 
-Introduce the type system.  We got it from \cite{davies96}.
+The static semantics for \corelang~is given in Figure \ref{fig:coreStatics}.  Modulo the two-stage restriction and current absence of functions, it's based off of the system in \cite{davies96}, which was inspired by temporal logic (the source of our $\fut$ modality).  The static semantics comprises two judgements.  Those are:
+
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Name & Pattern \\ \hline
+Typing at $\bbone$ & $\typesone[\contextot]{\expro}{\typeo}$ \\  \hline
+Typing at $\bbtwo$ & $\typestwo[\contextot]{\exprt}{\typet}$ \\ \hline
+\end{tabular}
+\end{center}
+
+We see that the typing judgements for both stages are each what one would expect for an unstaged language.  That is, there are introduction and elimination forms for base types and products at both stage $\bbone$ and stage $\bbtwo$.  Furthermore, these rules preserve stage.  For these reasons, we can think of the base type and product features as essentially being orthogonal to the staging features.  The terms $\next$ and $\prev$, which are the only terms that allow us to change stage, are respectively the introduction and elimination forms for $\fut$.
 
 \begin{figure}
 \caption{\corelang~Static Semantics}
 \label{fig:coreStatics}
 \begin{mathpar}
-\infer [\mathrm{unit}] {\gds () : \text{unit}}{\cdot} \and
-\infer [\mathrm{int}] {\gds i : \text{int}}{\cdot} \and
-\infer [\mathrm{bool_1}] {\gds \mathtt{true} : \text{bool}}{\cdot} \and
-\infer [\mathrm{bool_2}] {\gds \mathtt{false} : \text{bool}}{\cdot} \and
-\infer [\mathrm{let}] {\letin{x}{e_1}{e_2} : B}{\gds e_1 : A & \Gamma,x:A^\sigma \vdash e_2 : B} \and
-\infer [\mathrm{hyp}] {\gds x : A}{x : A^\sigma \in \Gamma} \and
-\infer [\times\mathrm{I}] {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \and
-\infer [\times\mathrm{E_1}] {\gds \pi_1~e : A}{\gds e : A\times B} \and
-\infer [\times\mathrm{E_2}] {\gds \pi_2~e : B}{\gds e : A\times B} \and
-\infer [\mathrm{if}] {\gds \ifthen{e_1}{e_2}{e_3} : A}{\gds e_1 : \mathrm{bool} & \gds e_2 : A & \gds e_3 : A} \and
-\infer [\fut\mathrm{I}] {\Gamma \vdash^\bbone \next~e : \fut A}{\Gamma \vdash^\bbtwo e : A} \and
-\infer [\fut\mathrm{E}] {\Gamma \vdash^\bbtwo \prev~e : A}{\Gamma \vdash^\bbone e : \fut A} \and
+\infertypesone [\rmunit] 			{\typesone {()}{\rm unit}}{\cdot} \and
+\infertypesone [\mathrm{int}]		{\typesone {i}{\rm int}}{\cdot} \and
+\infertypesone [\mathrm{bool}]	{\typesone {b} {\rm bool}}{\cdot} \and
+\infertypesone [\mathrm{hyp}]		{\typesone x A}{x : A^\bbone \in \Gamma} \and
+\infertypestwo [\rmunit]			{\typestwo {()}{\rm unit}}{\cdot} \and
+\infertypestwo [\mathrm{int}]		{\typestwo {i}{\rm int}}{\cdot} \and
+\infertypestwo [\mathrm{bool}]	{\typestwo {b} {\rm bool}}{\cdot} \and
+\infertypestwo [\mathrm{hyp}]		{\typestwo x A}{x : A^\bbtwo \in \Gamma} \and
+\infertypesone [\mathrm{let}]		{\typesone{\letin{x}{e_1}{e_2}}{B}}{\typesone{e_1} A & \typesone [\Gamma,x:A^\bbone] {e_2} B} \and
+\infertypestwo [\mathrm{let}]		{\typestwo{\letin{x}{e_1}{e_2}}{B}}{\typestwo{e_1} A & \typestwo [\Gamma,x:A^\bbtwo] {e_2} B} \and
+\infertypesone [\times\mathrm{I}]		{\typesone {(e_1,e_2)} {A\times B}}{\typesone {e_1} A & \typesone {e_2} B} \and
+\infertypesone [\times\mathrm{E_1}]	{\typesone{\pi_1~e} A}{\typesone e {A\times B}} \and
+\infertypesone [\times\mathrm{E_2}]	{\typesone{\pi_2~e} B}{\typesone e {A\times B}} \and
+\infertypestwo [\times\mathrm{I}]		{\typestwo {(e_1,e_2)} {A\times B}}{\typestwo {e_1} A & \typestwo {e_2} B} \and
+\infertypestwo [\times\mathrm{E_1}]	{\typestwo{\pi_1~e} A}{\typestwo e {A\times B}} \and
+\infertypestwo [\times\mathrm{E_2}]	{\typestwo{\pi_2~e} B}{\typestwo e {A\times B}} \and
+\infertypesone [\mathrm{if}] {\typesone{\ifthen{e_1}{e_2}{e_3}} A}{\typesone{e_1} {\rm bool} & \typesone {e_2} A & \typesone {e_3} A} \and
+\infertypestwo [\mathrm{if}] {\typestwo{\ifthen{e_1}{e_2}{e_3}} A}{\typestwo{e_1} {\rm bool} & \typestwo {e_2} A & \typestwo {e_3} A} \and
+\infertypesone [\fut\mathrm{I}]	{\typesone{\next~e}{\fut A}}{\typestwo e A} \and
+\infertypestwo [\fut\mathrm{E}]	{\typestwo {\prev~e} A}{\typesone e {\fut A}} \and
 \end{mathpar}
 \end{figure}
 
 \subsection{Erasure Dynamic Semantics}
 
-Check Figure \ref{fig:erasureSemantics}
+The dynamics semantics for \corelang~is given in Figure \ref{fig:erasureSemantics} in big-step style.  Predictably, it comprises two judgements:
 
-\newcommand{\downer}{\Downarrow}
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Name & Pattern \\ \hline
+Reduction at $\bbone$ & $\reduceone{\expro}{\valo}$ \\  \hline
+Reduction at $\bbtwo$ & $\reducetwo{\exprt}{\valt}$ \\ \hline
+\end{tabular}
+\end{center}
+
+The primary goal for this semantics was simplicity.  This was achieved in that, like the static semantics, the judgements for each level are extremely similar to those for an unstaged language.  This simplicity came at the cost of some descriptiveness, however.  The inadequacy of this semantics will become apparent shortly.
+
+First, we discuss a few desirable theorems.  Chiefly among them is type preservation (I haven't defined the judgements for the types of values, but it should be rather clear).  As will be the pattern for many theorems to come, our inductive hypothesis comprises two mutually dependent lemmas, one for stage $\bbone$, and the other for stage $\bbtwo$:
+\begin{center}
+\begin{tabular}{l}
+If $\typesone [\emptyC]{e}{A}$ \\
+and $\reduceone{e}{v}$ \\
+then $v : A$
+\end{tabular}
+~~~
+\begin{tabular}{l}
+If $\typestwo [\emptyC]{e}{A}$ \\
+and $\reducetwo{e}{v}$ \\
+then $v : A$
+\end{tabular}
+\end{center}
+[Proof not done, but it looks trivial in every case. [Wait no, substitutions kill me again.]]
+
+We also want some formalization of the idea that stage two computation cannot affect stage one computation.  At a minimum, the following lemma should be true [this needs lots of work],
+
+\begin{center}
+\begin{tabular}{l}
+If $\exists v\in \valt$ s.t. $\reduceone {[v/x]e}{u}$ \\
+then $\forall v\in \valt$ s.t. $\reduceone {[v/x]e}{u'}$, $u \simeq u'$
+\end{tabular}
+\end{center}
+
+As it turns out, this is not true! [Example forthcoming.]
 
 \begin{figure}
 \caption{\corelang~Erasure Dynamic Semantics}
 \label{fig:erasureSemantics}
 \begin{mathpar}
-\infer [\mathrm{unit}] { () \downer {\bf ()}}{\cdot} \and
-\infer [\mathrm{int}] {i \downer i}{\cdot} \and
-\infer [\mathrm{bool_1}] {\mathtt{true} \downer {\bf true}}{\cdot} \and
-\infer [\mathrm{bool_2}] {\mathtt{false}\downer {\bf false}}{\cdot} \and
-\infer [\mathrm{let}] {\letin{x}{e_1}{e_2} \downer v_2}{e_1 \downer v_1 & [v_1/x]e_2 \downer v_2} \and
-\infer [\times\mathrm{I}] {(e_1,e_2) \downer (v_1,v_2)}{e_1 \downer v_1 & e_2 \downer v_2} \and
-\infer [\times\mathrm{E_1}] {\pi_1~e \downer v_1}{e \downer (v_1,v_2)} \and
-\infer [\times\mathrm{E_2}] {\pi_2~e \downer v_2}{e\downer (v_1,v_2)} \and
-\infer [\mathrm{if_1}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf true} & e_2 \downer v} \and
-\infer [\mathrm{if_2}] {\ifthen{e_1}{e_2}{e_3} \downer v}{e_1 \downer {\bf false} & e_3 \downer v} \\
-\infer [\fut\mathrm{I}] {\next~e \downer \valnext~v}{e \downer v} \and
-\infer [\fut\mathrm{E}] {\prev~e \downer v}{e \downer \valnext~v} 
+\inferreduceone [\rmunit]				{\reduceone {()}{()}}{\cdot} \and
+\inferreduceone [\mathrm{int}]		{\reduceone{i}{i}}{\cdot} \and
+\inferreduceone [\mathrm{bool}]		{\reduceone{b}{b}}{\cdot} \and
+\inferreduceone [\mathrm{let}]			{\reduceone{\letin{x}{e_1}{e_2}}{v_2}}{\reduceonesub [1] & \reduceone{[v_1/x]e_2}{v_2}} \and
+\inferreducetwo [\rmunit]				{\reducetwo {()}{()}}{\cdot} \and
+\inferreducetwo [\mathrm{int}]		{\reducetwo{i}{i}}{\cdot} \and
+\inferreducetwo [\mathrm{bool}]		{\reducetwo{b}{b}}{\cdot} \and
+\inferreducetwo [\mathrm{let}]			{\reducetwo{\letin{x}{e_1}{e_2}}{v_2}}{\reducetwosub [1] & \reducetwo{[v_1/x]e_2}{v_2}} \and
+\inferreduceone [\times\mathrm{I}]	{\reduceone{(e_1,e_2)}{\valprod{v_1}{v_2}}}{\reduceonesub [1] & \reduceonesub [2]} \and
+\inferreduceone [\times\mathrm{E_1}]	{\reduceone{\pi_1~e}{v_1}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
+\inferreduceone [\times\mathrm{E_2}]	{\reduceone{\pi_2~e}{v_2}}{\reduceone{e}{\valprod{v_1}{v_2}} } \and
+\inferreducetwo [\times\mathrm{I}]	{\reducetwo{(e_1,e_2)}{\valprod{v_1}{v_2}}}{\reduceonesub [1] & \reduceonesub [2]} \and
+\inferreducetwo [\times\mathrm{E_1}]	{\reducetwo{\pi_1~e}{v_1}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
+\inferreducetwo [\times\mathrm{E_2}]	{\reducetwo{\pi_2~e}{v_2}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
+\inferreduceone [\mathrm{if_1}] 		{\reduceone{\ifthen{e_1}{e_2}{e_3}}{v}}{\reduceone{e_1}{\bf true} & \reduceone{e_2}{v}} \and
+\inferreduceone [\mathrm{if_2}] 		{\reduceone{\ifthen{e_1}{e_2}{e_3}}{v}}{\reduceone{e_1}{\bf false} & \reduceone{e_3}{v}} \\
+\inferreducetwo [\mathrm{if_1}] 		{\reducetwo{\ifthen{e_1}{e_2}{e_3}}{v}}{\reducetwo{e_1}{\bf true} & \reducetwo{e_2}{v}} \and
+\inferreducetwo [\mathrm{if_2}] 		{\reducetwo{\ifthen{e_1}{e_2}{e_3}}{v}}{\reducetwo{e_1}{\bf false} & \reducetwo{e_3}{v}} \\
+\inferreduceone [\fut\mathrm{I}]		{\reduceone{\next~e}{\valnext~v}}{\reducetwosub} \and
+\inferreducetwo [\fut\mathrm{E}]		{\reducetwo{\prev~e} v}{\reduceone e {\valnext~v}} 
 \end{mathpar}
 \end{figure}
 
@@ -316,7 +330,31 @@ Check Figure \ref{fig:erasureSemantics}
 
 \subsection{Splitting}
 
-Introduce \coremono, in figure \ref{fig:baseSyntax}.  We're gonna split into two terms of that.
+We now cover splitting, the process by which mixed code is teased apart into two individual chunks of code, one for each stage.  To begin, we first introduce the target lagnuage (for both stage), \coremono.   The grammar for \coremono~is given in figure \ref{fig:baseSyntax}.  We see that \coremono~is (as one would hope) a traditional single-stage language, with all the same basetypes as \corelang, in addition to products, if expressions, and full sums (injections and case expressions).  The presence of this last feature is a bit curious, since \corelang~did not support full sums.  The necessity for sums should become apparent in time.  The static and dynamic semantics of \coremono~are not given, but should be obvious.  They are given by the judgements:
+
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Name & Pattern \\ \hline
+Typing & $\types{\expr}{\val}$ \\  \hline
+Reduction & $\reduce{\expr}{\val}$ \\ \hline
+\end{tabular}
+\end{center}
+
+The splitting judgements come in seven parts, two each for types, terms, and values, and one for contexts.  In tabular form, they are:
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Name & Pattern \\ \hline
+Value Splitting at $\bbone$& $\valo \vsplito [\val,\val]$ \\  \hline
+Value Splitting at $\bbtwo$& $\valt \vsplits \val$ \\  \hline
+Type Splitting at $\bbone$& $\typeo \tsplito [\type,\type]$ \\  \hline
+Type Splitting at $\bbtwo$& $\typet \tsplits \type$ \\  \hline
+Context Splitting & $\contextot \csplit [\context,\context]$ \\  \hline
+Term Splitting at $\bbone$& $\splitone{\expro}{\typeo}{\expr,\var.\expr}$ \\  \hline
+Term Splitting at $\bbtwo$& $\splittwo{\exprt}{\typet}{\expr,\var.\expr}$ \\  \hline
+\end{tabular}
+\end{center}
+
+[...more...]
 
 \begin{figure}
 \caption{\coremono~Syntax}
@@ -324,22 +362,26 @@ Introduce \coremono, in figure \ref{fig:baseSyntax}.  We're gonna split into two
 \centering
 \begin{tabular}{ll} 
 $\begin{aligned}
-\expr &::= ()~|~\inte~|~\mathtt{true}~|~\mathtt{false} \\
+\expr &::= ()~|~\inte~|~\bool \\
 &\gbar \letin{\var}{\expr}{\expr} \\
 &\gbar \var \\
 &\gbar (\expr, \expr) \\
 &\gbar \pi_1~\expr \gbar \pi_2~\expr \\
-&\gbar \ifthen {\expr}{\expr}{\expr} 
+&\gbar \inl~\expr \gbar \inr~\expr \\
+&\gbar \ifthen {\expr}{\expr}{\expr}  \\
+&\gbar \caseof {\expr}{x_1.\expr}{x_2.\expr} 
 \end{aligned} $
 & 
 $\begin{aligned}
-\type &::=  \text{unit}~|~\text{int}~|~\text{bool} \\
-&\gbar \type \times \type 
+\type &::=  \rmunit~|~\text{int}~|~\text{bool} \\
+&\gbar \type \times \type  \\
+&\gbar \type + \type 
 \\
-\val &::= ()~|~\inte~|~\mathbf{true}~|~\mathbf{false} \\
-&\gbar \valprod {\val} {\val} 
+\val &::= ()~|~\inte~|~\bool \\
+&\gbar \valprod {\val} {\val}  \\
+&\gbar \valinl~\expr \gbar \valinr~\expr
 \\
-\context &::= \mathrm{empty} \\
+\context &::= \emptyC \\
 &\gbar \context, \var : \type
 \end{aligned} $
 \end{tabular}
@@ -347,18 +389,44 @@ $\begin{aligned}
 
 
 \begin{figure*}
+\caption{Type Splitting}
+\label{fig:typeSplit}
+\begin{mathpar}
+\infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
+\infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
+\infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
+\infer [\times\tsplito]	
+	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
+	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
+\infer [\fut\tsplito]
+	{\fut~A \tsplito [{\rm unit}, A']}
+	{A \tsplits A'} \and
+\end{mathpar}
+\end{figure*}
+
+\begin{figure*}
 \caption{Value Splitting}
 \label{fig:valSplit}
 \begin{mathpar}
-\infer [\mathrm{unit}\vsplito]	{() \vsplito [(), ()]}{\cdot} \and
-\infer [\mathrm{int}\vsplits]	{i \vsplito [i,()]}{\cdot} \and
-\infer [\mathrm{bool}\vsplits]	{b \vsplito [b,()]}{\cdot} \and
-\infer [\mathrm{bool}\vsplits]	
+\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
+\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
+\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
+\infer [\times\vsplito]	
 	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
 	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
-\infer [\mathrm{bool}\vsplits]
+\infer [\fut\vsplito]
 	{\valnext~v \vsplito [(),v']}
-	{v \vsplits v'} \and
+	{v \vsplits v'} 
+\end{mathpar}
+\end{figure*}
+
+\begin{figure*}
+\caption{Context Splitting}
+\label{fig:contSplit}
+\begin{mathpar}
+\infer {\emptyC \csplit [\emptyC~;~\emptyC]}{\cdot} \and
+\infer {\Gamma, v : A^\bbone \csplit [\Gamma_1,v:A_1; \Gamma_2,v:A_2]}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplito [A_1, A_2]} \and
+\infer {\Gamma, v : A^\bbtwo \csplit [\Gamma_1; \Gamma_2,v:A']}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplits A'} 
 \end{mathpar}
 \end{figure*}
 
@@ -366,76 +434,168 @@ $\begin{aligned}
 \caption{Term Splitting}
 \label{fig:termSplit}
 \begin{mathpar}
-\infer [\mathrm{unit}\splito] 
-	{\gdo () : \text{unit} \splito [((),()),\_.()]}{\cdot} \and
-\infer [\mathrm{unit}\splits]
-	 {\gdt () : \text{unit} \splits [(),\_.()]}{\cdot} \and
-\infer [\times\mathrm{I}\splito] 
-	{\gdo (e_1,e_2) : A\times B \splito [((\pi_1 c, \pi_1 c),(\pi_2 c_1, \pi_2 c_2)), l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})] }
-	{ \gdo e_1 : A \splito [c_1,l_1.r_1] 
-	&\gdo e_2 : B \splito [c_2,l_2.r_2]} \and
-\infer [\times\mathrm{I}\splits] 
-	{\gdt (e_1,e_2) : A\times B \splits [(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})] }
-	{ \gdt e_1 : A \splits [p_1,l_1.r_1] 
-	&\gdt e_2 : B \splits [p_2,l_2.r_2]} \and
-\infer [\times\mathrm{E_1}\splito] 
-	{\gdo \pi_1~e : A \splito [(\pi_1(\pi_1c),\pi_2 c),l.\pi_1~r] }{\gdo e : A\times B \splito [c,l.r] } \and
-\infer [\times\mathrm{E_1}\splits] 
-	{\gdt \pi_1~e : A \splits [p,l.\pi_1~r] }{\gdt e : A\times B \splits [p,l.r] } \and
-\infer [\times\mathrm{E_2}\splito] 
-	{\gdo \pi_2~e : B \splito [(\pi_2(\pi_1c),\pi_2 c),l.\pi_2~r] }{\gdo e : A\times B \splito [c,l.r]} \and
-\infer [\times\mathrm{E_2}\splits] 
-	{\gdt \pi_2~e : B \splits [p,l.\pi_2~r] }{\gdt e : A\times B \splits [p,l.r]} \and
-\infer [\fut\mathrm{I}\splito] {\gdo \next~e : \fut A \splito [((),p),l.r]}{\gdt e : A\splits [p,l.r] } \and
-\infer [\fut\mathrm{E}\splits] {\gdt \prev~e : A\splits [\pi_2~c,l.r] }{\gdo e : \fut A \splito [c,l.r]} \and
-\infer [+\mathrm{E}\splito]
-	{\gdo \left( \tallif {e_1}{e_2}{e_3} \right) :A \splito 
-	\left[
+\infersplitone [\rmunit] 
+	{\splitone{()}{\rmunit}{((),()),\_.()}} {\cdot} \and
+\infersplittwo [\rmunit]
+	{\splittwo{()}{\rmunit}{(),\_.()}} {\cdot} \and
+\infersplitone [{\rm int}] 
+	{\splitone{i}{\rm int}{(i,()),\_.()}} {\cdot} \and
+\infersplittwo [{\rm int}]
+	{\splittwo{i}{\rm int}{(),\_.i}} {\cdot} \and
+\infersplitone [\times\mathrm{I}] 
+	{\splitone {(e_1,e_2)}{A\times B}
+		{ \begin{array}{l}
+		\left(\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}\right), \\
+		l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})
+		\end{array}}}
+	{ \splitonesub [1] A & \splitonesub [2] B} \and
+\infersplittwo [\times\mathrm{I}] 
+	{\splittwo {(e_1,e_2)}{A\times B}{(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})}}
+	{ \splittwosub [1] A & \splittwosub [2] B} \and
+\infersplitone [\times\mathrm{E_1}] 
+	{\splitone {\pi_1~e}{A}{(\pi_1(\pi_1c),\pi_2 c),l.\pi_1~r}}{\splitonesub{A\times B}} \and
+\infersplittwo [\times\mathrm{E_1}] 
+	{\splittwo{\pi_1~e}{A}{p,l.\pi_1~r} }{\splittwosub{A\times B}} \and
+\infersplitone [\times\mathrm{E_2}] 
+	{\splitone {\pi_2~e}{B}{(\pi_2(\pi_1c),\pi_2 c),l.\pi_2~r}}{\splitonesub{A\times B}} \and
+\infersplittwo [\times\mathrm{E_2}] 
+	{\splittwo{\pi_2~e}{B}{p,l.\pi_2~r} }{\splittwosub{A\times B}} \and
+\infersplitone [\mathrm{unit}] 
+	{\splitone {v}{A}{(x,()),\_.()}}{x:A^\bbone \in \Gamma} \and
+\infersplittwo [\mathrm{unit}]
+	 {\splittwo{v}{A}{(),\_.x}}{x:A^\bbtwo \in \Gamma} \\
+\infersplitone [\mathrm{let}] 
+	{\splitone{\letin{x}{e_1}{e_2}}{B}{\cdots}}
+	{\splitonesub [1] A & \splitone [\Gamma,x:A^\bbone] {e_2}{B}{c_2,l_2.r_2}} \and
+\infersplittwo [\mathrm{let}] 
+	{\splittwo{\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\letin{l_1}{\pi_1 l}{r_1})}{\letin{l_2}{\pi_2 l}{r_2}}}}
+	{\splittwosub [1] A & \splittwo [\Gamma,x:A^\bbtwo] {e_2}{B}{p_2,l_2.r_2}} \and
+\infersplitone [\fut\mathrm{I}] 
+	{\splitone{\next~e}{\fut A}{((),p),l.r}}{\splittwosub A} \and
+\infersplittwo [\fut\mathrm{E}] 
+	{\splittwo{\prev~e}{A} {\pi_2~c,l.r}}{\splitonesub {\fut A}} \and
+\infersplitone [+\mathrm{E}]
+	{\splitone {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
+	{
 		\begin{array}{l}
 		\left(\tallif {\pi_1c_1}
-			{\letin{y}{c_2}{(\pi_1 y, \iota_1(\pi_2 y))}}
-			{\letin{y}{c_3}{(\pi_1 y, \iota_2(\pi_2 y))}}
+			{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
+			{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
 		\right), \\
 		l.\left(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
 		\right)
 		\end{array}
-	\right]}
-	{\gdo e_1 : {\rm bool} \splito [c_1, l_1.r_1]
-	& \gdo e_2 : A \splito [c_2,l_2.r_2]
-	& \gdo e_3 : A \splito [c_3,l_3.r_3]} \and
-%\infer [+\mathrm{E}\splito]
-%	{\gdo \left( \tallif {e_1}{e_2}{e_3} \right) :A \splito 
-%	\left[
-%		\begin{array}{l}
-%		\letin{c}{c_1}{\left(\tallif {\pi_1c}
-%			{\letin{y}{c_2}{(\pi_1 y, (\iota_1(\pi_2 y), \pi_2 c))}}
-%			{\letin{y}{c_3}{(\pi_1 y, (\iota_2(\pi_2 y), \pi_2 c))}}
-%		\right)}, \\
-%		l.\left(\letin{c_1}{\pi_2 l}{r_1}; 
-%			\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
-%		\right)
-%		\end{array}
-%	\right]}
-%	{\gdo e_1 : {\rm bool} \splito [c_1, l_1.r_1]
-%	& \gdo e_2 : A \splito [c_2,l_2.r_2]
-%	& \gdo e_3 : A \splito [c_3,l_3.r_3]} \and
-\infer [+\mathrm{E}\splits]
-	{\gdt \left( \tallif {e_1}{e_2}{e_3}\right) : A \splits 
-	\left[(p_1,p_2,p_3), 
+	}}
+	{\splitonesub [1] {\rm bool} & \splitonesub [2] A & \splitonesub [3] A } \and
+\infersplittwo [+\mathrm{E}]
+	{\splittwo {\left( \tallif {e_1}{e_2}{e_3}\right)}{A} 
+	{(p_1,p_2,p_3), 
 	l.\left(\tallif{(\letin {l_1}{\pi_1 l}{r_1})}{(\letin {l_2}{\pi_2 l}{r_2})} {(\letin {l_3}{\pi_3 l}{r_3})} \right)
-	\right] }
-	{ \gdt e_1 : {\rm bool} \splits [p_1,l_1.r_1]
-	& \gdt e_2 : A \splits [p_2,l_2.r_2] 
-	& \gdt e_3 : A \splits [p_3,l_3.r_3]} 
+	}}
+	{\splittwosub [1] {\rm bool} & \splittwosub [2] A & \splittwosub [3] A } \and
 \end{mathpar}
 \end{figure*}
 
 \subsection {Splitting Theorems}
 
+\subsubsection{It preserves types}
+
+The theorem we want to show has two parts, one for the $\bbone$ code, and one for the $\bbtwo$ code.  
+\begin{center}
+\begin{tabular}{l}
+If $\splitone {e}{A}{c,l.r}$ \\
+then $\Gamma \csplit [\Gamma_1;\Gamma_2]$ \\
+and $A \tsplito [A_1,A_2]$ \\
+and $ \types [\Gamma_1]{c} {A_1 \times \tau}$ \\
+and $ \types [\Gamma_2, p:\tau]{r} {A_2}$ 
+\end{tabular}
+~~~
+\begin{tabular}{l}
+If $\splittwo {e}{A}{p,l.r}$ \\
+then $\Gamma \csplit [\Gamma_1;\Gamma_2]$ \\
+and $A \tsplits A'$ \\
+and $ \types [\Gamma_1]{p} {\tau}$ \\
+and $ \types [\Gamma_2, p:\tau]{r} {A'}$ 
+\end{tabular}
+\end{center}
+
+\subsubsection{It preserves meaning}
+
+The theorem we want to show has two parts, one for the $\bbone$ code, and one for the $\bbtwo$ code.  
+\begin{center}
+\begin{tabular}{l}
+If $\splitone [\emptyC]{e}{A}{c,l.r}$ \\
+and $\reduceone{e}{v}$ \\
+and $c \Downarrow \valprod{t}{u}$ \\
+and $[u/l]r \Downarrow w$ \\
+then $v \vsplito [t,w]$
+\end{tabular}
+~~~
+\begin{tabular}{l}
+If $\splittwo[\emptyC]{e}{B}{p,l.r}$ \\
+and $\reducetwo{e}{v}$ \\
+and $p \Downarrow u$ \\
+and $[u/l]r \Downarrow w$ \\
+then $v \vsplits w$
+\end{tabular}
+\end{center}
+
+We proceed by cases of the term splitting judgement.
+
+\begin{itemize}
+\item {\bf Int.} Suppose that
 \begin{enumerate}
-\item It always pops out a well typed term.
-\item Meaning is preserved, up to some translation.
+\item $\splitone{i}{\rm int}{(i,()),\_.()}$
 \end{enumerate}
+Since reduction is a function, we also have
+\begin{enumerate}
+\item $\reduceone{i}{i}$
+\item $\reduceone{(i,())}{\valprod {i}{()}}$
+\item $\reduceone{[()/\_]()}{()}$
+\end{enumerate}
+And since value splitting is a function,
+\begin{enumerate}
+\item $i \vsplito [i,()]$
+\end{enumerate}
+Which is what we need to show.
+
+\item {\bf Tuple.} Suppose that
+\begin{enumerate}
+\item $\splitone {(e_1,e_2)}{A\times B}
+		{ \begin{array}{l}
+		(\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}), \\
+		l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})
+		\end{array}} $
+\item $\reduceone{(e_1,e_2)}{v}$
+\item $\reduce{\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}}{\valprod tu}$
+\item $\reduce{[u/l](\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})}{w}$
+\end{enumerate}
+Since the splitting and evaluation rules are syntax-directed, it follows that
+\begin{enumerate}
+\item $\splitone {e_1}{A}{c_1,l_1.r_1}$
+\item $\splitone {e_2}{B}{c_2,l_2.r_2}$
+\item $v$ has the form $\valprod{v_1}{v_2}$, by inversion of tuple evaluation
+\item $\reduceone{(e_1,e_2)}{\valprod{v_1}{v_2}}$
+\item $\reduceone{e_1}{v_1}$
+\item $\reduceone{e_2}{v_2}$
+\item By inversion of evaluation, $t$ has the form $\valprod{t_1}{t_2}$  and $u$ has the form $\valprod{u_1}{u_2}$
+\item $\reduceone{[\valprod{t_1}{u_1},\valprod{t_2}{u_2}/y_1,y_2]((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}{\valprod tu}$
+\item $\reduceone{c_1}{\valprod {t_1}{u_1}}$, by inversion of let eval
+\item $\reduceone{c_2}{\valprod {t_2}{u_2}}$, by inversion of let eval
+\item By inversion of evaluation, $w$ has the form $\valprod{w_1}{w_2}$
+\item $\reduce{[\valprod{u_1}{u_2}/l](\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})}{\valprod{w_1}{w_2}}$, substituting for $u$, $w$
+\item $\reduce{[u_1/l_1]r_1}{w_1}$, inversion of evaluation
+\item $\reduce{[u_2/l_2]r_2}{w_2}$, inversion of evaluation
+\end{enumerate}
+We now have enough to invoke the inductive hypothesis,
+\begin{enumerate}
+\item $v_1 \vsplito [t_1,w_1]$ 
+\item $v_2 \vsplito [t_2,w_2]$ 
+\item $\valprod{v_1}{v_2} \vsplito [\valprod{t_1}{t_2},\valprod{w_1}{w_2}]$ 
+\item $v \vsplito [t,w]$
+\end{enumerate}
+Which is what we need to show.
+\end{itemize}
 
 \section {Implementation}
 
