@@ -157,26 +157,26 @@ We see that the typing judgements for both stages are each what one would expect
 \caption{\corelang~Static Semantics}
 \label{fig:coreStatics}
 \begin{mathpar}
-\infertypesone [\rmunit] 			{\typesone {()}{\rm unit}}{\cdot} \and
-\infertypesone [\mathrm{int}]		{\typesone {i}{\rm int}}{\cdot} \and
-\infertypesone [\mathrm{bool}]	{\typesone {b} {\rm bool}}{\cdot} \and
-\infertypesone [\mathrm{hyp}]		{\typesone x A}{x : A^\bbone \in \Gamma} \and
-\infertypestwo [\rmunit]			{\typestwo {()}{\rm unit}}{\cdot} \and
-\infertypestwo [\mathrm{int}]		{\typestwo {i}{\rm int}}{\cdot} \and
-\infertypestwo [\mathrm{bool}]	{\typestwo {b} {\rm bool}}{\cdot} \and
-\infertypestwo [\mathrm{hyp}]		{\typestwo x A}{x : A^\bbtwo \in \Gamma} \and
-\infertypesone [\mathrm{let}]		{\typesone{\letin{x}{e_1}{e_2}}{B}}{\typesone{e_1} A & \typesone [\Gamma,x:A^\bbone] {e_2} B} \and
-\infertypestwo [\mathrm{let}]		{\typestwo{\letin{x}{e_1}{e_2}}{B}}{\typestwo{e_1} A & \typestwo [\Gamma,x:A^\bbtwo] {e_2} B} \and
-\infertypesone [\times\mathrm{I}]		{\typesone {(e_1,e_2)} {A\times B}}{\typesone {e_1} A & \typesone {e_2} B} \and
-\infertypesone [\times\mathrm{E_1}]	{\typesone{\pi_1~e} A}{\typesone e {A\times B}} \and
-\infertypesone [\times\mathrm{E_2}]	{\typesone{\pi_2~e} B}{\typesone e {A\times B}} \and
-\infertypestwo [\times\mathrm{I}]		{\typestwo {(e_1,e_2)} {A\times B}}{\typestwo {e_1} A & \typestwo {e_2} B} \and
-\infertypestwo [\times\mathrm{E_1}]	{\typestwo{\pi_1~e} A}{\typestwo e {A\times B}} \and
-\infertypestwo [\times\mathrm{E_2}]	{\typestwo{\pi_2~e} B}{\typestwo e {A\times B}} \and
-\infertypesone [\mathrm{if}] {\typesone{\ifthen{e_1}{e_2}{e_3}} A}{\typesone{e_1} {\rm bool} & \typesone {e_2} A & \typesone {e_3} A} \and
-\infertypestwo [\mathrm{if}] {\typestwo{\ifthen{e_1}{e_2}{e_3}} A}{\typestwo{e_1} {\rm bool} & \typestwo {e_2} A & \typestwo {e_3} A} \and
-\infertypesone [\fut\mathrm{I}]	{\typesone{\next~e}{\fut A}}{\typestwo e A} \and
-\infertypestwo [\fut\mathrm{E}]	{\typestwo {\prev~e} A}{\typesone e {\fut A}} \and
+\infertypesone [\rmunit] 	{\ty {()}\rmunit}						{\cdot} \and
+\infertypesone [int]			{\ty {i}{\rm int}}					{\cdot} \and
+\infertypesone [bool]			{\ty {b} \rmbool}						{\cdot} \and
+\infertypesone [hyp]			{\ty x A}								{x : A^\bbone \in \Gamma} \and
+\infertypestwo [\rmunit]		{\ty {()}{\rmunit}}					{\cdot} \and
+\infertypestwo [int]			{\ty {i}{\rm int}}					{\cdot} \and
+\infertypestwo [bool]			{\ty {b} \rmbool}						{\cdot} \and
+\infertypestwo [hyp]			{\ty x A}								{x : A^\bbtwo \in \Gamma} \and
+\infertypesone [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbone] {e_2} B} \and
+\infertypestwo [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbtwo] {e_2} B} \and
+\infertypesone [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \ty {e_2} B} \and
+\infertypesone [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
+\infertypesone [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
+\infertypestwo [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \typestwo {e_2} B} \and
+\infertypestwo [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
+\infertypestwo [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
+\infertypesone [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
+\infertypestwo [if]			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
+\infertypesone [\fut I]		{\ty {\next~e}{\fut A}}				{\typestwo e A} \and
+\infertypestwo [\fut E]		{\ty {\prev~e} A}						{\typesone e {\fut A}} \and
 \end{mathpar}
 \end{figure}
 
@@ -225,108 +225,56 @@ As it turns out, this is not true! [Example forthcoming.]
 \caption{\corelang~Erasure Dynamic Semantics}
 \label{fig:erasureSemantics}
 \begin{mathpar}
-\inferreduceone [\rmunit]				{\reduceone {()}{()}}{\cdot} \and
-\inferreduceone [\mathrm{int}]		{\reduceone{i}{i}}{\cdot} \and
-\inferreduceone [\mathrm{bool}]		{\reduceone{b}{b}}{\cdot} \and
-\inferreduceone [\mathrm{let}]			{\reduceone{\letin{x}{e_1}{e_2}}{v_2}}{\reduceonesub [1] & \reduceone{[v_1/x]e_2}{v_2}} \and
-\inferreducetwo [\rmunit]				{\reducetwo {()}{()}}{\cdot} \and
-\inferreducetwo [\mathrm{int}]		{\reducetwo{i}{i}}{\cdot} \and
-\inferreducetwo [\mathrm{bool}]		{\reducetwo{b}{b}}{\cdot} \and
-\inferreducetwo [\mathrm{let}]			{\reducetwo{\letin{x}{e_1}{e_2}}{v_2}}{\reducetwosub [1] & \reducetwo{[v_1/x]e_2}{v_2}} \and
-\inferreduceone [\times\mathrm{I}]	{\reduceone{(e_1,e_2)}{\valprod{v_1}{v_2}}}{\reduceonesub [1] & \reduceonesub [2]} \and
-\inferreduceone [\times\mathrm{E_1}]	{\reduceone{\pi_1~e}{v_1}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
-\inferreduceone [\times\mathrm{E_2}]	{\reduceone{\pi_2~e}{v_2}}{\reduceone{e}{\valprod{v_1}{v_2}} } \and
-\inferreducetwo [\times\mathrm{I}]	{\reducetwo{(e_1,e_2)}{\valprod{v_1}{v_2}}}{\reduceonesub [1] & \reduceonesub [2]} \and
-\inferreducetwo [\times\mathrm{E_1}]	{\reducetwo{\pi_1~e}{v_1}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
-\inferreducetwo [\times\mathrm{E_2}]	{\reducetwo{\pi_2~e}{v_2}}{\reduceone{e}{\valprod{v_1}{v_2}}} \and
-\inferreduceone [\mathrm{if_1}] 		{\reduceone{\ifthen{e_1}{e_2}{e_3}}{v}}{\reduceone{e_1}{\bf true} & \reduceone{e_2}{v}} \and
-\inferreduceone [\mathrm{if_2}] 		{\reduceone{\ifthen{e_1}{e_2}{e_3}}{v}}{\reduceone{e_1}{\bf false} & \reduceone{e_3}{v}} \\
-\inferreducetwo [\mathrm{if_1}] 		{\reducetwo{\ifthen{e_1}{e_2}{e_3}}{v}}{\reducetwo{e_1}{\bf true} & \reducetwo{e_2}{v}} \and
-\inferreducetwo [\mathrm{if_2}] 		{\reducetwo{\ifthen{e_1}{e_2}{e_3}}{v}}{\reducetwo{e_1}{\bf false} & \reducetwo{e_3}{v}} \\
-\inferreduceone [\fut\mathrm{I}]		{\reduceone{\next~e}{\valnext~v}}{\reducetwosub} \and
-\inferreducetwo [\fut\mathrm{E}]		{\reducetwo{\prev~e} v}{\reduceone e {\valnext~v}} 
+\inferreduceone [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
+\inferreduceone [int]				{\red {i}{i}}								{\cdot} 											\and
+\inferreduceone [bool]			{\red {b}{b}}								{\cdot} 											\and
+\inferreduceone [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
+\inferreducetwo [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
+\inferreducetwo [int]				{\red {i}{i}}								{\cdot} 											\and
+\inferreducetwo [bool]			{\red {b}{b}}								{\cdot} 											\and
+\inferreducetwo [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
+\inferreduceone [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]} 							\and
+\inferreduceone [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreduceone [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreducetwo [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]}								\and
+\inferreducetwo [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreducetwo [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreduceone [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
+\inferreduceone [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
+\inferreducetwo [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
+\inferreducetwo [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
+\inferreduceone [\fut I]			{\red {\next~e}{\valnext~v}}				{\reducetwosub}									\and
+\inferreducetwo [\fut E]			{\red {\prev~e} v}						{\reduceone e {\valnext~v}} 
 \end{mathpar}
 \end{figure}
 
-%\subsection{Better Dynamic Semantics}
-%
-%Introduce the dynamics semantics.  Figure \ref{fig:coreDynamics}.  It's small step.  We figured this out on our own, but it really should exist in the partial evaluation literature somewhere.
-%
-%\newcommand {\stepo} {\hookrightarrow_\bbone} 
-%\newcommand {\stept} {\hookrightarrow_\bbtwo} 
-%\newcommand {\pco} {~\mathrm{pc}\bbone} 
-%\newcommand {\fco} {~\mathrm{fc}\bbone} 
-%\newcommand {\pct} {~\mathrm{pc}\bbtwo} 
-%\newcommand {\fct} {~\mathrm{fc}\bbtwo} 
-%
-%\begin{figure}
-%\caption{\corelang~Partially Computed Values (pc$\bbone$ and pc$\bbtwo$)}
-%\label{fig:coreDynamics}
-%\begin{mathpar}
-%\infer {() \pco}{\cdot} \and
-%\infer {i \pco}{\cdot} \and
-%\infer {b \pco}{\cdot} \and
-%\infer {(v_1, v_2) \pco}{v_1 \pco & v_2 \pco} \and
-%\infer {\next~e \pco}{e \pct} \\
-%\infer {() \pct}{\cdot} \and
-%\infer {i \pct}{\cdot} \and
-%\infer {b \pct}{\cdot} \and
-%\infer {(v_1, v_2) \pct}{v_1 \pct & v_2 \pct} \and
-%\infer {\pi_i e \pct}{e \pct} \and
-%\infer {x \pct}{\cdot} \and
-%\infer {\letin{x}{e_1}{e_2} \pct}{e_1 \pct & e_2 \pct} \and
-%\infer {\ifthen{e_1}{e_2}{e_3} \pct}{e_1 \pct & e_2 \pct & e_3 \pct} \and
-%\infer {\prev~e \pct}{e \pco} 
-%\end{mathpar}
-%\end{figure}
-%
-%\begin{figure}
-%\caption{\corelang~Fully Computed Values (fc$\bbone$ and fc$\bbtwo$)}
-%\label{fig:coreDynamics}
-%\begin{mathpar}
-%\infer {() \fco}{\cdot} \and
-%\infer {i \fco}{\cdot} \and
-%\infer {b \fco}{\cdot} \and
-%\infer {(v_1, v_2) \fco}{v_1 \fco & v_2 \fco} \and
-%\infer {\next~e \fco}{e \fct} \\
-%\infer {() \fct}{\cdot} \and
-%\infer {i \fct}{\cdot} \and
-%\infer {b \fct}{\cdot} \and
-%\infer {(v_1, v_2) \fct}{v_1 \fct & v_2 \fct} 
-%\end{mathpar}
-%\end{figure}
-%
-%\begin{figure}
-%\caption{\corelang~Transitions}
-%\label{fig:coreDynamics}
-%\begin{mathpar}
-%\infer {\ifthen{e_1}{e_2}{e_3} \stepo \ifthen{e_1'}{e_2}{e_3}}{e_1 \stepo e_1'}  \\
-%\infer {\ifthen{\tt true}{e_2}{e_3} \stepo e_2}{\cdot} \and 
-%\infer {\ifthen{\tt false}{e_2}{e_3} \stepo e_3}{\cdot}  \\
-%\infer {\ifthen{e_1}{e_2}{e_3} \stept \ifthen{e_1'}{e_2}{e_3}}{e_1 \stept e_1' & e_2 \pct & e_3 \pct}  \\
-%\infer {\ifthen{\tt true}{e_2}{e_3} \stept e_2}{e_2 \pct & e_3 \pct} \and 
-%\infer {\ifthen{\tt false}{e_2}{e_3} \stept e_3}{e_2 \pct & e_3 \pct} \\
-%\infer {\letin{x}{e_1}{e_2} \stepo \letin{x}{e_1'}{e_2}}{e_1 \stepo e_1'} \and
-%\infer {\letin{x}{e_1}{e_2} \stepo [e_1/x]e_2}{e_1 \fco} \and
-%\infer {\letin{x}{e_1}{e_2} \stept \letin{x}{e_1'}{e_2}}{e_1 \stept e_1'} \and
-%\infer {\letin{x}{e_1}{e_2} \stept [e_1/x]e_2}{e_1 \fct} \and
-%\infer {x \downtwo x}{\cdot} \and
-%\infer {\gds (e_1,e_2) : A\times B}{\gds e_1 : A & \gds e_2 : B} \and
-%\infer {\ifthen{e_1}{e_2}{e_3} \downone [v,r]}{e_1 \downone {\bf true} & e_2 \downone [v,r]} \and
-%\infer {\ifthen{e_1}{e_2}{e_3} \downone [v,r]}{e_1 \downone {\bf false} & e_3 \downone [v,r]} \and
-%\infer {\ifthen{e_1}{e_2}{e_3} \downtwo [v, \ifthen{r_1}{r_2}{r_3}]}{e_1 \downtwo [\valdum,r_1] & e_2 \downtwo [v_2,r_2] & e_3 \downtwo [v_3,r_3]} \and
-%\infer {\next~e \downone [\valdum,r]}{e \downtwo r} \and
-%\infer {\prev~e \downtwo r}{e \downone [\valdum, r]} \and
-%\end{mathpar}
-%\end{figure}
+\begin{figure}
+\caption{\corelang~Reference Semantics}
+\label{fig:refSemantics}
+\begin{mathpar}
+\inferRedsplitone [\rmunit]		{\red {()}{()}{()}}												{\cdot} 												\and
+\inferRedsplitone [int]			{\red {i}{i}{()}}													{\cdot} 												\and
+\inferRedsplitone [bool]			{\red {b}{b}{()}}													{\cdot} 												\\
+\inferSpeculation [\rmunit]		{\red {()}{()}}													{\cdot} 												\and
+\inferSpeculation [int]			{\red {i}{i}}														{\cdot} 												\and
+\inferSpeculation [bool]			{\red {b}{b}}														{\cdot} 												\\
+\inferRedsplitone [let]			{\red {\letin{x}{e_1}{e_2}}{u_2}{\letin {x}{r_1}{r_2}}}		{\sub [1] & \red{[[u_1,x]/x]e_2}{u_2}{r_2}} 		\and
+\inferSpeculation [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{r_1}{r_2}}}				{\sub [1] & \sub [2]}									\\
+\inferRedsplitone [hyp]			{\red {[u,x]}{u}{x}}												{\cdot}													\and
+\inferRedsplitone [\times I]		{\red {(e_1,e_2)}{\valprod{u_1}{u_2}}{\valprod{r_1}{r_2}}}	{\sub [1] & \sub [2]}									\and
+\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
+\inferRedsplitone [\times E_1]	{\red {\pi_1~e}{u_1}{\pi_1 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}}					\and
+\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
+\inferRedsplitone [\times E_2]	{\red {\pi_2~e}{u_2}{\pi_2 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}} 					\and
+\inferSpeculation [\times E_2]	{\red {\pi_2~e}{\pi_2 r}}										{\red {e}{r}} 											\and
+\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{r_2}}							{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
+\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{r_3}}							{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\\
+\inferSpeculation [if] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{r_1}{r_2}{r_3}}}		{\sub [1] & \sub [2] & \sub [3]}					\\
+\inferRedsplitone [\fut I]		{\red {\next~e}{()}{r}}											{\rstwosub}											\and
+\inferSpeculation [\fut E]		{\red {\prev~e}{r}}												{\rsone {e}{()}{r}}
+\end{mathpar}
+\end{figure}
 
-%\subsection{Good Theorems About the Language Alone}
-%
-%\begin{enumerate}
-%\item Type Safety.
-%\item Unidirectional Flow. [Essentially, you cannot write a program that goes back in time.]
-%\item Erasure property.  [If you ignore the nexts and prevs, the result is weakly equivalent.] [This was proven for a denotational semantics in some Jones paper that I need to find...]
-%\end{enumerate}
 
 \subsection{Splitting}
 
@@ -395,7 +343,7 @@ $\begin{aligned}
 \infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
 \infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
 \infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
-\infer [\times\tsplito]	
+\infer [\times\tsplito]
 	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
 	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
 \infer [\fut\tsplito]
@@ -453,11 +401,11 @@ $\begin{aligned}
 	{\splittwo {(e_1,e_2)}{A\times B}{(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})}}
 	{ \splittwosub [1] A & \splittwosub [2] B} \and
 \infersplitone [\times\mathrm{E_1}] 
-	{\splitone {\pi_1~e}{A}{(\pi_1(\pi_1c),\pi_2 c),l.\pi_1~r}}{\splitonesub{A\times B}} \and
+	{\splitone {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}}{\splitonesub{A\times B}} \and
+\infersplitone [\times\mathrm{E_2}] 
+	{\splitone {\pi_2~e}{B}{\letin{y}{c}{(\pi_2(\pi_1 y),\pi_2 y)},l.\pi_2~r}}{\splitonesub{A\times B}} \and
 \infersplittwo [\times\mathrm{E_1}] 
 	{\splittwo{\pi_1~e}{A}{p,l.\pi_1~r} }{\splittwosub{A\times B}} \and
-\infersplitone [\times\mathrm{E_2}] 
-	{\splitone {\pi_2~e}{B}{(\pi_2(\pi_1c),\pi_2 c),l.\pi_2~r}}{\splitonesub{A\times B}} \and
 \infersplittwo [\times\mathrm{E_2}] 
 	{\splittwo{\pi_2~e}{B}{p,l.\pi_2~r} }{\splittwosub{A\times B}} \and
 \infersplitone [\mathrm{unit}] 
@@ -518,6 +466,10 @@ and $ \types [\Gamma_1]{p} {\tau}$ \\
 and $ \types [\Gamma_2, p:\tau]{r} {A'}$ 
 \end{tabular}
 \end{center}
+
+\subsubsection{The combined terms evaluate to a tuple.}
+
+A quick lemma.  If $\splitone{e}{A}{c,l.r}$ and $\reduce{c}{v}$, then $\reduce{c}{\valprod{t}{u}}$.
 
 \subsubsection{It preserves meaning}
 
@@ -595,6 +547,21 @@ We now have enough to invoke the inductive hypothesis,
 \item $v \vsplito [t,w]$
 \end{enumerate}
 Which is what we need to show.
+
+\item {\bf Projection.} Suppose that
+\begin{enumerate}
+\item $\splitone {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}$
+\item $\reduceone{e}{v}$
+\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod tu}$
+\item $\reduce{[u/l](\pi_1~r)}{w}$
+\end{enumerate}
+By inversion of the evaluation rules for let and tuple, we have
+\begin{enumerate}
+\item $\reduce{c}{v'}$
+\item $\reduce{\pi_1(\pi_1v')}{t}$
+\item $\reduce{\pi_2 v'}{u}$
+\end{enumerate}
+
 \end{itemize}
 
 \section {Implementation}

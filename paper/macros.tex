@@ -6,6 +6,7 @@
 \newcommand {\coremono} {L}
 \newcommand {\mono} {$\lambda$}
 \newcommand {\rmunit} {{\rm unit}}
+\newcommand {\rmbool} {{\rm bool}}
 
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
@@ -56,9 +57,13 @@
 
 \newcommand {\reduceone} [2] {{#1} \Downarrow_\bbone {#2}}
 \newcommand {\reducetwo} [2] {{#1} \Downarrow_\bbtwo {#2}}
+\newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
+\newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
 \newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
+\newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
+\newcommand {\rstwosub} [1] [] {\rstwo{e_{#1}}{r_{#1}}}
 
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
 \newcommand {\vsplits} {\overset{\bbtwo}\curvearrowbotright}
@@ -71,10 +76,39 @@
 \newcommand {\splitonesub} [2] [] {\splitone {e_{#1}}{#2}{c_{#1}, l_{#1}.r_{#1}}}
 \newcommand {\splittwosub} [2] [] {\splittwo {e_{#1}}{#2}{p_{#1}, l_{#1}.r_{#1}}}
 
+%default stuff
+\newcommand \ty \typesone
+\newcommand \red \reduceone
+\newcommand \sub \reduceonesub
+
 %inference extension
-\newcommand {\infertypesone} [3] [\mathrm{NONAME}]{ \infer [#1\text{-}\bbone] {#2}{#3}}
-\newcommand {\infertypestwo} [3] [\mathrm{NONAME}]{ \infer [#1\text{-}\bbtwo] {#2}{#3}}
-\newcommand {\inferreduceone} [3] [\mathrm{NONAME}]{ \infer [#1\Downarrow_\bbone] {#2}{#3}}
-\newcommand {\inferreducetwo} [3] [\mathrm{NONAME}]{ \infer [#1\Downarrow_\bbtwo] {#2}{#3}}
-\newcommand {\infersplitone} [3] [\mathrm{NONAME}]{ \infer [#1 \overset{\bbone}\rightsquigarrow] {#2}{#3}}
-\newcommand {\infersplittwo} [3] [\mathrm{NONAME}]{ \infer [#1 \overset{\bbtwo}\rightsquigarrow] {#2}{#3}}
+\newcommand {\infertypesone}  [3] 
+		[NONAME]{
+			\renewcommand \ty \typesone
+			\infer [\mathrm{#1\text{-}\bbone}] {#2}{#3}}
+\newcommand {\infertypestwo}  [3] 
+		[NONAME]{
+			\renewcommand \ty \typestwo
+			\infer [\mathrm{#1\text{-}\bbtwo}] {#2}{#3}}
+\newcommand {\inferreduceone} [3] 
+		[NONAME]{
+			\renewcommand \red \reduceone
+			\renewcommand \sub \reduceonesub
+			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
+\newcommand {\inferreducetwo} [3] 
+		[NONAME]{
+			\renewcommand \red \reducetwo
+			\renewcommand \sub \reducetwosub
+			\infer [\mathrm{#1\Downarrow_\bbtwo}] {#2}{#3}}
+\newcommand {\inferRedsplitone} [3] 
+		[NONAME]{
+			\renewcommand \red \rsone
+			\renewcommand \sub \rsonesub
+			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
+\newcommand {\inferSpeculation} [3] 
+		[NONAME]{
+			\renewcommand \red \rstwo
+			\renewcommand \sub \rstwosub
+			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
+\newcommand {\infersplitone}  [3] [NONAME]{\infer [\mathrm{#1 \overset{\bbone}\rightsquigarrow}] {#2}{#3}}
+\newcommand {\infersplittwo}  [3] [NONAME]{\infer [\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}] {#2}{#3}}
