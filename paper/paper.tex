@@ -249,26 +249,27 @@ As it turns out, this is not true! [Example forthcoming.]
 \end{figure}
 
 \begin{figure}
-\caption{\corelang~Reference Semantics}
+\caption{\corelang~Diagonal Semantics}
 \label{fig:refSemantics}
 \begin{mathpar}
 \inferRedsplitone [\rmunit]		{\red {()}{()}{()}}												{\cdot} 												\and
 \inferRedsplitone [int]			{\red {i}{i}{()}}													{\cdot} 												\and
-\inferRedsplitone [bool]			{\red {b}{b}{()}}													{\cdot} 												\\
+\inferRedsplitone [bool]			{\red {b}{b}{()}}													{\cdot} 												\and
+\inferRedsplitone [hyp]			{\red {[u,x]}{u}{x}}												{\cdot}													\and
 \inferSpeculation [\rmunit]		{\red {()}{()}}													{\cdot} 												\and
 \inferSpeculation [int]			{\red {i}{i}}														{\cdot} 												\and
-\inferSpeculation [bool]			{\red {b}{b}}														{\cdot} 												\\
+\inferSpeculation [bool]			{\red {b}{b}}														{\cdot} 												\and
+\inferSpeculation [hyp]			{\red {x}{x}}														{\cdot}													\and
 \inferRedsplitone [let]			{\red {\letin{x}{e_1}{e_2}}{u_2}{\letin {x}{r_1}{r_2}}}		{\sub [1] & \red{[[u_1,x]/x]e_2}{u_2}{r_2}} 		\and
-\inferSpeculation [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{r_1}{r_2}}}				{\sub [1] & \sub [2]}									\\
-\inferRedsplitone [hyp]			{\red {[u,x]}{u}{x}}												{\cdot}													\and
+\inferSpeculation [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{r_1}{r_2}}}				{\sub [1] & \sub [2]}									\and
 \inferRedsplitone [\times I]		{\red {(e_1,e_2)}{\valprod{u_1}{u_2}}{\valprod{r_1}{r_2}}}	{\sub [1] & \sub [2]}									\and
-\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
 \inferRedsplitone [\times E_1]	{\red {\pi_1~e}{u_1}{\pi_1 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}}					\and
-\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
 \inferRedsplitone [\times E_2]	{\red {\pi_2~e}{u_2}{\pi_2 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}} 					\and
+\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
+\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
 \inferSpeculation [\times E_2]	{\red {\pi_2~e}{\pi_2 r}}										{\red {e}{r}} 											\and
-\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{r_2}}							{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
-\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{r_3}}							{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\\
+\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_2)}}					{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
+\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_3)}}					{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\and
 \inferSpeculation [if] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{r_1}{r_2}{r_3}}}		{\sub [1] & \sub [2] & \sub [3]}					\\
 \inferRedsplitone [\fut I]		{\red {\next~e}{()}{r}}											{\rstwosub}											\and
 \inferSpeculation [\fut E]		{\red {\prev~e}{r}}												{\rsone {e}{()}{r}}
@@ -412,7 +413,7 @@ $\begin{aligned}
 										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
 										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
 									\right), \\
-									l.(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3})
+									l.(\caseof{l}{l_2.r_2}{l_3.r_3})
 								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
 \infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
 								{(p_1,p_2,p_3),l.\left(\tallif{(\projbind 1)}{(\projbind 2)}{(\projbind 3)}\right)}}	{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
@@ -551,7 +552,7 @@ Which is what we wanted to show.
 										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
 										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
 									\right), \\
-									l.\left(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
+									l.\left(\caseof{l}{l_2.r_2}{l_3.r_3}
 									\right)
 								\end{array}}$
 \item $\rsone{\ifthen {e_1}{e_2}{e_3}}{v}{q}$
@@ -561,21 +562,32 @@ By inversion of the splitting rule, we have
 \begin{enumerate}
 \item $\splitonesub 1 \rmbool$ and $\splitonesub 2 A$ and $\splitonesub 3 A$
 \end{enumerate}
-There are two rules for evaluation of an if.  We proceed with the true case first:
+There are two rules for evaluation of an if.  We proceed by inverting the if-true and evaluation rules first:
 \begin{enumerate}
-\item $\rsone{e_2}{\bf true}{q_1}$ and (something about $q_1$) and $\rsone{e_2}{v}{q}$
-\item $\reduce{c_1}{\valprod{\bf true}{u_1}}$, by inductive hypothesis for 1
-\item $\reduce{[u_1/l_1]1_2}{w}$, by inductive hypothesis for 1
-\item $\reduce{c}{\valprod{v}{u_2}}$, by inductive hypothesis for 2
-\item $\reduce{[u_2/l_2]r_2}{w}$, by inductive hypothesis for 2
-\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod{v}{u}}$
+\item $q$ has the form $(q_1;q_2)$
+\item $\reducetwo{q_1}{w_1}$ and $\reducetwo{q_2}{w}$
+\item $\rsone{e_1}{\bf true}{q_1}$ and $\rsone{e_2}{v}{q_2}$
+\end{enumerate}
+We can now invoke the inductive hypothesis for the predicate to yield
+\begin{enumerate}
+\item $\reduce{c_1}{\valprod{\bf true}{u_1}}$
+\item $\reduce{[u_1/l_1]q_1}{w_1}$
+\end{enumerate}
+We can also invoke the inductive hypothesis for the branch to yield
+\begin{enumerate}
+\item $\reduce{c_2}{\valprod{v}{u_2}}$
+\item $\reduce{[u_2/l_2]r_2}{w}$
 \end{enumerate}
 From this, it can be directly proven that
 \begin{enumerate}
-\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod{v}{u}}$
-\item $\reduce{[u/l](\pi_1~r)}{w}$
+\item $\reduce{
+		\left(\tallif {\pi_1c_1}
+			{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
+			{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
+		\right)}{\valprod{v}{\inl~u_2}}$
+\item $\reduce{[\inl~u_2/l](\caseof{l}{l_2.r_2}{l_3.r_3})}{w}$
 \end{enumerate}
-Which is what we wanted to show.
+Everything works similarly for the if-false case.  Either way, we have what we want to show.
 
 \end{itemize}
 
