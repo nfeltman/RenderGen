@@ -43,7 +43,7 @@
 \newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}
 \newcommand {\tallif} [3] {\begin{array}{l} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
 \newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
-\newcommand {\valprod} [2] {\llparenthesis{#1},{#2}\rrparenthesis}
+\newcommand {\valprod} [2] {({#1},{#2})}
 \newcommand {\valinl} {{\bf inl}}
 \newcommand {\valinr} {{\bf inr}}
 \newcommand {\valnext} {{\bf next}}
@@ -73,13 +73,14 @@
 
 \newcommand {\splitone} [4] [\Gamma] { {#1} \Vdash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
 \newcommand {\splittwo} [4] [\Gamma] { {#1} \VDash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
-\newcommand {\splitonesub} [2] [] {\splitone {e_{#1}}{#2}{c_{#1}, l_{#1}.r_{#1}}}
-\newcommand {\splittwosub} [2] [] {\splittwo {e_{#1}}{#2}{p_{#1}, l_{#1}.r_{#1}}}
+\newcommand {\splitonesub} [3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splittwosub} [3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
 
 %default stuff
 \newcommand \ty \typesone
 \newcommand \red \reduceone
 \newcommand \sub \reduceonesub
+\newcommand \spl \splitone
 
 %inference extension
 \newcommand {\infertypesone}  [3] 
@@ -110,5 +111,13 @@
 			\renewcommand \red \rstwo
 			\renewcommand \sub \rstwosub
 			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
-\newcommand {\infersplitone}  [3] [NONAME]{\infer [\mathrm{#1 \overset{\bbone}\rightsquigarrow}] {#2}{#3}}
-\newcommand {\infersplittwo}  [3] [NONAME]{\infer [\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}] {#2}{#3}}
+\newcommand {\infersplitone}  [3] 
+		[NONAME]{
+			\renewcommand \spl \splitone
+			\renewcommand \sub \splitonesub
+			\infer [\mathrm{#1 \overset{\bbone}\rightsquigarrow}] {#2}{#3}}
+\newcommand {\infersplittwo}  [3] 
+		[NONAME]{
+			\renewcommand \spl \splittwo
+			\renewcommand \sub \splittwosub
+			\infer [\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}] {#2}{#3}}

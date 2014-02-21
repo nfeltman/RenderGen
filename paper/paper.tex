@@ -381,66 +381,41 @@ $\begin{aligned}
 \begin{figure*}
 \caption{Term Splitting}
 \label{fig:termSplit}
+\newcommand {\projbind} [1] {\letin{l_{#1}}{\pi_{#1} l}{r_{#1}}}
 \begin{mathpar}
-\infersplitone [\rmunit] 
-	{\splitone{()}{\rmunit}{((),()),\_.()}} {\cdot} \and
-\infersplittwo [\rmunit]
-	{\splittwo{()}{\rmunit}{(),\_.()}} {\cdot} \and
-\infersplitone [{\rm int}] 
-	{\splitone{i}{\rm int}{(i,()),\_.()}} {\cdot} \and
-\infersplittwo [{\rm int}]
-	{\splittwo{i}{\rm int}{(),\_.i}} {\cdot} \and
-\infersplitone [\times\mathrm{I}] 
-	{\splitone {(e_1,e_2)}{A\times B}
-		{ \begin{array}{l}
-		\left(\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}\right), \\
-		l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})
-		\end{array}}}
-	{ \splitonesub [1] A & \splitonesub [2] B} \and
-\infersplittwo [\times\mathrm{I}] 
-	{\splittwo {(e_1,e_2)}{A\times B}{(p_1,p_2), l.(\letin{l_1}{\pi_1~l}{r_1},\letin{l_2}{\pi_2~l}{r_2})}}
-	{ \splittwosub [1] A & \splittwosub [2] B} \and
-\infersplitone [\times\mathrm{E_1}] 
-	{\splitone {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}}{\splitonesub{A\times B}} \and
-\infersplitone [\times\mathrm{E_2}] 
-	{\splitone {\pi_2~e}{B}{\letin{y}{c}{(\pi_2(\pi_1 y),\pi_2 y)},l.\pi_2~r}}{\splitonesub{A\times B}} \and
-\infersplittwo [\times\mathrm{E_1}] 
-	{\splittwo{\pi_1~e}{A}{p,l.\pi_1~r} }{\splittwosub{A\times B}} \and
-\infersplittwo [\times\mathrm{E_2}] 
-	{\splittwo{\pi_2~e}{B}{p,l.\pi_2~r} }{\splittwosub{A\times B}} \and
-\infersplitone [\mathrm{unit}] 
-	{\splitone {v}{A}{(x,()),\_.()}}{x:A^\bbone \in \Gamma} \and
-\infersplittwo [\mathrm{unit}]
-	 {\splittwo{v}{A}{(),\_.x}}{x:A^\bbtwo \in \Gamma} \\
-\infersplitone [\mathrm{let}] 
-	{\splitone{\letin{x}{e_1}{e_2}}{B}{\cdots}}
-	{\splitonesub [1] A & \splitone [\Gamma,x:A^\bbone] {e_2}{B}{c_2,l_2.r_2}} \and
-\infersplittwo [\mathrm{let}] 
-	{\splittwo{\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\letin{l_1}{\pi_1 l}{r_1})}{\letin{l_2}{\pi_2 l}{r_2}}}}
-	{\splittwosub [1] A & \splittwo [\Gamma,x:A^\bbtwo] {e_2}{B}{p_2,l_2.r_2}} \and
-\infersplitone [\fut\mathrm{I}] 
-	{\splitone{\next~e}{\fut A}{((),p),l.r}}{\splittwosub A} \and
-\infersplittwo [\fut\mathrm{E}] 
-	{\splittwo{\prev~e}{A} {\pi_2~c,l.r}}{\splitonesub {\fut A}} \and
-\infersplitone [+\mathrm{E}]
-	{\splitone {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
-	{
-		\begin{array}{l}
-		\left(\tallif {\pi_1c_1}
-			{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
-			{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
-		\right), \\
-		l.\left(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
-		\right)
-		\end{array}
-	}}
-	{\splitonesub [1] {\rm bool} & \splitonesub [2] A & \splitonesub [3] A } \and
-\infersplittwo [+\mathrm{E}]
-	{\splittwo {\left( \tallif {e_1}{e_2}{e_3}\right)}{A} 
-	{(p_1,p_2,p_3), 
-	l.\left(\tallif{(\letin {l_1}{\pi_1 l}{r_1})}{(\letin {l_2}{\pi_2 l}{r_2})} {(\letin {l_3}{\pi_3 l}{r_3})} \right)
-	}}
-	{\splittwosub [1] {\rm bool} & \splittwosub [2] A & \splittwosub [3] A } \and
+\infersplitone [unit]			{\spl {()}{\rmunit}{((),()),\_.()}}															{\cdot} \and
+\infersplittwo [unit]			{\spl {()}{\rmunit}{(),\_.()}}																{\cdot} \and
+\infersplitone [int]			{\spl {i}{\rm int}{(i,()),\_.()}}															{\cdot} \and
+\infersplittwo [int]			{\spl {i}{\rm int}{(),\_.i}}																	{\cdot} \and
+\infersplitone [\times I] 	{\spl {(e_1,e_2)}{A\times B}
+									{ \begin{array}{l}
+									\left(
+										\letin{y_1}{c_1}{\letin{y_2}{c_2}{
+										((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}
+									\right), \\
+									l.(\projbind 1,\projbind 2)
+									\end{array}}}																				{\sub 1 A & \sub 2 B} \and
+\infersplittwo [\times I]	{\spl {(e_1,e_2)}{A\times B}{(p_1,p_2),l.(\projbind 1,\projbind 2)}}					{\sub 1 A & \sub 2 B} \and
+\infersplitone [\times E_1]	{\spl {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}}					{\sub {} {A\times B}} \and
+\infersplitone [\times E_2]	{\spl {\pi_2~e}{B}{\letin{y}{c}{(\pi_2(\pi_1 y),\pi_2 y)},l.\pi_2~r}}					{\sub {} {A\times B}} \and
+\infersplittwo [\times E_1]	{\spl {\pi_1~e}{A}{p,l.\pi_1~r}}															{\sub {} {A\times B}} \and
+\infersplittwo [\times E_2]	{\spl {\pi_2~e}{B}{p,l.\pi_2~r}}															{\sub {} {A\times B}} \and
+\infersplitone [hyp]			{\spl {v}{A}{(x,()),\_.()}}																	{x:A^\bbone \in \Gamma} \and
+\infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{x:A^\bbtwo \in \Gamma} \\
+\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{\cdots}}														{\sub 1 A & \sub [\Gamma,x:A^\bbone] 2 B} \and
+\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\projbind 1)}{\projbind 2}}}	{\sub 1 A & \sub [\Gamma,x:A^\bbtwo] 2 B} \and
+\infersplitone [\fut I]		{\spl {\next~e}{\fut A}{((),p),l.r}}														{\splittwosub {} A} \and
+\infersplittwo [\fut E]		{\spl {\prev~e}{A} {\pi_2~c,l.r}}															{\splitonesub {} {\fut A}} \and
+\infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
+								{\begin{array}{l}
+									\left(\tallif {\pi_1 c_1}
+										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
+										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
+									\right), \\
+									l.(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3})
+								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
+\infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
+								{(p_1,p_2,p_3),l.\left(\tallif{(\projbind 1)}{(\projbind 2)}{(\projbind 3)}\right)}}	{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
 \end{mathpar}
 \end{figure*}
 
@@ -467,28 +442,24 @@ and $ \types [\Gamma_2, p:\tau]{r} {A'}$
 \end{tabular}
 \end{center}
 
-\subsubsection{The combined terms evaluate to a tuple.}
-
-A quick lemma.  If $\splitone{e}{A}{c,l.r}$ and $\reduce{c}{v}$, then $\reduce{c}{\valprod{t}{u}}$.
-
 \subsubsection{It preserves meaning}
 
 The theorem we want to show has two parts, one for the $\bbone$ code, and one for the $\bbtwo$ code.  
 \begin{center}
 \begin{tabular}{l}
 If $\splitone [\emptyC]{e}{A}{c,l.r}$ \\
-and $\reduceone{e}{v}$ \\
-and $c \Downarrow \valprod{t}{u}$ \\
-and $[u/l]r \Downarrow w$ \\
-then $v \vsplito [t,w]$
+and $\rsone{e}{v}{q}$ \\
+and $\reducetwo{q}{w}$ \\
+then $\reduce{c}{\valprod{v}{u}}$ \\
+and $\reduce{[u/l]r}{w}$
 \end{tabular}
 ~~~
 \begin{tabular}{l}
 If $\splittwo[\emptyC]{e}{B}{p,l.r}$ \\
-and $\reducetwo{e}{v}$ \\
-and $p \Downarrow u$ \\
-and $[u/l]r \Downarrow w$ \\
-then $v \vsplits w$
+and $\rstwo{e}{q}$ \\
+and $\reducetwo{q}{w}$ \\
+then $\reduce{p}{u}$ \\
+and $\reduce{[u/l]r}{w}$ 
 \end{tabular}
 \end{center}
 
@@ -498,16 +469,19 @@ We proceed by cases of the term splitting judgement.
 \item {\bf Int.} Suppose that
 \begin{enumerate}
 \item $\splitone{i}{\rm int}{(i,()),\_.()}$
+\item $\rsone{i}{v}{q}$
+\item $\reducetwo{r}{w}$
 \end{enumerate}
-Since reduction is a function, we also have
+By inversion of reduction relations, we know
 \begin{enumerate}
-\item $\reduceone{i}{i}$
-\item $\reduceone{(i,())}{\valprod {i}{()}}$
-\item $\reduceone{[()/\_]()}{()}$
+\item $v$ has the form $i$
+\item $q$ has the form $()$
+\item $w$ has the form $()$
 \end{enumerate}
-And since value splitting is a function,
+It is directly provable that,
 \begin{enumerate}
-\item $i \vsplito [i,()]$
+\item $\reduce{(i,())}{\valprod{i}{()}}$
+\item $\reduce{[()/l]()}{()}$
 \end{enumerate}
 Which is what we need to show.
 
@@ -518,55 +492,96 @@ Which is what we need to show.
 		(\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}), \\
 		l.(\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})
 		\end{array}} $
-\item $\reduceone{(e_1,e_2)}{v}$
-\item $\reduce{\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}}{\valprod tu}$
-\item $\reduce{[u/l](\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})}{w}$
+\item $\rsone{(e_1,e_2)}{v}{q}$
+\item $\reducetwo{q}{w}$
 \end{enumerate}
-Since the splitting and evaluation rules are syntax-directed, it follows that
+By inversion of the splitting and reduction rules, we know
 \begin{enumerate}
-\item $\splitone {e_1}{A}{c_1,l_1.r_1}$
-\item $\splitone {e_2}{B}{c_2,l_2.r_2}$
-\item $v$ has the form $\valprod{v_1}{v_2}$, by inversion of tuple evaluation
-\item $\reduceone{(e_1,e_2)}{\valprod{v_1}{v_2}}$
-\item $\reduceone{e_1}{v_1}$
-\item $\reduceone{e_2}{v_2}$
-\item By inversion of evaluation, $t$ has the form $\valprod{t_1}{t_2}$  and $u$ has the form $\valprod{u_1}{u_2}$
-\item $\reduceone{[\valprod{t_1}{u_1},\valprod{t_2}{u_2}/y_1,y_2]((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}{\valprod tu}$
-\item $\reduceone{c_1}{\valprod {t_1}{u_1}}$, by inversion of let eval
-\item $\reduceone{c_2}{\valprod {t_2}{u_2}}$, by inversion of let eval
-\item By inversion of evaluation, $w$ has the form $\valprod{w_1}{w_2}$
-\item $\reduce{[\valprod{u_1}{u_2}/l](\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})}{\valprod{w_1}{w_2}}$, substituting for $u$, $w$
-\item $\reduce{[u_1/l_1]r_1}{w_1}$, inversion of evaluation
-\item $\reduce{[u_2/l_2]r_2}{w_2}$, inversion of evaluation
+\item $\splitone{e_1}{A}{c_1,l_1.r_1}$ and $\splitone{e_2}{B}{c_2,l_2.r_2}$
+\item $v$ has the form $\valprod{v_1}{v_2}$
+\item $q$ has the form $(q_1,q_2)$
+\item $\rsone{e_1}{v_1}{q_1}$ and $\rsone{e_2}{v_2}{q_2}$
+\item $w$ has the form $\valprod{w_1}{w_2}$
+\item $\reducetwo{q_1}{w_1}$ and $\reducetwo{q_2}{w_2}$
 \end{enumerate}
-We now have enough to invoke the inductive hypothesis,
+This gives us enough to invoke the inductive hypothesis for the each side, yielding
 \begin{enumerate}
-\item $v_1 \vsplito [t_1,w_1]$ 
-\item $v_2 \vsplito [t_2,w_2]$ 
-\item $\valprod{v_1}{v_2} \vsplito [\valprod{t_1}{t_2},\valprod{w_1}{w_2}]$ 
-\item $v \vsplito [t,w]$
+\item $\reduce{c_1}{\valprod{v_1}{u_1}}$ 
+\item $\reduce{[u_1/l_1]r_1}{w_1}$ 
+\item $\reduce{c_2}{\valprod{v_2}{u_2}}$ 
+\item $\reduce{[u_2/l_2]r_2}{w_2}$ 
 \end{enumerate}
-Which is what we need to show.
+It is now directly provable from the evaluation rules that
+\begin{enumerate}
+\item $\reduce{\letin{y_1}{c_1}{\letin{y_2}{c_2}{((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}}{\valprod {\valprod{v_1}{v_2}}{\valprod{u_1}{u_2}}}$
+\item $\reduce{[\valprod{u_1}{u_2}/l](\letin{l_1}{\pi_1 l}{r_1},\letin{l_2}{\pi_2 l}{r_2})}{\valprod{w_1}{w_2}}$
+\end{enumerate}
+Which is what we wanted to show.
 
 \item {\bf Projection.} Suppose that
 \begin{enumerate}
 \item $\splitone {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}$
-\item $\reduceone{e}{v}$
-\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod tu}$
+\item $\rsone{\pi_1~e}{v}{q}$
+\item $\reducetwo{q}{w}$
+\end{enumerate}
+By inversion of the splitting and reduction rules, we have
+\begin{enumerate}
+\item $\splitone {e}{A \times B}{c,l.r}$
+\item $q$ has the form $\pi_1~q'$
+\item $\rsone{e}{\valprod{v}{v_2}}{q'}$
+\item $\reducetwo{q'}{\valprod{w}{w_2}}$
+\end{enumerate}
+This is enough to invoke our inductive hypothesis, yielding
+\begin{enumerate}
+\item $\reduce{c}{\valprod{\valprod{v}{v_2}}{u}}$
+\item $\reduce{[u/l]r}{\valprod{w}{w_2}}$
+\end{enumerate}
+From this, it can be directly proven that
+\begin{enumerate}
+\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod{v}{u}}$
 \item $\reduce{[u/l](\pi_1~r)}{w}$
 \end{enumerate}
-By inversion of the evaluation rules for let and tuple, we have
+Which is what we wanted to show.
+
+\item {\bf If.} Suppose that
 \begin{enumerate}
-\item $\reduce{c}{v'}$
-\item $\reduce{\pi_1(\pi_1v')}{t}$
-\item $\reduce{\pi_2 v'}{u}$
+\item $\splitone {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
+								{\begin{array}{l}
+									\left(\tallif {\pi_1c_1}
+										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
+										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
+									\right), \\
+									l.\left(\caseof{\pi_1 l}{l_2.r_2}{l_3.r_3}
+									\right)
+								\end{array}}$
+\item $\rsone{\ifthen {e_1}{e_2}{e_3}}{v}{q}$
+\item $\reducetwo{q}{w}$
 \end{enumerate}
+By inversion of the splitting rule, we have
+\begin{enumerate}
+\item $\splitonesub 1 \rmbool$ and $\splitonesub 2 A$ and $\splitonesub 3 A$
+\end{enumerate}
+There are two rules for evaluation of an if.  We proceed with the true case first:
+\begin{enumerate}
+\item $\rsone{e_2}{\bf true}{q_1}$ and (something about $q_1$) and $\rsone{e_2}{v}{q}$
+\item $\reduce{c_1}{\valprod{\bf true}{u_1}}$, by inductive hypothesis for 1
+\item $\reduce{[u_1/l_1]1_2}{w}$, by inductive hypothesis for 1
+\item $\reduce{c}{\valprod{v}{u_2}}$, by inductive hypothesis for 2
+\item $\reduce{[u_2/l_2]r_2}{w}$, by inductive hypothesis for 2
+\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod{v}{u}}$
+\end{enumerate}
+From this, it can be directly proven that
+\begin{enumerate}
+\item $\reduce{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)}}{\valprod{v}{u}}$
+\item $\reduce{[u/l](\pi_1~r)}{w}$
+\end{enumerate}
+Which is what we wanted to show.
 
 \end{itemize}
 
 \section {Implementation}
 
-Not much to discuss.  It exsists.  Talk about how crufty the naive transformation is.
+Not much to discuss.  It exists.  Talk about how crufty the naive transformation is.
 
 \section{Related Work in Stage Seperation}
 
