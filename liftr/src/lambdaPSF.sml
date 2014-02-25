@@ -19,6 +19,7 @@ datatype expr	= Evar of var
 				| Epi of int * expr
 				| Einj of LR * ty * expr
 				| Ecase of expr * (var * expr) * (var * expr)
+				| Eif of expr * expr * expr
 				| Elet of expr * (var * expr)
 				| Ebinop of Prims.binops * expr * expr
 				| Eroll of expr

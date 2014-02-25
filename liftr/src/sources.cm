@@ -25,6 +25,7 @@ Group is
 	  (* semantics *)
 	  erasureSemantics.sml
 	  diagonalSemantics.sml
+	  psfSemantics.sml
 	  
 	  (* test code *)
 	  examples.sml

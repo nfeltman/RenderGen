@@ -29,6 +29,8 @@ datatype expr1	= E1var of var
 				| E1pi of LR * expr1
 		(*		| E1inj of LR * type1 * expr1
 				| E1case of expr1 * (var * expr1) * (var * expr1) *)
+				| E1if of expr1 * expr1 * expr1
+				| E1let of expr1 * (var * expr1)
 				| E1next of expr2
 				| E1error of type1
 				| E1binop of Prims.binops * expr1 * expr1
@@ -42,6 +44,8 @@ and expr2		= E2var of var
 				| E2pi of LR * expr2
 		(*		| E2inj of LR * type2 * expr2
 				| E2case of expr2 * (var * expr2) * (var * expr2) *)
+				| E2if of expr2 * expr2 * expr2
+				| E2let of expr2 * (var * expr2)
 				| E2prev of expr1
 				| E2error of type2
 				| E2binop of Prims.binops * expr2 * expr2
