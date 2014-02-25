@@ -29,4 +29,29 @@ fun getTypes bo =
 
 end
 
+structure PrimEval = struct
+
+datatype primValue = Vint of int | Vbool of bool
+
+exception PrimStuck
+
+fun evalPrim (primop, Vint j, Vint k) = (
+	case primop of
+	  Iplus => Vint (j+k)
+	| Iminus => Vint (j-k)
+	| Itimes => Vint (j*k)
+	| Iless => Vbool (j<k)
+	| Igreater => Vbool (j>k)
+	| Iequal => Vbool (j=k)
+	| Ilesseq => Vbool (j<=k)
+	| Igreatereq => Vbool (j>=k)
+	| _ => raise PrimStuck)
+  | evalPrim (primop, Vbool j, Vbool k) = (
+	case primop of
+	  Band => Vbool (j andalso k)
+	| Bor => Vbool (j orelse k)
+	| _ => raise PrimStuck)
+  | evalPrim _ = raise PrimStuck
+end
+
 end

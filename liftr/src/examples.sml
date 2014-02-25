@@ -3,6 +3,7 @@ structure Examples =
 struct
 
 open Lambda12c
+
 (*
 fun runtests () = 
 
