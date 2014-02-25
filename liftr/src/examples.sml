@@ -3,7 +3,7 @@ structure Examples =
 struct
 
 open Lambda12c
-
+(*
 fun runtests () = 
 
 	let
@@ -62,5 +62,5 @@ fun runtests () =
 		val _ = testProgram prog3
 	in
 		"All pass."
-	end
+	end*)
 end
