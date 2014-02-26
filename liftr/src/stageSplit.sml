@@ -187,6 +187,41 @@ fun stageSplit1 gamma exp =
 					t1
 				)
 			end *)
+		| E1if (e1, e2, e3) => 
+			let
+				val (link, pi) = freshPi ()
+				val (c1, tb1, lr1, _) = split e1
+				val (c2, tb2, lr2, t) = split e2
+				val (c3, tb3, lr3, _) = split e3
+			in
+				(
+					bindProj c1 (fn (val1,pre1) =>
+						Eif(val1, 
+							bindProj c2 (fn (val2,pre2) => Etuple[val2, Etuple[pre1,Einj(Left, tb3,pre2)]]),
+							bindProj c3 (fn (val3,pre3) => Etuple[val3, Etuple[pre1,Einj(Right,tb2,pre3)]])
+						)
+					), 
+					Tprod[tb1,Tsum(tb2,tb3)], 
+					(link, Epi(0,Etuple [bind (pi 0) lr1, Ecase(pi 1,lr2,lr3)])),
+					t
+				)
+			end
+		| E1let (e1, (x,e2)) => 
+			let
+				val (link, pi) = freshPi ()
+				val (c1, tb1, lr1, t1) = split e1
+				val (c2, tb2, lr2, t2) = stageSplit1 (extendContext gamma x (Val1 t1)) e2
+			in
+				(
+					bindProj c1 (fn (val1,pre1) =>
+						bindProj (Elet (val1,(x,c2))) (fn (val2,pre2) =>
+							Etuple [val2, Etuple[pre1,pre2]]
+					)), 
+					Tprod[tb1,tb2], 
+					(link, bind (bind (pi 0) lr1) (x,bind (pi 1) lr2)),
+					t2
+				)
+			end
 		| E1binop (bo,e1,e2) =>
 			(
 				Etuple[Ebinop(bo, Epi(0, #1 (split e1)), Epi(0, #1 (split e2))), Etuple[]],
