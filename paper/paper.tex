@@ -403,17 +403,23 @@ $\begin{aligned}
 \infersplittwo [\times E_2]	{\spl {\pi_2~e}{B}{p,l.\pi_2~r}}															{\sub {} {A\times B}} \and
 \infersplitone [hyp]			{\spl {v}{A}{(x,()),\_.()}}																	{x:A^\bbone \in \Gamma} \and
 \infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{x:A^\bbtwo \in \Gamma} \\
-\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{\cdots}}														{\sub 1 A & \sub [\Gamma,x:A^\bbone] 2 B} \and
+\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
+								\begin{array}{l}
+									\left(\talllet{y_1}{c_1}{
+									\talllet{y_2}{(\letin{x}{\pi_1 y_1}{c_2})}{
+									(\pi_1 y_2, (\pi_2 y_1, \pi_2 y_2))}}\right), \\
+									l.\letin{x}{(\projbind 1)}{\projbind 2}
+								\end{array}}}																					{\sub 1 A & \sub [\Gamma,x:A^\bbone] 2 B} \and
 \infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\projbind 1)}{\projbind 2}}}	{\sub 1 A & \sub [\Gamma,x:A^\bbtwo] 2 B} \and
 \infersplitone [\fut I]		{\spl {\next~e}{\fut A}{((),p),l.r}}														{\splittwosub {} A} \and
 \infersplittwo [\fut E]		{\spl {\prev~e}{A} {\pi_2~c,l.r}}															{\splitonesub {} {\fut A}} \and
 \infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
 								{\begin{array}{l}
-									\left(\tallif {\pi_1 c_1}
-										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
-										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
+									\left(\talllet{z}{c_1}{\tallif {\pi_1 z}
+										{\letin{y}{c_2}{(\pi_1 y, (\pi_2 z, \inl(\pi_2 y)))}}
+										{\letin{y}{c_3}{(\pi_1 y, (\pi_2 z, \inr(\pi_2 y)))}}}
 									\right), \\
-									l.(\caseof{l}{l_2.r_2}{l_3.r_3})
+									l.(\projbind 1;\caseof{\pi_2 l}{l_2.r_2}{l_3.r_3})
 								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
 \infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
 								{(p_1,p_2,p_3),l.\left(\tallif{(\projbind 1)}{(\projbind 2)}{(\projbind 3)}\right)}}	{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
