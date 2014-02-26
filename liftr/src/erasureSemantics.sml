@@ -4,6 +4,7 @@ struct
 
 open LangCommon
 open Lambda12
+structure P = Prims.PrimEval
 
 datatype value1	= V1int of int
 				| V1bool of bool
@@ -32,6 +33,20 @@ fun untuple2 (V2tuple v) = v
   | untuple2 _ = raise Stuck
 fun unbool2 (V2bool b) = b
   | unbool2 _ = raise Stuck
+fun unnext (V1next v) = v
+  | unnext _ = raise Stuck
+  
+
+fun convertPrim1 (V1int i) = P.Vint i
+  | convertPrim1 (V1bool b) = P.Vbool b
+  | convertPrim1 _ = raise Stuck
+fun unconvertPrim1 (P.Vint i) = V1int i
+  | unconvertPrim1 (P.Vbool b) = V1bool b
+fun convertPrim2 (V2int i) = P.Vint i
+  | convertPrim2 (V2bool b) = P.Vbool b
+  | convertPrim2 _ = raise Stuck
+fun unconvertPrim2 (P.Vint i) = V2int i
+  | unconvertPrim2 (P.Vbool b) = V2bool b
 
 fun eval1 env exp = 
 	let
@@ -45,7 +60,7 @@ fun eval1 env exp =
 		| E1pi (side, e) => (case side of Left => #1 | Right => #2) (untuple1 (eval e))
 		| E1if (e1, e2, e3) => eval (if unbool1 (eval e1) then e2 else e3)
 		| E1let (e, b) => evalBranch (eval e) b
-		| E1binop (bo,e1,e2) => raise Stuck
+		| E1binop (bo,e1,e2) => unconvertPrim1 (P.evalPrim (bo, convertPrim1 (eval e1), convertPrim1 (eval e2)))
 		| E1error t => raise Stuck
 		| E1next e => V1next (eval2 env e)
 	end
@@ -62,12 +77,9 @@ and eval2 env exp =
 		| E2pi (side, e) => (case side of Left => #1 | Right => #2) (untuple2 (eval e))
 		| E2if (e1, e2, e3) => eval (if unbool2 (eval e1) then e2 else e3)
 		| E2let (e, b) => evalBranch (eval e) b
-		| E2binop (bo,e1,e2) => raise Stuck
+		| E2binop (bo,e1,e2) => unconvertPrim2 (P.evalPrim (bo, convertPrim2 (eval e1), convertPrim2 (eval e2)))
 		| E2error t => raise Stuck
-		| E2prev e => (
-			case eval1 env e of
-			  V1next v => v
-			| _ => raise Stuck)
+		| E2prev e => unnext (eval1 env e)
 	end
 
 end

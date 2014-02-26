@@ -4,6 +4,7 @@ struct
 
 open LangCommon
 open LambdaPSF
+structure P = Prims.PrimEval
 				
 datatype value	= Vint of int
 				| Vbool of bool
@@ -12,7 +13,14 @@ datatype value	= Vint of int
 				| Vinj of LR * value
 
 exception Stuck
-				
+
+fun convertPrim (Vint i) = P.Vint i
+  | convertPrim (Vbool b) = P.Vbool b
+  | convertPrim _ = raise Stuck
+
+fun unconvertPrim (P.Vint i) = Vint i
+  | unconvertPrim (P.Vbool b) = Vbool b
+		
 fun evaluate env exp = 
 	let
 		val eval = evaluate env
@@ -39,7 +47,7 @@ fun evaluate env exp =
 			| Vbool false => eval e3
 			| _ => raise Stuck)
 		| Elet (e,b) => evalBranch (eval e) b
-		| Ebinop (bo,e1,e2) => raise Stuck
+		| Ebinop (bo,e1,e2) => unconvertPrim (P.evalPrim (bo, convertPrim (eval e1), convertPrim (eval e2)))
 		| Eroll _ => raise Stuck
 		| Eunroll _ => raise Stuck
 		| Eerror t => raise Stuck

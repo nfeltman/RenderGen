@@ -29,7 +29,8 @@ fun getTypes bo =
 
 end
 
-structure PrimEval = struct
+structure PrimEval = 
+struct
 
 datatype primValue = Vint of int | Vbool of bool
 

@@ -4,6 +4,7 @@ struct
 
 open LangCommon
 open Lambda12
+structure P = Prims.PrimEval
 				
 datatype value	= Vint of int
 				| Vbool of bool
@@ -27,6 +28,12 @@ fun untuple (Vtuple v) = v
   | untuple _ = raise Stuck
 fun unbool (Vbool b) = b
   | unbool _ = raise Stuck
+  
+fun convertPrim (Vint i) = P.Vint i
+  | convertPrim (Vbool b) = P.Vbool b
+  | convertPrim _ = raise Stuck
+fun unconvertPrim (P.Vint i) = Vint i
+  | unconvertPrim (P.Vbool b) = Vbool b
 
 	
 fun eval1 env exp = 
@@ -58,7 +65,13 @@ fun eval1 env exp =
 			in
 				(v2, Elet (r1, (x,r2)))
 			end
-		| E1binop (bo,e1,e2) => raise Stuck
+		| E1binop (bo,e1,e2) => 
+			let
+				val (v1,r1) = eval e1
+				val (v2,r2) = eval e2
+			in
+				(unconvertPrim (P.evalPrim (bo, convertPrim v1, convertPrim v2)), Epi(Right, Etuple (r1,r2)))
+			end
 		| E1error _ => raise Stuck
 		| E1next e => (Vunit, trace2 env e)
 	end
@@ -94,7 +107,7 @@ fun eval2 env exp =
 		| Epi (side, e) => (case side of Left => #1 | Right => #2) (untuple (eval e))
 		| Eif (e1, e2, e3) => eval (if unbool (eval e1) then e2 else e3)
 		| Elet (e,b) => evalBranch (eval e) b
-		| Ebinop (bo,e1,e2) => raise Stuck
+		| Ebinop (bo,e1,e2) => unconvertPrim (P.evalPrim (bo, convertPrim (eval e1), convertPrim (eval e2)))
 		| Eerror => raise Stuck
 	end
 
