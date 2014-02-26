@@ -16,7 +16,7 @@ datatype expr	= Evar of var
 				| Eunit
 				| Etuple of expr * expr
 				| Epi of LR * expr
-		(*		| Eif of expr * expr * expr *)
+				| Eif of expr * expr * expr
 		(*		| Einj of LR * ty * expr 
 				| Ecase of expr * (var * expr) * (var * expr) *)
 				| Enext of expr
