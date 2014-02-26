@@ -250,7 +250,30 @@ and stageSplit2 gamma exp =
 						(x2,bind (pi 2) lr2))
 				),t1)
 			end *)
+		| E2if (e1, e2, e3) => 
+			let
+				val (link, pi) = freshPi ()
+				val (pp, tbp, lrp, _) = split e1
+				val (p1, tb1, lr1, t1) = split e2
+				val (p2, tb2, lr2, _)  = split e3
+			in
+				(Etuple [pp, p1, p2], Tprod [tbp, tb1, tb2], (link, 
+					Eif (bind (pi 0) lrp, 
+						 bind (pi 1) lr1, 
+						 bind (pi 2) lr2)
+				),t1)
+			end
 		| E2binop (bo,e1,e2) => splitBin (e1,e2) (fn (a,_,b,_) => (Ebinop(bo,a,b), #3 (Prim2.getTypes bo)))
+		| E2let (e1, (x, e2)) => 
+			let
+				val (link, pi) = freshPi ()
+				val (p1, tb1, lr1, t1) = split e1
+				val (p2, tb2, lr2, t2) = stageSplit2 (extendContext gamma x (Val2 t1)) e2
+			in
+				(Etuple [p1, p2], Tprod [tb1, tb2], (link, 
+					Elet (bind (pi 0) lr1, (x,bind (pi 1) lr2))
+				),t2)
+			end
 		| E2error t => (Eerror (Tprod []), Tprod[], (dummy (), Eerror (trType2 t)), t)
 		| E2prev e => 
 			let

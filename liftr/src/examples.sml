@@ -3,13 +3,41 @@ structure Examples =
 struct
 
 open Lambda12c
+open LangCommon
 
-val twoPlusThree = Ebinop(Prims.Itimes, Eint 2, Eint 3)
+val fourPlusSix = Ebinop(Prims.Iplus, Eint 4, Eint 6)
+val twoTimesThree = Ebinop(Prims.Itimes, Eint 2, Eint 3)
+val if2 = Enext( Eif(
+				Ebool true,
+				Eprev (Epi (Right, Etuple (fourPlusSix, Enext (Eint 12)))), 
+				Eprev (Epi (Right, Etuple (twoTimesThree, Enext (Eint 13))))
+				))
 
+
+val propegated = PropStage.prop1 if2
+val valErasure = ErasureSemantics.eval1 empty propegated
+val (v1Diag, rDiag) = DiagonalSemantics.eval1 empty propegated
+val v2Diag = DiagonalSemantics.eval2 empty rDiag
+val _ = Typecheck12.typeCheck1 empty propegated
+val (split1, _, (l,split2), _) = StageSplit.stageSplit1 empty propegated
+
+(*
+fun testProgram p = 
+	let
+		val _ = PrintPSF.printTerm print split1
+		val _ = print "\n========\n"
+		val _ = TypecheckPSF.typeCheck split1
+		val _ = PrintPSF.printTerm print split2
+		val _ = print "\n========\n"
+		val _ = TypecheckPSF.typeCheck split2 
+	in
+		()
+	end
+*)
 (*
 fun runtests () = 
 
-	let
+	let(*
 		val _ = Variable.reset ()
 		fun v s = Variable.newvar s
 
@@ -46,23 +74,10 @@ fun runtests () =
 		val prog2 = [hold1, hold2]
 		val prog3 = [hold1, hold2, hold3]
 
-		fun testProgram p = 
-			let
-				val propegated = PropStage.propProgram p
-				val _ = Typecheck12.checkProgram propegated
-				val (split1, split2) = StageSplit.splitProg propegated
-				val _ = PrintPSF.printTerm print split1
-				val _ = print "\n========\n"
-				val _ = TypecheckPSF.typeCheck split1
-				val _ = PrintPSF.printTerm print split2
-				val _ = print "\n========\n"
-				val _ = TypecheckPSF.typeCheck split2 
-			in
-				()
-			end
 		val _ = testProgram prog1
 		val _ = testProgram prog2
-		val _ = testProgram prog3
+		val _ = testProgram prog3*)
+		val _ = testProgram twoPlusThree
 	in
 		"All pass."
 	end*)

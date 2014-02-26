@@ -21,6 +21,7 @@ datatype expr	= Evar of var
 				| Eif of expr * expr * expr
 		(*		| Einj of LR * ty * expr 
 				| Ecase of expr * (var * expr) * (var * expr) *)
+				| Elet of expr * (var * expr)
 				| Enext of expr
 				| Eprev of expr
 				| Eerror of ty
