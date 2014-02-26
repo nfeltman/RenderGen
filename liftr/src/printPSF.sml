@@ -37,6 +37,8 @@ fun printTermHelper (p : string -> unit) level e =
 	in
 		case e of
 		  Evar v => p (toString v)
+		| Eint i => p (Int.toString i)
+		| Ebool b => if b then p "true" else p "false"
 		| Elam (t, (v, e)) => prio 2 (fn () => (p "fn "; p (toString v); p " : "; printType p t; p " => "; g 2 e))
 		| Eapp (e1, e2) => prio 1 (fn () => (g 1 e1; p " "; g 0 e2))
 		| Etuple [] => p "()"
@@ -45,6 +47,7 @@ fun printTermHelper (p : string -> unit) level e =
 		| Einj (Left, t, e) => prio 1 (fn () => (p "inL ("; printType p t; p ")"; g 0 e))
 		| Einj (Right, t, e) => prio 1 (fn () => (p "inR ("; printType p t; p ") "; g 0 e))
 		| Ecase (e1,(v2,e2),(v3,e3)) => prio 2 (fn () => (p "case "; g 2 e1; p " of "; p (toString v2); p " => "; g 2 e2; p " | "; p (toString v3); p " => "; g 2 e3))
+		| Eif (e1,e2,e3) => prio 2 (fn () => (p "if "; g 2 e1; p " then "; g 2 e2; p " else "; g 2 e3))
 		| Elet (e1,(v,e2)) => prio 2 (fn () => (p "let "; p (toString v); p " = "; g 2 e1; p " in "; g 2 e2))
 		| Ebinop (bo, e1, e2) => prio 1 (fn () => (g 2 e1; p " op "; g 2 e2))
 		| Eroll e =>  prio 1 (fn () => (p "roll "; g 0 e))

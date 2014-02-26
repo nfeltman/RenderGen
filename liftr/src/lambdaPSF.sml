@@ -13,6 +13,8 @@ datatype ty		= Tint
 				| Trec of ty
 				
 datatype expr	= Evar of var
+				| Eint of int
+				| Ebool of bool
 				| Elam of ty * (var * expr)
 				| Eapp of expr * expr
 				| Etuple of expr list

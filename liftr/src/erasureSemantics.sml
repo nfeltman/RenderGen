@@ -56,6 +56,8 @@ fun eval1 env exp =
 		case exp of 
 		  E1var v => unval1 (lookup env v)
 		| E1unit => V1unit
+		| E1int i => V1int i
+		| E1bool b => V1bool b
 		| E1tuple (e1, e2) => V1tuple (eval e1, eval e2)
 		| E1pi (side, e) => (case side of Left => #1 | Right => #2) (untuple1 (eval e))
 		| E1if (e1, e2, e3) => eval (if unbool1 (eval e1) then e2 else e3)
@@ -73,6 +75,8 @@ and eval2 env exp =
 		case exp of 
 		  E2var v => unval2 (lookup env v)
 		| E2unit => V2unit
+		| E2int i => V2int i
+		| E2bool b => V2bool b
 		| E2tuple (e1, e2) => V2tuple (eval e1, eval e2)
 		| E2pi (side, e) => (case side of Left => #1 | Right => #2) (untuple2 (eval e))
 		| E2if (e1, e2, e3) => eval (if unbool2 (eval e1) then e2 else e3)

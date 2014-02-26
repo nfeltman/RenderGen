@@ -28,6 +28,8 @@ fun evaluate env exp =
 	in
 		case exp of 
 		  Evar v => lookup env v
+		| Eint i => Vint i
+		| Ebool b => Vbool b
 		| Elam _ => raise Stuck
 		| Eapp _ => raise Stuck
 		| Etuple es => Vtuple (map eval es)

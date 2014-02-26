@@ -13,6 +13,8 @@ datatype value	= Vint of int
 				
 datatype expr	= Evar of var
 				| Eunit
+				| Eint of int
+				| Ebool of bool
 				| Etuple of expr * expr
 				| Epi of LR * expr
 				| Eif of expr * expr * expr
@@ -44,6 +46,8 @@ fun eval1 env exp =
 		case exp of 
 		  E1var v => lookup env v
 		| E1unit => (Vunit, Eunit)
+		| E1int i => (Vint i, Eunit)
+		| E1bool b => (Vbool b, Eunit)
 		| E1tuple (e1, e2) => (
 			case (eval e1, eval e2) of
 			((v1,r1),(v2,r2)) => (Vtuple (v1, v2), Etuple (r1,r2)))
@@ -83,6 +87,8 @@ and trace2 env exp =
 		case exp of 
 		  E2var v => Evar v
 		| E2unit => Eunit
+		| E2int i => Eint i
+		| E2bool b => Ebool b
 		| E2tuple (e1, e2) => Etuple (trace e1, trace e2)
 		| E2pi (side, e) => Epi (side, trace e)
 		| E2if (e1, e2, e3) => Eif (trace e1, trace e2, trace e3)
@@ -103,6 +109,8 @@ fun eval2 env exp =
 		case exp of 
 		  Evar v => lookup env v
 		| Eunit => Vunit
+		| Eint i => Vint i
+		| Ebool b => Vbool b
 		| Etuple (e1, e2) => Vtuple (eval e1, eval e2)
 		| Epi (side, e) => (case side of Left => #1 | Right => #2) (untuple (eval e))
 		| Eif (e1, e2, e3) => eval (if unbool (eval e1) then e2 else e3)

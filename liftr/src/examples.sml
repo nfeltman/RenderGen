@@ -4,6 +4,8 @@ struct
 
 open Lambda12c
 
+val twoPlusThree = Ebinop(Prims.Itimes, Eint 2, Eint 3)
+
 (*
 fun runtests () = 
 

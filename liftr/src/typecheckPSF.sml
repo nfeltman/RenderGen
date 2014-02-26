@@ -34,6 +34,8 @@ fun typeCheckS gamma exp =
 	in
 		case exp of 
 		  Evar v => lookup gamma v
+		| Eint _ => Tint
+		| Ebool _ => Tbool
 		| Elam (t,b) => Tfunc (t, checkbranch t b)
 		| Eapp (e1,e2) => checkFun teq (unfunc (check e1), check e2)
 		| Etuple es => Tprod (map check es)

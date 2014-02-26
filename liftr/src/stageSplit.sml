@@ -116,6 +116,8 @@ fun stageSplit1 gamma exp =
 				)
 			end *)
 		| E1unit => (Etuple [Eunit, Eunit], Tprod [], (dummy (), Eunit), T1unit)
+		| E1int i => (Etuple [Eint i, Eunit], Tprod [], (dummy (), Eunit), T1int)
+		| E1bool b => (Etuple [Ebool b, Eunit], Tprod [], (dummy (), Eunit), T1bool)
 		| E1tuple (e1, e2) => 
 			let
 				val (link, splitBind) = splitSubs ()
@@ -229,6 +231,8 @@ and stageSplit2 gamma exp =
 		| E2app e12 => splitBin e12 Eapp *)
 	(*	| E2call (f, e) => mapbr (fn r => Eapp (Evar f, r)) (split e) *)
 		| E2unit => (Eunit, Tprod [], (dummy (), Eunit), T2unit)
+		| E2int i => (Eunit, Tprod [], (dummy (), Eint i), T2int)
+		| E2bool b => (Eunit, Tprod [], (dummy (), Ebool b), T2bool)
 		| E2tuple e12 => splitBin e12 (fn (a,ta,b,tb) => (Etuple [a,b], T2prod(ta,tb)))
 		| E2pi (lr, e) => mapbr (fn (r,t) => (Epi (case lr of Left => 0 | Right => 1, r), projLR lr (Typecheck12.unprod2 t))) (split e)
 	(*	| E2inj (lr, ot, e) => mapbr (fn (r,t) => (Einj (lr, trType2 ot, r), T2sum (injLR lr t ot))) (split e)

@@ -8,12 +8,14 @@ datatype ty		= Tint
 				| Tunit
 				| Tbool
 				| Tprod of ty * ty
-				| Tsum of ty * ty
+		(*		| Tsum of ty * ty*)
 				| Tfut of ty
 				
 datatype expr	= Evar of var
 		(*		| Ecall of var * expr *)
 				| Eunit
+				| Eint of int
+				| Ebool of bool
 				| Etuple of expr * expr
 				| Epi of LR * expr
 				| Eif of expr * expr * expr

@@ -8,7 +8,7 @@ datatype type1	= T1int
 				| T1bool
 				| T1unit
 				| T1prod of type1 * type1
-				| T1sum of type1 * type1
+		(*		| T1sum of type1 * type1 *)
 		(*		| T1func of type1 * type1 *)
 				| T1fut of type2
 				
@@ -16,7 +16,7 @@ and type2		= T2int
 				| T2bool
 				| T2unit
 				| T2prod of type2 * type2
-				| T2sum of type2 * type2
+		(*		| T2sum of type2 * type2 *)
 		(*		| T2func of type2 * type2 *)
 				
 				
@@ -25,6 +25,8 @@ datatype expr1	= E1var of var
 				| E1app of expr1 * expr1 *)
 		(*		| E1call of var * expr1 *)
 				| E1unit
+				| E1int of int
+				| E1bool of bool
 				| E1tuple of expr1 * expr1
 				| E1pi of LR * expr1
 		(*		| E1inj of LR * type1 * expr1
@@ -40,6 +42,8 @@ and expr2		= E2var of var
 				| E2app of expr2 * expr2 *)
 		(*		| E2call of var * expr2 *)
 				| E2unit
+				| E2int of int
+				| E2bool of bool
 				| E2tuple of expr2 * expr2
 				| E2pi of LR * expr2
 		(*		| E2inj of LR * type2 * expr2
