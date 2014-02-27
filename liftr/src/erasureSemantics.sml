@@ -91,4 +91,20 @@ and eval2 env exp =
 		| E2prev e => unnext (eval1 env e)
 	end
 
+open PSFSemantics
+fun splitValue1 v = 
+		case v of 
+		  V1int i => (Vint i, Vtuple [])
+		| V1bool b => (Vbool b, Vtuple [])
+		| V1unit => (Vtuple [], Vtuple [])
+		| V1tuple (v1,v2) => (case (splitValue1 v1, splitValue1 v2) of ((u1,w1),(u2,w2)) => (Vtuple [u1,u2], Vtuple [w1,w2]))
+		| V1next v0 => (Vtuple[], splitValue2 v0)
+
+and splitValue2 v = 
+		case v of 
+		  V2int i => Vint i
+		| V2bool b => Vbool b
+		| V2unit => Vtuple []
+		| V2tuple (v1,v2) => Vtuple [splitValue2 v1, splitValue2 v2]
+
 end
