@@ -74,6 +74,7 @@ fun stageSplit1 gamma exp =
 			end
 		fun id x = x
 		fun bindMap e f g = bindProj e (fn (e1,e2) => Etuple[f e1, g e2])
+		fun chain (e1,e2) = Epi (1, Etuple [e1,e2])
 	in
 		case exp of 
 		  E1var v => (Etuple [Evar v, Eunit], Tprod [], (dummy (), Evar v), unval1 (lookup gamma v))
@@ -202,7 +203,7 @@ fun stageSplit1 gamma exp =
 						)
 					), 
 					Tprod[tb1,Tsum(tb2,tb3)], 
-					(link, Epi(0,Etuple [bind (pi 0) lr1, Ecase(pi 1,lr2,lr3)])),
+					(link, chain (bind (pi 0) lr1, Ecase(pi 1,lr2,lr3))),
 					t
 				)
 			end
@@ -241,6 +242,18 @@ fun stageSplit1 gamma exp =
 				val (p, tb, lr, t) = stageSplit2 gamma e
 			in
 				(Etuple [Eunit, p],tb,lr, T1fut t)
+			end
+		| E1hold e => 
+			let
+				val (link, pi) = freshPi ()
+				val (c, tb, lr, _) = split e
+			in
+				(
+					Etuple [Eunit,c], 
+					Tprod [Tint,tb], 
+					(link, chain (bind (pi 1) lr, pi 0)), 
+					T1fut T2int
+				)
 			end
 	end
 	

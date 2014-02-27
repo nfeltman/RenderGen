@@ -34,6 +34,7 @@ datatype expr1	= E1var of var
 				| E1if of expr1 * expr1 * expr1
 				| E1let of expr1 * (var * expr1)
 				| E1next of expr2
+				| E1hold of expr1
 				| E1error of type1
 				| E1binop of Prims.binops * expr1 * expr1
 

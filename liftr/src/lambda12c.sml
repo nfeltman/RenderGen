@@ -24,6 +24,7 @@ datatype expr	= Evar of var
 				| Elet of expr * (var * expr)
 				| Enext of expr
 				| Eprev of expr
+				| Ehold of expr
 				| Eerror of ty
 				| Ebinop of Prims.binops * expr * expr
 (*

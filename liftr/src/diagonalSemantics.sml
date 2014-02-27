@@ -30,6 +30,8 @@ fun untuple (Vtuple v) = v
   | untuple _ = raise Stuck
 fun unbool (Vbool b) = b
   | unbool _ = raise Stuck
+fun unint (Vint i) = i
+  | unint _ = raise Stuck
   
 fun convertPrim (Vint i) = P.Vint i
   | convertPrim (Vbool b) = P.Vbool b
@@ -78,6 +80,7 @@ fun eval1 env exp =
 			end
 		| E1error _ => raise Stuck
 		| E1next e => (Vunit, trace2 env e)
+		| E1hold e => (case eval e of (v,r) => (Vunit, Epi(Right, Etuple (r, Eint (unint v)))))
 	end
 	
 and trace2 env exp = 

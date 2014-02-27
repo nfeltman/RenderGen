@@ -40,6 +40,7 @@ and prop1 exp =
 	| Eprev e => raise StagePropException
 	| Eerror t => E1error (propTy1 t)
 	| Enext e => E1next (prop2 e)
+	| Ehold e => E1hold (prop1 e)
 
 and propBr2 (v,e) = (v, prop2 e)
 and prop2 exp = 
@@ -58,7 +59,8 @@ and prop2 exp =
 	| Ebinop (bo,e1,e2) => E2binop(bo, prop2 e1, prop2 e2)
 	| Eprev e => E2prev (prop1 e)
 	| Eerror t => E2error (propTy2 t)
-	| Enext e => raise StagePropException
+	| Enext _ => raise StagePropException
+	| Ehold _ => raise StagePropException
 (*
 fun propProgram p = 
 	let		

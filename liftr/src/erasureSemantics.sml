@@ -29,10 +29,14 @@ fun untuple1 (V1tuple v) = v
   | untuple1 _ = raise Stuck
 fun unbool1 (V1bool b) = b
   | unbool1 _ = raise Stuck
+fun unint1 (V1int i) = i
+  | unint1 _ = raise Stuck
 fun untuple2 (V2tuple v) = v
   | untuple2 _ = raise Stuck
 fun unbool2 (V2bool b) = b
   | unbool2 _ = raise Stuck
+fun unint2 (V2int i) = i
+  | unint2 _ = raise Stuck
 fun unnext (V1next v) = v
   | unnext _ = raise Stuck
   
@@ -65,6 +69,7 @@ fun eval1 env exp =
 		| E1binop (bo,e1,e2) => unconvertPrim1 (P.evalPrim (bo, convertPrim1 (eval e1), convertPrim1 (eval e2)))
 		| E1error t => raise Stuck
 		| E1next e => V1next (eval2 env e)
+		| E1hold e => V1next (V2int (unint1 (eval e)))
 	end
 	
 and eval2 env exp = 

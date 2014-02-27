@@ -76,6 +76,7 @@ fun typeCheck1 gamma exp =
 		| E1error t => t
 		| E1binop (bo, e1, e2) => binSame t1eq (check e1, check e2) (Prim1.getTypes bo)
 		| E1next e => T1fut (typeCheck2 gamma e)
+		| E1hold e => (assertSame t1eq (T1int, check e); T1fut T2int)
 	end
 	
 and typeCheck2 gamma exp = 
