@@ -26,6 +26,7 @@ Group is
 	  erasureSemantics.sml
 	  diagonalSemantics.sml
 	  psfSemantics.sml
+	  valueComparison.sml
 	  
 	  (* test code *)
 	  examples.sml
