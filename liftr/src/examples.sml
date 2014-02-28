@@ -5,13 +5,18 @@ struct
 open Lambda12c
 open LangCommon
 
+val _ = Variable.reset ()
+val x = Variable.newvar "x"
 val fourPlusSix = Ebinop(Prims.Iplus, Eint 4, Eint 6)
 val twoTimesThree = Ebinop(Prims.Itimes, Eint 2, Eint 3)
-val if2 = Enext( Eif(
-				Ebool true,
-				Eprev (Ehold fourPlusSix), 
-				twoTimesThree
-				))
+val twoGtThree = Ebinop(Prims.Igreater, Eint 2, Eint 3)
+val letAll1 = Elet(fourPlusSix, (x, Ebinop(Prims.Itimes, Evar x, Evar x)))
+val let12 = Elet(Enext fourPlusSix, (x, Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x)))))
+val doubleBind = Elet(Enext fourPlusSix, 
+				(x, Elet (Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x))), 
+							(x, Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x)))))))
+val if1 = Eif(Ebool true, Enext fourPlusSix, Ehold twoTimesThree)
+val if2 = Enext( Eif(twoGtThree, Eprev (Ehold fourPlusSix), twoTimesThree))
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
 				
@@ -53,6 +58,11 @@ fun runtests () =
 		val testProgram = testProgram 1
 		val _ = testProgram "fourPlusSix" fourPlusSix
 		val _ = testProgram "twoTimesThree" twoTimesThree
+		val _ = testProgram "twoGtThree" twoGtThree
+		val _ = testProgram "letAll1" letAll1
+		val _ = testProgram "doubleBind" doubleBind
+		val _ = testProgram "let12" let12
+		val _ = testProgram "if1" if1
 		val _ = testProgram "if2" if2
 	in
 		()
