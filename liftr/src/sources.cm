@@ -26,8 +26,10 @@ Group is
 	  erasureSemantics.sml
 	  diagonalSemantics.sml
 	  psfSemantics.sml
+	  valueComparison.sml
 	  
 	  (* test code *)
+	  printer.sml
 	  examples.sml
 	  
       $/basis.cm

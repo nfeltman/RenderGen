@@ -8,7 +8,6 @@ structure P = Prims.PrimEval
 				
 datatype value	= Vint of int
 				| Vbool of bool
-				| Vunit
 				| Vtuple of value list
 				| Vinj of LR * value
 

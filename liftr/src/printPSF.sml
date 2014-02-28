@@ -3,8 +3,43 @@ structure PrintPSF =
 struct
 
 open LangCommon
-open LambdaPSF
 
+datatype expr	= Eatom of string
+				| Elam of (string * expr)
+				| Eapp of expr * expr
+				| Etuple of expr list
+				| Ecase of expr * (string * expr) * (string * expr)
+				| Eif of expr * expr * expr
+				| Elet of expr * (string * expr)
+				| Ebinop of Prims.binops * expr * expr
+				| EprimApp of string * expr
+				| EbraceApp of string * expr
+
+structure S = LambdaPSF				
+fun convertPSF e = 
+	let
+		fun convertBranch (x,e) = (Variable.toString x, convertPSF e)
+		val convert = convertPSF
+	in
+		case e of 
+		  S.Evar v => Eatom (Variable.toString v)
+		| S.Eint i => Eatom (Int.toString i)
+		| S.Ebool b => Eatom (if b then "true" else "false")
+		| S.Elam (_,b) => Elam (convertBranch b)
+		| S.Eapp (e1,e2) => Eapp (convert e1, convert e2)
+		| S.Etuple es => Etuple (map convert es)
+		| S.Epi (i, e) => EprimApp ("#"^(Int.toString (i+1)), convert e)
+		| S.Einj (lr, _, e) => EprimApp (case lr of Left => "inL" | Right => "inR", convert e)
+		| S.Ecase (e,b1,b2) => Ecase (convert e, convertBranch b1, convertBranch b2)
+		| S.Eif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)
+		| S.Elet (e, b) => Elet (convert e, convertBranch b)
+		| S.Ebinop (bo, e1, e2) => Ebinop (bo, convert e1, convert e2)
+		| S.Eroll e => EprimApp ("roll", convert e)
+		| S.Eunroll e => EprimApp ("unroll", convert e)
+		| S.Eerror t => Eatom "error"
+	end
+
+(*
 fun printTypeHelper (p : string -> unit) level ty = 
 	let
 		val g = printTypeHelper p
@@ -22,45 +57,25 @@ fun printTypeHelper (p : string -> unit) level ty =
 		| Tfunc (t1,t2) => prio 2 (fn () => (g 1 t1; p " -> "; g 2 t2))
 		| Tvar i => p (Int.toString i)
 		| Trec t => prio 1 (fn () => (p "rec."; g 2 t))
-	end
+	end*)
 
-fun printType p = printTypeHelper p 2
-
-fun printTermHelper (p : string -> unit) level e = 
+fun convertTerm e = 
 	let
-		val g = printTermHelper p
-		fun prio nextLevel f = 
-			if nextLevel > level 
-			then (p "("; f (); p ")")
-			else f ()
+		val L = PrettyPrinter.Pliteral
+		fun S n e = PrettyPrinter.Psubterm (n, convertTerm e)
 		val toString = Variable.toString
 	in
 		case e of
-		  Evar v => p (toString v)
-		| Eint i => p (Int.toString i)
-		| Ebool b => if b then p "true" else p "false"
-		| Elam (t, (v, e)) => prio 2 (fn () => (p "fn "; p (toString v); p " : "; printType p t; p " => "; g 2 e))
-		| Eapp (e1, e2) => prio 1 (fn () => (g 1 e1; p " "; g 0 e2))
-		| Etuple [] => p "()"
-		| Etuple (e0::es) => (p "("; g 2 e0; app (fn e => (p ", "; g 2 e)) es; p ")")
-		| Epi (i,e) => prio 1 (fn () => (p "#"; p (Int.toString (i+1)); p " "; g 0 e))
-		| Einj (Left, t, e) => prio 1 (fn () => (p "inL ("; printType p t; p ")"; g 0 e))
-		| Einj (Right, t, e) => prio 1 (fn () => (p "inR ("; printType p t; p ") "; g 0 e))
-		| Ecase (e1,(v2,e2),(v3,e3)) => prio 2 (fn () => (p "case "; g 2 e1; p " of "; p (toString v2); p " => "; g 2 e2; p " | "; p (toString v3); p " => "; g 2 e3))
-		| Eif (e1,e2,e3) => prio 2 (fn () => (p "if "; g 2 e1; p " then "; g 2 e2; p " else "; g 2 e3))
-		| Elet (e1,(v,e2)) => prio 2 (fn () => (p "let "; p (toString v); p " = "; g 2 e1; p " in "; g 2 e2))
-		| Ebinop (bo, e1, e2) => prio 1 (fn () => (g 2 e1; p " op "; g 2 e2))
-		| Eroll e =>  prio 1 (fn () => (p "roll "; g 0 e))
-		| Eunroll e =>  prio 1 (fn () => (p "unroll "; g 0 e))
-		| Eerror _ => p "error"
+		  Eatom s => (0, [L s])
+		| Elam (v, e) => (2, [L ("fn "^v^" => "),  S 2 e])
+		| Eapp (e1, e2) => (1, [S 1 e, L " ", S 0 e])
+		| Etuple [] => (0, [L "()"])
+		| Etuple (e0::es) => (0, L "(" :: S 2 e0 :: foldr (fn (e,prev) => L ", " :: S 2 e :: prev) [L ")"] es)
+		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^v2^" => "), S 2 e2, L (" | "^v3^" => "), S 2 e3])
+		| Eif (e1,e2,e3) => (2, [L "if ", S 2 e1, L " then ", S 2 e2, L " else ", S 2 e3])
+		| Elet (e1,(v,e2)) => (2, [L ("let "^v^" = "), S 2 e1, L " in ", S 2 e2])
+		| Ebinop (bo, e1, e2) => (1, [S 2 e1, L " op ", S 2 e2])
+		| EprimApp (f, e) => (1, [L (f^" "), S 0 e])
+		| EbraceApp (f, e) => (1, [L (f^" "), L "{", S 2 e, L "}"])
 	end
-	
-fun printTerm p = printTermHelper p 2
-
-fun test () = (printType print (Tfunc (Tfunc (Tprod [],Tprod []),Tfunc (Tprod [],Tprod []))); print "\n")
-
-(* Tprod of ty list
-				| Tsum of ty * ty
-				| Tfunc of ty * ty *)
-
 end
