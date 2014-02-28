@@ -18,6 +18,8 @@ fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
 				
 fun testProgram verbose name p = 
 	let
+		val printTerm = (PrettyPrinter.printTerm print) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm
+		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
 		val debug = if verbose >= 2 then print else (fn _ => ())
 		
@@ -54,7 +56,7 @@ fun testProgram verbose name p =
 				then (emit "all pass!\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
-		()
+		() (* printTerm (PrintPSF.convertPSF split2) *)
 	end
 
 

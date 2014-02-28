@@ -29,6 +29,7 @@ Group is
 	  valueComparison.sml
 	  
 	  (* test code *)
+	  printer.sml
 	  examples.sml
 	  
       $/basis.cm
