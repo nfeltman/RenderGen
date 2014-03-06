@@ -4,6 +4,7 @@ Group is
 	  variable.sml
 	  common.sml
 	  prim.sml
+	  sourceLang.sml
 	  
 	  (* lambda12c *)
       lambda12c.sml

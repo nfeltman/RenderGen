@@ -142,7 +142,7 @@ fun stageSplit1 gamma (E1 exp) =
 					bindMap c proj id,
 					tb,
 					mapSnd proj lr,
-					projLR side (Typecheck12.unprodF t)
+					projLR side (Typecheck12.unprod t)
 				)
 			end
 	(*	| Finj (side, otherT, e) => 
@@ -280,7 +280,7 @@ and stageSplit2 gamma (E2 exp) =
 		| Fint i => (Eunit, Tprod [], (dummy (), Eint i), T2 TFint)
 		| Fbool b => (Eunit, Tprod [], (dummy (), Ebool b), T2 TFbool)
 		| Ftuple e12 => splitBin e12 (fn (a,ta,b,tb) => (Etuple [a,b], T2 (TFprod(ta,tb))))
-		| Fpi (lr, e) => mapbr (fn (r, T2 t) => (Epi (case lr of Left => 0 | Right => 1, r), projLR lr (Typecheck12.unprodF t))) (split e)
+		| Fpi (lr, e) => mapbr (fn (r, T2 t) => (Epi (case lr of Left => 0 | Right => 1, r), projLR lr (Typecheck12.unprod t))) (split e)
 	(*	| Finj (lr, ot, e) => mapbr (fn (r,t) => (Einj (lr, trType2 ot, r), T2sum (injLR lr t ot))) (split e)
 		| Fcase (p,(x1,e1),(x2,e2)) => 
 			let
