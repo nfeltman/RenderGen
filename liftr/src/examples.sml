@@ -61,7 +61,12 @@ fun testProgram verbose name p =
 				then (emit "all pass!\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
-		() (* printTerm (PrintPSF.convertPSF split2) *)
+	(*
+		print "\n\n";
+		printTerm (PrintPSF.convertPSF split2);
+		print "\n\n";
+	*)
+		()
 	end
 
 

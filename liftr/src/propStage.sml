@@ -8,59 +8,22 @@ open Lambda12
 
 exception StagePropException
 
-fun propTy1 Tint = T1int
-  | propTy1 Tbool = T1bool
-  | propTy1 Tunit = T1unit
-  | propTy1 (Tprod (t1,t2)) = T1prod (propTy1 t1, propTy1 t2)
-(*  | propTy1 (Tsum (t1,t2)) = T1sum (propTy1 t1, propTy1 t2)*)
+fun propTy1 (Tstandard t) = T1 (mapType propTy1 t)
   | propTy1 (Tfut t) = T1fut (propTy2 t)
   
-and propTy2 Tint = T2int
-  | propTy2 Tbool = T2bool
-  | propTy2 Tunit = T2unit
-  | propTy2 (Tprod (t1,t2)) = T2prod (propTy2 t1, propTy2 t2)
-(*  | propTy2 (Tsum (t1,t2)) = T2sum (propTy2 t1, propTy2 t2)*)
+and propTy2 (Tstandard t) = T2 (mapType propTy2 t)
   | propTy2 (Tfut t) = raise StagePropException
 
-fun propBr1 (v,e) = (v, prop1 e)
-and prop1 exp = 
-	case exp of 
-	  Evar v => E1var v
-(*	| Ecall (v,e) => E1call (v, prop1 e) *)
-	| Eunit => E1unit
-	| Eint i => E1int i
-	| Ebool b => E1bool b
-	| Etuple (e1,e2) => E1tuple (prop1 e1, prop1 e2)
-	| Epi (lr, e) => E1pi (lr, prop1 e)
-(*	| Einj (lr, t, e) => E1inj (lr, propTy1 t, prop1 e)
-	| Ecase (e,b1,b2) => E1case (prop1 e, propBr1 b1, propBr1 b2) *)
-	| Eif (e1,e2,e3) => E1if (prop1 e1, prop1 e2, prop1 e3)
-	| Elet (e1, (x,e2)) => E1let (prop1 e1, (x, prop1 e2))
-	| Ebinop (bo,e1,e2) => E1binop(bo, prop1 e1, prop1 e2)
-	| Eprev e => raise StagePropException
-	| Eerror t => E1error (propTy1 t)
-	| Enext e => E1next (prop2 e)
-	| Ehold e => E1hold (prop1 e)
+and prop1 (Estandard exp) = E1 (mapExpr prop1 propTy1 exp)
+  | prop1 (Eprev _) = raise StagePropException
+  | prop1 (Enext e) = E1next (prop2 e)
+  | prop1 (Ehold e) = E1hold (prop1 e)
 
-and propBr2 (v,e) = (v, prop2 e)
-and prop2 exp = 
-	case exp of 
-	  Evar v => E2var v
-(*	| Ecall (v,e) => raise StagePropException (* E2call (v, prop2 e) *) *)
-	| Eunit => E2unit
-	| Eint i => E2int i
-	| Ebool b => E2bool b
-	| Etuple (e1,e2) => E2tuple (prop2 e1, prop2 e2)
-	| Epi (lr, e) => E2pi (lr, prop2 e)
-(*	| Einj (lr, t, e) => E2inj (lr, propTy2 t, prop2 e)
-	| Ecase (e,b1,b2) => E2case (prop2 e, propBr2 b1, propBr2 b2) *)
-	| Eif (e1,e2,e3) => E2if (prop2 e1, prop2 e2, prop2 e3)
-	| Elet (e1, (x,e2)) => E2let (prop2 e1, (x, prop2 e2))
-	| Ebinop (bo,e1,e2) => E2binop(bo, prop2 e1, prop2 e2)
-	| Eprev e => E2prev (prop1 e)
-	| Eerror t => E2error (propTy2 t)
-	| Enext _ => raise StagePropException
-	| Ehold _ => raise StagePropException
+and prop2 (Estandard exp) = E2 (mapExpr prop2 propTy2 exp)
+  | prop2 (Eprev e) = E2prev (prop1 e)
+  | prop2 (Enext _) = raise StagePropException
+  | prop2 (Ehold _) = raise StagePropException
+  
 (*
 fun propProgram p = 
 	let		

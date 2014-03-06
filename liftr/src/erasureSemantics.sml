@@ -52,43 +52,43 @@ fun convertPrim2 (V2int i) = P.Vint i
 fun unconvertPrim2 (P.Vint i) = V2int i
   | unconvertPrim2 (P.Vbool b) = V2bool b
 
-fun eval1 env exp = 
+fun eval1 env (E1 exp) = 
 	let
 		val eval = eval1 env
 		fun evalBranch value (var,e) = eval1 (extendContext env var (Val1 value)) e
 	in
 		case exp of 
-		  E1var v => unval1 (lookup env v)
-		| E1unit => V1unit
-		| E1int i => V1int i
-		| E1bool b => V1bool b
-		| E1tuple (e1, e2) => V1tuple (eval e1, eval e2)
-		| E1pi (side, e) => (case side of Left => #1 | Right => #2) (untuple1 (eval e))
-		| E1if (e1, e2, e3) => eval (if unbool1 (eval e1) then e2 else e3)
-		| E1let (e, b) => evalBranch (eval e) b
-		| E1binop (bo,e1,e2) => unconvertPrim1 (P.evalPrim (bo, convertPrim1 (eval e1), convertPrim1 (eval e2)))
-		| E1error t => raise Stuck
-		| E1next e => V1next (eval2 env e)
-		| E1hold e => V1next (V2int (unint1 (eval e)))
+		  Fvar v => unval1 (lookup env v)
+		| Funit => V1unit
+		| Fint i => V1int i
+		| Fbool b => V1bool b
+		| Ftuple (e1, e2) => V1tuple (eval e1, eval e2)
+		| Fpi (side, e) => (case side of Left => #1 | Right => #2) (untuple1 (eval e))
+		| Fif (e1, e2, e3) => eval (if unbool1 (eval e1) then e2 else e3)
+		| Flet (e, b) => evalBranch (eval e) b
+		| Fbinop (bo,e1,e2) => unconvertPrim1 (P.evalPrim (bo, convertPrim1 (eval e1), convertPrim1 (eval e2)))
+		| Ferror t => raise Stuck
 	end
+  | eval1 env (E1next e) = V1next (eval2 env e)
+  | eval1 env (E1hold e) = V1next (V2int (unint1 (eval1 env e)))
 	
-and eval2 env exp = 
+and eval2 env (E2 exp) = 
 	let
 		val eval = eval2 env
 		fun evalBranch value (var,e) = eval2 (extendContext env var (Val2 value)) e
 	in	
 		case exp of 
-		  E2var v => unval2 (lookup env v)
-		| E2unit => V2unit
-		| E2int i => V2int i
-		| E2bool b => V2bool b
-		| E2tuple (e1, e2) => V2tuple (eval e1, eval e2)
-		| E2pi (side, e) => (case side of Left => #1 | Right => #2) (untuple2 (eval e))
-		| E2if (e1, e2, e3) => eval (if unbool2 (eval e1) then e2 else e3)
-		| E2let (e, b) => evalBranch (eval e) b
-		| E2binop (bo,e1,e2) => unconvertPrim2 (P.evalPrim (bo, convertPrim2 (eval e1), convertPrim2 (eval e2)))
-		| E2error t => raise Stuck
-		| E2prev e => unnext (eval1 env e)
+		  Fvar v => unval2 (lookup env v)
+		| Funit => V2unit
+		| Fint i => V2int i
+		| Fbool b => V2bool b
+		| Ftuple (e1, e2) => V2tuple (eval e1, eval e2)
+		| Fpi (side, e) => (case side of Left => #1 | Right => #2) (untuple2 (eval e))
+		| Fif (e1, e2, e3) => eval (if unbool2 (eval e1) then e2 else e3)
+		| Flet (e, b) => evalBranch (eval e) b
+		| Fbinop (bo,e1,e2) => unconvertPrim2 (P.evalPrim (bo, convertPrim2 (eval e1), convertPrim2 (eval e2)))
+		| Ferror t => raise Stuck
 	end
+  | eval2 env (E2prev e) = unnext (eval1 env e)
 
 end

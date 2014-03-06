@@ -4,56 +4,52 @@ struct
 
 open LangCommon
 
-datatype type1	= T1int
-				| T1bool
-				| T1unit
-				| T1prod of type1 * type1
-		(*		| T1sum of type1 * type1 *)
-		(*		| T1func of type1 * type1 *)
+datatype 't typeF	= TFint
+					| TFbool
+					| TFunit
+					| TFprod of 't * 't
+
+datatype ('e,'t) exprF	= Fvar of var
+						| Funit
+						| Fint of int
+						| Fbool of bool
+						| Ftuple of 'e * 'e
+						| Fpi of LR * 'e
+						| Fif of 'e * 'e * 'e
+						| Flet of 'e * (var * 'e)
+						| Ferror of 't
+						| Fbinop of Prims.binops * 'e * 'e
+
+fun mapType _ TFint = TFint
+  | mapType _ TFbool = TFbool
+  | mapType _ TFunit = TFunit
+  | mapType f (TFprod (t1,t2)) = TFprod (f t1, f t2)
+						
+fun mapExpr fe ft exp =
+	case exp of
+	  Fvar v => Fvar v
+	| Funit => Funit
+	| Fint i => Fint i
+	| Fbool b => Fbool b
+	| Ftuple (e1,e2) => Ftuple (fe e1, fe e2)
+	| Fpi (lr, e) => Fpi (lr, fe e)
+	| Fif (e1,e2,e3) => Fif (fe e1, fe e2, fe e3)
+	| Flet (e1, (x,e2)) => Flet (fe e1, (x, fe e2))
+	| Ferror (t) => Ferror (ft t)
+	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
+	
+
+datatype type1	= T1 of type1 typeF
 				| T1fut of type2
-				
-and type2		= T2int
-				| T2bool
-				| T2unit
-				| T2prod of type2 * type2
-		(*		| T2sum of type2 * type2 *)
-		(*		| T2func of type2 * type2 *)
-				
-				
-datatype expr1	= E1var of var
-		(*		| E1lam of type1 * (var * expr1)
-				| E1app of expr1 * expr1 *)
-		(*		| E1call of var * expr1 *)
-				| E1unit
-				| E1int of int
-				| E1bool of bool
-				| E1tuple of expr1 * expr1
-				| E1pi of LR * expr1
-		(*		| E1inj of LR * type1 * expr1
-				| E1case of expr1 * (var * expr1) * (var * expr1) *)
-				| E1if of expr1 * expr1 * expr1
-				| E1let of expr1 * (var * expr1)
+
+and type2		= T2 of type2 typeF
+
+datatype expr1	= E1 of (expr1,type1) exprF
 				| E1next of expr2
 				| E1hold of expr1
-				| E1error of type1
-				| E1binop of Prims.binops * expr1 * expr1
 
-and expr2		= E2var of var
-		(*		| E2lam of type2 * (var * expr2)
-				| E2app of expr2 * expr2 *)
-		(*		| E2call of var * expr2 *)
-				| E2unit
-				| E2int of int
-				| E2bool of bool
-				| E2tuple of expr2 * expr2
-				| E2pi of LR * expr2
-		(*		| E2inj of LR * type2 * expr2
-				| E2case of expr2 * (var * expr2) * (var * expr2) *)
-				| E2if of expr2 * expr2 * expr2
-				| E2let of expr2 * (var * expr2)
+and expr2		= E2 of (expr2,type2) exprF
 				| E2prev of expr1
-				| E2error of type2
-				| E2binop of Prims.binops * expr2 * expr2
 
 				
 datatype contEntry = Stage1 of type1 | Stage2 of type2 | Func1 of type1 * type1 (* | Func2 of type2 * type2 *)

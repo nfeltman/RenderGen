@@ -4,32 +4,23 @@ struct
 
 open LangCommon
 
-datatype ty		= Tint
-				| Tunit
-				| Tbool
-				| Tprod of ty * ty
-		(*		| Tsum of ty * ty*)
+datatype ty		= Tstandard of ty Lambda12.typeF
 				| Tfut of ty
 				
-datatype expr	= Evar of var
-		(*		| Ecall of var * expr *)
-				| Eunit
-				| Eint of int
-				| Ebool of bool
-				| Etuple of expr * expr
-				| Epi of LR * expr
-				| Eif of expr * expr * expr
-		(*		| Einj of LR * ty * expr 
-				| Ecase of expr * (var * expr) * (var * expr) *)
-				| Elet of expr * (var * expr)
+datatype expr	= Estandard of (expr,ty) Lambda12.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Ehold of expr
-				| Eerror of ty
-				| Ebinop of Prims.binops * expr * expr
-(*
-datatype topLevelFunc = FuncDec1 of var * ty * ty * var * expr (*| FuncDec2 of var * ty * ty * var * expr *)
-type program = topLevelFunc list
-*)
+
+val Evar = Estandard o Lambda12.Fvar
+val Eunit = Estandard Lambda12.Funit
+val Eint = Estandard o Lambda12.Fint
+val Ebool = Estandard o Lambda12.Fbool
+val Etuple = Estandard o Lambda12.Ftuple
+val Epi = Estandard o Lambda12.Fpi
+val Eif = Estandard o Lambda12.Fif
+val Elet = Estandard o Lambda12.Flet
+val Eerror = Estandard o Lambda12.Ferror
+val Ebinop = Estandard o Lambda12.Fbinop
 
 end

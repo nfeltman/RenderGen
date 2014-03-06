@@ -40,69 +40,66 @@ fun unconvertPrim (P.Vint i) = Vint i
   | unconvertPrim (P.Vbool b) = Vbool b
 
 	
-fun eval1 env exp = 
+fun eval1 env (E1 exp) = 
 	let
 		val eval = eval1 env
 		fun evalBranch value (var,e) = eval1 (extendContext env var value) e
 	in
 		case exp of 
-		  E1var v => lookup env v
-		| E1unit => (Vunit, Eunit)
-		| E1int i => (Vint i, Eunit)
-		| E1bool b => (Vbool b, Eunit)
-		| E1tuple (e1, e2) => (
+		  Fvar v => lookup env v
+		| Funit => (Vunit, Eunit)
+		| Fint i => (Vint i, Eunit)
+		| Fbool b => (Vbool b, Eunit)
+		| Ftuple (e1, e2) => (
 			case (eval e1, eval e2) of
 			((v1,r1),(v2,r2)) => (Vtuple (v1, v2), Etuple (r1,r2)))
-		| E1pi (side, e) => (
+		| Fpi (side, e) => (
 			case (side, map1 untuple (eval e)) of
 			  (Left, ((v1,_), r)) => (v1, Epi (Left, r))
 			| (Right, ((_,v2), r)) => (v2, Epi (Right, r)))
-		| E1if (e1, e2, e3) => 
+		| Fif (e1, e2, e3) => 
 			let
 				val (v1,r1) = map1 unbool (eval e1)
 				val (v, r2) = eval (if v1 then e2 else e3)	
 			in
 				(v, Epi(Right, Etuple (r1,r2)))
 			end
-		| E1let (e1,(x,e2)) => 
+		| Flet (e1,(x,e2)) => 
 			let 
 				val (v1,r1) = eval e1
 				val (v2,r2) = evalBranch (v1,Evar x) (x,e2)
 			in
 				(v2, Elet (r1, (x,r2)))
 			end
-		| E1binop (bo,e1,e2) => 
+		| Fbinop (bo,e1,e2) => 
 			let
 				val (v1,r1) = eval e1
 				val (v2,r2) = eval e2
 			in
 				(unconvertPrim (P.evalPrim (bo, convertPrim v1, convertPrim v2)), Epi(Right, Etuple (r1,r2)))
 			end
-		| E1error _ => raise Stuck
-		| E1next e => (Vunit, trace2 env e)
-		| E1hold e => (case eval e of (v,r) => (Vunit, Epi(Right, Etuple (r, Eint (unint v)))))
+		| Ferror _ => raise Stuck
 	end
+  | eval1 env (E1next e) = (Vunit, trace2 env e)
+  | eval1 env (E1hold e) = (case eval1 env e of (v,r) => (Vunit, Epi(Right, Etuple (r, Eint (unint v)))))
 	
-and trace2 env exp = 
+and trace2 env (E2 exp) = 
 	let
 		val trace = trace2 env
 	in
 		case exp of 
-		  E2var v => Evar v
-		| E2unit => Eunit
-		| E2int i => Eint i
-		| E2bool b => Ebool b
-		| E2tuple (e1, e2) => Etuple (trace e1, trace e2)
-		| E2pi (side, e) => Epi (side, trace e)
-		| E2if (e1, e2, e3) => Eif (trace e1, trace e2, trace e3)
-		| E2let (e1,(x,e2)) => Elet (trace e1, (x, trace e2))
-		| E2binop (bo,e1,e2) => Ebinop (bo, trace e1, trace e2)
-		| E2error _ => Eerror
-		| E2prev e => (
-			case eval1 env e of
-			  (Vunit, r) => r
-			| _ => raise Stuck)
+		  Fvar v => Evar v
+		| Funit => Eunit
+		| Fint i => Eint i
+		| Fbool b => Ebool b
+		| Ftuple (e1, e2) => Etuple (trace e1, trace e2)
+		| Fpi (side, e) => Epi (side, trace e)
+		| Fif (e1, e2, e3) => Eif (trace e1, trace e2, trace e3)
+		| Flet (e1,(x,e2)) => Elet (trace e1, (x, trace e2))
+		| Fbinop (bo,e1,e2) => Ebinop (bo, trace e1, trace e2)
+		| Ferror _ => Eerror
 	end
+  | trace2 env (E2prev e) = (case eval1 env e of (Vunit, r) => r | _ => raise Stuck)
 
 fun eval2 env exp = 
 	let
