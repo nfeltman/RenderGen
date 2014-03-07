@@ -98,22 +98,6 @@ fun stageSplit1 gamma (E1 exp) =
 					(l, Eapp (bound1, Etuple [bound2, Epi(2, Evar l)]))
 				)
 			end *)
-	(*	| Fcall (f, e) => 
-			let
-				val (link,splitBind) = splitSubs ()
-				val (c,tb,bound,_) = splitBind e 0
-				val Func1 (_,boundary,t2) = lookup gamma f
-			in
-				(
-					bindProj c (fn (argVal,argPre) =>
-						bindProj (Eapp (Evar f, argVal)) (fn (resVal,resBoun) => 
-							Etuple [resVal, Etuple [argPre,resBoun]]
-					)), 
-					Tprod[tb, boundary],
-					(link, Eapp (Evar f, Etuple [bound, Epi(1, Evar link)])),
-					t2
-				)
-			end *)
 		| Funit => (Etuple [Eunit, Eunit], Tprod [], (dummy (), Eunit), T1 TFunit)
 		| Fint i => (Etuple [Eint i, Eunit], Tprod [], (dummy (), Eunit), T1 TFint)
 		| Fbool b => (Etuple [Ebool b, Eunit], Tprod [], (dummy (), Eunit), T1 TFbool)
@@ -275,7 +259,6 @@ and stageSplit2 gamma (E2 exp) =
 		  Fvar v => (Eunit, Tprod [], (dummy (), Evar v), unval2 (lookup gamma v))
 	(*	| Flam (t,(x,e)) => mapbr (fn r => Elam (Tgap,(x,r))) (split e)
 		| Fapp e12 => splitBin e12 Eapp *)
-	(*	| Fcall (f, e) => mapbr (fn r => Eapp (Evar f, r)) (split e) *)
 		| Funit => (Eunit, Tprod [], (dummy (), Eunit), T2 TFunit)
 		| Fint i => (Eunit, Tprod [], (dummy (), Eint i), T2 TFint)
 		| Fbool b => (Eunit, Tprod [], (dummy (), Ebool b), T2 TFbool)
@@ -328,26 +311,4 @@ and stageSplit2 gamma (E2 exp) =
 			in
 				(Epi (1, c),tb,lr, Typecheck12.unfut t)
 			end
-(*
-fun splitProg prog = 
-	let
-		fun splitFunc _ [] = (Eunit, Eunit)
-		  | splitFunc g (FuncDec1(f,t1,t2,v,e) :: rest) = 
-			let
-				val (c,boundary,(l,r),_) = stageSplit1 (extendContext g v (Val1 t1)) e
-				val (rest1, rest2) = splitFunc (extendContext g f (Func1 (t1,boundary,t2))) rest
-				val firstFunc = bind (Elam (firstImage t1,(v,c))) (f,rest1)
-				val (x,pi) = freshPi ()
-				val secondFunc = bind (
-							Elam (Tprod [secondImage t1, boundary], (x, 
-								bind (pi 0) (v, 
-								bind (pi 1) (l, r)))
-							)) (f,rest2)
-			in
-				(firstFunc, secondFunc)
-			end
-	in
-		splitFunc empty prog
-	end
-*)	
 end
