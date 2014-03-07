@@ -1,9 +1,12 @@
 % core conventions and language names
 \newcommand {\bbone} {\mathbbm 1}
 \newcommand {\bbtwo} {\mathbbm 2}
-\newcommand {\corelang} {$\mathrm{L}^{\bbone\bbtwo}$}
-\newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
-\newcommand {\coremono} {L}
+\newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
+\newcommand {\ellResid} {$\mathrm{L^R}$}
+\newcommand {\ellTarget} {$\mathrm{L^T}$}
+\newcommand {\lamStaged} {$\lambda^{\bbone\bbtwo}$}
+\newcommand {\lamResid} {$\mathrm{\lambda^R}$}
+\newcommand {\lamTarget} {$\mathrm{\lambda^T}$}
 \newcommand {\mono} {$\lambda$}
 \newcommand {\rmunit} {{\rm unit}}
 \newcommand {\rmbool} {{\rm bool}}
@@ -15,6 +18,8 @@
 \newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
 \newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
 \newcommand {\expr} {\langle\mathit{exp}\rangle}
+\newcommand {\brancho} {\langle\bbone\text{-}\mathit{brn}\rangle}
+\newcommand {\brancht} {\langle\bbtwo\text{-}\mathit{brn}\rangle}
 \newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
 \newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
 \newcommand {\val} {\langle\mathit{val}\rangle}
@@ -49,6 +54,7 @@
 \newcommand {\valnext} {{\bf next}}
 \newcommand {\vallam} [2] {{\bf \lambda}{#1}.{#2}}
 \newcommand {\valdum} {{\bf dummy}}
+\newcommand {\projbind} [1] {\letin{l_{#1}}{\pi_{#1} l}{r_{#1}}}
 
 %judgements
 \newcommand {\typesone} [3] [\Gamma] { {#1} \Vdash {#2}:{#3}}
