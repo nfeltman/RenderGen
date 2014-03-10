@@ -52,18 +52,20 @@ fun freshPi () =
 fun splitSubsBase split () = 
 	let
 		val (l,pi) = freshPi ()
-		fun mapThird f (a,b,c, d) = (a, b, f c, d)
+		fun mapThird f (a,b,c) = (a, b, f c)
 		fun splitBind e i = mapThird (bind (pi i)) (split e)
 	in
 		(l, splitBind)
 	end
 
 fun chain (e1,e2) = Epi (1, Etuple [e1,e2])
-	
+
+datatype splitResult = NoPrec1 of expr * expr | WithPrec1 of expr * ty * (var * expr)
+
 (* assume here that the expression already type-checks *)
-fun stageSplit1 gamma (E1 exp) = 
+fun stageSplit1 (E1 exp) = 
 	let
-		val split = stageSplit1 gamma
+		fun split x = case stageSplit1 x of WithPrec1 r => r
 		val splitSubs = splitSubsBase split
 		fun bindProj e f = 
 			let
@@ -75,7 +77,7 @@ fun stageSplit1 gamma (E1 exp) =
 		fun bindMap e f g = bindProj e (fn (e1,e2) => Etuple[f e1, g e2])
 	in
 		case exp of 
-		  Fvar v => (Etuple [Evar v, Eunit], Tprod [], (dummy (), Evar v), unval1 (lookup gamma v))
+		  Fvar v => WithPrec1 (Etuple [Evar v, Eunit], Tprod [], (dummy (), Evar v))
 	(*	| E2lam (t,(x,e)) => 
 			let
 				val (c,lr) = split e
@@ -98,47 +100,44 @@ fun stageSplit1 gamma (E1 exp) =
 					(l, Eapp (bound1, Etuple [bound2, Epi(2, Evar l)]))
 				)
 			end *)
-		| Funit => (Etuple [Eunit, Eunit], Tprod [], (dummy (), Eunit), T1 TFunit)
-		| Fint i => (Etuple [Eint i, Eunit], Tprod [], (dummy (), Eunit), T1 TFint)
-		| Fbool b => (Etuple [Ebool b, Eunit], Tprod [], (dummy (), Eunit), T1 TFbool)
+		| Funit => WithPrec1 (Etuple [Eunit, Eunit], Tprod [], (dummy (), Eunit))
+		| Fint i => WithPrec1 (Etuple [Eint i, Eunit], Tprod [], (dummy (), Eunit))
+		| Fbool b => WithPrec1 (Etuple [Ebool b, Eunit], Tprod [], (dummy (), Eunit))
 		| Ftuple (e1, e2) => 
 			let
 				val (link, splitBind) = splitSubs ()
-				val (c1, tb1, bound1, t1) = splitBind e1 0
-				val (c2, tb2, bound2, t2) = splitBind e2 1
+				val (c1, tb1, bound1) = splitBind e1 0
+				val (c2, tb2, bound2) = splitBind e2 1
 			in
-				(
+				WithPrec1 (
 					bindProj c1 (fn (val1,pre1) =>
 						bindProj c2 (fn (val2,pre2) =>
 							Etuple [Etuple[val1,val2], Etuple[pre1,pre2]]
 					)), 
 					Tprod[tb1,tb2], 
-					(link, Etuple [bound1, bound2]),
-					T1 (TFprod(t1,t2))
+					(link, Etuple [bound1, bound2])
 				)
 			end
 		| Fpi (side, e) => 
 			let
-				val (c, tb, lr, T1 t) = split e
+				val (c, tb, lr) = split e
 				fun proj x = Epi (case side of Left => 0 | Right => 1, x)
 			in
-				(
+				WithPrec1 (
 					bindMap c proj id,
 					tb,
-					mapSnd proj lr,
-					projLR side (Typecheck12.unprod t)
+					mapSnd proj lr
 				)
 			end
 	(*	| Finj (side, otherT, e) => 
 			let
-				val (c, tb, lr, t) = split e
+				val (c, tb, lr) = split e
 				fun inj t x = Einj (side, t, x)
 			in
 				(
 					bindMap c (inj (firstImage otherT)) id,
 					tb,
-					mapSnd (inj (secondImage otherT)) lr,
-					T1sum (injLR side t otherT)
+					mapSnd (inj (secondImage otherT)) lr
 				)
 			end
 		| Fcase (e,(x1,e1),(x2,e2)) =>
@@ -173,11 +172,11 @@ fun stageSplit1 gamma (E1 exp) =
 		| Fif (e1, e2, e3) => 
 			let
 				val (link, pi) = freshPi ()
-				val (c1, tb1, lr1, _) = split e1
-				val (c2, tb2, lr2, t) = split e2
-				val (c3, tb3, lr3, _) = split e3
+				val (c1, tb1, lr1) = split e1
+				val (c2, tb2, lr2) = split e2
+				val (c3, tb3, lr3) = split e3
 			in
-				(
+				WithPrec1 (
 					bindProj c1 (fn (val1,pre1) =>
 						Eif(val1, 
 							bindProj c2 (fn (val2,pre2) => Etuple[val2, Etuple[pre1,Einj(Left, tb3,pre2)]]),
@@ -185,130 +184,125 @@ fun stageSplit1 gamma (E1 exp) =
 						)
 					), 
 					Tprod[tb1,Tsum(tb2,tb3)], 
-					(link, chain (bind (pi 0) lr1, Ecase(pi 1,lr2,lr3))),
-					t
+					(link, chain (bind (pi 0) lr1, Ecase(pi 1,lr2,lr3)))
 				)
 			end
 		| Flet (e1, (x,e2)) => 
 			let
 				val (link, pi) = freshPi ()
-				val (c1, tb1, lr1, t1) = split e1
-				val (c2, tb2, lr2, t2) = stageSplit1 (extendContext gamma x (Val1 t1)) e2
+				val (c1, tb1, lr1) = split e1
+				val (c2, tb2, lr2) = split e2
 			in
-				(
+				WithPrec1 (
 					bindProj c1 (fn (val1,pre1) =>
 						bindProj (Elet (val1,(x,c2))) (fn (val2,pre2) =>
 							Etuple [val2, Etuple[pre1,pre2]]
 					)), 
 					Tprod[tb1,tb2], 
-					(link, bind (bind (pi 0) lr1) (x,bind (pi 1) lr2)),
-					t2
+					(link, bind (bind (pi 0) lr1) (x,bind (pi 1) lr2))
 				)
 			end
 		| Fbinop (bo,e1,e2) =>
-			(
+			WithPrec1 (
 				Etuple[Ebinop(bo, Epi(0, #1 (split e1)), Epi(0, #1 (split e2))), Etuple[]],
 				Tprod[], 
-				(dummy (), Etuple[]),
-				#3 (Prim1.getTypes bo)
+				(dummy (), Etuple[])
 			)
 		| Ferror t => 
 			let
 				val first = firstImage t
 				val second = secondImage t
 			in
-				(Eerror (Tprod [first, Tprod[]]), Tprod[], (dummy (), Eerror second), t)
+				WithPrec1 (Eerror (Tprod [first, Tprod[]]), Tprod[], (dummy (), Eerror second))
 			end
 	end
-  | stageSplit1 gamma (E1next e) =
+  | stageSplit1 (E1next e) =
 		let
-			val (p, tb, lr, t) = stageSplit2 gamma e
+			val (p, tb, lr) = stageSplit2 e
 		in
-			(Etuple [Eunit, p],tb,lr, T1fut t)
+			WithPrec1 (Etuple [Eunit, p],tb,lr)
 		end
-  | stageSplit1 gamma (E1hold e) =
+  | stageSplit1 (E1hold e) =
 		let
 			val (link, pi) = freshPi ()
-			val (c, tb, lr, _) = stageSplit1 gamma e
+			val WithPrec1 (c, tb, lr) = stageSplit1 e
 		in
-			(
+			WithPrec1 (
 				Etuple [Eunit,c], 
 				Tprod [Tint,tb], 
-				(link, chain (bind (pi 1) lr, pi 0)), 
-				T1fut (T2 TFint)
+				(link, chain (bind (pi 1) lr, pi 0))
 			)
 		end
 	
-and stageSplit2 gamma (E2 exp) = 
+and stageSplit2 (E2 exp) = 
 	let
-		val split = stageSplit2 gamma
+		val split = stageSplit2
 		fun splitBr (v,e) = (v, split e)
 		val splitSubs = splitSubsBase split
 		fun splitBin (e1, e2) operation = 
 			let
 				val (l,splitBind) = splitSubs ()
-				val (p1,tb1,bound1,t1) = splitBind e1 0
-				val (p2,tb2,bound2,t2) = splitBind e2 1
-				val (r,t) = operation (bound1, t1, bound2, t2)
+				val (p1,tb1,bound1) = splitBind e1 0
+				val (p2,tb2,bound2) = splitBind e2 1
+				val r = operation (bound1, bound2)
 			in
-				(Etuple [p1,p2], Tprod [tb1,tb2], (l,r), t)
+				(Etuple [p1,p2], Tprod [tb1,tb2], (l,r))
 			end
-		fun mapbr f (c,b,(l,r),t) = case f (r,t) of (r2,t2) => (c,b,(l,r2),t2)
+		fun mapbr f (c,b,(l,r)) = (c,b,(l,f r))
 	in
 		case exp of 
-		  Fvar v => (Eunit, Tprod [], (dummy (), Evar v), unval2 (lookup gamma v))
+		  Fvar v => (Eunit, Tprod [], (dummy (), Evar v))
 	(*	| Flam (t,(x,e)) => mapbr (fn r => Elam (Tgap,(x,r))) (split e)
 		| Fapp e12 => splitBin e12 Eapp *)
-		| Funit => (Eunit, Tprod [], (dummy (), Eunit), T2 TFunit)
-		| Fint i => (Eunit, Tprod [], (dummy (), Eint i), T2 TFint)
-		| Fbool b => (Eunit, Tprod [], (dummy (), Ebool b), T2 TFbool)
-		| Ftuple e12 => splitBin e12 (fn (a,ta,b,tb) => (Etuple [a,b], T2 (TFprod(ta,tb))))
-		| Fpi (lr, e) => mapbr (fn (r, T2 t) => (Epi (case lr of Left => 0 | Right => 1, r), projLR lr (Typecheck12.unprod t))) (split e)
-	(*	| Finj (lr, ot, e) => mapbr (fn (r,t) => (Einj (lr, trType2 ot, r), T2sum (injLR lr t ot))) (split e)
+		| Funit => (Eunit, Tprod [], (dummy (), Eunit))
+		| Fint i => (Eunit, Tprod [], (dummy (), Eint i))
+		| Fbool b => (Eunit, Tprod [], (dummy (), Ebool b))
+		| Ftuple e12 => splitBin e12 (fn (a,b) => Etuple [a,b])
+		| Fpi (lr, e) => mapbr (fn r => Epi (case lr of Left => 0 | Right => 1, r)) (split e)
+	(*	| Finj (lr, ot, e) => mapbr (fn (r,t) => Einj (lr, trType2 ot, r)) (split e)
 		| Fcase (p,(x1,e1),(x2,e2)) => 
 			let
 				val (link, pi) = freshPi ()
-				val (pp, tbp, lrp, tp) = split e1
-				val (tLeft, tRight) = Typecheck12.unsum2 tp
-				val (p1, tb1, lr1, t1) = stageSplit2 (extendContext gamma x1 (Val2 tLeft))  e1
-				val (p2, tb2, lr2, _)  = stageSplit2 (extendContext gamma x2 (Val2 tRight)) e2
+				val (pp, tbp, lrp) = split p
+				val (p1, tb1, lr1) = split e1
+				val (p2, tb2, lr2)  = split e2
 			in
 				(Etuple [pp, p1, p2], Tprod [tbp, tb1, tb2], (link, 
 					Ecase (bind (pi 0) lrp, 
 						(x1,bind (pi 1) lr1), 
 						(x2,bind (pi 2) lr2))
-				),t1)
+				))
 			end *)
 		| Fif (e1, e2, e3) => 
 			let
 				val (link, pi) = freshPi ()
-				val (pp, tbp, lrp, _) = split e1
-				val (p1, tb1, lr1, t1) = split e2
-				val (p2, tb2, lr2, _)  = split e3
+				val (pp, tbp, lrp) = split e1
+				val (p1, tb1, lr1) = split e2
+				val (p2, tb2, lr2)  = split e3
 			in
 				(Etuple [pp, p1, p2], Tprod [tbp, tb1, tb2], (link, 
 					Eif (bind (pi 0) lrp, 
 						 bind (pi 1) lr1, 
 						 bind (pi 2) lr2)
-				),t1)
+				))
 			end
-		| Fbinop (bo,e1,e2) => splitBin (e1,e2) (fn (a,_,b,_) => (Ebinop(bo,a,b), #3 (Prim2.getTypes bo)))
+		| Fbinop (bo,e1,e2) => splitBin (e1,e2) (fn (a,b) => Ebinop(bo,a,b))
 		| Flet (e1, (x, e2)) => 
 			let
 				val (link, pi) = freshPi ()
-				val (p1, tb1, lr1, t1) = split e1
-				val (p2, tb2, lr2, t2) = stageSplit2 (extendContext gamma x (Val2 t1)) e2
+				val (p1, tb1, lr1) = split e1
+				val (p2, tb2, lr2) = stageSplit2 e2
 			in
 				(Etuple [p1, p2], Tprod [tb1, tb2], (link, 
 					Elet (bind (pi 0) lr1, (x,bind (pi 1) lr2))
-				),t2)
+				))
 			end
-		| Ferror t => (Eerror (Tprod []), Tprod[], (dummy (), Eerror (trType2 t)), t)
+		| Ferror t => (Eerror (Tprod []), Tprod[], (dummy (), Eerror (trType2 t)))
 	end
-  | stageSplit2 gamma (E2prev e) =
+  | stageSplit2 (E2prev e) =
 			let
-				val (c, tb, lr, t) = stageSplit1 gamma e
+				val WithPrec1 (c, tb, lr) = stageSplit1 e
 			in
-				(Epi (1, c),tb,lr, Typecheck12.unfut t)
+				(Epi (1, c),tb,lr)
 			end
 end
