@@ -45,7 +45,7 @@ fun testProgram verbose name p =
 		val (v1DiagC, v2DiagC) = (Comp.convertDiagValue v1Diag, Comp.convertDiagValue v2Diag)
 		
 		(* Splitting *)
-		val StageSplit.WithPrec1 (split1, _, (l,split2)) = StageSplit.stageSplit1 propegated
+		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
 		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate empty split1
 		val v2Split = PSFSemantics.evaluate (extendContext empty l pSplit) split2
 		

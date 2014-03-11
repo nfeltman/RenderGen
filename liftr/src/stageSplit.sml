@@ -23,8 +23,6 @@ fun secondImage (T1 TFint) = Tprod []
   | secondImage (T1 (TFprod (t1,t2))) = Tprod [firstImage t1, firstImage t2]
   | secondImage (T1fut t) = trType2 t
   
-(* map precomp / residual *)
-fun mapSnd f (a,b) = (a, f b)
 fun index Left = 0
   | index Right = 1
 
@@ -37,6 +35,12 @@ fun freshPi () =
 	in
 		(l, fn i => Epi (i, Evar l))
 	end
+fun freshPi2 () = 
+	let
+		val l = Variable.newvar "l"
+	in
+		(l, Epi (0, Evar l), Epi (1, Evar l))
+	end
 
 fun chain (e1,e2) = Epi (1, Etuple [e1,e2])
 
@@ -48,91 +52,91 @@ fun coerce1 (WithPrec1 r) = r
 (* assume here that the expression already type-checks *)
 fun stageSplit1 (E1 exp) = 
 	let
-		val (split, coerce) = (stageSplit1, coerce1)
+		val split = stageSplit1
 		fun bindProj e f = 
 			let
 				val (v,pi) = freshPi ()
 			in
 				bind e (v, f (pi 0, pi 1))
 			end
+		fun id x = x
+		fun app x f = f x
+		fun merge1 (NoPrec1 (e,r)) f g = NoPrec1 (f (app e, id), g r)
+		  | merge1 (WithPrec1 (c,t,(l,r))) f g = 
+				let
+					val (y, e, p) = freshPi2 ()
+				in
+					WithPrec1 (f (fn x => Elet(c, (y, x e)), fn x => Etuple[x, p]), t, (l, g r))
+				end
+		fun merge2 (NoPrec1 (e1, r1), res) f g = merge1 res (fn (bind2,wrap) => f (app e1,bind2,wrap)) (fn r2 => g (r1, r2))
+		  | merge2 (res, NoPrec1 (e2, r2)) f g = merge1 res (fn (bind1,wrap) => f (bind1,app e2,wrap)) (fn r1 => g (r1, r2))
+		  | merge2 (WithPrec1 (c1,t1,b1), WithPrec1 (c2,t2,b2)) f g = 
+				let
+					val (link, l1, l2) = freshPi2 ()
+					val (y1, e1, p1) = freshPi2 ()
+					val (y2, e2, p2) = freshPi2 ()
+				in
+					WithPrec1 (
+					f (
+						fn x => Elet(c1, (y1, x e1)), 
+						fn x => Elet(c2, (y2, x e2)), 
+						fn x => Etuple[x, Etuple[p1,p2]]
+					), Tprod[t1,t2], 
+					(link, g (bind l1 b1, bind l2 b2))
+				)
+				end
+		fun unpackPredicate (NoPrec1 (e,r)) = (app e, id, id, fn _ => r, Evar)
+		  | unpackPredicate (WithPrec1 (c,t,lr)) = 
+				let
+					val (y,e,p) = freshPi2 ()
+				in
+					(fn x => Elet(c,(y,x e)), 
+					fn x => Etuple[p,x], 
+					fn x => Tprod[t,x], 
+					fn v => Elet(Epi(0,Evar v),lr), 
+					fn v => Epi(1,Evar v))
+				end
+		  
+		fun makeTup (a,b) = Etuple [a,b]
+		fun simpleMerge2 e12 f g = merge2 e12 (fn (bind1, bind2, wrap) => bind1 (fn e1 => bind2 (fn e2 => wrap(f (e1,e2))))) g
 	in
 		case exp of 
 		  Fvar v => NoPrec1 (Evar v, Evar v)
 		| Funit => NoPrec1 (Eunit, Eunit)
 		| Fint i => NoPrec1 (Eint i, Eunit)
 		| Fbool b => NoPrec1 (Ebool b, Eunit)
-		| Ftuple (e1, e2) => 
-			let
-				val (link, pi) = freshPi ()
-				val (c1, tb1, lr1) = coerce (split e1)
-				val (c2, tb2, lr2) = coerce (split e2)
-			in
-				WithPrec1 (
-					bindProj c1 (fn (val1,pre1) =>
-						bindProj c2 (fn (val2,pre2) =>
-							Etuple [Etuple[val1,val2], Etuple[pre1,pre2]]
-					)), 
-					Tprod[tb1,tb2], 
-					(link, Etuple [bind (pi 0) lr1, bind (pi 1) lr2])
-				)
-			end
+		| Ftuple (e1, e2) => simpleMerge2 (split e1, split e2) makeTup makeTup
 		| Fpi (side, e) => 
 			let
-				val (c, tb, lr) = coerce (split e)
 				fun proj x = Epi (index side, x)
 			in
-				WithPrec1 (
-					bindProj c (fn (e1,e2) => Etuple[proj e1, e2]), 
-					tb,
-					mapSnd proj lr
-				)
+				merge1 (split e) (fn (bind,wrap) => bind (wrap o proj)) proj
 			end
 		| Fif (e1, e2, e3) => 
 			let
-				val (link, pi) = freshPi ()
-				val (c1, tb1, lr1) = coerce (split e1)
-				val (c2, tb2, lr2) = coerce (split e2)
-				val (c3, tb3, lr3) = coerce (split e3)
+				val link = Variable.newvar "l"
+				val (c2, tb2, lr2) = coerce1 (split e2)
+				val (c3, tb3, lr3) = coerce1 (split e3)
+				val (bind1, addPrec, addTy, predResi, resiPred) = unpackPredicate (split e1)
 			in
 				WithPrec1 (
-					bindProj c1 (fn (val1,pre1) =>
+					bind1 (fn val1 =>
 						Eif(val1, 
-							bindProj c2 (fn (val2,pre2) => Etuple[val2, Etuple[pre1,Einj(Left, tb3,pre2)]]),
-							bindProj c3 (fn (val3,pre3) => Etuple[val3, Etuple[pre1,Einj(Right,tb2,pre3)]])
+							bindProj c2 (fn (val2,pre2) => Etuple[val2, addPrec(Einj(Left, tb3,pre2))]),
+							bindProj c3 (fn (val3,pre3) => Etuple[val3, addPrec(Einj(Right,tb2,pre3))])
 						)
 					), 
-					Tprod[tb1,Tsum(tb2,tb3)], 
-					(link, chain (bind (pi 0) lr1, Ecase(pi 1,lr2,lr3)))
+					addTy(Tsum(tb2,tb3)), 
+					(link, chain (predResi link, Ecase(resiPred link,lr2,lr3)))
 				)
 			end
 		| Flet (e1, (x,e2)) => 
-			let
-				val (link, pi) = freshPi ()
-				val (c1, tb1, lr1) = coerce (split e1)
-				val (c2, tb2, lr2) = coerce (split e2)
-			in
-				WithPrec1 (
-					bindProj c1 (fn (val1,pre1) =>
-						bindProj (Elet (val1,(x,c2))) (fn (val2,pre2) =>
-							Etuple [val2, Etuple[pre1,pre2]]
-					)), 
-					Tprod[tb1,tb2], 
-					(link, bind (bind (pi 0) lr1) (x,bind (pi 1) lr2))
-				)
-			end
+			merge2 (split e1, split e2) 
+				(fn (bind1, bind2, wrap) => bind1 (fn e1 => Elet (e1, (x, bind2 wrap))))
+				(fn (r1,r2) => Elet(r1,(x,r2)))
 		| Fbinop (bo,e1,e2) =>
-			WithPrec1 (
-				Etuple[Ebinop(bo, Epi(0, #1 (coerce (split e1))), Epi(0, #1 (coerce (split e2)))), Etuple[]],
-				Tprod[], 
-				(Variable.newvar "dummy", Etuple[])
-			)
-		| Ferror t => 
-			let
-				val first = firstImage t
-				val second = secondImage t
-			in
-				NoPrec1 (Eerror (first), Eerror second)
-			end
+			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => Epi(2,Etuple[r1,r2,Etuple[]]))
+		| Ferror t => NoPrec1 (Eerror (firstImage t), Eerror (secondImage t))
 	end
   | stageSplit1 (E1next e) =(
 		case stageSplit2 e of
@@ -141,13 +145,11 @@ fun stageSplit1 (E1 exp) =
   | stageSplit1 (E1hold e) =
 		let
 			val (link, pi) = freshPi ()
-			val (c, tb, lr) = coerce1 (stageSplit1 e)
 		in
-			WithPrec1 (
-				Etuple [Eunit,c], 
-				Tprod [Tint,tb], 
-				(link, chain (bind (pi 1) lr, pi 0))
-			)
+			case stageSplit1 e of
+			  NoPrec1 (i, r) => WithPrec1 (Etuple [Eunit,i], Tint, (link, chain (r, Evar link)))
+			| WithPrec1 (c, tb, lr) =>
+				WithPrec1 (Etuple [Eunit,c], Tprod [Tint,tb], (link, chain (bind (pi 1) lr, pi 0)))
 		end
 
 and stageSplit2 (E2 exp) = 
@@ -187,10 +189,10 @@ and stageSplit2 (E2 exp) =
 		| Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(x,b)))
 		| Ferror t => NoPrec2 (Eerror (trType2 t))
 	end
-  | stageSplit2 (E2prev e) =
-			let
-				val (c, tb, lr) = coerce1 (stageSplit1 e)
-			in
-				WithPrec2 (Epi (1, c),tb,lr)
-			end
+  | stageSplit2 (E2prev e) = (
+		case stageSplit1 e of
+		  NoPrec1 (Etuple [], r) => NoPrec2 r
+		| NoPrec1 (Evar _, r) => NoPrec2 r
+		| NoPrec1 (c,r) => WithPrec2 (chain (c,Eunit), Tprod [], (Variable.newvar "dummy", r))
+		| WithPrec1 (c, tb, lr) => WithPrec2 (Epi (1, c),tb,lr))
 end
