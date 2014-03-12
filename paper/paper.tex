@@ -5,6 +5,7 @@
 \usepackage{proof}
 \usepackage{amssymb}
 \usepackage{mathabx}
+\usepackage{float}
 \usepackage{cite}
 \usepackage{mathpartir}
 \usepackage[left=3cm,top=3cm,right=4cm,nohead,bottom=3cm]{geometry}
@@ -17,6 +18,8 @@
 \maketitle
 
 \input {grammars}
+\input {semantics}
+\input {splitting}
 
 \section{Introduction}
 
@@ -100,32 +103,6 @@ Typing at $\bbtwo$ & $\typestwo[\contextot]{\exprt}{\typet}$ \\ \hline
 
 We see that the typing judgements for both stages are each what one would expect for an unstaged language.  That is, there are introduction and elimination forms for base types and products at both stage $\bbone$ and stage $\bbtwo$.  Furthermore, these rules preserve stage.  For these reasons, we can think of the base type and product features as essentially being orthogonal to the staging features.  The terms $\next$ and $\prev$, which are the only terms that allow us to change stage, are respectively the introduction and elimination forms for $\fut$.
 
-\begin{figure}
-\caption{\ellStaged~Static Semantics}
-\label{fig:coreStatics}
-\begin{mathpar}
-\infertypesone [\rmunit] 	{\ty {()}\rmunit}						{\cdot} \and
-\infertypesone [int]			{\ty {i}{\rm int}}					{\cdot} \and
-\infertypesone [bool]			{\ty {b} \rmbool}						{\cdot} \and
-\infertypesone [hyp]			{\ty x A}								{x : A^\bbone \in \Gamma} \and
-\infertypestwo [\rmunit]		{\ty {()}{\rmunit}}					{\cdot} \and
-\infertypestwo [int]			{\ty {i}{\rm int}}					{\cdot} \and
-\infertypestwo [bool]			{\ty {b} \rmbool}						{\cdot} \and
-\infertypestwo [hyp]			{\ty x A}								{x : A^\bbtwo \in \Gamma} \and
-\infertypesone [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbone] {e_2} B} \and
-\infertypestwo [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbtwo] {e_2} B} \and
-\infertypesone [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \ty {e_2} B} \and
-\infertypesone [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
-\infertypesone [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
-\infertypestwo [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \typestwo {e_2} B} \and
-\infertypestwo [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
-\infertypestwo [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
-\infertypesone [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
-\infertypestwo [if]			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
-\infertypesone [\fut I]		{\ty {\next~e}{\fut A}}				{\typestwo e A} \and
-\infertypestwo [\fut E]		{\ty {\prev~e} A}						{\typesone e {\fut A}} \and
-\end{mathpar}
-\end{figure}
 
 \subsection{Erasure Dynamic Semantics}
 
@@ -168,63 +145,10 @@ then $\forall v\in \valt$ s.t. $\reduceone {[v/x]e}{u'}$, $u \simeq u'$
 
 As it turns out, this is not true! [Example forthcoming.]
 
-\begin{figure}
-\caption{\ellStaged~Erasure Dynamic Semantics}
-\label{fig:erasureSemantics}
-\begin{mathpar}
-\inferreduceone [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
-\inferreduceone [int]				{\red {i}{i}}								{\cdot} 											\and
-\inferreduceone [bool]			{\red {b}{b}}								{\cdot} 											\and
-\inferreduceone [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
-\inferreducetwo [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
-\inferreducetwo [int]				{\red {i}{i}}								{\cdot} 											\and
-\inferreducetwo [bool]			{\red {b}{b}}								{\cdot} 											\and
-\inferreducetwo [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
-\inferreduceone [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]} 							\and
-\inferreduceone [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
-\inferreduceone [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
-\inferreducetwo [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]}								\and
-\inferreducetwo [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
-\inferreducetwo [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
-\inferreduceone [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
-\inferreduceone [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
-\inferreducetwo [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
-\inferreducetwo [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
-\inferreduceone [\fut I]			{\red {\next~e}{\valnext~v}}				{\reducetwosub}									\and
-\inferreducetwo [\fut E]			{\red {\prev~e} v}						{\reduceone e {\valnext~v}} 
-\end{mathpar}
-\end{figure}
-
-\begin{figure}
-\caption{\ellStaged~Diagonal Semantics}
-\label{fig:refSemantics}
-\begin{mathpar}
-\inferRedsplitone [\rmunit]		{\red {()}{()}{()}}												{\cdot} 												\and
-\inferRedsplitone [int]			{\red {i}{i}{()}}													{\cdot} 												\and
-\inferRedsplitone [bool]			{\red {b}{b}{()}}													{\cdot} 												\and
-\inferRedsplitone [hyp]			{\red {[u,x]}{u}{x}}												{\cdot}													\and
-\inferSpeculation [\rmunit]		{\red {()}{()}}													{\cdot} 												\and
-\inferSpeculation [int]			{\red {i}{i}}														{\cdot} 												\and
-\inferSpeculation [bool]			{\red {b}{b}}														{\cdot} 												\and
-\inferSpeculation [hyp]			{\red {x}{x}}														{\cdot}													\and
-\inferRedsplitone [let]			{\red {\letin{x}{e_1}{e_2}}{u_2}{\letin {x}{r_1}{r_2}}}		{\sub [1] & \red{[[u_1,x]/x]e_2}{u_2}{r_2}} 		\and
-\inferSpeculation [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{r_1}{r_2}}}				{\sub [1] & \sub [2]}									\and
-\inferRedsplitone [\times I]		{\red {(e_1,e_2)}{\valprod{u_1}{u_2}}{\valprod{r_1}{r_2}}}	{\sub [1] & \sub [2]}									\and
-\inferRedsplitone [\times E_1]	{\red {\pi_1~e}{u_1}{\pi_1 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}}					\and
-\inferRedsplitone [\times E_2]	{\red {\pi_2~e}{u_2}{\pi_2 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}} 					\and
-\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
-\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
-\inferSpeculation [\times E_2]	{\red {\pi_2~e}{\pi_2 r}}										{\red {e}{r}} 											\and
-\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_2)}}					{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
-\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_3)}}					{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\and
-\inferSpeculation [if] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{r_1}{r_2}{r_3}}}		{\sub [1] & \sub [2] & \sub [3]}					\\
-\inferRedsplitone [\fut I]		{\red {\next~e}{()}{r}}											{\rstwosub}											\and
-\inferSpeculation [\fut E]		{\red {\prev~e}{r}}												{\rsone {e}{()}{r}}
-\end{mathpar}
-\end{figure}
 
 
-\subsection{Splitting}
+
+\section{The Stage-Splitting Transformation}
 
 We now cover splitting, the process by which mixed code is teased apart into two individual chunks of code, one for each stage.  To begin, we first introduce the target lagnuage (for both stage), \ellTarget.   The grammar for \ellTarget~is given in figure \ref{fig:baseSyntax}.  We see that \ellTarget~is (as one would hope) a traditional single-stage language, with all the same basetypes as \ellStaged, in addition to products, if expressions, and full sums (injections and case expressions).  The presence of this last feature is a bit curious, since \ellStaged~did not support full sums.  The necessity for sums should become apparent in time.  The static and dynamic semantics of \ellTarget~are not given, but should be obvious.  They are given by the judgements:
 
@@ -254,93 +178,7 @@ Term Splitting at $\bbtwo$& $\splittwo{\exprt}{\typet}{\expr,\var.\expr}$ \\  \h
 
 
 
-\begin{figure*}
-\caption{Type Splitting}
-\label{fig:typeSplit}
-\begin{mathpar}
-\infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
-\infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
-\infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
-\infer [\times\tsplito]
-	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
-	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
-\infer [\fut\tsplito]
-	{\fut~A \tsplito [{\rm unit}, A']}
-	{A \tsplits A'} \and
-\end{mathpar}
-\end{figure*}
 
-\begin{figure*}
-\caption{Value Splitting}
-\label{fig:valSplit}
-\begin{mathpar}
-\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
-\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
-\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
-\infer [\times\vsplito]	
-	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
-	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
-\infer [\fut\vsplito]
-	{\valnext~v \vsplito [(),v']}
-	{v \vsplits v'} 
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Context Splitting}
-\label{fig:contSplit}
-\begin{mathpar}
-\infer {\emptyC \csplit [\emptyC~;~\emptyC]}{\cdot} \and
-\infer {\Gamma, v : A^\bbone \csplit [\Gamma_1,v:A_1; \Gamma_2,v:A_2]}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplito [A_1, A_2]} \and
-\infer {\Gamma, v : A^\bbtwo \csplit [\Gamma_1; \Gamma_2,v:A']}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplits A'} 
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Term Splitting}
-\label{fig:termSplit}
-\begin{mathpar}
-\infersplitone [unit]			{\spl {()}{\rmunit}{((),()),\_.()}}															{\cdot} \and
-\infersplittwo [unit]			{\spl {()}{\rmunit}{(),\_.()}}																{\cdot} \and
-\infersplitone [int]			{\spl {i}{\rm int}{(i,()),\_.()}}															{\cdot} \and
-\infersplittwo [int]			{\spl {i}{\rm int}{(),\_.i}}																	{\cdot} \and
-\infersplitone [\times I] 	{\spl {(e_1,e_2)}{A\times B}
-									{ \begin{array}{l}
-									\left(
-										\letin{y_1}{c_1}{\letin{y_2}{c_2}{
-										((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}
-									\right), \\
-									l.(\projbind 1,\projbind 2)
-									\end{array}}}																				{\sub 1 A & \sub 2 B} \and
-\infersplittwo [\times I]	{\spl {(e_1,e_2)}{A\times B}{(p_1,p_2),l.(\projbind 1,\projbind 2)}}					{\sub 1 A & \sub 2 B} \and
-\infersplitone [\times E_1]	{\spl {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}}					{\sub {} {A\times B}} \and
-\infersplitone [\times E_2]	{\spl {\pi_2~e}{B}{\letin{y}{c}{(\pi_2(\pi_1 y),\pi_2 y)},l.\pi_2~r}}					{\sub {} {A\times B}} \and
-\infersplittwo [\times E_1]	{\spl {\pi_1~e}{A}{p,l.\pi_1~r}}															{\sub {} {A\times B}} \and
-\infersplittwo [\times E_2]	{\spl {\pi_2~e}{B}{p,l.\pi_2~r}}															{\sub {} {A\times B}} \and
-\infersplitone [hyp]			{\spl {v}{A}{(x,()),\_.()}}																	{x:A^\bbone \in \Gamma} \and
-\infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{x:A^\bbtwo \in \Gamma} \\
-\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
-								\begin{array}{l}
-									\left(\talllet{y_1}{c_1}{
-									\talllet{y_2}{(\letin{x}{\pi_1 y_1}{c_2})}{
-									(\pi_1 y_2, (\pi_2 y_1, \pi_2 y_2))}}\right), \\
-									l.\letin{x}{(\projbind 1)}{\projbind 2}
-								\end{array}}}																					{\sub 1 A & \sub [\Gamma,x:A^\bbone] 2 B} \and
-\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\projbind 1)}{\projbind 2}}}	{\sub 1 A & \sub [\Gamma,x:A^\bbtwo] 2 B} \and
-\infersplitone [\fut I]		{\spl {\next~e}{\fut A}{((),p),l.r}}														{\splittwosub {} A} \and
-\infersplittwo [\fut E]		{\spl {\prev~e}{A} {\pi_2~c,l.r}}															{\splitonesub {} {\fut A}} \and
-\infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
-								{\begin{array}{l}
-									\left(\talllet{z}{c_1}{\tallif {\pi_1 z}
-										{\letin{y}{c_2}{(\pi_1 y, (\pi_2 z, \inl(\pi_2 y)))}}
-										{\letin{y}{c_3}{(\pi_1 y, (\pi_2 z, \inr(\pi_2 y)))}}}
-									\right), \\
-									l.(\projbind 1;\caseof{\pi_2 l}{l_2.r_2}{l_3.r_3})
-								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
-\infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
-								{(p_1,p_2,p_3),l.\left(\tallif{(\projbind 1)}{(\projbind 2)}{(\projbind 3)}\right)}}	{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
-\end{mathpar}
-\end{figure*}
 
 \subsection {Splitting Theorems}
 
@@ -386,14 +224,36 @@ and $\reduce{[u/l]r}{w}$
 \end{tabular}
 \end{center}
 
+
+\section {Adding Full Sums and Functions}
+
+In this section, we consider adding two more features to our source language: sums and functions.  We will call this augmented language \lamStaged.  The grammar for \lamStaged is given in \ref{fig:lamStagedSyntax}.
+
+
+
+\section{Related Work in Stage Separation}
+
+Our starting language, $\lambda^{12}$, is essentially a two-stage version of $\lambda^\bigcirc$ from \cite{davies96}, but beefed up with products, sums, and fixed-points.  That work motivates $\lambda^\bigcirc$ as an image of linear temporal logic under the Curry-Howard correspondence, and it makes the argument that $\lambda^\bigcirc$ is a good model for binding time analysis.  Although $\lambda^\bigcirc$ was designed with partial evaluation in mind, it turns out to be a good model for pass separation as well.  In contrast, \cite{davies01} presents $\lambda^\Box$, which is based off of branching temporal logic.  As that work shows, $\lambda^\Box$ is a good system for program generation, although we find the closed-code requirement to be more restricting than we need.
+
+Pass seperation was introduced in \cite{jorring}.  They focused on motivating pass separation as a technique for compiler generation, and hinted at wider applicability.  Their approach was not mechanized or automated in any sense, and their examples were separated by hand.  We believe that out work represents the fulfillment of their prediction that ``the [pass separation] approach will elude full automation for some time."
+
+\cite{hannan94} also uses a pass separation technique for generating compiler/evaluator pairs from interpretters specified as term-rewrite systems.  This heavy restriction on the form of the input prevents generalization of their style of pass separation.  [I don't know enough about term-rewrite systems yet to be able to comment further.]  Their method, while amenable to mechanization, was not actually implemented.
+
+\cite{knoblock} represents the first attempt at fully automatic pass separation for code approaching general-purpose.  In particular, they implemented pass separation for a C-like shading language including basic arithmetic and if statements.  The main goal of their work, like ours, was to minimize recomputation. That said, their starting language was sufficiently restricted for recursive boundary types to be inexpressible.  Given that memory is at a premium in shading languages, so much of that work was also focused on minimizing the memory-footprint of the boundary type.
+
+\section{Appendix}
+
+\subsection {Equivalence of Diagonal Evaluation and Splitting (for \ellStaged)}
+
 We proceed by cases of the term splitting judgement.
 
 \begin{itemize}
+% INT, BOOL, UNIT
 \item {\bf Int.} Suppose that
 \begin{enumerate}
 \item $\splitone{i}{\rm int}{(i,()),\_.()}$
 \item $\rsone{i}{v}{q}$
-\item $\reducetwo{r}{w}$
+\item $\reducetwo{q}{w}$
 \end{enumerate}
 By inversion of reduction relations, we know
 \begin{enumerate}
@@ -404,10 +264,14 @@ By inversion of reduction relations, we know
 It is directly provable that,
 \begin{enumerate}
 \item $\reduce{(i,())}{\valprod{i}{()}}$
-\item $\reduce{[()/l]()}{()}$
+\item $\reduce{[()/\_]()}{()}$
 \end{enumerate}
 Which is what we need to show.
 
+\item {\bf Boolean.} Same as int.
+\item {\bf Unit.} Same as int.
+
+% TUPLE
 \item {\bf Tuple.} Suppose that
 \begin{enumerate}
 \item $\splitone {(e_1,e_2)}{A\times B}
@@ -441,7 +305,8 @@ It is now directly provable from the evaluation rules that
 \end{enumerate}
 Which is what we wanted to show.
 
-\item {\bf Projection.} Suppose that
+% PROJECTIONS
+\item {\bf Left Projection.} Suppose that
 \begin{enumerate}
 \item $\splitone {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}$
 \item $\rsone{\pi_1~e}{v}{q}$
@@ -466,16 +331,20 @@ From this, it can be directly proven that
 \end{enumerate}
 Which is what we wanted to show.
 
+\item {\bf Right Projection.} Same as left projection.
+
+% IF
 \item {\bf If.} Suppose that
 \begin{enumerate}
 \item $\splitone {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
 								{\begin{array}{l}
-									\left(\tallif {\pi_1c_1}
-										{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
-										{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
-									\right), \\
-									l.\left(\caseof{l}{l_2.r_2}{l_3.r_3}
-									\right)
+									\left(
+										\talllet{z}{c_1}{
+										\tallif {\pi_1 z}
+										{\letin{y}{c_2}{(\pi_1 y, (\pi_2 z, \inl(\pi_2 y)))}}
+										{\letin{y}{c_3}{(\pi_1 y, (\pi_2 z, \inr(\pi_2 y)))}}
+									}\right), \\
+									l.(\letin{l_1}{\pi_1 l}{r_1};\caseof{\pi_2 l}{l_2.r_2}{l_3.r_3})
 								\end{array}}$
 \item $\rsone{\ifthen {e_1}{e_2}{e_3}}{v}{q}$
 \item $\reducetwo{q}{w}$
@@ -484,16 +353,16 @@ By inversion of the splitting rule, we have
 \begin{enumerate}
 \item $\splitonesub 1 \rmbool$ and $\splitonesub 2 A$ and $\splitonesub 3 A$
 \end{enumerate}
-There are two rules for evaluation of an if.  We proceed by inverting the if-true and evaluation rules first:
+There are two rules for evaluation of an if.  We proceed by inverting the if-true evaluation rules first:
 \begin{enumerate}
 \item $q$ has the form $(q_1;q_2)$
-\item $\reducetwo{q_1}{w_1}$ and $\reducetwo{q_2}{w}$
 \item $\rsone{e_1}{\bf true}{q_1}$ and $\rsone{e_2}{v}{q_2}$
+\item $\reducetwo{q_1}{w_1}$ and $\reducetwo{q_2}{w}$
 \end{enumerate}
 We can now invoke the inductive hypothesis for the predicate to yield
 \begin{enumerate}
 \item $\reduce{c_1}{\valprod{\bf true}{u_1}}$
-\item $\reduce{[u_1/l_1]q_1}{w_1}$
+\item $\reduce{[u_1/l_1]r_1}{w_1}$
 \end{enumerate}
 We can also invoke the inductive hypothesis for the branch to yield
 \begin{enumerate}
@@ -503,119 +372,43 @@ We can also invoke the inductive hypothesis for the branch to yield
 From this, it can be directly proven that
 \begin{enumerate}
 \item $\reduce{
-		\left(\tallif {\pi_1c_1}
-			{\letin{y}{c_2}{(\pi_1 y, \inl(\pi_2 y))}}
-			{\letin{y}{c_3}{(\pi_1 y, \inr(\pi_2 y))}}
-		\right)}{\valprod{v}{\inl~u_2}}$
-\item $\reduce{[\inl~u_2/l](\caseof{l}{l_2.r_2}{l_3.r_3})}{w}$
+		\left(
+			\talllet{z}{c_1}{
+			\tallif {\pi_1 z}
+			{\letin{y}{c_2}{(\pi_1 y, (\pi_2 z, \inl(\pi_2 y)))}}
+			{\letin{y}{c_3}{(\pi_1 y, (\pi_2 z, \inr(\pi_2 y)))}}
+		}\right)}{\valprod{v}{\valprod{u_1}{\inl~u_2}}}$
+\item $\reduce{[\valprod{u_1}{\inl~u_2}/l](\letin{l_1}{\pi_1 l}{r_1};\caseof{\pi_2 l}{l_2.r_2}{l_3.r_3})}{w}$
 \end{enumerate}
 Everything works similarly for the if-false case.  Either way, we have what we want to show.
 
+% NEXT
+\item {\bf Next.} Suppose that
+\begin{enumerate}
+\item $\splitone{\next~e}{\fut A}{((),p),l.r}$
+\item $\rsone{\next~e}{v}{q}$
+\item $\reducetwo{q}{w}$
+\end{enumerate}
+By inversion of the splitting and reduction rules, we have
+\begin{enumerate}
+\item $\splittwo {e}{A}{p,l.r}$
+\item $v$ has the form $()$
+\item $\rstwo{e}{q}$
+\end{enumerate}
+We can now invoke the stage $\bbtwo$ part of the inductive hypothesis to yield,
+\begin{enumerate}
+\item $\reduce {p}{u}$
+\item $\reduce {[u/l]r}{w}$
+\end{enumerate}
+It can then be directly proven that,
+\begin{enumerate}
+\item $\reduce {((),p)}{((),u)}$
+\end{enumerate}
+Which (along with the previous line) is what we wanted to show.
+
 \end{itemize}
 
-\section {Adding Full Sums and Functions}
-
-In this section, we consider adding two more features to our source language: sums and functions.  We will call this augmented language \lamStaged.  The grammar for \lamStaged is given in \ref{fig:lamStagedSyntax}.
-
-\begin{figure*}
-\caption{Sum and Function Typing}
-\label{fig:advancedTypes}
-\begin{mathpar}
-\infertypesone [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbone] e B} 																\and
-\infertypesone [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
-\infertypestwo [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbtwo] e B} 																\and
-\infertypestwo [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
-\infertypesone [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
-\infertypesone [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\\
-\infertypestwo [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
-\infertypestwo [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\and
-\infertypesone [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbone]{e_2} C & \ty[\Gamma,x_3:A^\bbone]{e_3} C} 	\and
-\infertypestwo [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbtwo]{e_2} C & \ty[\Gamma,x_3:A^\bbtwo]{e_3} C} 	\and
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Sum and Function Erasure Evaluation}
-\label{fig:advancedTypes}
-\begin{mathpar}
-\inferreduceone [\to I]	{\red {\lam{x}{A}{e}} {\vallam{x}{M}}}			{\cdot} 																		\and
-\inferreduceone [\to E]	{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
-\inferreducetwo [\to I]	{\red {\lam{x}{A}{e}} {\vallam{x}{M}}}			{\cdot} 																		\and
-\inferreducetwo [\to E]	{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
-\inferreduceone [+ I_1]	{\red {\inl~e} {\valinl~v}}						{\sub} 																			\and
-\inferreduceone [+ I_2]	{\red {\inr~e} {\valinr~v}}						{\sub} 																			\\
-\inferreducetwo [+ I_1]	{\red {\inl~e} {\valinl~v}}						{\sub} 																			\and
-\inferreducetwo [+ I_2]	{\red {\inr~e} {\valinr~v}}						{\sub} 																			\\
-\inferreduceone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinl~v} & \red {[v/x_2]e_2}{v'}} 							\and
-\inferreduceone [+ E_2]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
-\inferreducetwo [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinl~v} & \red {[v/x_2]e_2}{v'}} 							\and
-\inferreducetwo [+ E_2]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Sum and Function Diagonal Evaluation}
-\label{fig:advancedTypes}
-\begin{mathpar}
-\inferRedsplitone [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{e}}{()}}			{\sub} 																	\and
-\inferSpeculation [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{r}}}				{\sub} 																	\and
-\inferRedsplitone [\to E]	{\red {e_1~e_2}{v'}{(r_1;\letin{x}{r_2}{r'})}}		{\red {e_1}{\vallam{x}{M}}{r_1} 
-																							& \sub [2] & \red{[[e,x]/x]M}{v'}{r'}} 							\and
-\inferSpeculation [\to E]	{\red {e_1~e_2}{r_1~r_2}}							{\sub [1] & \sub[2]}													\and
-\inferRedsplitone [+ I_1]	{\red {\inl~e} {\valinl~v}{r}}						{\sub} 																	\and
-\inferSpeculation [+ I_1]	{\red {\inl~e} {\valinl~r}}							{\sub} 																	\\
-\inferRedsplitone [+ I_2]	{\red {\inr~e} {\valinr~v}{r}}						{\sub} 																	\and
-\inferSpeculation [+ I_2]	{\red {\inr~e} {\valinr~r}}							{\sub} 																	\\
-\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
-								{\letin{x_2}{r_1}{r_2}}}								{\red {e_1}{\valinl~v}{r_1} & \red {[[v,x_2]/x_2]e_2}{v'}{r_2}} \and
-\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
-								{\letin{x_3}{r_1}{r_3}}}								{\red {e_1}{\valinr~v}{r_1} & \red {[[v,x_3]/x_3]e_3}{v'}{r_3}} \and
-\inferSpeculation [+ E]		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
-								{\caseof{r_1}{x_2.r_2}{x_3.r_3}}}				{\sub [1] & \sub [2] & \sub[3]}					 						\and
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Sum and Function Splitting}
-\label{fig:advancedTypes}
-\begin{mathpar}
-\infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\vallam{x}{c},
-							\_.(\vallam{y}{\letin{x}{\pi_1 y}{\letin{l}{\pi_2 y}{r}}})}}		{\sub [\Gamma,x:A^\bbone] {} B} 						\and
-\infersplittwo [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{p,l.(\vallam{x}{M})}}				{\sub [\Gamma,x:A^\bbtwo] {} B} 						\and
-\infersplitone [\to E]	{\spl {e_1~e_2}{B}{\ldots}}											{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplittwo [\to E]	{\spl {e_1~e_2}{B}{(p_1,p_2),l.(\projbind 1)(\projbind 2)}}		{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplitone [+ I_1]	{\spl {\inl~e}{A+B}{\letin{y}{c}{(\inl(\pi_1y),\pi_2 y)},l.r}}	{\sub {} A}												\and
-\infersplitone [+ I_2]	{\spl {\inr~e}{A+B}{\letin{y}{c}{(\inr(\pi_1y),\pi_2 y)},l.r}}	{\sub {} A}												\and
-\infersplittwo [+ I_1]	{\spl {\inl~e}{A+B}{l.\inl~r}}										{\sub {} A}												\and
-\infersplittwo [+ I_1]	{\spl {\inr~e}{A+B}{l.\inr~r}}										{\sub {} A}												\and
-\infersplitone [+ E]		{\spl {\left(\tallcase{e_1}{x_2.e_2}{x_3.e_3}\right)}{C}
-								{\begin{array}{l}\left(
-								\talllet{y_1}{c_1}{
-									\tallcase{\pi_1y_1}
-									{x_2.\letin{y_2}{c_2}{(\pi_1y_2,(\pi_2y_1,\inl(\pi_2y_2)))}}
-									{x_3.\letin{y_3}{c_3}{(\pi_1y_3,(\pi_2y_1,\inr(\pi_2y_3)))}}
-								}\right), \\
-								l.\left(\talllet{z}{(\projbind 1)}{
-									\tallcase{\pi_2 l}
-									{l_2.\letin{x_2}{z}{r_2}}
-									{l_3.\letin{x_3}{z}{r_3}}}\right)\end{array}}}				{\sub 1 {A+B} & \sub [\Gamma,x_2:A^\bbone] 2 C 
-																									& \sub [\Gamma,x_3:A^\bbone] 3 C} 						\and
-\infersplittwo [+ E]		{\spl {\left(\tallcase{e_1}{x_2.e_2}{x_3.e_3}\right)}{C}
-								{(p_1,p_2,p_3), l.\left(\tallcase{(\projbind 1)}
-									{x_2.\projbind 2}{x_3.\projbind 3}\right)}}				{\sub 1 {A+B} & \sub [\Gamma,x_2:A^\bbtwo] 2 C 
-																									& \sub [\Gamma,x_3:A^\bbtwo] 3 C} 						\and
-\end{mathpar}
-\end{figure*}
-
-\section{Related Work in Stage Separation}
-
-Our starting language, $\lambda^{12}$, is essentially a two-stage version of $\lambda^\bigcirc$ from \cite{davies96}, but beefed up with products, sums, and fixed-points.  That work motivates $\lambda^\bigcirc$ as an image of linear temporal logic under the Curry-Howard correspondence, and it makes the argument that $\lambda^\bigcirc$ is a good model for binding time analysis.  Although $\lambda^\bigcirc$ was designed with partial evaluation in mind, it turns out to be a good model for pass separation as well.  In contrast, \cite{davies01} presents $\lambda^\Box$, which is based off of branching temporal logic.  As that work shows, $\lambda^\Box$ is a good system for program generation, although we find the closed-code requirement to be more restricting than we need.
-
-Pass seperation was introduced in \cite{jorring}.  They focused on motivating pass separation as a technique for compiler generation, and hinted at wider applicability.  Their approach was not mechanized or automated in any sense, and their examples were separated by hand.  We believe that out work represents the fulfillment of their prediction that ``the [pass separation] approach will elude full automation for some time."
-
-\cite{hannan94} also uses a pass separation technique for generating compiler/evaluator pairs from interpretters specified as term-rewrite systems.  This heavy restriction on the form of the input prevents generalization of their style of pass separation.  [I don't know enough about term-rewrite systems yet to be able to comment further.]  Their method, while amenable to mechanization, was not actually implemented.
-
-\cite{knoblock} represents the first attempt at fully automatic pass separation for code approaching general-purpose.  In particular, they implemented pass separation for a C-like shading language including basic arithmetic and if statements.  The main goal of their work, like ours, was to minimize recomputation. That said, their starting language was sufficiently restricted for recursive boundary types to be inexpressible.  Given that memory is at a premium in shading languages, so much of that work was also focused on minimizing the memory-footprint of the boundary type.
+\subsection {Equivalence of Diagonal Evaluation and Splitting (extra \lamStaged~cases)}
 
 \bibliography{paper}
 \bibliographystyle{plain}

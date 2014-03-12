@@ -1,0 +1,140 @@
+
+\begin{figure}
+\caption{\ellStaged~Static Semantics}
+\label{fig:coreStatics}
+\begin{mathpar}
+\infertypesone [\rmunit] 	{\ty {()}\rmunit}						{\cdot} \and
+\infertypesone [int]			{\ty {i}{\rm int}}					{\cdot} \and
+\infertypesone [bool]			{\ty {b} \rmbool}						{\cdot} \and
+\infertypesone [hyp]			{\ty x A}								{x : A^\bbone \in \Gamma} \and
+\infertypestwo [\rmunit]		{\ty {()}{\rmunit}}					{\cdot} \and
+\infertypestwo [int]			{\ty {i}{\rm int}}					{\cdot} \and
+\infertypestwo [bool]			{\ty {b} \rmbool}						{\cdot} \and
+\infertypestwo [hyp]			{\ty x A}								{x : A^\bbtwo \in \Gamma} \and
+\infertypesone [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbone] {e_2} B} \and
+\infertypestwo [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbtwo] {e_2} B} \and
+\infertypesone [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \ty {e_2} B} \and
+\infertypesone [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
+\infertypesone [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
+\infertypestwo [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \typestwo {e_2} B} \and
+\infertypestwo [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
+\infertypestwo [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
+\infertypesone [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
+\infertypestwo [if]			{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} \and
+\infertypesone [\fut I]		{\ty {\next~e}{\fut A}}				{\typestwo e A} \and
+\infertypestwo [\fut E]		{\ty {\prev~e} A}						{\typesone e {\fut A}} \and
+\end{mathpar}
+\end{figure}
+
+\begin{figure*}
+\caption{Sum and Function Typing}
+\label{fig:advancedTypes}
+\begin{mathpar}
+\infertypesone [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbone] e B} 																\and
+\infertypesone [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
+\infertypestwo [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbtwo] e B} 																\and
+\infertypestwo [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
+\infertypesone [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
+\infertypesone [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\\
+\infertypestwo [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
+\infertypestwo [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\and
+\infertypesone [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbone]{e_2} C & \ty[\Gamma,x_3:A^\bbone]{e_3} C} 	\and
+\infertypestwo [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbtwo]{e_2} C & \ty[\Gamma,x_3:A^\bbtwo]{e_3} C} 	\and
+\end{mathpar}
+\end{figure*}
+
+\begin{figure}
+\caption{\ellStaged~Erasure Dynamic Semantics}
+\label{fig:erasureSemantics}
+\begin{mathpar}
+\inferreduceone [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
+\inferreduceone [int]				{\red {i}{i}}								{\cdot} 											\and
+\inferreduceone [bool]			{\red {b}{b}}								{\cdot} 											\and
+\inferreduceone [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
+\inferreducetwo [\rmunit]		{\red {()}{()}}							{\cdot} 											\and
+\inferreducetwo [int]				{\red {i}{i}}								{\cdot} 											\and
+\inferreducetwo [bool]			{\red {b}{b}}								{\cdot} 											\and
+\inferreducetwo [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}		{\sub [1] & \red{[v_1/x]e_2}{v_2}} 				\and
+\inferreduceone [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]} 							\and
+\inferreduceone [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreduceone [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreducetwo [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}	{\sub [1] & \sub [2]}								\and
+\inferreducetwo [\times E_1]		{\red {\pi_1~e}{v_1}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreducetwo [\times E_2]		{\red {\pi_2~e}{v_2}}						{\red{e}{\valprod{v_1}{v_2}}} 					\and
+\inferreduceone [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
+\inferreduceone [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
+\inferreducetwo [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf true}  & \red{e_2}{v}} 			\and
+\inferreducetwo [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}		{\red{e_1}{\bf false} & \red{e_3}{v}}			\\
+\inferreduceone [\fut I]			{\red {\next~e}{\valnext~v}}				{\reducetwosub}									\and
+\inferreducetwo [\fut E]			{\red {\prev~e} v}						{\reduceone e {\valnext~v}} 
+\end{mathpar}
+\end{figure}
+
+\begin{figure*}
+\caption{Sum and Function Erasure Evaluation}
+\label{fig:advancedTypes}
+\begin{mathpar}
+\inferreduceone [\to I]	{\red {\lam{x}{A}{e}} {\vallam{x}{M}}}			{\cdot} 																		\and
+\inferreduceone [\to E]	{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
+\inferreducetwo [\to I]	{\red {\lam{x}{A}{e}} {\vallam{x}{M}}}			{\cdot} 																		\and
+\inferreducetwo [\to E]	{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
+\inferreduceone [+ I_1]	{\red {\inl~e} {\valinl~v}}						{\sub} 																			\and
+\inferreduceone [+ I_2]	{\red {\inr~e} {\valinr~v}}						{\sub} 																			\\
+\inferreducetwo [+ I_1]	{\red {\inl~e} {\valinl~v}}						{\sub} 																			\and
+\inferreducetwo [+ I_2]	{\red {\inr~e} {\valinr~v}}						{\sub} 																			\\
+\inferreduceone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinl~v} & \red {[v/x_2]e_2}{v'}} 							\and
+\inferreduceone [+ E_2]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
+\inferreducetwo [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinl~v} & \red {[v/x_2]e_2}{v'}} 							\and
+\inferreducetwo [+ E_2]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
+\end{mathpar}
+\end{figure*}
+
+\begin{figure}
+\caption{\ellStaged~Diagonal Semantics}
+\label{fig:refSemantics}
+\begin{mathpar}
+\inferRedsplitone [\rmunit]		{\red {()}{()}{()}}												{\cdot} 												\and
+\inferRedsplitone [int]			{\red {i}{i}{()}}													{\cdot} 												\and
+\inferRedsplitone [bool]			{\red {b}{b}{()}}													{\cdot} 												\and
+\inferRedsplitone [hyp]			{\red {[u,x]}{u}{x}}												{\cdot}													\and
+\inferSpeculation [\rmunit]		{\red {()}{()}}													{\cdot} 												\and
+\inferSpeculation [int]			{\red {i}{i}}														{\cdot} 												\and
+\inferSpeculation [bool]			{\red {b}{b}}														{\cdot} 												\and
+\inferSpeculation [hyp]			{\red {x}{x}}														{\cdot}													\and
+\inferRedsplitone [let]			{\red {\letin{x}{e_1}{e_2}}{u_2}{\letin {x}{r_1}{r_2}}}		{\sub [1] & \red{[[u_1,x]/x]e_2}{u_2}{r_2}} 		\and
+\inferSpeculation [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{r_1}{r_2}}}				{\sub [1] & \sub [2]}									\and
+\inferRedsplitone [\times I]		{\red {(e_1,e_2)}{\valprod{u_1}{u_2}}{\valprod{r_1}{r_2}}}	{\sub [1] & \sub [2]}									\and
+\inferRedsplitone [\times E_1]	{\red {\pi_1~e}{u_1}{\pi_1 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}}					\and
+\inferRedsplitone [\times E_2]	{\red {\pi_2~e}{u_2}{\pi_2 r}}									{\red {e}{\valprod{u_1}{u_2}}{r}} 					\and
+\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
+\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
+\inferSpeculation [\times E_2]	{\red {\pi_2~e}{\pi_2 r}}										{\red {e}{r}} 											\and
+\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_2)}}					{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
+\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_3)}}					{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\and
+\inferSpeculation [if] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{r_1}{r_2}{r_3}}}		{\sub [1] & \sub [2] & \sub [3]}					\\
+\inferRedsplitone [\fut I]		{\red {\next~e}{()}{r}}											{\rstwosub}											\and
+\inferSpeculation [\fut E]		{\red {\prev~e}{r}}												{\rsone {e}{()}{r}}
+\end{mathpar}
+\end{figure}
+
+\begin{figure*}
+\caption{Sum and Function Diagonal Evaluation}
+\label{fig:advancedTypes}
+\begin{mathpar}
+\inferRedsplitone [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{e}}{()}}			{\cdot} 																\and
+\inferSpeculation [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{r}}}				{\sub} 																	\and
+\inferRedsplitone [\to E]	{\red {e_1~e_2}{v'}{(r_1;\letin{x}{r_2}{r'})}}		{\red {e_1}{\vallam{x}{M}}{r_1} 
+																							& \sub [2] & \red{[[e,x]/x]M}{v'}{r'}} 							\and
+\inferSpeculation [\to E]	{\red {e_1~e_2}{r_1~r_2}}							{\sub [1] & \sub[2]}													\and
+\inferRedsplitone [+ I_1]	{\red {\inl~e} {\valinl~v}{r}}						{\sub} 																	\and
+\inferSpeculation [+ I_1]	{\red {\inl~e} {\valinl~r}}							{\sub} 																	\\
+\inferRedsplitone [+ I_2]	{\red {\inr~e} {\valinr~v}{r}}						{\sub} 																	\and
+\inferSpeculation [+ I_2]	{\red {\inr~e} {\valinr~r}}							{\sub} 																	\\
+\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
+								{\letin{x_2}{r_1}{r_2}}}								{\red {e_1}{\valinl~v}{r_1} & \red {[[v,x_2]/x_2]e_2}{v'}{r_2}} \and
+\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
+								{\letin{x_3}{r_1}{r_3}}}								{\red {e_1}{\valinr~v}{r_1} & \red {[[v,x_3]/x_3]e_3}{v'}{r_3}} \and
+\inferSpeculation [+ E]		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
+								{\caseof{r_1}{x_2.r_2}{x_3.r_3}}}				{\sub [1] & \sub [2] & \sub[3]}					 						\and
+\end{mathpar}
+\end{figure*}
