@@ -61,11 +61,17 @@ fun testProgram verbose name p =
 				then (emit "all pass!\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
-	(*
+	
 		print "\n\n";
+		printTerm (PrintPSF.convertStage1 propegated);
+		print "\n~~~~~~~~~~~\n";
+		printTerm (PrintPSF.convertPSF split1);
+		print "\n---\n";
+		print (Variable.toString l);
+		print ".";
 		printTerm (PrintPSF.convertPSF split2);
-		print "\n\n";
-	*)
+		print "\n\n====================\n\n";
+	
 		()
 	end
 
@@ -78,8 +84,8 @@ fun runtests () =
 		val _ = testProgram "twoTimesThree" twoTimesThree
 		val _ = testProgram "twoGtThree" twoGtThree
 		val _ = testProgram "letAll1" letAll1
-		val _ = testProgram "doubleBind" doubleBind
 		val _ = testProgram "let12" let12
+		val _ = testProgram "doubleBind" doubleBind
 		val _ = testProgram "if1" if1
 		val _ = testProgram "if2" if2
 	in

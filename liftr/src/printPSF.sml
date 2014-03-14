@@ -3,6 +3,7 @@ structure PrintPSF =
 struct
 
 open LangCommon
+open Prims
 
 datatype expr	= Eatom of string
 				| Elam of (string * expr)
@@ -15,7 +16,7 @@ datatype expr	= Eatom of string
 				| EprimApp of string * expr
 				| EbraceApp of string * expr
 
-structure S = LambdaPSF				
+structure S = LambdaPSF
 fun convertPSF e = 
 	let
 		fun convertBranch (x,e) = (Variable.toString x, convertPSF e)
@@ -38,6 +39,33 @@ fun convertPSF e =
 		| S.Eunroll e => EprimApp ("unroll", convert e)
 		| S.Eerror t => Eatom "error"
 	end
+
+structure S = SourceLang
+fun convertSource convert e = 
+	let
+		fun convertBranch (x,e) = (Variable.toString x, convert e)
+	in
+		case e of 
+		  S.Fvar v => Eatom (Variable.toString v)
+		| S.Fint i => Eatom (Int.toString i)
+		| S.Fbool b => Eatom (if b then "true" else "false")
+		| S.Funit => Etuple []
+		| S.Ftuple (e1,e2) => Etuple [convert e1, convert e2]
+		| S.Fpi (i, e) => EprimApp (case i of Left => "#1" | Right => "#2", convert e)
+		| S.Finj (i, _, e) => EprimApp (case i of Left => "inl" | Right => "inr", convert e)
+		| S.Fcase (e1,b2,b3) => Ecase (convert e1, convertBranch b2, convertBranch b3)
+		| S.Fif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)
+		| S.Flet (e, b) => Elet (convert e, convertBranch b)
+		| S.Fbinop (bo, e1, e2) => Ebinop (bo, convert e1, convert e2)
+		| S.Ferror _ => Eatom "error"
+	end
+	
+structure S = Lambda12
+fun convertStage1 (S.E1 e) = convertSource convertStage1 e
+  | convertStage1 (S.E1next e) = EbraceApp("next", convertStage2 e)
+  | convertStage1 (S.E1hold e) = EprimApp("holdInt", convertStage1 e)
+and convertStage2 (S.E2 e) = convertSource convertStage2 e
+  | convertStage2 (S.E2prev e) = EbraceApp("next", convertStage1 e)
 
 (*
 fun printTypeHelper (p : string -> unit) level ty = 
@@ -74,7 +102,7 @@ fun convertTerm e =
 		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^v2^" => "), S 2 e2, L (" | "^v3^" => "), S 2 e3])
 		| Eif (e1,e2,e3) => (2, [L "if ", S 2 e1, L " then ", S 2 e2, L " else ", S 2 e3])
 		| Elet (e1,(v,e2)) => (2, [L ("let "^v^" = "), S 2 e1, L " in ", S 2 e2])
-		| Ebinop (bo, e1, e2) => (1, [S 2 e1, L " op ", S 2 e2])
+		| Ebinop (bo, e1, e2) => (1, [S 2 e1, L (case bo of Iplus => "+"| Iminus => "-"| Itimes => "*"| Iless => "<"| Igreater => ">"| Iequal => "=="| Ilesseq => "<="| Igreatereq => ">="| Band => "and"| Bor=> "or"), S 2 e2])
 		| EprimApp (f, e) => (1, [L (f^" "), S 0 e])
 		| EbraceApp (f, e) => (1, [L (f^" "), L "{", S 2 e, L "}"])
 	end

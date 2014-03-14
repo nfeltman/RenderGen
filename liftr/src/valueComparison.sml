@@ -15,6 +15,9 @@ fun splitErasureValue1 v =
 		| E.V1 (VFtuple (v1,v2)) => 
 			(case (splitErasureValue1 v1, splitErasureValue1 v2) of 
 			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], Vtuple [w1,w2]))
+		| E.V1 (VFinj (side,v)) => 
+			(case splitErasureValue1 v of 
+			(u,w) => (Vinj (side,u), w))
 		| E.V1next v0 => (Vtuple[], splitErasureValue2 v0)
 
 and splitErasureValue2 v = 
@@ -23,6 +26,7 @@ and splitErasureValue2 v =
 		| E.V2 (VFbool b) => Vbool b
 		| E.V2 E.VFunit => Vtuple []
 		| E.V2 (VFtuple (v1,v2)) => Vtuple [splitErasureValue2 v1, splitErasureValue2 v2]
+		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
 		
 fun convertDiagValue v = 
 		case v of 
@@ -30,6 +34,7 @@ fun convertDiagValue v =
 		| D.V (VFbool b) => Vbool b
 		| D.V VFunit => Vtuple []
 		| D.V (VFtuple (v1,v2)) => Vtuple [convertDiagValue v1, convertDiagValue v2]
+		| D.V (VFinj (side,v)) => Vinj (side, convertDiagValue v)
 		
 fun valueEq v1 v2 = 
 	case (v1,v2) of 
