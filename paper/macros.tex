@@ -57,8 +57,10 @@
 \newcommand {\projbind} [1] {\letin{l_{#1}}{\pi_{#1} l}{r_{#1}}}
 
 %judgements
-\newcommand {\typesone} [3] [\Gamma] { {#1} \Vdash {#2}:{#3}}
-\newcommand {\typestwo} [3] [\Gamma] { {#1} \VDash {#2}:{#3}}
+\newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
+\newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
+\newcommand {\typesone} [3] [] { \Gamma{#1} \vdash \colone{#2}{#3}}
+\newcommand {\typestwo} [3] [] { \Gamma{#1} \vdash \coltwo{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
 
 \newcommand {\reduceone} [2] {{#1} \Downarrow_\bbone {#2}}
@@ -77,25 +79,28 @@
 \newcommand {\tsplits} {\overset{\bbtwo}\curvearrowright}
 \newcommand {\csplit} {\curvearrowright}
 
-\newcommand {\splitone} [4] [\Gamma] { {#1} \Vdash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
-\newcommand {\splittwo} [4] [\Gamma] { {#1} \VDash {#2}:{#3} \rightsquigarrow \left[{#4}\right]}
-\newcommand {\splitonesub} [3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
-\newcommand {\splittwosub} [3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splitone} [4] [] { \Gamma{#1} \vdash {#2}:{#3} \overset{\bbone}\rightsquigarrow \left[{#4}\right]}
+\newcommand {\splittwo} [4] [] { \Gamma{#1} \vdash {#2}:{#3} \overset{\bbtwo}\rightsquigarrow \left[{#4}\right]}
+\newcommand {\splitonesub} [3] [] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splittwosub} [3] [] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
 
 %default stuff
 \newcommand \ty \typesone
 \newcommand \red \reduceone
 \newcommand \sub \reduceonesub
 \newcommand \spl \splitone
+\newcommand \col \colone
 
 %inference extension
 \newcommand {\infertypesone}  [3] 
 		[NONAME]{
 			\renewcommand \ty \typesone
+			\renewcommand \col \colone
 			\infer [\mathrm{#1\text{-}\bbone}] {#2}{#3}}
 \newcommand {\infertypestwo}  [3] 
 		[NONAME]{
 			\renewcommand \ty \typestwo
+			\renewcommand \col \coltwo
 			\infer [\mathrm{#1\text{-}\bbtwo}] {#2}{#3}}
 \newcommand {\inferreduceone} [3] 
 		[NONAME]{
@@ -121,9 +126,11 @@
 		[NONAME]{
 			\renewcommand \spl \splitone
 			\renewcommand \sub \splitonesub
+			\renewcommand \col \colone
 			\infer [\mathrm{#1 \overset{\bbone}\rightsquigarrow}] {#2}{#3}}
 \newcommand {\infersplittwo}  [3] 
 		[NONAME]{
 			\renewcommand \spl \splittwo
 			\renewcommand \sub \splittwosub
+			\renewcommand \col \coltwo
 			\infer [\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}] {#2}{#3}}

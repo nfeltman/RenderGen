@@ -6,13 +6,13 @@
 \infertypesone [\rmunit] 	{\ty {()}\rmunit}						{\cdot} \and
 \infertypesone [int]			{\ty {i}{\rm int}}					{\cdot} \and
 \infertypesone [bool]			{\ty {b} \rmbool}						{\cdot} \and
-\infertypesone [hyp]			{\ty x A}								{x : A^\bbone \in \Gamma} \and
+\infertypesone [hyp]			{\ty x A}								{\col x A \in \Gamma} \and
 \infertypestwo [\rmunit]		{\ty {()}{\rmunit}}					{\cdot} \and
 \infertypestwo [int]			{\ty {i}{\rm int}}					{\cdot} \and
 \infertypestwo [bool]			{\ty {b} \rmbool}						{\cdot} \and
-\infertypestwo [hyp]			{\ty x A}								{x : A^\bbtwo \in \Gamma} \and
-\infertypesone [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbone] {e_2} B} \and
-\infertypestwo [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [\Gamma,x:A^\bbtwo] {e_2} B} \and
+\infertypestwo [hyp]			{\ty x A}								{\col x A \in \Gamma} \and
+\infertypesone [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [,\col x A] {e_2} B} \and
+\infertypestwo [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}		{\ty {e_1} A & \ty [,\col x A] {e_2} B} \and
 \infertypesone [\times I]	{\ty {(e_1,e_2)}{A\times B}}			{\ty {e_1} A & \ty {e_2} B} \and
 \infertypesone [\times E_1]	{\ty {\pi_1~e} A}						{\ty e {A\times B}} \and
 \infertypesone [\times E_2]	{\ty {\pi_2~e} B}						{\ty e {A\times B}} \and
@@ -30,16 +30,16 @@
 \caption{Sum and Function Typing}
 \label{fig:advancedTypes}
 \begin{mathpar}
-\infertypesone [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbone] e B} 																\and
-\infertypesone [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
-\infertypestwo [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [\Gamma,x:A^\bbtwo] e B} 																\and
-\infertypestwo [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 														\and
-\infertypesone [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
-\infertypesone [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\\
-\infertypestwo [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																						\and
-\infertypestwo [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																						\and
-\infertypesone [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbone]{e_2} C & \ty[\Gamma,x_3:A^\bbone]{e_3} C} 	\and
-\infertypestwo [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[\Gamma,x_2:A^\bbtwo]{e_2} C & \ty[\Gamma,x_3:A^\bbtwo]{e_3} C} 	\and
+\infertypesone [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [,\col x A] e B} 															\and
+\infertypesone [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 											\and
+\infertypestwo [\to I]	{\ty {\lam{x}{A}{e}} {A \to B}}				{\ty [,\col x A] e B} 															\and
+\infertypestwo [\to E]	{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 											\and
+\infertypesone [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																			\and
+\infertypesone [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																			\\
+\infertypestwo [+ I_1]	{\ty {\inl~e} {A + B}}						{\ty e A} 																			\and
+\infertypestwo [+ I_2]	{\ty {\inr~e} {A + B}}						{\ty e B} 																			\and
+\infertypesone [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C} 	\and
+\infertypestwo [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C} 	\and
 \end{mathpar}
 \end{figure*}
 

@@ -208,19 +208,23 @@ and $ \types [\Gamma_2, p:\tau]{r} {A'}$
 The theorem we want to show has two parts, one for the $\bbone$ code, and one for the $\bbtwo$ code.  
 \begin{center}
 \begin{tabular}{l}
-If $\splitone [\emptyC]{e}{A}{c,l.r}$ \\
-and $\rsone{e}{v}{q}$ \\
-and $\reducetwo{q}{w}$ \\
-then $\reduce{c}{\valprod{v}{u}}$ \\
-and $\reduce{[u/l]r}{w}$
+If $\splitone {e}{A}{c,l.r}$ \\
+and $\colone {\gamma_1}{\Gamma}$ \\
+and $\coltwo {\gamma_2}{\Gamma}$\\
+and $\rsone{\gamma_1(e)}{v}{q}$ \\
+and $\reducetwo{\gamma_2(q)}{w}$ \\
+then $\reduce{|\gamma_1|(c)}{\valprod{v}{u}}$ \\
+and $\reduce{[u/l]|\gamma_2|(r)}{w}$
 \end{tabular}
 ~~~
 \begin{tabular}{l}
-If $\splittwo[\emptyC]{e}{B}{p,l.r}$ \\
-and $\rstwo{e}{q}$ \\
-and $\reducetwo{q}{w}$ \\
-then $\reduce{p}{u}$ \\
-and $\reduce{[u/l]r}{w}$ 
+If $\splittwo{e}{B}{p,l.r}$ \\
+and $\colone {\gamma_1}{\Gamma}$ \\
+and $\coltwo {\gamma_2}{\Gamma}$\\
+and $\rstwo{\gamma_1(e)}{q}$ \\
+and $\reducetwo{\gamma_2(q)}{w}$ \\
+then $\reduce{|\gamma_1|(p)}{u}$ \\
+and $\reduce{[u/l]|\gamma_2|(r)}{w}$ 
 \end{tabular}
 \end{center}
 
@@ -384,6 +388,30 @@ Everything works similarly for the if-false case.  Either way, we have what we w
 
 % NEXT
 \item {\bf Next.} Suppose that
+\begin{enumerate}
+\item $\splitone{\next~e}{\fut A}{((),p),l.r}$
+\item $\rsone{\next~e}{v}{q}$
+\item $\reducetwo{q}{w}$
+\end{enumerate}
+By inversion of the splitting and reduction rules, we have
+\begin{enumerate}
+\item $\splittwo {e}{A}{p,l.r}$
+\item $v$ has the form $()$
+\item $\rstwo{e}{q}$
+\end{enumerate}
+We can now invoke the stage $\bbtwo$ part of the inductive hypothesis to yield,
+\begin{enumerate}
+\item $\reduce {p}{u}$
+\item $\reduce {[u/l]r}{w}$
+\end{enumerate}
+It can then be directly proven that,
+\begin{enumerate}
+\item $\reduce {((),p)}{((),u)}$
+\end{enumerate}
+Which (along with the previous line) is what we wanted to show.
+
+% LET
+\item {\bf Let (REALLY REALLY NOT DONE).} Suppose that
 \begin{enumerate}
 \item $\splitone{\next~e}{\fut A}{((),p),l.r}$
 \item $\rsone{\next~e}{v}{q}$
