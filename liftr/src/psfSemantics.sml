@@ -10,6 +10,7 @@ datatype value	= Vint of int
 				| Vbool of bool
 				| Vtuple of value list
 				| Vinj of LR * value
+				| Vlam of var * unit expr
 
 exception Stuck
 

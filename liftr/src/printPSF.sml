@@ -50,6 +50,8 @@ fun convertSource convert e =
 		| S.Fint i => Eatom (Int.toString i)
 		| S.Fbool b => Eatom (if b then "true" else "false")
 		| S.Funit => Etuple []
+		| S.Flam (_,b) => Elam (convertBranch b)
+		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
 		| S.Ftuple (e1,e2) => Etuple [convert e1, convert e2]
 		| S.Fpi (i, e) => EprimApp (case i of Left => "#1" | Right => "#2", convert e)
 		| S.Finj (i, _, e) => EprimApp (case i of Left => "inl" | Right => "inr", convert e)

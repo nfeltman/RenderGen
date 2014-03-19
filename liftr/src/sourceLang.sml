@@ -1,19 +1,81 @@
 
+
+signature SourceTypes = 
+sig
+	datatype 't typeF	= TFint
+						| TFbool
+						| TFunit
+						| TFprod of 't * 't
+						| TFsum of 't * 't
+						| TFarr of 't * 't
+
+	val unint  : 't typeF -> unit
+	val unbool : 't typeF -> unit
+	val ununit : 't typeF -> unit
+	val unprod : 't typeF -> 't * 't
+	val unarr  : 't typeF -> 't * 't
+	val unsum  : 't typeF -> 't * 't
+end
+
+structure TypesBase : SourceTypes = 
+struct
+	open LangCommon
+	datatype 't typeF	= TFint
+						| TFbool
+						| TFunit
+						| TFprod of 't * 't
+						| TFsum of 't * 't
+						| TFarr of 't * 't
+
+	fun unint TFint = ()
+	  | unint _ = raise TypeError
+	fun unbool TFbool = ()
+	  | unbool _ = raise TypeError
+	fun ununit TFint = ()
+	  | ununit _ = raise TypeError
+	fun unprod (TFprod ab) = ab
+	  | unprod _ = raise TypeError
+	fun unarr (TFarr v) = v
+	  | unarr _ = raise TypeError
+	fun unsum (TFsum v) = v
+	  | unsum _ = raise TypeError
+end
+
+structure ValuesBase = 
+struct
+	open LangCommon
+	datatype ('v,'e) valueF	= VFint of int
+							| VFbool of bool
+							| VFunit
+							| VFtuple of 'v * 'v
+							| VFinj of LR * 'v
+							| VFlam of var * 'e
+
+	fun untuple (VFtuple v) = v
+	  | untuple _ = raise Stuck
+	fun uninj (VFinj v) = v
+	  | uninj _ = raise Stuck
+	fun unbool (VFbool b) = b
+	  | unbool _ = raise Stuck
+	fun unint (VFint i) = i
+	  | unint _ = raise Stuck
+	fun unlam (VFlam e) = e
+	  | unlam _ = raise Stuck
+end
+
 structure SourceLang = 
 struct
 
 open LangCommon
-
-datatype 't typeF	= TFint
-					| TFbool
-					| TFunit
-					| TFprod of 't * 't
-					| TFsum of 't * 't
+open TypesBase
+open ValuesBase
 
 datatype ('e,'t) exprF	= Fvar of var
 						| Funit
 						| Fint of int
 						| Fbool of bool
+						| Flam of 't * (var * 'e)
+						| Fapp of 'e * 'e
 						| Ftuple of 'e * 'e
 						| Fpi of LR * 'e
 						| Finj of LR * 't * 'e
@@ -23,17 +85,13 @@ datatype ('e,'t) exprF	= Fvar of var
 						| Ferror of 't
 						| Fbinop of Prims.binops * 'e * 'e
 
-datatype 'v valueF	= VFint of int
-					| VFbool of bool
-					| VFunit
-					| VFtuple of 'v * 'v
-					| VFinj of LR * 'v
 
 fun mapType _ TFint = TFint
   | mapType _ TFbool = TFbool
   | mapType _ TFunit = TFunit
   | mapType f (TFsum (t1,t2)) = TFsum (f t1, f t2)
   | mapType f (TFprod (t1,t2)) = TFprod (f t1, f t2)
+  | mapType f (TFarr (t1,t2)) = TFarr (f t1, f t2)
 						
 fun mapExpr fe ft exp =
 	case exp of
@@ -41,6 +99,8 @@ fun mapExpr fe ft exp =
 	| Funit => Funit
 	| Fint i => Fint i
 	| Fbool b => Fbool b
+	| Flam (t, (x,e)) => Flam (ft t, (x, fe e))
+	| Fapp (e1,e2) => Fapp (fe e1, fe e2)
 	| Ftuple (e1,e2) => Ftuple (fe e1, fe e2)
 	| Fpi (lr, e) => Fpi (lr, fe e)
 	| Finj (lr, t, e) => Finj (lr, ft t, fe e)
@@ -49,19 +109,7 @@ fun mapExpr fe ft exp =
 	| Flet (e1, (x,e2)) => Flet (fe e1, (x, fe e2))
 	| Ferror (t) => Ferror (ft t)
 	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
-
-fun unprod (TFprod ab) = ab
-  | unprod _ = raise TypeError
-fun unsum (TFsum v) = v
-  | unsum _ = raise Stuck
-fun untuple (VFtuple v) = v
-  | untuple _ = raise Stuck
-fun uninj (VFinj v) = v
-  | uninj _ = raise Stuck
-fun unbool (VFbool b) = b
-  | unbool _ = raise Stuck
-fun unint (VFint i) = i
-  | unint _ = raise Stuck
+  
 	
 fun convertPrim (VFint i) = Prims.PrimEval.Vint i
   | convertPrim (VFbool b) = Prims.PrimEval.Vbool b
@@ -85,8 +133,8 @@ fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq primTypes exp =
 	in
 		case exp of 
 		  Fvar v => lookupC gamma v
-	(*	| Flam (t,b) => T1func (t, checkbranch t b)
-		| Fapp (e1,e2) => checkFun t1eq (unfun1 (check e1), check e2)*)
+		| Flam (t,b) => Twrap (TFarr (t, checkbranch t b))
+		| Fapp (e1,e2) => checkFun teq (unarr (Tunwrap (check e1)), check e2)
 		| Funit => Twrap TFunit
 		| Fint _ => Twrap TFint
 		| Fbool _ => Twrap TFbool
@@ -108,6 +156,8 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 	in
 		case exp of 
 		  Fvar v => lookupC env v
+		| Flam (t, (x,e)) => Vwrap (VFlam (x, e))
+		| Fapp (e1, e2) => evalBranch (eval e2) (unlam (Vunwrap (eval e1)))
 		| Funit => Vwrap VFunit
 		| Fint i => Vwrap (VFint i)
 		| Fbool b => Vwrap (VFbool b)

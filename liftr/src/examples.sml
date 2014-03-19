@@ -42,7 +42,7 @@ fun testProgram verbose name p =
 		(* Diagonal Semantics *)
 		val (v1Diag, rDiag) = DiagonalSemantics.eval1 empty propegated
 		val v2Diag = DiagonalSemantics.eval2 empty rDiag
-		val (v1DiagC, v2DiagC) = (Comp.convertDiagValue v1Diag, Comp.convertDiagValue v2Diag)
+		val (v1DiagC, v2DiagC) = (Comp.convertDiagValue1 v1Diag, Comp.convertDiagValue2 v2Diag)
 		
 		(* Splitting *)
 		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)

@@ -12,21 +12,21 @@ datatype ty		= Tint
 				| Tvar of int
 				| Trec of ty
 				
-datatype expr	= Evar of var
-				| Eint of int
-				| Ebool of bool
-				| Elam of ty * (var * expr)
-				| Eapp of expr * expr
-				| Etuple of expr list
-				| Epi of int * expr
-				| Einj of LR * ty * expr
-				| Ecase of expr * (var * expr) * (var * expr)
-				| Eif of expr * expr * expr
-				| Elet of expr * (var * expr)
-				| Ebinop of Prims.binops * expr * expr
-				| Eroll of expr
-				| Eunroll of expr
-				| Eerror of ty
+datatype 't expr	= Evar of var
+					| Eint of int
+					| Ebool of bool
+					| Elam of 't * (var * 't expr)
+					| Eapp of 't expr * 't expr
+					| Etuple of 't expr list
+					| Epi of int * 't expr
+					| Einj of LR * 't * 't expr
+					| Ecase of 't expr * (var * 't expr) * (var * 't expr)
+					| Eif of 't expr * 't expr * 't expr
+					| Elet of 't expr * (var * 't expr)
+					| Ebinop of Prims.binops * 't expr * 't expr
+					| Eroll of 't expr
+					| Eunroll of 't expr
+					| Eerror of 't
 				
 type cont = ty context
 
