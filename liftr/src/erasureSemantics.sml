@@ -5,10 +5,10 @@ struct
 open LangCommon
 open Lambda12
 	
-datatype value1	= V1 of (value1,expr1) valueF
+datatype value1	= V1 of (value1,var,expr1) valueF
 				| V1next of value2
 				
-and value2		= V2 of (value2,expr2) valueF
+and value2		= V2 of (value2,var,expr2) valueF
 
 fun V1unwrap (V1 v) = v
   | V1unwrap _ = raise Stuck

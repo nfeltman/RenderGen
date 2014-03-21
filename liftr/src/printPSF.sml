@@ -41,11 +41,11 @@ fun convertPSF e =
 	end
 
 structure S = SourceLang
-fun convertSource convert e = 
+fun convertSource convert ex = 
 	let
 		fun convertBranch (x,e) = (Variable.toString x, convert e)
 	in
-		case e of 
+		case ex of 
 		  S.Fvar v => Eatom (Variable.toString v)
 		| S.Fint i => Eatom (Int.toString i)
 		| S.Fbool b => Eatom (if b then "true" else "false")
@@ -89,16 +89,16 @@ fun printTypeHelper (p : string -> unit) level ty =
 		| Trec t => prio 1 (fn () => (p "rec."; g 2 t))
 	end*)
 
-fun convertTerm e = 
+fun convertTerm ex = 
 	let
 		val L = PrettyPrinter.Pliteral
 		fun S n e = PrettyPrinter.Psubterm (n, convertTerm e)
 		val toString = Variable.toString
 	in
-		case e of
+		case ex of
 		  Eatom s => (0, [L s])
 		| Elam (v, e) => (2, [L ("fn "^v^" => "),  S 2 e])
-		| Eapp (e1, e2) => (1, [S 1 e, L " ", S 0 e])
+		| Eapp (e1, e2) => (1, [S 1 e1, L " ", S 0 e2])
 		| Etuple [] => (0, [L "()"])
 		| Etuple (e0::es) => (0, L "(" :: S 2 e0 :: foldr (fn (e,prev) => L ", " :: S 2 e :: prev) [L ")"] es)
 		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^v2^" => "), S 2 e2, L (" | "^v3^" => "), S 2 e3])

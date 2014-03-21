@@ -7,11 +7,11 @@ open Lambda12
 structure P = Prims.PrimEval
 
 (* first stage values *)				
-datatype value1	= V1 of (value1, expr1) valueF
+datatype value1	= V1 of (value1,var,expr1) valueF
 
 (* second stage values/expressions *)
-datatype expr	= E of (expr, unit) exprF
-datatype value2	= V2 of (value2, expr) valueF
+datatype expr	= E of (expr,var,unit) exprF
+datatype value2	= V2 of (value2,var,expr) valueF
 
 fun unV1 (V1 v) = v
 fun unV2 (V2 v) = v

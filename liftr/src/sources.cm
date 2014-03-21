@@ -33,4 +33,12 @@ Group is
 	  printer.sml
 	  examples.sml
 	  
+	  (* parser *)
+	  lambda12.lex             (* Lexer rules. *)
+      lambda12.yacc:MLYacc     (* Parser rules. *)
+      glue.sml           (* Build the parser *)
+      $/ml-yacc-lib.cm   (* ML-Lex and ML-Yacc library *)
+
+      $smlnj/compiler/compiler.cm    (* Structure Compiler, needed for printDepth, autoloaded. *) 
+	  
       $/basis.cm

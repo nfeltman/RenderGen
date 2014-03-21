@@ -30,8 +30,10 @@ fun evaluate env exp =
 		  Evar v => lookup env v
 		| Eint i => Vint i
 		| Ebool b => Vbool b
-		| Elam _ => raise Stuck
-		| Eapp _ => raise Stuck
+		| Elam (_,b) => Vlam b
+		| Eapp (e1,e2) => (case (eval e1, eval e2) of
+			  (Vlam b, v) => evalBranch v b
+			| _ => raise Stuck)
 		| Etuple es => Vtuple (map eval es)
 		| Epi (index, e) => (
 			case eval e of

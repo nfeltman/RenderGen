@@ -11,18 +11,19 @@ fun projLR Left  (a,_) = a
 fun injLR Left  a t = (a,t)
   | injLR Right b t = (t,b)
 
-exception UnboundVar of var
+exception UnboundVar
 type 'a context = (var * 'a) list
 
 val empty = []
 
 fun extendContext g v t = (v,t) :: g
 
-fun lookup [] v = raise (UnboundVar v)
+fun lookup [] v = raise (UnboundVar)
   | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
   
 
 exception TypeError
+exception ParseError
 
 fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 

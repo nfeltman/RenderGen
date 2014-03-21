@@ -7,17 +7,21 @@ open LangCommon
 structure Comp = ValueComparison
 
 val _ = Variable.reset ()
-val x = Variable.newvar "x"
-val fourPlusSix = Ebinop(Prims.Iplus, Eint 4, Eint 6)
-val twoTimesThree = Ebinop(Prims.Itimes, Eint 2, Eint 3)
-val twoGtThree = Ebinop(Prims.Igreater, Eint 2, Eint 3)
-val letAll1 = Elet(fourPlusSix, (x, Ebinop(Prims.Itimes, Evar x, Evar x)))
-val let12 = Elet(Enext fourPlusSix, (x, Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x)))))
-val doubleBind = Elet(Enext fourPlusSix, 
-				(x, Elet (Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x))), 
-							(x, Enext (Ebinop(Prims.Itimes, Eprev(Evar x), Eprev(Evar x)))))))
-val if1 = Eif(Ebool true, Enext fourPlusSix, Ehold twoTimesThree)
-val if2 = Enext( Eif(twoGtThree, Eprev (Ehold fourPlusSix), twoTimesThree))
+
+val programs = [
+("fourPlusSix", 		"+ 4 6"),
+("twoTimesThree", 		"* 2 3"),
+("twoGtThree", 			"> 2 3"),
+("letAll1", 			"let x = + 4 6 in * x x"),
+("let12", 				"let x = next{+ 4 6} in next {* prev{x} prev{x}}" ),
+("doubleBind", 			"let x = next{+ 4 6} in let x = next{* prev{x} prev{x}} in next{* prev{x} prev{x}}" ),
+("if1", 				"if > 3 2 then + 4 6 else * 2 3"),
+("if2", 				"next{ if > 2 3 then prev{hold (+ 4 6)} else * 2 3}"),
+("funcApp", 			"^ (fn x : int => + x x) 45"),
+("multiStageFunc", 		"^ (fn x : int => next{+ prev{hold (* x x)} prev{hold x}}) 45"),
+("caseLeft", 			"case inl int 34 of x => * x x| y => + y y"),
+("caseRight", 			"case inr int 34 of x => * x x| y => + y y")
+]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
 				
@@ -31,8 +35,11 @@ fun testProgram verbose name p =
 		(* Prologue *)
 		val _ = (emit "Starting test: "; emit (pad name 24); emit " ...")
 		
+		(* Parsing *)
+		val parsed = L12Parser.parseString p
+		
 		(* Checking Input *)
-		val propegated = PropStage.prop1 p
+		val propegated = PropStage.prop1 parsed
 		val _ = Typecheck12.typeCheck1 empty propegated
 		
 		(* Erasure Semantics *)
@@ -61,7 +68,7 @@ fun testProgram verbose name p =
 				then (emit "all pass!\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
-	
+	(*
 		print "\n\n";
 		printTerm (PrintPSF.convertStage1 propegated);
 		print "\n~~~~~~~~~~~\n";
@@ -71,24 +78,10 @@ fun testProgram verbose name p =
 		print ".";
 		printTerm (PrintPSF.convertPSF split2);
 		print "\n\n====================\n\n";
-	
+	*)
 		()
 	end
 
 
-fun runtests () = 
-
-	let
-		val testProgram = testProgram 1
-		val _ = testProgram "fourPlusSix" fourPlusSix
-		val _ = testProgram "twoTimesThree" twoTimesThree
-		val _ = testProgram "twoGtThree" twoGtThree
-		val _ = testProgram "letAll1" letAll1
-		val _ = testProgram "let12" let12
-		val _ = testProgram "doubleBind" doubleBind
-		val _ = testProgram "if1" if1
-		val _ = testProgram "if2" if2
-	in
-		()
-	end
+fun runtests () = List.app (fn (name,prog) => testProgram 1 name prog) programs 
 end

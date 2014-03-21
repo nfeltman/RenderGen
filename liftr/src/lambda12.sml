@@ -9,11 +9,11 @@ datatype type1	= T1 of type1 typeF
 
 and type2		= T2 of type2 typeF
 
-datatype expr1	= E1 of (expr1,type1) exprF
+datatype expr1	= E1 of (expr1,var,type1) exprF
 				| E1next of expr2
 				| E1hold of expr1
 
-and expr2		= E2 of (expr2,type2) exprF
+and expr2		= E2 of (expr2,var,type2) exprF
 				| E2prev of expr1
 
 end

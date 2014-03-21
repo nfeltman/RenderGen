@@ -44,12 +44,12 @@ end
 structure ValuesBase = 
 struct
 	open LangCommon
-	datatype ('v,'e) valueF	= VFint of int
-							| VFbool of bool
-							| VFunit
-							| VFtuple of 'v * 'v
-							| VFinj of LR * 'v
-							| VFlam of var * 'e
+	datatype ('v,'r,'e) valueF	= VFint of int
+								| VFbool of bool
+								| VFunit
+								| VFtuple of 'v * 'v
+								| VFinj of LR * 'v
+								| VFlam of 'r * 'e
 
 	fun untuple (VFtuple v) = v
 	  | untuple _ = raise Stuck
@@ -70,20 +70,20 @@ open LangCommon
 open TypesBase
 open ValuesBase
 
-datatype ('e,'t) exprF	= Fvar of var
-						| Funit
-						| Fint of int
-						| Fbool of bool
-						| Flam of 't * (var * 'e)
-						| Fapp of 'e * 'e
-						| Ftuple of 'e * 'e
-						| Fpi of LR * 'e
-						| Finj of LR * 't * 'e
-						| Fcase of 'e * (var * 'e) * (var * 'e)
-						| Fif of 'e * 'e * 'e
-						| Flet of 'e * (var * 'e)
-						| Ferror of 't
-						| Fbinop of Prims.binops * 'e * 'e
+datatype ('e,'r,'t) exprF	= Fvar of 'r
+							| Funit
+							| Fint of int
+							| Fbool of bool
+							| Flam of 't * ('r * 'e)
+							| Fapp of 'e * 'e
+							| Ftuple of 'e * 'e
+							| Fpi of LR * 'e
+							| Finj of LR * 't * 'e
+							| Fcase of 'e * ('r * 'e) * ('r * 'e)
+							| Fif of 'e * 'e * 'e
+							| Flet of 'e * ('r * 'e)
+							| Ferror of 't
+							| Fbinop of Prims.binops * 'e * 'e
 
 
 fun mapType _ TFint = TFint
@@ -109,6 +109,28 @@ fun mapExpr fe ft exp =
 	| Flet (e1, (x,e2)) => Flet (fe e1, (x, fe e2))
 	| Ferror (t) => Ferror (ft t)
 	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
+	
+fun replaceVars recRep G f exp =
+	let
+		val rep = recRep G
+		fun forBranch (x,e) = let val x2 = f x in (x2,recRep (extendContext G x x2) e) end
+	in
+		case exp of
+		  Fvar v => Fvar (lookup G v)
+		| Funit => Funit
+		| Fint i => Fint i
+		| Fbool b => Fbool b
+		| Flam (t, b) => Flam (t, forBranch b)
+		| Fapp (e1,e2) => Fapp (rep e1, rep e2)
+		| Ftuple (e1,e2) => Ftuple (rep e1, rep e2)
+		| Fpi (lr, e) => Fpi (lr, rep e)
+		| Finj (lr, t, e) => Finj (lr, t, rep e)
+		| Fcase (e1,b2,b3) => Fcase (rep e1, forBranch b2, forBranch b3)
+		| Fif (e1,e2,e3) => Fif (rep e1, rep e2, rep e3)
+		| Flet (e1, b) => Flet (rep e1, forBranch b)
+		| Ferror (t) => Ferror (t)
+		| Fbinop (bo,e1,e2) => Fbinop(bo, rep e1, rep e2)
+	end
   
 	
 fun convertPrim (VFint i) = Prims.PrimEval.Vint i
@@ -164,7 +186,7 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 		| Ftuple (e1, e2) => Vwrap (VFtuple (eval e1, eval e2))
 		| Fpi (side, e) => (case side of Left => #1 | Right => #2) (untuple (Vunwrap (eval e)))
 		| Finj (side, _, e) => Vwrap (VFinj (side, eval e))
-		| Fcase (e1, b1, b2) => (case uninj (Vunwrap (eval e1)) of (Left, v) => evalBranch v b2 | (Right, v) => evalBranch v b2)
+		| Fcase (e1, b1, b2) => (case uninj (Vunwrap (eval e1)) of (Left, v) => evalBranch v b1 | (Right, v) => evalBranch v b2)
 		| Fif (e1, e2, e3) => eval (if unbool (Vunwrap (eval e1)) then e2 else e3)
 		| Flet (e, b) => evalBranch (eval e) b
 		| Fbinop (bo,e1,e2) => Vwrap (unconvertPrim (Prims.PrimEval.evalPrim (bo, convertP (eval e1), convertP (eval e2))))
