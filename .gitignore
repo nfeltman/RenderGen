@@ -173,6 +173,8 @@ pip-log.txt
 ## SML
 #############
 .cm/
+*.yacc.*
+*.lex.*
 *.x86-win32
 
 
