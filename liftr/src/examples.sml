@@ -9,25 +9,25 @@ structure Comp = ValueComparison
 val _ = Variable.reset ()
 
 val programs = [
-("fourPlusSix", 		"+ 4 6"),
-("twoTimesThree", 		"* 2 3"),
-("twoGtThree", 			"> 2 3"),
-("letAll1", 			"let x = + 4 6 in * x x"),
-("let12", 				"let x = next{+ 4 6} in next {* prev{x} prev{x}}" ),
-("doubleBind", 			"let x = next{+ 4 6} in let x = next{* prev{x} prev{x}} in next{* prev{x} prev{x}}" ),
-("if1", 				"if > 3 2 then + 4 6 else * 2 3"),
-("ifFirstThenSecnod",	"if > 3 2 then next{+ 4 6} else next{* 2 3}"),
-("if2", 				"next{ if > 2 3 then prev{hold (+ 4 6)} else * 2 3}"),
-("ifBothSides",			"next{ if > 2 3 then prev{hold (+ 4 6)} else prev{hold (* 2 3)}}"),
-("ifPred",				"next{ if > 2 prev{hold (+ 2 4)} then prev{hold (+ 4 6)} else prev{hold (* 2 3)}}"),
-("if7",					"if > 3 2 then next{+ prev{hold (* 8 9)} 6} else next{* prev{hold (+ 8 9)} prev{hold (- 6 2)}}"),
-("holdif",				"hold (if > 2 3 then 1 else 0)"),
-("holdif2",				"next {prev {hold (if > 2 3 then 1 else 0)}}"),
-("funcApp", 			"^ (fn x : int => + x x) 45"),
-("multiStageFunc", 		"^ (fn x : int => next{+ prev{hold (* x x)} prev{hold x}}) 45"),
+("fourPlusSix", 		"4 + 6"),
+("twoTimesThree", 		"2 * 3"),
+("twoGtThree", 			"2 > 3"),
+("letAll1", 			"let x = 4 + 6 in x * x"),
+("let12", 				"let x = next{4 + 6} in next {prev{x} * prev{x}}" ),
+("doubleBind", 			"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}" ),
+("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3"),
+("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}"),
+("if2", 				"next{ if 2 > 3 then prev{hold (4 + 6)} else 2 * 3}"),
+("ifBothSides",			"next{ if 2 > 3 then prev{hold (4 + 6)} else prev{hold (2 * 3)}}"),
+("ifPred",				"next{ if 2 > prev{hold (2 + 4)} then prev{hold (4 + 6)} else prev{hold (2 * 3)}}"),
+("if7",					"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}"),
+("holdif",				"hold (if 2 > 3 then 1 else 0)"),
+("holdif2",				"next {prev {hold (if 2 > 3 then 1 else 0)}}"),
+("funcApp", 			"(fn x : int => x + x) ^ 45"),
+("multiStageFunc", 		"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) ^ 45"),
 (* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
-("caseLeft", 			"case inl int 34 of x => * x x| y => + y y"),
-("caseRight", 			"case inr int 34 of x => * x x| y => + y y")
+("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
+("caseRight", 			"case inr int 34 of x => x * x | y => y + y")
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))

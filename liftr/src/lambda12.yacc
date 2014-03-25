@@ -22,7 +22,7 @@ open LangCommon
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
 	  UNIT | BOOL | GT
 %nonterm EXP of expr | MATCH of string * expr |
-	  TY of ty | APP of expr
+	  TY of ty | AEXP of expr
 
 %name L12Parse
 
@@ -33,14 +33,15 @@ open LangCommon
 
 (* the parser returns the value associated with the expression *)
 
+  EXP : AEXP PLUS EXP				(Ebinop(Prims.Iplus,AEXP,EXP))
+      | AEXP TIMES EXP   			(Ebinop(Prims.Itimes,AEXP,EXP))
+      | AEXP SUB EXP     			(Ebinop(Prims.Iminus,AEXP,EXP))
+      | AEXP GT EXP     			(Ebinop(Prims.Igreater,AEXP,EXP))
+	  | AEXP CARAT EXP				(Eapp (AEXP, EXP))
+	  | AEXP						(AEXP)
 
-  EXP : PLUS EXP EXP    			(Ebinop(Prims.Iplus,EXP1,EXP2))
-      | TIMES EXP EXP   			(Ebinop(Prims.Itimes,EXP1,EXP2))
-      | SUB EXP EXP     			(Ebinop(Prims.Iminus,EXP1,EXP2))
-      | GT EXP EXP     				(Ebinop(Prims.Igreater,EXP1,EXP2))
-	  | NUM          				(Eint NUM)
+ AEXP : NUM          				(Eint NUM)
       | ID              			(Evar ID)
-	  | CARAT EXP EXP				(Eapp (EXP1, EXP2))
 	  | FN ID COLON TY DARROW EXP	(Elam (TY,(ID,EXP)))
 	  | IF EXP THEN EXP ELSE EXP	(Eif(EXP1,EXP2,EXP3))
 	  | CASE EXP OF MATCH BAR MATCH	(Ecase(EXP,MATCH1,MATCH2))
