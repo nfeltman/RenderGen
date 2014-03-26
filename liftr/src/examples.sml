@@ -23,7 +23,9 @@ val programs = [
 ("if7",					"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}"),
 ("holdif",				"hold (if 2 > 3 then 1 else 0)"),
 ("holdif2",				"next {prev {hold (if 2 > 3 then 1 else 0)}}"),
-("funcApp", 			"(fn x : int => x + x) ^ 45"),
+("funcApp1", 			"(fn x : int => x + x) ^ 45"),
+("funcApp2", 			"let f = fn x : int => x + x in f ^ 45"),
+("funcApp3", 			"letfun g (x:int) = x + x in 12 + g ^ 45"),
 ("multiStageFunc", 		"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) ^ 45"),
 (* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
 ("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
