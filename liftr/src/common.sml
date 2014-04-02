@@ -11,24 +11,21 @@ fun projLR Left  (a,_) = a
 fun injLR Left  a t = (a,t)
   | injLR Right b t = (t,b)
 
-exception UnboundVar
-type 'a context = (var * 'a) list
-
-val empty = []
-
-fun extendContext g v t = (v,t) :: g
-
-fun lookup [] v = raise (UnboundVar)
-  | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
-  
-
 exception TypeError
 exception ParseError
+exception Stuck
+
+exception UnboundVar
+exception WrongStage of var
 
 fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 
-exception Stuck
-exception WrongStage of var
+
+type ('a,'b) context = ('a * 'b) list
+val empty = []
+fun extendContext g v t = (v,t) :: g
+fun lookup [] v = raise (UnboundVar)
+  | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
 datatype ('a,'b) doubleEntry = Bind1 of 'a | Bind2 of 'b
 fun extendContext1 g v t = (v, Bind1 t) :: g
 fun extendContext2 g v t = (v, Bind2 t) :: g

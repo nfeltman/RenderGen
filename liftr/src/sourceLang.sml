@@ -15,6 +15,7 @@ sig
 	val unprod : 't typeF -> 't * 't
 	val unarr  : 't typeF -> 't * 't
 	val unsum  : 't typeF -> 't * 't
+	val teq : ('t -> 't -> bool) -> 't typeF -> 't typeF -> bool
 end
 
 structure TypesBase : SourceTypes = 
@@ -39,17 +40,25 @@ struct
 	  | unarr _ = raise TypeError
 	fun unsum (TFsum v) = v
 	  | unsum _ = raise TypeError
+	  
+	fun teq _ TFint TFint = true
+	  | teq _ TFbool TFbool = true
+	  | teq _ TFunit TFunit = true
+	  | teq eq (TFprod (t1,t2)) (TFprod (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
+	  | teq eq (TFsum (t1,t2)) (TFsum (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
+	  | teq eq (TFarr (t1,t2)) (TFarr (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
+	  | teq _ _ _ = false
 end
 
 structure ValuesBase = 
 struct
 	open LangCommon
-	datatype ('v,'r,'e) valueF	= VFint of int
-								| VFbool of bool
-								| VFunit
-								| VFtuple of 'v * 'v
-								| VFinj of LR * 'v
-								| VFlam of 'r * 'e
+	datatype ('v,'c,'r,'e) valueF	= VFint of int
+									| VFbool of bool
+									| VFunit
+									| VFtuple of 'v * 'v
+									| VFinj of LR * 'v
+									| VFlam of 'c * ('r * 'e)
 
 	fun untuple (VFtuple v) = v
 	  | untuple _ = raise Stuck
@@ -138,12 +147,6 @@ fun convertPrim (VFint i) = Prims.PrimEval.Vint i
   | convertPrim _ = raise Stuck
 fun unconvertPrim (Prims.PrimEval.Vint i) = VFint i
   | unconvertPrim (Prims.PrimEval.Vbool b) = VFbool b
-  
-fun teq _ TFint TFint = true
-  | teq _ TFbool TFbool = true
-  | teq _ TFunit TFunit = true
-  | teq eq (TFprod (t1,t2)) (TFprod (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
-  | teq _ _ _ = false
 
 
 fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq primTypes exp = 
@@ -173,13 +176,14 @@ fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq primTypes exp =
 fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
 	let
 		val eval = evalRec env
-		fun evalBranch value (var,e) = evalRec (extendC env var value) e
+		fun evalBranchE value (env,(var,e)) = evalRec (extendC env var value) e
+		fun evalBranch v b = evalBranchE v (env,b)
 		val convertP = convertPrim o Vunwrap
 	in
 		case exp of 
 		  Fvar v => lookupC env v
-		| Flam (t, (x,e)) => Vwrap (VFlam (x, e))
-		| Fapp (e1, e2) => evalBranch (eval e2) (unlam (Vunwrap (eval e1)))
+		| Flam (t, b) => Vwrap (VFlam (env,b))
+		| Fapp (e1, e2) => evalBranchE (eval e2) (unlam (Vunwrap (eval e1)))
 		| Funit => Vwrap VFunit
 		| Fint i => Vwrap (VFint i)
 		| Fbool b => Vwrap (VFbool b)

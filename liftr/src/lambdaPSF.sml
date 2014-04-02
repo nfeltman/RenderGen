@@ -27,7 +27,5 @@ datatype 't expr	= Evar of var
 					| Eroll of 't expr
 					| Eunroll of 't expr
 					| Eerror of 't
-				
-type cont = ty context
 
 end

@@ -7,11 +7,11 @@ open Lambda12
 structure P = Prims.PrimEval
 
 (* first stage values *)				
-datatype value1	= V1 of (value1,var,expr1) valueF
+datatype value1	= V1 of (value1,(var, value1) context,var,expr1) valueF
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,unit) exprF
-datatype value2	= V2 of (value2,var,expr) valueF
+datatype value2	= V2 of (value2,(var, value2) context,var,expr) valueF
 
 fun unV1 (V1 v) = v
 fun unV2 (V2 v) = v
@@ -23,7 +23,7 @@ fun eval1 env (E1 exp) =
 		fun map1 f (a,b) = (f a, b)
 		fun map2 f (a,b) = (a, f b)
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch (v,r) (x,e) = 
+		fun evalBranch env (v,r) (x,e) = 
 			let 
 				val (u,q) = eval1 (extendContext env x v) e 
 			in 
@@ -35,12 +35,12 @@ fun eval1 env (E1 exp) =
 			| Funit => (V VFunit, E Funit)
 			| Fint i => (V (VFint i), E Funit)
 			| Fbool b => (V (VFbool b), E Funit)
-			| Flam (_, b) => (V (VFlam b), E Funit)
+			| Flam (_, b) => (V (VFlam (env,b)), E Funit)
 			| Fapp (e1,e2) => 
 				let 
-					val (branch, r1) = map1 (unlam o unV) (eval e1)
+					val ((env,branch), r1) = map1 (unlam o unV) (eval e1)
 				in
-					map2 (chain2 r1) (evalBranch (eval e2) branch)
+					map2 (chain2 r1) (evalBranch env (eval e2) branch)
 				end
 			| Ftuple (e1, e2) => bimap (V o VFtuple) (E o Ftuple) (trn (eval e1, eval e2))
 			| Fpi (side, e) => (
@@ -48,13 +48,13 @@ fun eval1 env (E1 exp) =
 				  (Left, ((v1,_), r)) => (v1, E (Fpi (Left, r)))
 				| (Right, ((_,v2), r)) => (v2, E (Fpi (Right, r))))
 			| Finj (side, _, e) => map1 (fn x => V (VFinj (side,x))) (eval e)
-			| Fcase (e, (x1,e1), (x2,e2)) => 
+			| Fcase (e, b1, b2) => 
 				let
 					val ((side,v),r) = map1 (uninj o unV) (eval e)
 				in
 					case side of
-					  Left  => evalBranch (v,r) (x1,e1)
-					| Right => evalBranch (v,r) (x2,e2)
+					  Left  => evalBranch env (v,r) b1
+					| Right => evalBranch env (v,r) b2
 				end
 			| Fif (e1, e2, e3) => 
 				let
@@ -62,7 +62,7 @@ fun eval1 env (E1 exp) =
 				in
 					map2 (chain2 r) (eval (if v then e2 else e3))
 				end
-			| Flet (e1,(x,e2)) => evalBranch (eval e1) (x,e2)
+			| Flet (e1,(x,e2)) => evalBranch env (eval e1) (x,e2)
 			| Fbinop (bo,e1,e2) => 
 				let
 					val (v1,r1) = eval e1
