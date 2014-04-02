@@ -27,9 +27,11 @@ val programs = [
 ("funcApp2", 			"let f = fn x : int => x + x in f ^ 45"),
 ("funcApp3", 			"letfun g (x:int) = x + x in 12 + g ^ 45"),
 ("multiStageFunc", 		"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) ^ 45"),
-(* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
 ("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
-("caseRight", 			"case inr int 34 of x => x * x | y => y + y")
+("caseRight", 			"case inr int 34 of x => x * x | y => y + y"),
+(* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
+("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f^1,f^2),(f^3,f^4))"),
+("datastruct3", 		"letfun map (f : int -> $int) = fn M:((int*int)*(int*int)) => ((f^(#1 (#1 M)), f^(#2 (#1 M))), (f^(#1 (#2 M)), f^(#2 (#2 M)))) in map^(fn x:int => next{prev{hold (x*x)}+4})^((1, 2), (3, 4))")
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))

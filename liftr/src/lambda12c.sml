@@ -18,6 +18,7 @@ val Tunit = Tstandard Lambda12.TFunit
 val Tbool = Tstandard Lambda12.TFbool
 val Tprod = Tstandard o Lambda12.TFprod
 val Tsum = Tstandard o Lambda12.TFsum
+val Tarr = Tstandard o Lambda12.TFarr
 
 val Evar = Estandard o Lambda12.Fvar
 val Eunit = Estandard Lambda12.Funit
