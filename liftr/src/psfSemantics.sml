@@ -10,7 +10,7 @@ datatype value	= Vint of int
 				| Vbool of bool
 				| Vtuple of value list
 				| Vinj of LR * value
-				| Vlam of var * unit expr
+				| Vlam of (var, value) context * (var * unit expr)
 
 exception Stuck
 
@@ -24,15 +24,16 @@ fun unconvertPrim (P.Vint i) = Vint i
 fun evaluate env exp = 
 	let
 		val eval = evaluate env
-		fun evalBranch v (x,e) = evaluate (extendContext env x v) e
+		fun evalBranchE v (env,(x,e)) = evaluate (extendContext env x v) e
+		fun evalBranch v b = evalBranchE v (env, b)
 	in
 		case exp of 
 		  Evar v => lookup env v
 		| Eint i => Vint i
 		| Ebool b => Vbool b
-		| Elam (_,b) => Vlam b
+		| Elam (_,b) => Vlam (env,b)
 		| Eapp (e1,e2) => (case (eval e1, eval e2) of
-			  (Vlam b, v) => evalBranch v b
+			  (Vlam eb, v) => evalBranchE v eb
 			| _ => raise Stuck)
 		| Etuple es => Vtuple (map eval es)
 		| Epi (index, e) => (
