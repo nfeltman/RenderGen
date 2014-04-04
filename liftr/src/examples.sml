@@ -23,15 +23,18 @@ val programs = [
 ("if7",					"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}"),
 ("holdif",				"hold (if 2 > 3 then 1 else 0)"),
 ("holdif2",				"next {prev {hold (if 2 > 3 then 1 else 0)}}"),
-("funcApp1", 			"(fn x : int => x + x) ^ 45"),
-("funcApp2", 			"let f = fn x : int => x + x in f ^ 45"),
-("funcApp3", 			"letfun g (x:int) = x + x in 12 + g ^ 45"),
-("multiStageFunc", 		"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) ^ 45"),
+("funcApp1", 			"(fn x : int => x + x) 45"),
+("funcApp2", 			"let f = fn x : int => x + x in f 45"),
+("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45"),
+("multiStageFunc", 		"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45"),
 ("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
 ("caseRight", 			"case inr int 34 of x => x * x | y => y + y"),
+("highOrder1", 			"(fn f:(int->int)=> f 5) (fn x:int=>x+x)"),
+("closure", 			"(let x = 3 in fn y:int=> x*y) 5"),
+("higherOrder1", 		"(fn f:(int->int)=> fn x:int=> f (f x)) (fn y:int=>y+y) 5"),
 (* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
-("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f^1,f^2),(f^3,f^4))"),
-("datastruct3", 		"letfun map (f : int -> $int) = fn M:((int*int)*(int*int)) => ((f^(#1 (#1 M)), f^(#2 (#1 M))), (f^(#1 (#2 M)), f^(#2 (#2 M)))) in (map^(fn x:int => next{prev{hold (x*x)}+4}))^((1, 2), (3, 4))")
+("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))"),
+("datastruct3", 		"letfun map (f : int -> $int) = fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in (map^(fn x:int => next{prev{hold (x*x)}+4})) ((1, 2), (3, 4))")
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -60,6 +63,7 @@ fun testProgram verbose name p =
 		
 		(* Diagonal Semantics *)
 		val (v1Diag, rDiag) = DiagonalSemantics.eval1 empty propegated
+		val _ = (printTerm (PrintPSF.convertDiag rDiag);	print "\n~~~~~~~~~~~\n")
 		val v2Diag = DiagonalSemantics.eval2 empty rDiag
 		val (v1DiagC, v2DiagC) = (Comp.convertDiagValue1 v1Diag, Comp.convertDiagValue2 v2Diag)
 		
@@ -83,6 +87,8 @@ fun testProgram verbose name p =
 	
 		print "\n\n";
 		printTerm (PrintPSF.convertStage1 propegated);
+		print "\n~~~~~~~~~~~\n";
+		printTerm (PrintPSF.convertDiag rDiag);
 		print "\n~~~~~~~~~~~\n";
 		printTerm (PrintPSF.convertPSF split1);
 		print "\n---\n";

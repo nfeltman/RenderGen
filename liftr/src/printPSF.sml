@@ -68,6 +68,8 @@ fun convertStage1 (S.E1 e) = convertSource convertStage1 e
   | convertStage1 (S.E1hold e) = EprimApp("holdInt", convertStage1 e)
 and convertStage2 (S.E2 e) = convertSource convertStage2 e
   | convertStage2 (S.E2prev e) = EbraceApp("prev", convertStage1 e)
+  
+fun convertDiag (DiagonalSemantics.E e) = convertSource convertDiag e
 
 (*
 fun printTypeHelper (p : string -> unit) level ty = 

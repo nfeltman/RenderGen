@@ -42,7 +42,7 @@ BINOP : PLUS						(Prims.Iplus)
 	  | SUB							(Prims.Iminus)
 	  | GT							(Prims.Igreater)
  
- BEXP : AEXP CARAT EXP				(Eapp (AEXP, EXP))
+ BEXP : BEXP AEXP					(Eapp (BEXP, AEXP))
 	  | AEXP						(AEXP)
 
  AEXP : NUM          												(Eint NUM)
