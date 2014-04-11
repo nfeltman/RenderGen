@@ -5,6 +5,7 @@ struct
 structure Prim = Prims.PrimTyper (struct type t = LambdaPSF.ty val Tint = LambdaPSF.Tint val Tbool = LambdaPSF.Tbool end)
 
 open LangCommon
+open Contexts
 open LambdaPSF
 
 exception TypeError

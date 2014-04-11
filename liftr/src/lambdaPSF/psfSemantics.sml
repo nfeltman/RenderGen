@@ -3,6 +3,7 @@ structure PSFSemantics =
 struct
 
 open LangCommon
+open Contexts
 open LambdaPSF
 structure P = Prims.PrimEval
 				

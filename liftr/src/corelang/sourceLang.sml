@@ -5,6 +5,8 @@ sig
 	datatype 't typeF	= TFint
 						| TFbool
 						| TFunit
+						| TFvar of int 
+						| TFrec of 't
 						| TFprod of 't * 't
 						| TFsum of 't * 't
 						| TFarr of 't * 't
@@ -24,6 +26,8 @@ struct
 	datatype 't typeF	= TFint
 						| TFbool
 						| TFunit
+						| TFvar of int 
+						| TFrec of 't
 						| TFprod of 't * 't
 						| TFsum of 't * 't
 						| TFarr of 't * 't
@@ -44,6 +48,8 @@ struct
 	fun teq _ TFint TFint = true
 	  | teq _ TFbool TFbool = true
 	  | teq _ TFunit TFunit = true
+	  | teq eq (TFvar j) (TFvar k) = (j = k)
+	  | teq eq (TFrec t) (TFrec u) = eq t u
 	  | teq eq (TFprod (t1,t2)) (TFprod (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
 	  | teq eq (TFsum (t1,t2)) (TFsum (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
 	  | teq eq (TFarr (t1,t2)) (TFarr (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
@@ -76,6 +82,7 @@ structure SourceLang =
 struct
 
 open LangCommon
+open Contexts
 open TypesBase
 open ValuesBase
 
@@ -98,6 +105,8 @@ datatype ('e,'r,'t) exprF	= Fvar of 'r
 fun mapType _ TFint = TFint
   | mapType _ TFbool = TFbool
   | mapType _ TFunit = TFunit
+  | mapType _ (TFvar i) = TFvar i
+  | mapType f (TFrec t) = TFrec (f t)
   | mapType f (TFsum (t1,t2)) = TFsum (f t1, f t2)
   | mapType f (TFprod (t1,t2)) = TFprod (f t1, f t2)
   | mapType f (TFarr (t1,t2)) = TFarr (f t1, f t2)

@@ -1,42 +1,40 @@
 Group is
 	  (* common stuff *)
-	  variable.sig
-	  variable.sml
-	  common.sml
-	  prim.sml
-	  sourceLang.sml
-	  
-	  (* lambda12c *)
-      lambda12c.sml
+	  common/common.sml
+	  common/variable.sig
+	  common/variable.sml
+	  common/context.sml
+	  corelang/prim.sml
+	  corelang/sourceLang.sml
 	  
 	  (* lambda12 *)
-      lambda12.sml
-      typecheck12.sml
+      lambda12/lambda12c.sml
+      lambda12/lambda12.sml
+      lambda12/typecheck12.sml
 	  
 	  (* lambdaPSF *)
-	  lambdaPSF.sml
-      typecheckPSF.sml
-	  printPSF.sml
+	  lambdaPSF/lambdaPSF.sml
+      lambdaPSF/typecheckPSF.sml
 	  
 	  (* transformations *)
 	  propstage.sml
-	(*  elision.sml*)
 	  stageSplit.sml 
 	  
 	  (* semantics *)
-	  erasureSemantics.sml
-	  diagonalSemantics.sml
-	  psfSemantics.sml
+	  lambda12/erasureSemantics.sml
+	  lambda12/diagonalSemantics.sml
+	  lambdaPSF/psfSemantics.sml
 	  valueComparison.sml
 	  
 	  (* test code *)
-	  printer.sml
+	  printing/printer.sml
+	  printing/printPSF.sml
 	  examples.sml
 	  
 	  (* parser *)
-	  lambda12.lex             (* Lexer rules. *)
-      lambda12.yacc:MLYacc     (* Parser rules. *)
-      glue.sml           (* Build the parser *)
+	  lambda12.lex             (* Lexer rules. Cannot put in subdirectory because bug.  *)
+      parser/lambda12.yacc:MLYacc     (* Parser rules. *)
+      parser/glue.sml           (* Build the parser *)
       $/ml-yacc-lib.cm   (* ML-Lex and ML-Yacc library *)
 
       $smlnj/compiler/compiler.cm    (* Structure Compiler, needed for printDepth, autoloaded. *) 

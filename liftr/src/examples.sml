@@ -54,11 +54,11 @@ fun testProgram verbose name p =
 		
 		(* Checking Input *)
 		val propegated = PropStage.prop1 parsed
-		val _ = Typecheck12.typeCheck1 empty propegated
+		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
 		
 		
 		(* Erasure Semantics *)
-		val valErasure = ErasureSemantics.eval1 empty propegated
+		val valErasure = ErasureSemantics.eval1 Contexts.empty propegated
 		val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
 				
 		(* Diagonal Semantics *)
@@ -69,8 +69,8 @@ fun testProgram verbose name p =
 		
 		(* Splitting *)
 		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
-		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate empty split1
-		val v2Split = PSFSemantics.evaluate (extendContext empty l pSplit) split2
+		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate Contexts.empty split1
+		val v2Split = PSFSemantics.evaluate (Contexts.extendContext Contexts.empty l pSplit) split2
 		
 		(* Comparing *)
 		fun triComp a b c = (Comp.valueEq a b, Comp.valueEq a c, Comp.valueEq b c)
