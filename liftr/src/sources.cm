@@ -6,6 +6,7 @@ Group is
 	  common/context.sml
 	  corelang/prim.sml
 	  corelang/sourceLang.sml
+	  corelang/coreTypes.sml
 	  
 	  (* lambda12 *)
       lambda12/lambda12c.sml
