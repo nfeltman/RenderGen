@@ -59,6 +59,8 @@ fun convertSource convert ex =
 		| S.Fif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)
 		| S.Flet (e, b) => Elet (convert e, convertBranch b)
 		| S.Fbinop (bo, e1, e2) => Ebinop (bo, convert e1, convert e2)
+		| S.Froll (_,e) => EprimApp ("roll", convert e)
+		| S.Funroll e => EprimApp ("unroll", convert e)
 		| S.Ferror _ => Eatom "error"
 	end
 	

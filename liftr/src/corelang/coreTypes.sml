@@ -12,6 +12,7 @@ sig
 	val unint  : 't typeF -> unit
 	val unbool : 't typeF -> unit
 	val ununit : 't typeF -> unit
+	val unrec  : 't typeF -> 't
 	val unprod : 't typeF -> 't * 't
 	val unarr  : 't typeF -> 't * 't
 	val unsum  : 't typeF -> 't * 't
@@ -26,7 +27,7 @@ struct
 						| TFbool
 						| TFunit
 						| TFvar of int 
-						| TFrec of 't
+						| TFrec of 't			(* binds *)
 						| TFprod of 't * 't
 						| TFsum of 't * 't
 						| TFarr of 't * 't
@@ -37,6 +38,8 @@ struct
 	  | unbool _ = raise TypeError
 	fun ununit TFint = ()
 	  | ununit _ = raise TypeError
+	fun unrec (TFrec a) = a
+	  | unrec _ = raise TypeError
 	fun unprod (TFprod ab) = ab
 	  | unprod _ = raise TypeError
 	fun unarr (TFarr v) = v
@@ -67,12 +70,16 @@ end
 structure TypeSubst = 
 struct
 	open TypesBase
-	fun substTy sub n v ty =
+	
+	fun liftTy lift n ty =
 			case ty of
-			  TFvar i => if i = n then v else TFvar (if i > n then i-1 else i)
-			| TFrec t => TFrec (sub (n+1) v t)  (* NEED TO ADD LIFTING *)
-			| TFsum (t1,t2) => TFsum (sub n v t1, sub n v t2)
-			| TFprod (t1,t2) => TFprod (sub n v t1, sub n v t2)
-			| TFarr (t1,t2) => TFarr (sub n v t1, sub n v t2)  
-			| prim => prim
+			  TFvar i => TFvar (if i > n then i+1 else i)
+			| TFrec t => TFrec (lift (n+1) t)
+			| other => mapType (lift n) other
+	
+	fun substTy sub lift Twrap n v ty =
+			case ty of
+			  TFvar i => if i = n then v else Twrap (TFvar (if i > n then i-1 else i))
+			| TFrec t => Twrap (TFrec (sub (n+1) (lift n v) t))
+			| other => Twrap (mapType (sub n v) other)
 end

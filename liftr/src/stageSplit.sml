@@ -202,6 +202,8 @@ fun stageSplit1 (E1 exp) =
 				(fn (r1,r2) => Elet(r1,(x,r2)))
 		| Fbinop (bo,e1,e2) =>
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
+		| Froll (_,e) => merge1 (split e) (fn (bind,wrap) => bind (wrap o Eroll)) Eroll
+		| Funroll e => merge1 (split e) (fn (bind,wrap) => bind (wrap o Eunroll)) Eunroll
 		| Ferror t => NoPrec1 (Eerror (firstImage t), Eerror (secondImage t))
 	end
   | stageSplit1 (E1next e) =(
@@ -257,6 +259,8 @@ and stageSplit2 (E2 exp) =
 		| Fcase (e1,(x2,e2),(x3,e3)) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Ecase (a,(x2,b),(x3,c)))
 		| Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
 		| Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(x,b)))
+		| Froll (_,e) => merge1 (split e) Eroll
+		| Funroll e => merge1 (split e) Eunroll
 		| Ferror t => NoPrec2 (Eerror (trType2 t))
 	end
   | stageSplit2 (E2prev e) = (

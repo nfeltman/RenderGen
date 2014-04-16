@@ -32,9 +32,18 @@ val programs = [
 ("highOrder1", 			"(fn f:(int->int)=> f 5) (fn x:int=>x+x)"),
 ("closure", 			"(let x = 3 in fn y:int=> x*y) 5"),
 ("higherOrder1", 		"(fn f:(int->int)=> fn x:int=> f (f x)) (fn y:int=>y+y) 5"),
-(* map a multi-stage function over a datastructure; inline / bind func / higher order map *)
 ("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))"),
-("datastruct3", 		"letfun map (f : int -> $int) = fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))")
+("datastruct3", 		"letfun map (f : int -> $int) = " ^ 
+							"fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
+						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))"),
+("roll1",				"roll (int) 5"),
+("roll2",				"roll (int * bool) (234, true)"),
+("emptyList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in empty"),
+("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
+						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"cons (5, cons (3, empty))"),
+("unroll1",				"unroll (roll (int * bool) (234, true))"),
+("unroll2",				"unroll (roll (int * bool) (234, true))")
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))

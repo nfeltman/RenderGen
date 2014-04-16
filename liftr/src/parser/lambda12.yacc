@@ -20,7 +20,8 @@ open LangCommon
 	  IN | IF | THEN | ELSE | NEXT | PREV | INL | 
 	  INR | CASE | OF | HOLD | EQ | COMMA | FN |
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
-	  UNIT | BOOL | GT | LETF | LETR | FIX
+	  UNIT | BOOL | GT | LETF | LETR | FIX | ROLL |
+	  UNROLL | TRUE | FALSE | MU
 %nonterm EXP of expr | MATCH of string * expr |
 	  TY of ty | AEXP of expr | BEXP of expr |
 	  BINOP of Prims.binops
@@ -46,6 +47,8 @@ BINOP : PLUS						(Prims.Iplus)
 	  | AEXP						(AEXP)
 
  AEXP : NUM          												(Eint NUM)
+	  | TRUE														(Ebool true)
+	  | FALSE														(Ebool false)
       | ID              											(Evar ID)
 	  | FN ID COLON TY DARROW EXP									(Elam (TY,(ID,EXP)))
 	  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
@@ -54,6 +57,8 @@ BINOP : PLUS						(Prims.Iplus)
 	  | PROJR EXP													(Epi(Right,EXP))
 	  | INL TY EXP													(Einj(Left,TY,EXP))
 	  | INR TY EXP													(Einj(Right,TY,EXP))
+	  | ROLL TY	EXP													(Eroll (TY, EXP))
+	  | UNROLL EXP													(Eunroll (EXP))
 	  | LPAR RPAR													(Eunit)
 	  | LPAR EXP COMMA EXP RPAR										(Etuple(EXP1,EXP2))
 	  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
@@ -61,6 +66,7 @@ BINOP : PLUS						(Prims.Iplus)
 	  | HOLD EXP 													(Ehold(EXP))
 	  | LET ID EQ EXP IN EXP										(Elet(EXP1,(ID,EXP2)))
 	  | LETF ID LPAR ID COLON TY RPAR EQ EXP IN EXP					(Elet(Elam(TY,(ID2,EXP1)),(ID1,EXP2)))
+	  | LETR ID LPAR ID COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID1,TY1,TY2,(ID2,EXP1),EXP2))
 	  | LPAR EXP RPAR												(EXP) 
 	  
 MATCH : ID DARROW EXP				((ID, EXP))
@@ -68,6 +74,8 @@ MATCH : ID DARROW EXP				((ID, EXP))
    TY : INT							(Tint)
       | BOOL						(Tbool)
       | UNIT						(Tunit)
+	  | NUM							(Tvar NUM)
+	  | MU TY						(Trec TY)
       | DOLLAR TY					(Tfut TY)
       | TY TIMES TY					(Tprod(TY1,TY2))
       | TY PLUS TY					(Tsum(TY1,TY2))

@@ -9,6 +9,7 @@ structure P = Prims.PrimEval
 				
 datatype value	= Vint of int
 				| Vbool of bool
+				| Vroll of value
 				| Vtuple of value list
 				| Vinj of LR * value
 				| Vlam of (var, value) context * (var * unit expr)
@@ -54,8 +55,11 @@ fun evaluate env exp =
 			| _ => raise Stuck)
 		| Elet (e,b) => evalBranch (eval e) b
 		| Ebinop (bo,e1,e2) => unconvertPrim (P.evalPrim (bo, convertPrim (eval e1), convertPrim (eval e2)))
-		| Eroll _ => raise Stuck
-		| Eunroll _ => raise Stuck
+		| Eroll e => Vroll (eval e)
+		| Eunroll e => (
+			case eval e of
+			  Vroll v => v
+			| _ => raise Stuck)
 		| Eerror t => raise Stuck
 	end
 end

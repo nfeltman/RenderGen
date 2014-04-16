@@ -71,6 +71,8 @@ fun eval1 env (E1 exp) =
 				in
 					(V (unconvertPrim (P.evalPrim (bo, convertP v1, convertP v2))), chain3 r1 r2 (E Funit))
 				end
+			| Froll (_,e) => raise Stuck
+			| Funroll e => raise Stuck
 			| Ferror _ => raise Stuck
 		end
   | eval1 env (E1next e) = (V1 VFunit, trace2 env e)

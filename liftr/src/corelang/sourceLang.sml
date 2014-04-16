@@ -6,10 +6,13 @@ struct
 	datatype ('v,'c,'r,'e) valueF	= VFint of int
 									| VFbool of bool
 									| VFunit
+									| VFroll of 'v
 									| VFtuple of 'v * 'v
 									| VFinj of LR * 'v
 									| VFlam of 'c * ('r * 'e)
-
+	
+	fun unroll (VFroll v) = v
+	  | unroll _ = raise Stuck
 	fun untuple (VFtuple v) = v
 	  | untuple _ = raise Stuck
 	fun uninj (VFinj v) = v
@@ -42,6 +45,8 @@ datatype ('e,'r,'t) exprF	= Fvar of 'r
 							| Fcase of 'e * ('r * 'e) * ('r * 'e)
 							| Fif of 'e * 'e * 'e
 							| Flet of 'e * ('r * 'e)
+							| Froll of 't * 'e
+							| Funroll of 'e
 							| Ferror of 't
 							| Fbinop of Prims.binops * 'e * 'e
 						
@@ -61,6 +66,8 @@ fun mapExpr fe ft exp =
 	| Flet (e1, (x,e2)) => Flet (fe e1, (x, fe e2))
 	| Ferror (t) => Ferror (ft t)
 	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
+	| Froll (t, e) => Froll (ft t, fe e)
+	| Funroll e => Funroll (fe e)
 	
 fun replaceVars recRep G f exp =
 	let
@@ -82,14 +89,17 @@ fun replaceVars recRep G f exp =
 		| Flet (e1, b) => Flet (rep e1, forBranch b)
 		| Ferror (t) => Ferror (t)
 		| Fbinop (bo,e1,e2) => Fbinop(bo, rep e1, rep e2)
+		| Froll (t, e) => Froll (t, rep e)
+		| Funroll e => Funroll (rep e)
 	end
 
-fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq primTypes exp = 
+fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst primTypes exp = 
 	let
 		val check = checkrec gamma
 		fun checkbranch t (v,e) = checkrec (extendC gamma v t) e
 		fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
 		fun binSame eq (a,b) (c,d,e) = if (eq a c) andalso (eq b d) then e else raise TypeError
+		fun selfSubst t = subst 0 (Twrap (TFrec t)) t
 	in
 		case exp of 
 		  Fvar v => lookupC gamma v
@@ -102,9 +112,11 @@ fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq primTypes exp =
 		| Fpi (lr, e) => projLR lr (unprod (Tunwrap (check e)))
 		| Finj (lr, t, e) => Twrap (TFsum (injLR lr (check e) t))
 		| Fcase (e1,b1,b2) => assertSame teq (zip2 checkbranch (unsum (Tunwrap (check e1))) (b1,b2)) 
-		| Fif (e1,e2,e3) => (assertSame teq (Twrap TFbool, check e1); assertSame teq (check e2, check e3))
+		| Fif (e1,e2,e3) => (TypesBase.unbool (Tunwrap (check e1)); assertSame teq (check e2, check e3))
 		| Flet (e,b) => checkbranch (check e) b
 		| Ferror t => t
+		| Froll (t, e) => if teq (selfSubst t) (check e) then Twrap (TFrec t) else raise TypeError
+		| Funroll e => selfSubst (unrec (Tunwrap (check e)))
 		| Fbinop (bo, e1, e2) => binSame teq (check e1, check e2) (primTypes bo)
 	end
   
@@ -136,6 +148,8 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 		| Fif (e1, e2, e3) => eval (if unbool (Vunwrap (eval e1)) then e2 else e3)
 		| Flet (e, b) => evalBranch (eval e) b
 		| Fbinop (bo,e1,e2) => Vwrap (unconvertPrim (Prims.PrimEval.evalPrim (bo, convertP (eval e1), convertP (eval e2))))
+		| Froll (_, e) => Vwrap (VFroll (eval e))
+		| Funroll e => unroll (Vunwrap (eval e))
 		| Ferror t => raise Stuck
 	end
 
