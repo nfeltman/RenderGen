@@ -5,10 +5,10 @@ struct
 open LangCommon
 open Lambda12
 
-datatype value1	= V1 of (value1,cont,var,expr1) valueF
+datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
 				| V1next of value2
 				
-and		value2	= V2 of (value2,cont,var,expr2) valueF
+and		value2	= V2 of (value2,cont,var pattern,expr2) valueF
 withtype   cont = (var, (value1,value2) doubleEntry) context
 
 fun V1unwrap (V1 v) = v

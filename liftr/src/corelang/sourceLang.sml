@@ -33,18 +33,21 @@ open Contexts
 open TypesBase
 open ValuesBase
 
+datatype 'r pattern 		= Pvar of 'r
+							| Ptuple of 'r pattern * 'r pattern
+							
 datatype ('e,'r,'t) exprF	= Fvar of 'r
 							| Funit
 							| Fint of int
 							| Fbool of bool
-							| Flam of 't * ('r * 'e)
+							| Flam of 't * ('r pattern * 'e)
 							| Fapp of 'e * 'e
 							| Ftuple of 'e * 'e
 							| Fpi of LR * 'e
 							| Finj of LR * 't * 'e
-							| Fcase of 'e * ('r * 'e) * ('r * 'e)
+							| Fcase of 'e * ('r pattern * 'e) * ('r pattern * 'e)
 							| Fif of 'e * 'e * 'e
-							| Flet of 'e * ('r * 'e)
+							| Flet of 'e * ('r pattern * 'e)
 							| Froll of 't * 'e
 							| Funroll of 'e
 							| Ferror of 't
@@ -72,7 +75,15 @@ fun mapExpr fe ft exp =
 fun replaceVars recRep G f exp =
 	let
 		val rep = recRep G
-		fun forBranch (x,e) = let val x2 = f x in (x2,recRep (extendContext G x x2) e) end
+		fun forPattern g (Pvar x) = let val y = f x in (Pvar y,extendContext g x y) end
+		  | forPattern g (Ptuple (x1,x2)) =
+				let 
+					val (y1,g2) = forPattern g x1 
+					val (y2,g3) = forPattern g2 x2 
+				in 
+					(Ptuple(y1,y2), g3) 
+				end
+		fun forBranch (x,e) = let val (y,g) = forPattern G x in (y, recRep g e) end
 	in
 		case exp of
 		  Fvar v => Fvar (lookup G v)
@@ -93,10 +104,14 @@ fun replaceVars recRep G f exp =
 		| Funroll e => Funroll (rep e)
 	end
 
+fun forPattern (f,unpack) g (Pvar x) t = f g x t
+  | forPattern (fu as (f,unpack)) g (Ptuple (x1,x2)) t = 
+		let val (t1,t2) = unpack t in forPattern fu (forPattern fu g x1 t1) x2 t2 end
+	
 fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst primTypes exp = 
 	let
 		val check = checkrec gamma
-		fun checkbranch t (v,e) = checkrec (extendC gamma v t) e
+		fun checkbranch t (patt,e) = checkrec (forPattern (extendC, unprod o Tunwrap) gamma patt t) e
 		fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
 		fun binSame eq (a,b) (c,d,e) = if (eq a c) andalso (eq b d) then e else raise TypeError
 		fun selfSubst t = subst 0 (Twrap (TFrec t)) t
@@ -130,7 +145,7 @@ fun unconvertPrim (Prims.PrimEval.Vint i) = VFint i
 fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
 	let
 		val eval = evalRec env
-		fun evalBranchE value (env,(var,e)) = evalRec (extendC env var value) e
+		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, untuple o Vunwrap) env patt value) e
 		fun evalBranch v b = evalBranchE v (env,b)
 		val convertP = convertPrim o Vunwrap
 	in

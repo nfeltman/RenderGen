@@ -23,9 +23,9 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU
-%nonterm EXP of expr | MATCH of string * expr |
+%nonterm EXP of expr | MATCH of patt * expr |
 	  TY of ty | AEXP of expr | BEXP of expr |
-	  BINOP of Prims.binops
+	  BINOP of Prims.binops | PATT of patt
 
 %name L12Parse
 
@@ -68,13 +68,16 @@ BINOP : PLUS						(Prims.Iplus)
 	  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 	  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 	  | LPAR EXP RPAR												(EXP) 
-	  | LET ID EQ EXP IN EXP										(Elet(EXP1,(ID,EXP2)))
-	  | FN ID COLON TY DARROW EXP									(Elam (TY,(ID,EXP)))
+	  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
+	  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 	  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
-	  | LETF ID LPAR ID COLON TY RPAR EQ EXP IN EXP					(Elet(Elam(TY,(ID2,EXP1)),(ID1,EXP2)))
-	  | LETR ID LPAR ID COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID1,TY1,TY2,(ID2,EXP1),EXP2))
+	  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
+	  | LETR ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
 	  
-MATCH : ID DARROW EXP				((ID, EXP))
+MATCH : PATT DARROW EXP				(PATT, EXP)
+
+ PATT : ID							(Pvar (ID))
+	  | LPAR PATT COMMA PATT RPAR 	(Ptuple (PATT1, PATT2))
 
    TY : INT							(Tint)
       | BOOL						(Tbool)

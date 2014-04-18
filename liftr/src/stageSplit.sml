@@ -32,12 +32,15 @@ fun secondImage (T1 TFint) = Tprod []
 fun trType2 _ = ()
 fun firstImage _ = ()
 fun secondImage _ = ()
+
+fun convertPattern (Pvar v) = PPvar v
+  | convertPattern (Ptuple (p1,p2)) = PPtuple [convertPattern p1, convertPattern p2]
   
 fun index Left = 0
   | index Right = 1
 
 val Eunit = Etuple []
-fun bind e b = Elet (e,b)
+fun bind e1 (x,e2) = Elet (e1,(PPvar x, e2))
 
 fun freshPi () = 
 	let
@@ -79,8 +82,9 @@ fun chain3 (e1,e2,e3) =
 
 datatype 't splitResult1 = NoPrec1 of 't expr * 't expr | WithPrec1 of 't expr * ty * (var * 't expr)
 datatype 't splitResult2 = NoPrec2 of 't expr | WithPrec2 of 't expr * ty * (var * 't expr)
-fun coerce1 (WithPrec1 r) = r
-  | coerce1 (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], Tprod [], (Variable.newvar "dummy", e2))
+fun coerce1v (WithPrec1 res) = res
+  | coerce1v (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], Tprod [], (Variable.newvar "dummy", e2))
+fun coerce1 r = case coerce1v r of (c,t,(l,r)) => (c,t,(PPvar l,r))
 
 (* assume here that the expression already type-checks *)
 fun stageSplit1 (E1 exp) = 
@@ -93,7 +97,7 @@ fun stageSplit1 (E1 exp) =
 				let
 					val (y, e, p) = freshPi2 ()
 				in
-					WithPrec1 (f (fn x => Elet(c, (y, x e)), fn x => Etuple[x, p]), t, (l, g r))
+					WithPrec1 (f (fn x => Elet(c, (PPvar y, x e)), fn x => Etuple[x, p]), t, (l, g r))
 				end
 		fun merge2 (NoPrec1 (e1, r1), res) f g = merge1 res (fn (bind2,wrap) => f (app e1,bind2,wrap)) (fn r2 => g (r1, r2))
 		  | merge2 (res, NoPrec1 (e2, r2)) f g = merge1 res (fn (bind1,wrap) => f (bind1,app e2,wrap)) (fn r1 => g (r1, r2))
@@ -105,22 +109,22 @@ fun stageSplit1 (E1 exp) =
 				in
 					WithPrec1 (
 					f (
-						fn x => Elet(c1, (y1, x e1)), 
-						fn x => Elet(c2, (y2, x e2)), 
+						fn x => Elet(c1, (PPvar y1, x e1)), 
+						fn x => Elet(c2, (PPvar y2, x e2)), 
 						fn x => Etuple[x, Etuple[p1,p2]]
 					), Tprod[t1,t2], 
 					(link, g (bind l1 b1, bind l2 b2))
 					)
 				end
 		fun unpackPredicate (NoPrec1 (e,r)) link = (app e, id, id, r, Evar link)
-		  | unpackPredicate (WithPrec1 (c,t,lr)) link = 
+		  | unpackPredicate (WithPrec1 (c,t,(l,r))) link = 
 				let
 					val (y,e,p) = freshPi2 ()
 				in
-					(fn x => Elet(c,(y,x e)), 
+					(fn x => Elet(c,(PPvar y,x e)), 
 					fn x => Etuple[p,x], 
 					fn x => Tprod[t,x], 
-					Elet(Epi(0,Evar link),lr), 
+					Elet(Epi(0,Evar link),(PPvar l, r)), 
 					Epi(1,Evar link))
 				end
 		  
@@ -128,7 +132,7 @@ fun stageSplit1 (E1 exp) =
 		fun simpleMerge2 e12 f g = merge2 e12 (fn (bind1, bind2, wrap) => bind1 (fn e1 => bind2 (fn e2 => wrap(f (e1,e2))))) g
 		fun caseBranch c addPrec side tOther = 
 				case freshPi2() of 
-				(l,v,p) => Elet (c,(l,Etuple[v, addPrec(Einj(side, (),p))]))
+				(l,v,p) => Elet (c,(PPvar l,Etuple[v, addPrec(Einj(side, (),p))]))
 		fun caseBranches addPrec (c2, t2, b2) (c3, t3, b3) = 
 				(caseBranch c2 addPrec Left t3, b2, caseBranch c3 addPrec Right t2, b3, Tsum(t2,t3))
 	in
@@ -142,7 +146,7 @@ fun stageSplit1 (E1 exp) =
 				val (c,t,lr) = coerce1 (split e)
 				val (y, y1, y2) = freshPi2 ()
 			in
-				NoPrec1 (Elam (firstImage t, (x, c)), Elam ((),(y,Elet(y1,(x,Elet(y2,lr))))))
+				NoPrec1 (Elam (firstImage t, (convertPattern x, c)), Elam ((),(PPvar y,Elet(y1,(convertPattern x,Elet(y2,lr))))))
 			end
 		| Fapp (e1, e2) => 
 			let
@@ -157,7 +161,7 @@ fun stageSplit1 (E1 exp) =
 							val (y2, v2, p2) = freshPi2 ()
 							val (z,  z1, z2) = freshPi2 ()
 						in
-							(Elet (c1, (y1, Elet (c2, (y2, Elet (Eapp (v1,v2), (z, Etuple[z1,Etuple[p1,p2,z2]])))))),
+							(Elet (c1, (PPvar y1, Elet (c2, (PPvar y2, Elet (Eapp (v1,v2), (PPvar z, Etuple[z1,Etuple[p1,p2,z2]])))))),
 							Eapp(Elet (pi 0, lr1),Etuple[Elet (pi 1, lr2), pi 2]))
 						end
 			in
@@ -177,11 +181,12 @@ fun stageSplit1 (E1 exp) =
 				val z = Variable.newvar "z"
 				val (bind1, addPrec, addTy, predResi, prec) = unpackPredicate (split e1) link
 				val (branch2, (l2,r2), branch3, (l3,r3), t) = caseBranches addPrec (coerce1 (split e2)) (coerce1 (split e3))
+				val (x2, x3) = (convertPattern x2, convertPattern x3)
 			in
 				WithPrec1 (
 					bind1 (fn val1 => Ecase(val1, (x2,branch2), (x3,branch3))), 
 					addTy t, 
-					(link, Elet (predResi, (z, Ecase(prec,(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))))))
+					(link, Elet (predResi, (PPvar z, Ecase(prec,(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))))))
 				)
 			end
 		| Fif (e1, e2, e3) => 
@@ -197,16 +202,20 @@ fun stageSplit1 (E1 exp) =
 				)
 			end
 		| Flet (e1, (x,e2)) => 
-			merge2 (split e1, split e2) 
-				(fn (bind1, bind2, wrap) => bind1 (fn e1 => Elet (e1, (x, bind2 wrap))))
-				(fn (r1,r2) => Elet(r1,(x,r2)))
+			let
+				val x = convertPattern x
+			in
+				merge2 (split e1, split e2) 
+					(fn (bind1, bind2, wrap) => bind1 (fn e1 => Elet (e1, (x, bind2 wrap))))
+					(fn (r1,r2) => Elet(r1,(x,r2)))
+			end
 		| Fbinop (bo,e1,e2) =>
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
 		| Froll (_,e) => merge1 (split e) (fn (bind,wrap) => bind (wrap o Eroll)) Eroll
 		| Funroll e => merge1 (split e) (fn (bind,wrap) => bind (wrap o Eunroll)) Eunroll
 		| Ferror t => NoPrec1 (Eerror (firstImage t), Eerror (secondImage t))
 	end
-  | stageSplit1 (E1next e) =(
+  | stageSplit1 (E1next e) = (
 		case stageSplit2 e of
 		  NoPrec2 r => NoPrec1 (Eunit, r)
 		| WithPrec2 (p,t,b) => WithPrec1 (Etuple [Eunit, p],t,b))
@@ -250,15 +259,16 @@ and stageSplit2 (E2 exp) =
 		| Funit => NoPrec2 Eunit
 		| Fint i => NoPrec2 (Eint i)
 		| Fbool b => NoPrec2 (Ebool b)
-		| Flam (t, (x,e)) => merge1 (split e) (fn r => Elam (trType2 t, (x,r)))
+		| Flam (t, (x,e)) => merge1 (split e) (fn r => Elam (trType2 t, (convertPattern x,r)))
 		| Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| Ftuple (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Etuple [a,b])
 		| Fpi (lr, e) => merge1 (split e) (fn r => Epi (index lr, r))
 		| Finj (lr, t, e) => merge1 (split e) (fn r => Einj (lr, trType2 t, r))
 		| Fif (e1, e2, e3) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
-		| Fcase (e1,(x2,e2),(x3,e3)) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Ecase (a,(x2,b),(x3,c)))
+		| Fcase (e1,(x2,e2),(x3,e3)) => merge3 (split e1, split e2, split e3) 
+			(fn (a,b,c) => Ecase (a,(convertPattern x2,b),(convertPattern x3,c)))
 		| Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
-		| Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(x,b)))
+		| Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertPattern x,b)))
 		| Froll (_,e) => merge1 (split e) Eroll
 		| Funroll e => merge1 (split e) Eunroll
 		| Ferror t => NoPrec2 (Eerror (trType2 t))

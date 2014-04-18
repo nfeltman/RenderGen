@@ -18,8 +18,9 @@ k("proj1", 				"#1 (3,true)"),
 k("proj2", 				"#2 (3,true)"),
 k("proj3", 				"3 + #1 (3,true)"),
 k("proj4", 				"#1 (3,true) + 3"),
-k("letAll1", 			"let x = 4 + 6 in x * x"),
-j("let12", 				"let x = next{4 + 6} in next {prev{x} * prev{x}}" ),
+k("let1", 				"let x = 4 + 6 in x * x"),
+k("let2", 				"let (x,b) = (4+6,false) in if b then x else x * x"),
+j("letnext",			"let x = next{4 + 6} in next {prev{x} * prev{x}}" ),
 j("doubleBind", 		"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}" ),
 k("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3"),
 j("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}"),
@@ -36,12 +37,15 @@ k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12"),
 j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45"),
 k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
 k("caseRight", 			"case inr int 34 of x => x * x | y => y + y"),
-k("highOrder1", 		"(fn f:(int->int)=> f 5) (fn x:int=>x+x)"),
+k("highOrder1", 		"(fn f:(int->int) => f 5) (fn x:int=>x+x)"),
 k("closure", 			"(let x = 3 in fn y:int=> x*y) 5"),
-k("higherOrder1", 		"(fn f:(int->int)=> fn x:int=> f (f x)) (fn y:int=>y+y) 5"),
+k("higherOrder1", 		"(fn f:(int->int) => fn x:int=> f (f x)) (fn y:int=>y+y) 5"),
 j("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))"),
 j("datastruct3", 		"letfun map (f : int -> $int) = " ^ 
 						"fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
+						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))"),
+j("datastruct4", 		"letfun map (f : int -> $int) = " ^ 
+						"fn ((M1,M2),(M3,M4)):((int*int)*(int*int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
 						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))"),
 k("roll1",				"roll (int) 5"),
 k("roll2",				"roll (int * bool) (234, true)"),
@@ -53,7 +57,7 @@ k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int 
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5"),
 k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
-						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | ht => #1 ht + sum (#2 ht) in "^
+						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (cons (5, cons (3, empty)))")
 ]
 
@@ -84,7 +88,7 @@ fun testProgram verbose name p =
 		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
 		
 		(* Splitting *)
-		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
+		val (split1, _, (l,split2)) = StageSplit.coerce1v (StageSplit.stageSplit1 propegated)
 		
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);
@@ -127,5 +131,5 @@ fun testProgram verbose name p =
 	end
 
 
-fun runtests () = List.app (fn (name,prog) => testProgram 2 name prog) (List.concat programs)
+fun runtests () = List.app (fn (name,prog) => testProgram 1 name prog) (List.concat programs)
 end

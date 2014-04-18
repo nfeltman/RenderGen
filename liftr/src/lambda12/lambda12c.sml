@@ -6,7 +6,8 @@ open LangCommon
 
 datatype ty		= Tstandard of ty Lambda12.typeF
 				| Tfut of ty
-				
+
+type patt		= string Lambda12.pattern
 datatype expr	= Estandard of (expr,string,ty) Lambda12.exprF
 				| Enext of expr
 				| Eprev of expr
@@ -39,7 +40,10 @@ val Elet = Estandard o Lambda12.Flet
 val Eerror = Estandard o Lambda12.Ferror
 val Ebinop = Estandard o Lambda12.Fbinop
 
-fun bind v e1 e2 = Elet (e1,(v,e2))
+val Ptuple = Lambda12.Ptuple
+val Pvar = Lambda12.Pvar
+
+fun bind v e1 e2 = Elet (e1,(Pvar v,e2))
 (* add lifts maybe *)
 fun Eletr (f,t1,t2,b,e) = 
 	let
@@ -48,9 +52,9 @@ fun Eletr (f,t1,t2,b,e) =
 	in
 	bind f 
 		(bind "r" 
-			(Elam(Trec tY, ("y", 
+			(Elam(Trec tY, (Pvar "y", 
 				bind f
-					(Elam (t1,("v", Eapp (Eapp (Eunroll (Evar "y"), Evar "y"), Evar "v"))))
+					(Elam (t1,(Pvar "v", Eapp (Eapp (Eunroll (Evar "y"), Evar "y"), Evar "v"))))
 					(Elam (t1,b))
 			)))
 			(Eapp(Evar "r", Eroll(tY, Evar "r")))

@@ -31,7 +31,7 @@ fun unsum (Tsum ab) = ab
 fun typeCheckS gamma exp = 
 	let
 		val check = typeCheckS gamma
-		fun checkbranch t (v,e) = typeCheckS (extendContext gamma v t) e
+		fun checkbranch t (x,e) = typeCheckS (forPattern (extendContext, unprod, TypeError) gamma x t) e
 	in
 		case exp of 
 		  Evar v => lookup gamma v
