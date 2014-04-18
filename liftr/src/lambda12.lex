@@ -33,6 +33,9 @@ ws = [\ \t];
 "->"     => (Tokens.ARROW(!pos,!pos));
 "=>"     => (Tokens.DARROW(!pos,!pos));
 ">"      => (Tokens.GT(!pos,!pos));
+">="     => (Tokens.GTE(!pos,!pos));
+"<"      => (Tokens.LT(!pos,!pos));
+"<="     => (Tokens.LTE(!pos,!pos));
 "#1"     => (Tokens.PROJL(!pos,!pos));
 "#2"     => (Tokens.PROJR(!pos,!pos));
 {id}     => (case yytext of

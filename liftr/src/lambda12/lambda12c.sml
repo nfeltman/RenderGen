@@ -44,16 +44,16 @@ fun bind v e1 e2 = Elet (e1,(v,e2))
 fun Eletr (f,t1,t2,b,e) = 
 	let
 		val tF = Tarr(t1,t2)
-		val tY = Trec (Tarr(Tvar(0),tF))
+		val tY = Tarr(Tvar(0),tF)
 	in
 	bind f 
 		(bind "r" 
-			(Elam(tY, ("y", 
+			(Elam(Trec tY, ("y", 
 				bind f
 					(Elam (t1,("v", Eapp (Eapp (Eunroll (Evar "y"), Evar "y"), Evar "v"))))
 					(Elam (t1,b))
 			)))
-			(Eapp(Evar "r", Eroll(Tarr(tY, tF), Evar "r")))
+			(Eapp(Evar "r", Eroll(tY, Evar "r")))
 		)
 		e
 	end
