@@ -88,12 +88,12 @@ fun testProgram verbose name p =
 		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
 		
 		(* Splitting *)
-		val (split1, _, (l,split2)) = StageSplit.coerce1v (StageSplit.stageSplit1 propegated)
+		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
 		
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);
 		val _ = debug "---\n";
-		val _ = debug (Variable.toString l);
+		val _ = debug (PrintPSF.pat2string (PrintPSF.convertPSFPattern l));
 		val _ = debug ".";
 		val _ = printTerm (PrintPSF.convertPSF split2);
 		
@@ -109,7 +109,7 @@ fun testProgram verbose name p =
 		
 		(* Evaluating Split Part *)
 		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate Contexts.empty split1
-		val v2Split = PSFSemantics.evaluate (Contexts.extendContext Contexts.empty l pSplit) split2
+		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
 		
 		
 		(* Comparing *)
@@ -131,5 +131,5 @@ fun testProgram verbose name p =
 	end
 
 
-fun runtests () = List.app (fn (name,prog) => testProgram 1 name prog) (List.concat programs)
+fun runtests () = List.app (fn (name,prog) => testProgram 2 name prog) (List.concat programs)
 end

@@ -12,7 +12,7 @@ datatype value	= Vint of int
 				| Vroll of value
 				| Vtuple of value list
 				| Vinj of LR * value
-				| Vlam of (var, value) context * (pattern * unit expr)
+				| Vlam of (var, value) context * (ppatt * unit expr)
 
 exception Stuck
 
@@ -26,10 +26,11 @@ fun unconvertPrim (P.Vint i) = Vint i
 fun untuple (Vtuple v) = v
   | untuple	_ = raise Stuck
 
+val extendPattern = forPattern (extendContext, untuple, Stuck)
 fun evaluate env exp = 
 	let
 		val eval = evaluate env
-		fun evalBranchE v (env,(x,e)) = evaluate (forPattern (extendContext, untuple, Stuck) env x v) e
+		fun evalBranchE v (env,(x,e)) = evaluate (extendPattern env x v) e
 		fun evalBranch v b = evalBranchE v (env, b)
 	in
 		case exp of 

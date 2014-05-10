@@ -1,0 +1,175 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+\documentclass{sigplanconf}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+
+
+\begin{document}
+
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+
+\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country} 
+\copyrightyear{20yy} 
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm} 
+\doi{nnnnnnn.nnnnnnn}
+
+% Uncomment one of the following two, if you are not going for the 
+% traditional copyright transfer agreement.
+
+%\exclusivelicense                % ACM gets exclusive license to publish, 
+                                  % you retain copyright
+
+%\permissiontopublish             % ACM gets nonexclusive license to publish
+                                  % (paid open-access papers, 
+                                  % short abstracts)
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{Stage-Splitting a Modal Language}
+
+\authorinfo{Name1}
+           {Affiliation1}
+           {Email1}
+\authorinfo{Name2\and Name3}
+           {Affiliation2/3}
+           {Email2/3}
+
+\maketitle
+
+\begin{abstract}
+This is the text of the abstract.
+\end{abstract}
+
+\category{CR-number}{subcategory}{third-level}
+
+% general terms are not compulsory anymore, 
+% you may leave them out
+\terms
+term1, term2
+
+\keywords
+keyword1, keyword2
+
+\section{Introduction}
+
+Introduction
+
+\section{A Two-Stage Modal Language}
+
+Introduce the next and prev concepts, along with typesystem.  Show some examples.  Introduce a hold operation.
+
+\section{Straw Semantics}
+
+Introduce the straw semantics, previously known as the ``erasure" semantics.
+
+\section{Data and Control Dependency}
+
+State a data-dependency theorem (that stage 1 values cannot depend on stage 2 values).  It should be true for the straw semantics!  Also state a control dependency theorem (that the execution of stage 1 code can't depend on stage 2 values).  This won't be true for the straw semantics, and show counterexample.
+
+\section{Diagonal Semantics}
+
+Present another semantics which obeys non-backwards control dependency.  This might be called the diagonal semantics.
+
+\section{Splitting Algorithm}
+
+Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.
+
+\section{Examples for Staged Pipelines}
+
+Give the gist of one-to-one pipeline example (like client/server).
+Then talk about a one-to-many pipeline.
+Then talk about a many-to-one pipeline like spark.  It clear how to target something like this for known base types on the boundary, and for product types.  But sums on the boundary are hard!  We leave many-to-one as future-work.
+
+
+\section{Examples of Algorithm Derivation}
+
+Fast exponent example.  Quickselect example.
+
+Things to try: an interpreter which, partially evaluated, does cps or something.
+
+\section{Related Work}
+
+Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's nondeterminism.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
+
+Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
+
+Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict.
+
+[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  The difference between this work and everything mention prior, is that first stage results aren't exactly  .  Syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
+
+In addition to introducing pass separation, \cite{jorring86} also distinguishes it from two other staging techniques: partial evaluation and meta-programming.
+
+[In brief, the three approaches can be distinguished based on when the first stage evaluation occurs, relative to when the compiler takes action.  In our work, the splitting occurs entirely before the first stage values are known.  In partial evaluation, these things happen essentially simultaneously.  For this reason, partial evaluation can do things like branch elimination for first-stage cases, which we cannot do.]
+
+[Our type system is adapted directly from \cite{davies96}.  It was originally developed to describe binding time analysis for use in partial evaluation.]
+
+[Metaprogramming is more different still.  It involves the creation of values that correspond to second stage code, often also with a primitive to allow the evaluation of second stage code to produce a first stage result.  For a type system that does that, you want \cite{davies01}.  Notice the closed-code restriction.  Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
+
+[What's going on with names and necessity?]
+
+[Our work bears a lot of similarity to ML5, which also uses a modal type system.  The difference is that we target stages systems (each stage talks to the next), whereas they target distributed ones (all stages talk to all others). The type systems reflect this directly in the world accessibility relation.  There might be some analogue of stage-splitting in the ML5 work, but I have not yet isolated it (might be buried in CPS conversion).]
+
+\appendix
+\section{Appendix Title}
+
+This is the text of the appendix, if you need one.
+
+\acks
+
+Acknowledgments, if needed.
+
+% We recommend abbrvnat bibliography style.
+
+\bibliographystyle{abbrvnat}
+
+% The bibliography should be embedded for final submission.
+
+\begin{thebibliography}{}
+\softraggedright
+
+\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
+P. Q. Smith, and X. Y. Jones. ...reference text...
+
+\end{thebibliography}
+
+
+\end{document}
+
+%                       Revision History
+%                       -------- -------
+%  Date         Person  Ver.    Change
+%  ----         ------  ----    ------
+
+%  2013.06.29   TU      0.1--4  comments on permission/copyright notices
+

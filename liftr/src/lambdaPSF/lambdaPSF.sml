@@ -12,20 +12,20 @@ datatype ty		= Tint
 				| Tvar of int
 				| Trec of ty
 
-datatype pattern	= PPvar of var
-					| PPtuple of pattern list
+datatype ppatt	= PPvar of var
+				| PPtuple of ppatt list
 							
 datatype 't expr	= Evar of var
 					| Eint of int
 					| Ebool of bool
-					| Elam of 't * (pattern * 't expr)
+					| Elam of 't * (ppatt * 't expr)
 					| Eapp of 't expr * 't expr
 					| Etuple of 't expr list
 					| Epi of int * 't expr
 					| Einj of LR * 't * 't expr
-					| Ecase of 't expr * (pattern * 't expr) * (pattern * 't expr)
+					| Ecase of 't expr * (ppatt * 't expr) * (ppatt * 't expr)
 					| Eif of 't expr * 't expr * 't expr
-					| Elet of 't expr * (pattern * 't expr)
+					| Elet of 't expr * (ppatt * 't expr)
 					| Ebinop of Prims.binops * 't expr * 't expr
 					| Eroll of 't expr
 					| Eunroll of 't expr

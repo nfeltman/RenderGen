@@ -47,8 +47,7 @@ fun bind v e1 e2 = Elet (e1,(Pvar v,e2))
 (* add lifts maybe *)
 fun Eletr (f,t1,t2,b,e) = 
 	let
-		val tF = Tarr(t1,t2)
-		val tY = Tarr(Tvar(0),tF)
+		val tY = Tarr(Tvar 0,Tarr(t1,t2))
 	in
 	bind f 
 		(bind "r" 

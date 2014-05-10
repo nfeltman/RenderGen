@@ -32,11 +32,11 @@ fun opToString bo = (
 		| Bor=> "or")
 				
 structure S = LambdaPSF
+fun convertPSFPattern (S.PPvar x) = Pvar (Variable.toString x)
+  | convertPSFPattern (S.PPtuple xs) = Ptuple (map convertPSFPattern xs)
 fun convertPSF e = 
 	let
-		fun convertPattern (S.PPvar x) = Pvar (Variable.toString x)
-		  | convertPattern (S.PPtuple xs) = Ptuple (map convertPattern xs)
-		fun convertBranch (x,e) = (convertPattern x, convertPSF e)
+		fun convertBranch (x,e) = (convertPSFPattern x, convertPSF e)
 		val convert = convertPSF
 	in
 		case e of 
@@ -70,11 +70,11 @@ fun convertSourceTypes convert ty =
 		| S.TFarr (t1, t2) => Ebinop ("->", convert t1, convert t2)
 		
 structure S = SourceLang
+fun convertSourcePattern (S.Pvar x) = Pvar (Variable.toString x)
+  | convertSourcePattern (S.Ptuple (x1,x2)) = Ptuple [convertSourcePattern x1, convertSourcePattern x2]
 fun convertSource convert convertTy ex = 
 	let
-		fun convertPattern (S.Pvar x) = Pvar (Variable.toString x)
-		  | convertPattern (S.Ptuple (x1,x2)) = Ptuple [convertPattern x1, convertPattern x2]
-		fun convertBranch (x,e) = (convertPattern x, convert e)
+		fun convertBranch (x,e) = (convertSourcePattern x, convert e)
 	in
 		case ex of 
 		  S.Fvar v => Eatom (Variable.toString v)
@@ -127,23 +127,23 @@ fun printTypeHelper (p : string -> unit) level ty =
 		| Trec t => prio 1 (fn () => (p "rec."; g 2 t))
 	end*)
 
+fun pat2string (Pvar x) = x
+  | pat2string (Ptuple xs) = "("^(String.concatWith "," (map pat2string xs))^")"
 fun convertTerm ex = 
 	let
 		val L = PrettyPrinter.Pliteral
 		fun S n e = PrettyPrinter.Psubterm (n, convertTerm e)
 		val toString = Variable.toString
-		fun cPatt (Pvar x) = x
-		  | cPatt (Ptuple xs) = "("^(String.concatWith "," (map cPatt xs))^")"
 	in
 		case ex of
 		  Eatom s => (0, [L s])
-		| Elam (t, (v,e)) => (2, [L ("fn "^cPatt v^" : "), S 2 t, L(" => "),  S 2 e])
+		| Elam (t, (v,e)) => (2, [L ("fn "^pat2string v^" : "), S 2 t, L(" => "),  S 2 e])
 		| Eapp (e1, e2) => (1, [S 1 e1, L " ", S 0 e2])
 		| Etuple [] => (0, [L "()"])
 		| Etuple (e0::es) => (0, L "(" :: S 2 e0 :: foldr (fn (e,prev) => L ", " :: S 2 e :: prev) [L ")"] es)
-		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^cPatt v2^" => "), S 2 e2, L (" | "^cPatt v3^" => "), S 2 e3])
+		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^pat2string v2^" => "), S 2 e2, L (" | "^pat2string v3^" => "), S 2 e3])
 		| Eif (e1,e2,e3) => (2, [L "if ", S 2 e1, L " then ", S 2 e2, L " else ", S 2 e3])
-		| Elet (e1,(v,e2)) => (2, [L ("let "^cPatt v^" = "), S 2 e1, L " in ", S 2 e2])
+		| Elet (e1,(v,e2)) => (2, [L ("let "^pat2string v^" = "), S 2 e1, L " in ", S 2 e2])
 		| Ebinop (bo, e1, e2) => (1, [S 2 e1, L bo, S 2 e2])
 		| EprimApp (f, e) => (1, [L (f^" "), S 0 e])
 		| EbraceApp (f, e) => (1, [L (f^" "), L "{", S 2 e, L "}"])
