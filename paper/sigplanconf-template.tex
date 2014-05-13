@@ -30,6 +30,7 @@
 % authoryear    To obtain author/year citation style instead of numeric.
 
 \usepackage{amsmath}
+\usepackage{stmaryrd}
 
 
 \begin{document}
@@ -83,11 +84,39 @@ keyword1, keyword2
 
 \section{Introduction}
 
-Introduction
+Staged computation has existed as a programming technique for over three decades.  Jorring et al. (\cite{jorring86}) identify three classes of staging techniques: meta-programming, partial evaluation, and stage-splitting.  The first two of these have received significantly more attention than the third.
+
+We call these techniques {\em staged} in that part of their input comes in the first stage, and part comes in the second stage.  Likewise, some computation occurs at each stage as well.
+
+Countless meta-programming systems exist (...twelve thousand citations...), and their background theory and type-systems are well understood (\cite{davies01}).  Partial evaluation, too, is well-understood.  Partial evaluation systems exist... . This paper explores both theory and applications for stage-splitting.  
+
+\section{Stage-Splitting Definition and Comparison to Partial Evaluation}
+
+First, we review the definition of partial evaluation.  Informally, a partial evaluator takes the code for a function $f$, as well as the first-stage input $x$ to that function, and produces the code for a version of that function {\em specialized} to the first input, often called $f_x$.  This $f_x$ function can then be evaluated with the second-stage input to produce the same final answer that $f$ would have.  The goal of the process is that $f_x$ should be cheaper to evaluate than $f$, although this can't be guaranteed for all inputs.  We now state this theorem more formally: a partial evaluator is some function $p$ such that,
+\[
+	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
+\]
+where (borrowing notation from \cite{jones94}), $\llbracket f \rrbracket$ means the mathematical function corresponding to the code given by $f$.
+
+Informally, we define stage-splitting to be the process of taking some function $f$ into two other functions, $f_1$ and $f_2$, where $f_1$ computes a partial result from the first-stage input, and $f_2$ uses that partial result and the second-stage input to compute a final result which is the same as if we had just run the original $f$ on both inputs.  Again, more formally, a stage-splitter is some $s$ such that,
+\[
+	\forall f. \exists f_1,f_2. [s(f) = (f_1,f_2) \text{ and } 
+	\forall x,y.\llbracket f \rrbracket(x,y)=\llbracket f_2 \rrbracket(\llbracket f_1 \rrbracket(x),y)]
+\]
+
+We first discuss a few similarities between partial-evaluation and stage-splitting.  First off, both techniques have the same form of input, namely a bivariate function where the first input comes at stage one, and the second input comes at stage two.  
+
+Again in both cases, the governing equations are too weak to fully determine the definitions of $p$ and $s$.  Indeed, both admit completely trivial definitions.  Consider the stage-splitter which always returns the identity for $f_1$ and $f$ for $f_2$, or analogously the partial evaluator which always returns an $f_x$ that just closes over the input $x$ and internally calls $f$ once $y$ is available. The ambiguity of these equations (modulo standard program equivalence of the outputs) can be resolved by adding annotations to $f$ to clearly specify the parts of the computation that are first stage and the parts that are second stage.  Later, we show that the same annotations suffice for both partial evaluation and stage-splitting.  
+
+The differences between stage-splitting and partial evaluation are likewise evident from these governing equations.  For instance in partial evaluation, the existential $f_x$ depends on $x$, which means that the partial evaluator cannot be run until $x$ is known.  Moreover, if one wishes to specialize $f$ for multiple $x$'s, then the partial evaluator must be run several times.  Depending on the use case and cost of partial evaluation, this may be prohibitively expensive.  Alternatively, a stage-splitter need only be run once, and this can be done entirely before any $x$ is known.
+
+We can recover a valid partial evaluator from a stage-splitter by stage-splitting the input function $f$ into $f_1$ and $f_2$, computing $\llbracket f_1 \rrbracket(x)$ to obtain $\bar x$, and then returning an $f_x$ such that $\llbracket f_x \rrbracket(y) = \llbracket f_2 \rrbracket(\bar x, y)$.  However, one {\em cannot} construct a valid stage-splitter out of a partial evaluator, since a partial evaluator by definition depends on the first-stage input, whereas a stage-splitter does not have that available.
+
+Note that this does not mean that stage-splitting is a strict generalization of partial-evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting 
 
 \section{A Two-Stage Modal Language}
 
-Introduce the next and prev concepts, along with typesystem.  Show some examples.  Introduce a hold operation.
+Introduce the next and prev concepts, along with typesystem.  Introduce binding time analysis here, and explain that we don't care about it.  Show some examples.  Introduce a hold operation.
 
 \section{Straw Semantics}
 
@@ -99,7 +128,7 @@ State a data-dependency theorem (that stage 1 values cannot depend on stage 2 va
 
 \section{Diagonal Semantics}
 
-Present another semantics which obeys non-backwards control dependency.  This might be called the diagonal semantics.
+Present another semantics which obeys non-backwards control dependency.  This might be called the diagonal semantics.  Go through an example such as currying to build intuition for why this is really necessary (i.e., if we don't have these weird rules, currying breaks down!).
 
 \section{Splitting Algorithm}
 
@@ -118,23 +147,23 @@ Fast exponent example.  Quickselect example.
 
 Things to try: an interpreter which, partially evaluated, does cps or something.
 
+For each of these examples, talk about what partial evaluation would do and why that might be bad.
+
 \section{Related Work}
 
-Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's nondeterminism.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
+Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's ambiguity.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
 
 Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
 
-Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict.
+Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict, but the authors did note that first-stage if statements were difficult to provide meaning to [need quote].
 
-[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  The difference between this work and everything mention prior, is that first stage results aren't exactly  .  Syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
+[RTSL and SH]
 
-In addition to introducing pass separation, \cite{jorring86} also distinguishes it from two other staging techniques: partial evaluation and meta-programming.
+[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  They have the same many-to-one use case as Spark, but syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
 
-[In brief, the three approaches can be distinguished based on when the first stage evaluation occurs, relative to when the compiler takes action.  In our work, the splitting occurs entirely before the first stage values are known.  In partial evaluation, these things happen essentially simultaneously.  For this reason, partial evaluation can do things like branch elimination for first-stage cases, which we cannot do.]
+Davies (\cite{davies96}) explored the connection between linear temporal logic and its corresponding type system [circle](which we adapted into [circle sub 2]), and showed the equivalence between [circle] and existing systems for binding time analysis. That work provided $\beta$ and $\eta$ rules for the next and prev operators, but did not consider a full dynamic semantics for the whole language. Whereas [name of our type system] is appropriate for stage-splitting and partial evaluation, \cite{davies01} provides a similar system, [square], that is appropriate for meta-programming.  The main difference is that terms inside a [prev] operator do not see any stage-2 bindings declared outside of it.  They note that where [circle] corresponds to the non-branching temporal logic, [square] corresponds to the branching version.
 
-[Our type system is adapted directly from \cite{davies96}.  It was originally developed to describe binding time analysis for use in partial evaluation.]
-
-[Metaprogramming is more different still.  It involves the creation of values that correspond to second stage code, often also with a primitive to allow the evaluation of second stage code to produce a first stage result.  For a type system that does that, you want \cite{davies01}.  Notice the closed-code restriction.  Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
+[Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
 
 [What's going on with names and necessity?]
 
