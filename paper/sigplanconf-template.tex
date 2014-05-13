@@ -88,7 +88,7 @@ Staged computation has existed as a programming technique for over three decades
 
 We call these techniques {\em staged} in that part of their input comes in the first stage, and part comes in the second stage.  Likewise, some computation occurs at each stage as well.
 
-Countless meta-programming systems exist (...twelve thousand citations...), and their background theory and type-systems are well understood (\cite{davies01}).  Partial evaluation, too, is well-understood.  Partial evaluation systems exist... . This paper explores both theory and applications for stage-splitting.  
+Countless meta-programming systems exist (...twelve thousand citations...\cite{devito13}), and their background theory and type-systems are well understood (\cite{davies01}).  Partial evaluation, too, is well-understood.  Partial evaluation systems exist... . This paper explores both theory and applications for stage-splitting.  
 
 \section{Stage-Splitting Definition and Comparison to Partial Evaluation}
 
@@ -96,7 +96,7 @@ First, we review the definition of partial evaluation.  Informally, a partial ev
 \[
 	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
 \]
-where (borrowing notation from \cite{jones94}), $\llbracket f \rrbracket$ means the mathematical function corresponding to the code given by $f$.
+where (borrowing notation from \cite{jones96}), $\llbracket f \rrbracket$ means the mathematical function corresponding to the code given by $f$.
 
 Informally, we define stage-splitting to be the process of taking some function $f$ into two other functions, $f_1$ and $f_2$, where $f_1$ computes a partial result from the first-stage input, and $f_2$ uses that partial result and the second-stage input to compute a final result which is the same as if we had just run the original $f$ on both inputs.  Again, more formally, a stage-splitter is some $s$ such that,
 \[
@@ -112,7 +112,7 @@ The differences between stage-splitting and partial evaluation are likewise evid
 
 We can recover a valid partial evaluator from a stage-splitter by stage-splitting the input function $f$ into $f_1$ and $f_2$, computing $\llbracket f_1 \rrbracket(x)$ to obtain $\bar x$, and then returning an $f_x$ such that $\llbracket f_x \rrbracket(y) = \llbracket f_2 \rrbracket(\bar x, y)$.  However, one {\em cannot} construct a valid stage-splitter out of a partial evaluator, since a partial evaluator by definition depends on the first-stage input, whereas a stage-splitter does not have that available.
 
-Note that this does not mean that stage-splitting is a strict generalization of partial-evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting 
+Note that this does not mean that stage-splitting is a strict generalization of partial evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting as simply the first half of partial evaluation, where the back half is an optimizer. [Might be able to come up with a futamura projection-like statement here, which would be really really really cool.]
 
 \section{A Two-Stage Modal Language}
 
@@ -180,17 +180,8 @@ Acknowledgments, if needed.
 
 % We recommend abbrvnat bibliography style.
 
+\bibliography{paper}
 \bibliographystyle{abbrvnat}
-
-% The bibliography should be embedded for final submission.
-
-\begin{thebibliography}{}
-\softraggedright
-
-\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
-P. Q. Smith, and X. Y. Jones. ...reference text...
-
-\end{thebibliography}
 
 
 \end{document}
