@@ -4,66 +4,74 @@ struct
 
 open Lambda12c
 open LangCommon
+open ErasureSemantics
 structure Comp = ValueComparison
+
+datatype testLevel = NONE | SAME | EXACT of value1
+val ansI = EXACT o V1 o VFint
+val ansB = EXACT o V1 o VFbool
+
+infixr 9 `
+fun a ` b = a b
 
 val _ = Variable.reset ()
 
 fun j test = [test]
-fun k (name,prog) = [(name^"-first",prog), (name^"-second","next{"^prog^"}")]
+fun k (name,prog,t) = [(name^"-first",prog,t), (name^"-second","next{"^prog^"}", case t of EXACT v => EXACT (V1next (holdGeneral v)) | _ => t)]
 val programs = [
-k("fourPlusSix", 		"4 + 6"),
-k("twoTimesThree", 		"2 * 3"),
-k("twoGtThree", 		"2 > 3"),
-k("proj1", 				"#1 (3,true)"),
-k("proj2", 				"#2 (3,true)"),
-k("proj3", 				"3 + #1 (3,true)"),
-k("proj4", 				"#1 (3,true) + 3"),
-k("let1", 				"let x = 4 + 6 in x * x"),
-k("let2", 				"let (x,b) = (4+6,false) in if b then x else x * x"),
-j("letnext",			"let x = next{4 + 6} in next {prev{x} * prev{x}}" ),
-j("doubleBind", 		"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}" ),
-k("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3"),
-j("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}"),
-j("if2", 				"next{ if 2 > 3 then prev{hold (4 + 6)} else 2 * 3}"),
-j("ifBothSides",		"next{ if 2 > 3 then prev{hold (4 + 6)} else prev{hold (2 * 3)}}"),
-j("ifPred",				"next{ if 2 > prev{hold (2 + 4)} then prev{hold (4 + 6)} else prev{hold (2 * 3)}}"),
-j("if7",				"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}"),
-j("holdif",				"hold (if 2 > 3 then 1 else 0)"),
-j("holdif2",			"next {prev {hold (if 2 > 3 then 1 else 0)}}"),
-k("funcApp1", 			"(fn x : int => x + x) 45"),
-k("funcApp2", 			"let f = fn x : int => x + x in f 45"),
-k("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45"),
-k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12"),
-j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45"),
-k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y"),
-k("caseRight", 			"case inr int 34 of x => x * x | y => y + y"),
-k("highOrder1", 		"(fn f:(int->int) => f 5) (fn x:int=>x+x)"),
-k("closure", 			"(let x = 3 in fn y:int=> x*y) 5"),
-k("higherOrder1", 		"(fn f:(int->int) => fn x:int=> f (f x)) (fn y:int=>y+y) 5"),
-j("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))"),
+k("fourPlusSix", 		"4 + 6",ansI 10),
+k("twoTimesThree", 		"2 * 3",ansI 6),
+k("twoGtThree", 		"2 > 3",ansB false),
+k("proj1", 				"#1 (3,true)",ansI 3),
+k("proj2", 				"#2 (3,true)",ansB true),
+k("proj3", 				"3 + #1 (3,true)",ansI 6),
+k("proj4", 				"#1 (3,true) + 3",ansI 6),
+k("let1", 				"let x = 4 + 6 in x * x",ansI 100),
+k("let2", 				"let (x,b) = (4+6,false) in if b then x else x * x",ansI 100),
+j("letnext",			"let x = next{4 + 6} in next {prev{x} * prev{x}}",SAME),
+j("doubleBind", 		"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}",SAME),
+k("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3",ansI 10),
+j("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}",SAME),
+j("if2", 				"next{ if 2 > 3 then prev{hold (4 + 6)} else 2 * 3}",SAME),
+j("ifBothSides",		"next{ if 2 > 3 then prev{hold (4 + 6)} else prev{hold (2 * 3)}}",SAME),
+j("ifPred",				"next{ if 2 > prev{hold (2 + 4)} then prev{hold (4 + 6)} else prev{hold (2 * 3)}}",SAME),
+j("if7",				"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}",SAME),
+j("holdif",				"hold (if 2 > 3 then 1 else 0)",SAME),
+j("holdif2",			"next {prev {hold (if 2 > 3 then 1 else 0)}}",SAME),
+k("funcApp1", 			"(fn x : int => x + x) 45",ansI 90),
+k("funcApp2", 			"let f = fn x : int => x + x in f 45",ansI 90),
+k("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45",ansI 102),
+k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
+j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45",SAME),
+k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y",ansI 1156),
+k("caseRight", 			"case inr int 34 of x => x * x | y => y + y",ansI 68),
+k("highOrder1", 		"(fn f:(int->int) => f 5) (fn x:int=>x+x)",ansI 10),
+k("closure", 			"(let x = 3 in fn y:int=> x*y) 5",ansI 15),
+k("higherOrder1", 		"(fn f:(int->int) => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
+j("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))",SAME),
 j("datastruct3", 		"letfun map (f : int -> $int) = " ^ 
 						"fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
-						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))"),
+						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))",SAME),
 j("datastruct4", 		"letfun map (f : int -> $int) = " ^ 
 						"fn ((M1,M2),(M3,M4)):((int*int)*(int*int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
-						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))"),
-k("roll1",				"roll (int) 5"),
-k("roll2",				"roll (int * bool) (234, true)"),
-k("unroll1",			"unroll (roll (int * bool) (234, true))"),
-k("emptyList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in empty"),
+						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))",SAME),
+k("roll1",				"roll (int) 5",SAME),
+k("roll2",				"roll (int * bool) (234, true)",SAME),
+k("unroll1",			"#1 (unroll (roll (int * bool) (234, true)))",ansI 234),
+k("emptyList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in empty",SAME),
 k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
-						"cons (5, cons (3, empty))"),
-k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5"),
+						"cons (5, cons (3, empty))",SAME),
+k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
 k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
-						"sum (cons (5, cons (3, empty)))")
+						"sum (cons (5, cons (3, empty)))",ansI 8)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
 				
-fun testProgram verbose name p = 
+fun testProgram verbose name p t = 
 	let
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
@@ -114,14 +122,23 @@ fun testProgram verbose name p =
 		
 		(* Comparing *)
 		fun triComp a b c = (Comp.valueEq a b, Comp.valueEq a c, Comp.valueEq b c)
-		val (ed1, es1, ds1) = (*triComp v1Eras v1DiagC v1Split*) triComp v1Eras v1Split v1Split
-		val (ed2, es2, ds2) = (*triComp v2Eras v2DiagC v2Split*) triComp v2Eras v2Split v2Split
-		val results = [ed1, es1, ds1, ed2, es2, ds2]
+		val results = 
+		case t of
+		  NONE => []
+		| SAME => let
+			val (ed1, es1, ds1) = (*triComp v1Eras v1DiagC v1Split*) triComp v1Eras v1Split v1Split
+			val (ed2, es2, ds2) = (*triComp v2Eras v2DiagC v2Split*) triComp v2Eras v2Split v2Split
+			in [ed1, es1, ds1, ed2, es2, ds2] end
+		| EXACT v => let
+			val (v1Suplied,v2Suplied) = Comp.splitErasureValue1 v
+			val (ed1, es1, ds1) = triComp v1Suplied v1Eras v1Split
+			val (ed2, es2, ds2) = triComp v2Suplied v2Eras v2Split
+			in [ed1, es1, ds1, ed2, es2, ds2] end
 		
 		(* Epilogue *)
 		fun printTestResult b = emit (if b then "P" else "F")
 		val _ = if List.all (fn b=>b) results 
-				then (debug "\n"; emit "all pass!\n"; debug "\n") 
+				then (debug "\n"; emit (case results of [] => "no tests!" | _ => "all pass!\n"); debug "\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
 	(*	printTerm (PrintPSF.convertDiag rDiag);
@@ -131,5 +148,9 @@ fun testProgram verbose name p =
 	end
 
 
-fun runtests () = List.app (fn (name,prog) => testProgram 2 name prog) (List.concat programs)
+fun runtests () = List.app (fn (name,prog,t) => testProgram 1 name prog t) (List.concat programs)
+
+(* 
+val compiled = CM.make "sources.cm"; if compiled then Examples.runtests() else ();
+*)
 end

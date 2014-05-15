@@ -11,6 +11,10 @@ datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
 and		value2	= V2 of (value2,cont,var pattern,expr2) valueF
 withtype   cont = (var, (value1,value2) doubleEntry) context
 
+fun holdGeneral (V1 (VFint i)) = V2 (VFint i)
+  | holdGeneral (V1 (VFbool b)) = V2 (VFbool b)
+  | holdGeneral _ = raise Stuck
+
 fun V1unwrap (V1 v) = v
   | V1unwrap _ = raise Stuck
 fun unnext (V1next v) = v
