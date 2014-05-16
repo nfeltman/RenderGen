@@ -7,17 +7,17 @@
 \newcommand {\lamStaged} {$\lambda^{\bbone\bbtwo}$}
 \newcommand {\lamResid} {$\mathrm{\lambda^R}$}
 \newcommand {\lamTarget} {$\mathrm{\lambda^T}$}
-\newcommand {\mono} {$\lambda$}
+%\newcommand {\mono} {$\lambda$}
 \newcommand {\rmunit} {{\rm unit}}
 \newcommand {\rmbool} {{\rm bool}}
 
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
 \newcommand {\stage} {\langle\mathit{stage}\rangle}
-\newcommand {\type} {\langle\mathit{type}\rangle}
+\newcommand {\type} {\tau}
 \newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
 \newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
-\newcommand {\expr} {\langle\mathit{exp}\rangle}
+\newcommand {\expr} {e}
 \newcommand {\brancho} {\langle\bbone\text{-}\mathit{brn}\rangle}
 \newcommand {\brancht} {\langle\bbtwo\text{-}\mathit{brn}\rangle}
 \newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
@@ -25,12 +25,12 @@
 \newcommand {\val} {\langle\mathit{val}\rangle}
 \newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
 \newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
-\newcommand {\var} {\langle\mathit{var}\rangle}
+\newcommand {\world} {w}
+\newcommand {\var} {x}
 \newcommand {\emptyC} {\bullet}
-\newcommand {\contextot} {\langle\bbone\bbtwo\text{-}\mathit{cont}\rangle}
-\newcommand {\context} {\langle\mathit{cont}\rangle}
-\newcommand {\inte} {\langle\mathit{int}\rangle}
-\newcommand {\bool} {\langle\mathit{bool}\rangle}
+\newcommand {\context} {\Gamma}
+\newcommand {\inte} {i}
+\newcommand {\bool} {b}
 \newcommand {\resi} {\langle\mathit{res}\rangle}
 \newcommand {\gbar} {~~|~~}
 
@@ -41,6 +41,8 @@
 \newcommand {\fut} {\bigcirc}
 \newcommand {\inl} {{\tt inl}}
 \newcommand {\inr} {{\tt inr}}
+\newcommand {\pio} {{\tt pi1}}
+\newcommand {\pit} {{\tt pi2}}
 \newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
 \newcommand {\talllet} [3] {\begin{array}{l} {\tt let}~{#1} = {#2}~{\tt in} \\ {#3}\end{array}}
 \newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
@@ -59,17 +61,27 @@
 %judgements
 \newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
+\newcommand {\colwor} [2] {{#1}:{#2}~@~w}
 \newcommand {\typesone} [3] [] { \Gamma{#1} \vdash \colone{#2}{#3}}
 \newcommand {\typestwo} [3] [] { \Gamma{#1} \vdash \coltwo{#2}{#3}}
+\newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
+\newcommand {\istypeone} {~{\rm type}~@~\bbone}
+\newcommand {\istypetwo} {~{\rm type}~@~\bbtwo}
+\newcommand {\istypewor} {~{\rm type}~@~w}
 
+\newcommand {\isvalone} {~{\rm val}~@~\bbone}
+\newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
+\newcommand {\isvalwor} {~{\rm val}~@~w}
 \newcommand {\reduceone} [2] {{#1} \Downarrow_\bbone {#2}}
 \newcommand {\reducetwo} [2] {{#1} \Downarrow_\bbtwo {#2}}
+\newcommand {\reducewor} [2] {{#1} \Downarrow_w {#2}}
 \newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
 \newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
 \newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
+\newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
 \newcommand {\rstwosub} [1] [] {\rstwo{e_{#1}}{r_{#1}}}
 
@@ -102,6 +114,11 @@
 			\renewcommand \ty \typestwo
 			\renewcommand \col \coltwo
 			\infer [\mathrm{#1\text{-}\bbtwo}] {#2}{#3}}
+\newcommand {\infertypeswor}  [3] 
+		[NONAME]{
+			\renewcommand \ty \typeswor
+			\renewcommand \col \colwor
+			\infer [\mathrm{#1}] {#2}{#3}}
 \newcommand {\inferreduceone} [3] 
 		[NONAME]{
 			\renewcommand \red \reduceone
@@ -112,6 +129,11 @@
 			\renewcommand \red \reducetwo
 			\renewcommand \sub \reducetwosub
 			\infer [\mathrm{#1\Downarrow_\bbtwo}] {#2}{#3}}
+\newcommand {\inferreducewor} [3] 
+		[NONAME]{
+			\renewcommand \red \reducewor
+			\renewcommand \sub \reduceworsub
+			\infer [\mathrm{#1\Downarrow}] {#2}{#3}}
 \newcommand {\inferRedsplitone} [3] 
 		[NONAME]{
 			\renewcommand \red \rsone
