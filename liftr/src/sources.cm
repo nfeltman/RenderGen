@@ -30,6 +30,8 @@ Group is
 	  (* test code *)
 	  printing/printer.sml
 	  printing/printPSF.sml
+	  printing/layout.sml
+	  printing/layout-sig.sml
 	  examples.sml
 	  
 	  (* parser *)

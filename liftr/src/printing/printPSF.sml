@@ -4,19 +4,7 @@ struct
 
 open LangCommon
 open Prims
-
-datatype patt	= Pvar of string
-				| Ptuple of patt list
-datatype expr	= Eatom of string
-				| Elam of expr * (patt * expr)
-				| Eapp of expr * expr
-				| Etuple of expr list
-				| Ecase of expr * (patt * expr) * (patt * expr)
-				| Eif of expr * expr * expr
-				| Elet of expr * (patt * expr)
-				| Ebinop of string * expr * expr
-				| EprimApp of string * expr
-				| EbraceApp of string * expr
+open PrettyPrinter
 
 fun opToString bo = (
 		case bo of 
@@ -127,25 +115,5 @@ fun printTypeHelper (p : string -> unit) level ty =
 		| Trec t => prio 1 (fn () => (p "rec."; g 2 t))
 	end*)
 
-fun pat2string (Pvar x) = x
-  | pat2string (Ptuple xs) = "("^(String.concatWith "," (map pat2string xs))^")"
-fun convertTerm ex = 
-	let
-		val L = PrettyPrinter.Pliteral
-		fun S n e = PrettyPrinter.Psubterm (n, convertTerm e)
-		val toString = Variable.toString
-	in
-		case ex of
-		  Eatom s => (0, [L s])
-		| Elam (t, (v,e)) => (2, [L ("fn "^pat2string v^" : "), S 2 t, L(" => "),  S 2 e])
-		| Eapp (e1, e2) => (1, [S 1 e1, L " ", S 0 e2])
-		| Etuple [] => (0, [L "()"])
-		| Etuple (e0::es) => (0, L "(" :: S 2 e0 :: foldr (fn (e,prev) => L ", " :: S 2 e :: prev) [L ")"] es)
-		| Ecase (e1,(v2,e2),(v3,e3)) => (2, [L "case ", S 2 e1, L (" of "^pat2string v2^" => "), S 2 e2, L (" | "^pat2string v3^" => "), S 2 e3])
-		| Eif (e1,e2,e3) => (2, [L "if ", S 2 e1, L " then ", S 2 e2, L " else ", S 2 e3])
-		| Elet (e1,(v,e2)) => (2, [L ("let "^pat2string v^" = "), S 2 e1, L " in ", S 2 e2])
-		| Ebinop (bo, e1, e2) => (1, [S 2 e1, L bo, S 2 e2])
-		| EprimApp (f, e) => (1, [L (f^" "), S 0 e])
-		| EbraceApp (f, e) => (1, [L (f^" "), L "{", S 2 e, L "}"])
-	end
+
 end

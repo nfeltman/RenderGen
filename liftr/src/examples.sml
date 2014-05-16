@@ -76,7 +76,8 @@ fun testProgram verbose name p t =
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
 		val debug = if verbose >= 2 then print else (fn _ => ())
-		fun printTerm e = (((PrettyPrinter.printTerm debug) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm) e; debug "\n")
+	(*	fun printTerm e = (((PrettyPrinter.printTerm debug) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm) e; debug "\n") *)
+		fun printTerm e = (PrettyPrinter.printExp debug e; debug "\n")
 		
 		(* Prologue *)
 		val _ = (emit "Starting test: "; emit (pad name 24); emit " ...")
@@ -102,7 +103,7 @@ fun testProgram verbose name p t =
 		val _ = printTerm (PrintPSF.convertPSF split1);
 		val _ = debug "---\n";
 		val _ = debug (PrintPSF.pat2string (PrintPSF.convertPSFPattern l));
-		val _ = debug ".";
+		val _ = debug ".\n";
 		val _ = printTerm (PrintPSF.convertPSF split2);
 		
 		(* Erasure Semantics *)
@@ -148,7 +149,7 @@ fun testProgram verbose name p t =
 	end
 
 
-fun runtests () = List.app (fn (name,prog,t) => testProgram 1 name prog t) (List.concat programs)
+fun runtests () = List.app (fn (name,prog,t) => testProgram 2 name prog t) (List.concat programs)
 
 (* 
 val compiled = CM.make "sources.cm"; if compiled then Examples.runtests() else ();
