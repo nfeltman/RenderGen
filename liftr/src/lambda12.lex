@@ -30,6 +30,7 @@ ws = [\ \t];
 ","      => (Tokens.COMMA(!pos,!pos));
 "$"      => (Tokens.DOLLAR(!pos,!pos));
 "="      => (Tokens.EQ(!pos,!pos));
+"=="     => (Tokens.DEQ(!pos,!pos));
 "->"     => (Tokens.ARROW(!pos,!pos));
 "=>"     => (Tokens.DARROW(!pos,!pos));
 ">"      => (Tokens.GT(!pos,!pos));
@@ -63,6 +64,7 @@ ws = [\ \t];
 				| "bool" => Tokens.BOOL(!pos,!pos)
 				| "unit" => Tokens.UNIT(!pos,!pos)
 				| "mu" => Tokens.MU(!pos,!pos)
+				| "mod" => Tokens.MOD(!pos,!pos)
 				| s => Tokens.ID(s,!pos,!pos)
             );
 "-"      => (Tokens.SUB(!pos,!pos));

@@ -22,7 +22,7 @@ open LangCommon
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
-	  MU
+	  MU | MOD | DEQ
 %nonterm EXP of expr | MATCH of patt * expr |
 	  TY of ty | AEXP of expr | BEXP of expr |
 	  BINOP of Prims.binops | PATT of patt
@@ -43,10 +43,13 @@ open LangCommon
 BINOP : PLUS						(Prims.Iplus)
 	  | TIMES						(Prims.Itimes)
 	  | SUB							(Prims.Iminus)
+	  | DIV							(Prims.Idiv)
+	  | DEQ							(Prims.Iequal)
 	  | GT							(Prims.Igreater)
 	  | LT							(Prims.Iless)
 	  | GTE							(Prims.Igreatereq)
 	  | LTE							(Prims.Ilesseq)
+	  | MOD							(Prims.Imod)
  
  BEXP : BEXP AEXP					(Eapp (BEXP, AEXP))
 	  | PROJL AEXP					(Epi(Left,AEXP))

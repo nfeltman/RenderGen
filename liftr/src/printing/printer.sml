@@ -31,7 +31,7 @@ fun rp slot ex =
 		| Ecase (e1,b1,b2) => need 2 ` Ecase (top e1, rpb b1, rpb b2)
 		| Eif (e1,e2,e3) => need 2 ` Eif (top e1, top e2, top e3)
 		| Elet (e,b) => need 2 ` Elet (top e, rpb b)
-		| Ebinop (bo, e1, e2) => need 1 ` Ebinop (bo, top e1, top e2)
+		| Ebinop (bo, e1, e2) => need 2 ` Ebinop (bo, rp 1 e1, rp 1 e2)
 		| EprimApp (f, e) => need 1 ` EprimApp (f, rp 0 e)
 		| EbraceApp (f, e) => need 1 ` EbraceApp (f, top e)
 	end

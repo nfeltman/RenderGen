@@ -9,6 +9,7 @@ structure Comp = ValueComparison
 
 datatype testLevel = NONE | SAME | EXACT of value1
 val ansI = EXACT o V1 o VFint
+val ansNI = EXACT o V1next o V2 o VFint
 val ansB = EXACT o V1 o VFbool
 
 infixr 9 `
@@ -66,7 +67,26 @@ k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1)
 k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
-						"sum (cons (5, cons (3, empty)))",ansI 8)
+						"sum (cons (5, cons (3, empty)))",ansI 8),
+j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
+						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE),
+j("fastexp",			"letrec exp ((b,e) : ($int)*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
+						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243),
+j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
+						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"letrec partition ((p,l) : int*mu unit + int * 0) : int*((mu unit + int * 0) * (mu unit + int * 0)) = "^
+							"case unroll l of em => (0,(empty,empty)) | (h,t) => "^
+								"let (s,(left,right)) = partition (p,t) in "^
+								"if h<p then (s+1, (cons (h,left),right)) else (s,(left, cons(h,right))) in " ^
+						"letrec qs ((l,i) : (mu unit + int * 0) * $int) : $int = "^
+							"case unroll l of "^
+							  "em => next {0} "^
+							"| (h,t) => let (n,(left,right)) = partition (h,t) in "^
+								"next { let n = prev {hold n} in "^
+									"if prev{i} < n then prev{qs (left,i)} " ^
+									"else if prev{i} == n then prev{hold h} " ^
+									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
+						"in let c = cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,empty)))))), next{2})", ansNI 4)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -108,7 +128,6 @@ fun testProgram verbose name p t =
 		
 		(* Erasure Semantics *)
 		val valErasure = ErasureSemantics.eval1 Contexts.empty propegated
-		val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
 				
 		(* Diagonal Semantics *)
 	(*	val (v1Diag, rDiag) = DiagonalSemantics.eval1 empty propegated
@@ -127,14 +146,16 @@ fun testProgram verbose name p t =
 		case t of
 		  NONE => []
 		| SAME => let
+		val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
 			val (ed1, es1, ds1) = (*triComp v1Eras v1DiagC v1Split*) triComp v1Eras v1Split v1Split
 			val (ed2, es2, ds2) = (*triComp v2Eras v2DiagC v2Split*) triComp v2Eras v2Split v2Split
 			in [ed1, es1, ds1, ed2, es2, ds2] end
 		| EXACT v => let
+			val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
 			val (v1Suplied,v2Suplied) = Comp.splitErasureValue1 v
-			val (ed1, es1, ds1) = triComp v1Suplied v1Eras v1Split
-			val (ed2, es2, ds2) = triComp v2Suplied v2Eras v2Split
-			in [ed1, es1, ds1, ed2, es2, ds2] end
+			val (ae1, as1, es1) = triComp v1Suplied v1Eras v1Split
+			val (ae2, as2, es2) = triComp v2Suplied v2Eras v2Split
+			in [ae1, as1, es1, ae2, as2, es2] end
 		
 		(* Epilogue *)
 		fun printTestResult b = emit (if b then "P" else "F")

@@ -9,7 +9,9 @@ end
 structure Prims = 
 struct
 
-datatype binops = Iplus | Iminus | Itimes | Iless | Igreater | Iequal | Ilesseq | Igreatereq | Band | Bor
+datatype binops = Iplus | Iminus | Itimes | Iless | Igreater 
+				| Iequal | Ilesseq | Igreatereq | Imod | Idiv
+				| Band | Bor
 
 functor PrimTyper (P : TypeProvider) = 
 struct
@@ -18,7 +20,9 @@ fun getTypes bo =
 	case bo of 
 	  Iplus => (P.Tint, P.Tint, P.Tint)
 	| Iminus => (P.Tint, P.Tint, P.Tint)
+	| Imod => (P.Tint, P.Tint, P.Tint)
 	| Itimes => (P.Tint, P.Tint, P.Tint)
+	| Idiv => (P.Tint, P.Tint, P.Tint)
 	| Iless => (P.Tint, P.Tint, P.Tbool)
 	| Igreater => (P.Tint, P.Tint, P.Tbool)
 	| Iequal => (P.Tint, P.Tint, P.Tbool)
@@ -41,6 +45,8 @@ fun evalPrim (primop, Vint j, Vint k) = (
 	  Iplus => Vint (j+k)
 	| Iminus => Vint (j-k)
 	| Itimes => Vint (j*k)
+	| Idiv => Vint (j div k)
+	| Imod => Vint (j mod k)
 	| Iless => Vbool (j<k)
 	| Igreater => Vbool (j>k)
 	| Iequal => Vbool (j=k)

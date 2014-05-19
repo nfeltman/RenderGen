@@ -11,6 +11,8 @@ fun opToString bo = (
 		  Iplus => "+"
 		| Iminus => "-"
 		| Itimes => "*"
+		| Idiv => "/"
+		| Imod => "mod"
 		| Iless => "<"
 		| Igreater => ">"
 		| Iequal => "=="
