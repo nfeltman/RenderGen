@@ -49,7 +49,7 @@ fun convertToLayout ex =
 		val % = Layout.mayAlign
 		val & = Layout.seq
 		val >> = Layout.indent
-		fun convertBranch (x,e) = &[$ (pat2string x), $ " => ", c e]
+		fun convertBranch (x,e) = %[&[$ (pat2string x), $ " =>"], >> 4 (c e)]
 	in
 		case ex of
 		  Eatom s => $ s
