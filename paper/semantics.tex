@@ -70,8 +70,24 @@
 \inferreducewor [+ E_2]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
 \inferreducewor [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}				{\red{e_1}{\bf true}  & \red{e_2}{v}} 										\and
 \inferreducewor [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}				{\red{e_1}{\bf false} & \red{e_3}{v}}										\and
-\inferreducewor [\fut I]			{\reduceone {\next~e}{\next~v}}					{\reducetwosub}																\and
-\inferreducewor [\fut E]			{\reducetwo {\prev~e} v}							{\reduceone e {\valnext~v}} 													\and
+\inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
+\inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
+\inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
+
+\inferreducespc [\rmunit]		{\red {()}}									{\cdot} 								\and
+\inferreducespc [int]				{\red {i}}										{\cdot} 								\and
+\inferreducespc [bool]			{\red {b}}										{\cdot} 								\and
+\inferreducespc [\to I]			{\red {\lam{x}{A}{e}}}						{\sub} 									\and
+\inferreducespc [\to E]			{\red {e_1~e_2}}								{\sub [1] & \sub [2]}					\and
+\inferreducespc [let]				{\red {\letin{x}{e_1}{e_2}}}					{\sub [1] & \sub [2]} 				\and
+\inferreducespc [\times I]		{\red {(e_1,e_2)}}							{\sub [1] & \sub [2]} 				\and
+\inferreducespc [\times E_1]		{\red {\pio~e}}								{\sub [1]} 							\and
+\inferreducespc [\times E_2]		{\red {\pit~e}}								{\sub [1]} 							\and
+\inferreducespc [+ I_1]			{\red {\inl~e}}								{\sub} 									\and
+\inferreducespc [+ I_2]			{\red {\inr~e}}								{\sub} 									\and
+\inferreducespc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}}		{\sub [1] & \sub [2] & \sub [3]} 	\and
+\inferreducespc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}}				{\sub [1] & \sub [2] & \sub [3]} 	\and
+\inferreducespc [\fut E]			{\red {\prev~e}}								{\reducexpl \bbone \bbtwo e {DUM}} 	\and
 \end{mathpar}
 \end{figure}
 

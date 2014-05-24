@@ -73,17 +73,18 @@
 \newcommand {\isvalone} {~{\rm val}~@~\bbone}
 \newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
 \newcommand {\isvalwor} {~{\rm val}~@~w}
-\newcommand {\reduceone} [2] {{#1} \Downarrow_\bbone {#2}}
-\newcommand {\reducetwo} [2] {{#1} \Downarrow_\bbtwo {#2}}
-\newcommand {\reducewor} [2] {{#1} \Downarrow_w {#2}}
-\newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
-\newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
+\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
+\newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
+\newcommand {\specwor} [1] {{#1} \downarrow_w}
+%\newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
+%\newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
 \newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
-\newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
-\newcommand {\rstwosub} [1] [] {\rstwo{e_{#1}}{r_{#1}}}
+\newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
+%\newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
+%\newcommand {\rstwosub} [1] [] {\rstwo{e_{#1}}{r_{#1}}}
 
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
 \newcommand {\vsplits} {\overset{\bbtwo}\curvearrowbotright}
@@ -134,6 +135,11 @@
 			\renewcommand \red \reducewor
 			\renewcommand \sub \reduceworsub
 			\infer [\mathrm{#1\Downarrow}] {#2}{#3}}
+\newcommand {\inferreducespc} [3] 
+		[NONAME]{
+			\renewcommand \red \specwor
+			\renewcommand \sub \specworsub
+			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
 \newcommand {\inferRedsplitone} [3] 
 		[NONAME]{
 			\renewcommand \red \rsone
