@@ -43,7 +43,7 @@
 \input {macros}
 \input {grammars}
 \input {semantics}
-%\input {splitting}
+\input {splitting}
 
 \special{papersize=8.5in,11in}
 \setlength{\pdfpageheight}{\paperheight}
@@ -120,9 +120,18 @@ Again in both cases, the governing equations are too weak to fully determine the
 
 The differences between stage-splitting and partial evaluation are likewise evident from these governing equations.  For instance in partial evaluation, the existential $f_x$ depends on $x$, which means that the partial evaluator cannot be run until $x$ is known.  Moreover, if one wishes to specialize $f$ for multiple $x$'s, then the partial evaluator must be run several times.  Depending on the use case and cost of partial evaluation, this may be prohibitively expensive.  Alternatively, a stage-splitter need only be run once, and this can be done entirely before any $x$ is known.
 
-We can recover a valid partial evaluator from a stage-splitter by stage-splitting the input function $f$ into $f_1$ and $f_2$, computing $\llbracket f_1 \rrbracket(x)$ to obtain $\bar x$, and then returning an $f_x$ such that $\llbracket f_x \rrbracket(y) = \llbracket f_2 \rrbracket(\bar x, y)$.  However, one {\em cannot} construct a valid stage-splitter out of a partial evaluator, since a partial evaluator by definition depends on the first-stage input, whereas a stage-splitter does not have that available.
+\subsection{Partial Evaluator from Stage-Splitter}
 
-Note that this does not mean that stage-splitting is a strict generalization of partial evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting as simply the first half of partial evaluation, where the back half is an optimizer. [Might be able to come up with a futamura projection-like statement here, which would be really really really cool.]
+We can recover a valid partial evaluator from a stage-splitter by stage-splitting the input function $f$ into $f_1$ and $f_2$, computing $\llbracket f_1 \rrbracket(x)$ to obtain $\bar x$, and then returning an $f_x$ such that $\llbracket f_x \rrbracket(y) = \llbracket f_2 \rrbracket(\bar x, y)$.  Note that this does not mean that stage-splitting is a strict generalization of partial evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting as simply the first half of partial evaluation, where the back half is an optimizer. [Might be able to come up with a futamura projection-like statement here, which would be really really really cool.]
+
+\subsection{Stage-Splitter from Partial Evaluator}
+
+Likewise, we can easily recover a stage-splitter from a partial evaluator.  If $p$ is a valid partial evaluator, then we can define a stage splitter $s$ such that $s(f)=(f_1,f_2)$, where
+\begin{align*}
+[f_1](x) &= p (f,x) \\
+[f_2](l,y) &= [l] (y)
+\end{align*}
+This implicitly requires that the languages in which $f_1$ and $f_2$ are expressed are strong enough to write a partial evaluator, but that is the case in this paper.  A stage-splitter defined this way leaves much to be desired.  Firstly, partial evaluation of $f$ may be too expensive for the context in which $f_1$ needs to run.  Additionally, the intermediate data structure created this way may be much larger than necessary, as it would contain all of the residual code.
 
 \section{A Two-Stage Modal Language}
 
@@ -142,7 +151,41 @@ Present another semantics which obeys non-backwards control dependency.  This mi
 
 \section{Splitting Algorithm}
 
-Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.
+[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
+
+The theorem that we want to be true is...
+
+\begin{center}
+\begin{tabular}{l}
+If $\splittwo{e}{A}{p,l.r}$ \\
+and $\reducetwo{e}{v}$ \\
+then $\reduce{p}{u}$ \\
+and $\reduce{[u/l]r}{w}$ \\
+and $v = w$ 
+\end{tabular}
+\end{center}
+
+%\begin{center}
+%\begin{tabular}{l}
+%If $\splitone {e}{A}{c,l.r}$ \\
+%and $\colone {\gamma_1}{\Gamma}$ \\
+%and $\coltwo {\gamma_2}{\Gamma}$\\
+%and $\rsone{\gamma_1(e)}{v}{q}$ \\
+%and $\reducetwo{\gamma_2(q)}{w}$ \\
+%then $\reduce{|\gamma_1|(c)}{\valprod{v}{u}}$ \\
+%and $\reduce{[u/l]|\gamma_2|(r)}{w}$
+%\end{tabular}
+%~~~
+%\begin{tabular}{l}
+%If $\splittwo{e}{B}{p,l.r}$ \\
+%and $\colone {\gamma_1}{\Gamma}$ \\
+%and $\coltwo {\gamma_2}{\Gamma}$\\
+%and $\rstwo{\gamma_1(e)}{q}$ \\
+%and $\reducetwo{\gamma_2(q)}{w}$ \\
+%then $\reduce{|\gamma_1|(p)}{u}$ \\
+%and $\reduce{[u/l]|\gamma_2|(r)}{w}$ 
+%\end{tabular}
+%\end{center}
 
 \section{Examples for Staged Pipelines}
 

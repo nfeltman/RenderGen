@@ -1,44 +1,44 @@
-\begin{figure*}
-\caption{Type Splitting}
-\label{fig:typeSplit}
-\begin{mathpar}
-\infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
-\infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
-\infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
-\infer [\times\tsplito]
-	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
-	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
-\infer [\fut\tsplito]
-	{\fut~A \tsplito [{\rm unit}, A']}
-	{A \tsplits A'} \and
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Value Splitting}
-\label{fig:valSplit}
-\begin{mathpar}
-\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
-\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
-\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
-\infer [\times\vsplito]	
-	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
-	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
-\infer [\fut\vsplito]
-	{\valnext~v \vsplito [(),v']}
-	{v \vsplits v'} 
-\end{mathpar}
-\end{figure*}
-
-\begin{figure*}
-\caption{Context Splitting}
-\label{fig:contSplit}
-\begin{mathpar}
-\infer {\emptyC \csplit [\emptyC~;~\emptyC]}{\cdot} \and
-\infer {\Gamma, v : A^\bbone \csplit [\Gamma_1,v:A_1; \Gamma_2,v:A_2]}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplito [A_1, A_2]} \and
-\infer {\Gamma, v : A^\bbtwo \csplit [\Gamma_1; \Gamma_2,v:A']}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplits A'} 
-\end{mathpar}
-\end{figure*}
+%\begin{figure*}
+%\caption{Type Splitting}
+%\label{fig:typeSplit}
+%\begin{mathpar}
+%\infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
+%\infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
+%\infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
+%\infer [\times\tsplito]
+%	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
+%	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
+%\infer [\fut\tsplito]
+%	{\fut~A \tsplito [{\rm unit}, A']}
+%	{A \tsplits A'} \and
+%\end{mathpar}
+%\end{figure*}
+%
+%\begin{figure*}
+%\caption{Value Splitting}
+%\label{fig:valSplit}
+%\begin{mathpar}
+%\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
+%\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
+%\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
+%\infer [\times\vsplito]	
+%	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
+%	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
+%\infer [\fut\vsplito]
+%	{\valnext~v \vsplito [(),v']}
+%	{v \vsplits v'} 
+%\end{mathpar}
+%\end{figure*}
+%
+%\begin{figure*}
+%\caption{Context Splitting}
+%\label{fig:contSplit}
+%\begin{mathpar}
+%\infer {\emptyC \csplit [\emptyC~;~\emptyC]}{\cdot} \and
+%\infer {\Gamma, v : A^\bbone \csplit [\Gamma_1,v:A_1; \Gamma_2,v:A_2]}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplito [A_1, A_2]} \and
+%\infer {\Gamma, v : A^\bbtwo \csplit [\Gamma_1; \Gamma_2,v:A']}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplits A'} 
+%\end{mathpar}
+%\end{figure*}
 
 \begin{figure*}
 \caption{Term Splitting}
