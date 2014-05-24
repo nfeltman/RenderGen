@@ -51,38 +51,38 @@
 \infersplitone [\times I] 	{\spl {(e_1,e_2)}{A\times B}
 									{ \begin{array}{l}
 									\left(
-										\letin{y_1}{c_1}{\letin{y_2}{c_2}{
-										((\pi_1 y_1, \pi_1 y_2),(\pi_2 y_1, \pi_2 y_2))}}
+										\letin{(y_1,z_1)}{c_1}{\letin{(y_2,z_2)}{c_2}{
+										((y_1, y_2),(z_1, z_2))}}
 									\right), \\
-									l.(\projbind 1,\projbind 2)
+									(l_1,l_2).(r_1,r_2)
 									\end{array}}}																				{\sub 1 A & \sub 2 B} \and
-\infersplittwo [\times I]	{\spl {(e_1,e_2)}{A\times B}{(p_1,p_2),l.(\projbind 1,\projbind 2)}}					{\sub 1 A & \sub 2 B} \and
-\infersplitone [\times E_1]	{\spl {\pi_1~e}{A}{\letin{y}{c}{(\pi_1(\pi_1 y),\pi_2 y)},l.\pi_1~r}}					{\sub {} {A\times B}} \and
-\infersplitone [\times E_2]	{\spl {\pi_2~e}{B}{\letin{y}{c}{(\pi_2(\pi_1 y),\pi_2 y)},l.\pi_2~r}}					{\sub {} {A\times B}} \and
-\infersplittwo [\times E_1]	{\spl {\pi_1~e}{A}{p,l.\pi_1~r}}															{\sub {} {A\times B}} \and
-\infersplittwo [\times E_2]	{\spl {\pi_2~e}{B}{p,l.\pi_2~r}}															{\sub {} {A\times B}} \and
+\infersplittwo [\times I]	{\spl {(e_1,e_2)}{A\times B}{(p_1,p_2),(l_1,l_2).(r_1,r_2)}}								{\sub 1 A & \sub 2 B} \and
+\infersplitone [\times E_1]	{\spl {\pio~e}{A}{\letin{(y,z)}{c}{(\pio~y,z)},l.\pio~r}}								{\sub {} {A\times B}} \and
+\infersplitone [\times E_2]	{\spl {\pit~e}{B}{\letin{(y,z)}{c}{(\pit~y,z)},l.\pit~r}}								{\sub {} {A\times B}} \and
+\infersplittwo [\times E_1]	{\spl {\pio~e}{A}{p,l.\pio~r}}																{\sub {} {A\times B}} \and
+\infersplittwo [\times E_2]	{\spl {\pit~e}{B}{p,l.\pit~r}}																{\sub {} {A\times B}} \and
 \infersplitone [hyp]			{\spl {v}{A}{(x,()),\_.()}}																	{\col x A \in \Gamma} \and
-\infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{\col x A \in \Gamma} \\
+\infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{\col x A \in \Gamma} \and
 \infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
 								\begin{array}{l}
-									\left(\talllet{y_1}{c_1}{
-									\talllet{y_2}{(\letin{x}{\pi_1 y_1}{c_2})}{
-									(\pi_1 y_2, (\pi_2 y_1, \pi_2 y_2))}}\right), \\
-									l.\letin{x}{(\projbind 1)}{\projbind 2}
-								\end{array}}}																					{\sub 1 A & \sub [,\col{x}{A}] 2 B} \and
-\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), l.\letin{x}{(\projbind 1)}{\projbind 2}}}	{\sub 1 A & \sub [,\col{x}{A}] 2 B} \and
-\infersplitone [\fut I]		{\spl {\next~e}{\fut A}{((),p),l.r}}														{\splittwosub {} A} \and
-\infersplittwo [\fut E]		{\spl {\prev~e}{A} {\pi_2~c,l.r}}															{\splitonesub {} {\fut A}} \and
+									\left(\talllet{(x,z_1)}{c_1}{
+									\talllet{(y,z_2)}{c_2}{
+									(y, (z_1, z_2))}}\right), \\
+									(l_1,l_2).\letin{x}{r_1}{r_2}
+								\end{array}}}																					{\sub 1 A & \sub [,\col{x}{A}] 2 B} 		\and
+\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), (l_1,l_2).\letin{x}{r_1}{r_2}}}				{\sub 1 A & \sub [,\col{x}{A}] 2 B} 		\and
+\infersplitone [\fut I]		{\spl {\next~e}{\fut A}{((),p),l.r}}														{\splittwosub {} A} 							\and
+\infersplittwo [\fut E]		{\spl {\prev~e}{A} {\pit~c,l.r}}															{\splitonesub {} {\fut A}} 					\and
 \infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
 								{\begin{array}{l}
-									\left(\talllet{z}{c_1}{\tallif {\pi_1 z}
-										{\letin{y}{c_2}{(\pi_1 y, (\pi_2 z, \inl(\pi_2 y)))}}
-										{\letin{y}{c_3}{(\pi_1 y, (\pi_2 z, \inr(\pi_2 y)))}}}
+									\left(\talllet{(y_1,z_1)}{c_1}{\tallif {y_1}
+										{\letin{(y_2,z_2)}{c_2}{(y_2, (z_1, \inl~z_2))}}
+										{\letin{(y_3,z_3)}{c_2}{(y_3, (z_1, \inl~z_3))}}}
 									\right), \\
-									l.(\projbind 1;\caseof{\pi_2 l}{l_2.r_2}{l_3.r_3})
-								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
+									(l_1,l_b).(r_1;\caseof{l_b}{l_2.r_2}{l_3.r_3})
+								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
 \infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
-								{(p_1,p_2,p_3),l.\left(\tallif{(\projbind 1)}{(\projbind 2)}{(\projbind 3)}\right)}}	{\sub 1 \rmbool & \sub 2 A & \sub 3 A } \and
+								{(p_1,p_2,p_3),(l_1,l_2,l_3).\left(\tallif{r_1}{r_2}{r_2}\right)}}						{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
 \end{mathpar}
 \end{figure*}
 
@@ -92,29 +92,29 @@
 \label{fig:advancedTypes}
 \begin{mathpar}
 \infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\vallam{x}{c},
-							\_.(\vallam{y}{\letin{x}{\pi_1 y}{\letin{l}{\pi_2 y}{r}}})}}		{\sub [,\col x A] {} B} 								\and
-\infersplittwo [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{p,l.(\vallam{x}{M})}}				{\sub [,\col x A] {} B} 								\and
+							\_.(\vallam{(x,l)}{r})}}												{\sub [,\col x A] {} B} 									\and
+\infersplittwo [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{p,l.(\vallam{x}{M})}}				{\sub [,\col x A] {} B} 									\and
 \infersplitone [\to E]	{\spl {e_1~e_2}{B}{\ldots}}											{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplittwo [\to E]	{\spl {e_1~e_2}{B}{(p_1,p_2),l.(\projbind 1)(\projbind 2)}}		{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplitone [+ I_1]	{\spl {\inl~e}{A+B}{\letin{y}{c}{(\inl(\pi_1y),\pi_2 y)},l.r}}	{\sub {} A}												\and
-\infersplitone [+ I_2]	{\spl {\inr~e}{A+B}{\letin{y}{c}{(\inr(\pi_1y),\pi_2 y)},l.r}}	{\sub {} A}												\and
+\infersplittwo [\to E]	{\spl {e_1~e_2}{B}{(p_1,p_2),(l_1,l_2).r_1~r_2}}					{\sub 1 {A \to B} & \sub 2 A}							\and
+\infersplitone [+ I_1]	{\spl {\inl~e}{A+B}{\letin{(y,z)}{c}{(\inl~y,z)},l.r}}			{\sub {} A}												\and
+\infersplitone [+ I_2]	{\spl {\inr~e}{A+B}{\letin{(y,z)}{c}{(\inr~y,z)},l.r}}			{\sub {} A}												\and
 \infersplittwo [+ I_1]	{\spl {\inl~e}{A+B}{l.\inl~r}}										{\sub {} A}												\and
 \infersplittwo [+ I_1]	{\spl {\inr~e}{A+B}{l.\inr~r}}										{\sub {} A}												\and
 \infersplitone [+ E]		{\spl {\left(\tallcase{e_1}{x_2.e_2}{x_3.e_3}\right)}{C}
 								{\begin{array}{l}\left(
-								\talllet{y_1}{c_1}{
-									\tallcase{\pi_1y_1}
-									{x_2.\letin{y_2}{c_2}{(\pi_1y_2,(\pi_2y_1,\inl(\pi_2y_2)))}}
-									{x_3.\letin{y_3}{c_3}{(\pi_1y_3,(\pi_2y_1,\inr(\pi_2y_3)))}}
+								\talllet{(y_1,z_1)}{c_1}{
+									\tallcase{y_1}
+									{x_2.\letin{(y_2,z_2)}{c_2}{(y_2,(z_1,\inl(z_2)))}}
+									{x_3.\letin{(y_3,z_3)}{c_3}{(y_3,(z_1,\inr(z_3)))}}
 								}\right), \\
-								l.\left(\talllet{z}{(\projbind 1)}{
-									\tallcase{\pi_2 l}
+								(l_1,l_b).\left(\talllet{z}{r_1}{
+									\tallcase{l_b}
 									{l_2.\letin{x_2}{z}{r_2}}
 									{l_3.\letin{x_3}{z}{r_3}}}\right)\end{array}}}				{\sub 1 {A+B} & \sub [,\col{x_2} A] 2 C 
 																									& \sub [,\col{x_3} B] 3 C} 								\and
 \infersplittwo [+ E]		{\spl {\left(\tallcase{e_1}{x_2.e_2}{x_3.e_3}\right)}{C}
-								{(p_1,p_2,p_3), l.\left(\tallcase{(\projbind 1)}
-									{x_2.\projbind 2}{x_3.\projbind 3}\right)}}				{\sub 1 {A+B} & \sub [,\col{x_2} A] 2 C 
+								{(p_1,p_2,p_3), (l_1,l_2,l_3).\left(\tallcase{r_1}
+									{x_2.r_2}{x_3.r_3}\right)}}				{\sub 1 {A+B} & \sub [,\col{x_2} A] 2 C 
 																									& \sub [,\col{x_3} B] 3 C} 								\and
 \end{mathpar}
 \end{figure*}
