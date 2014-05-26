@@ -74,13 +74,15 @@
 \newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
 \newcommand {\isvalwor} {~{\rm val}~@~w}
 \newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
+\newcommand {\redone} [2] {{#1} \Downarrow_\bbone^L {#2}}
+\newcommand {\redtwo} [2] {{#1} \Downarrow_\bbtwo^\bbtwo {#2}}
 \newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
-\newcommand {\specwor} [1] {{#1} \downarrow_w}
+\newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
 %\newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
 %\newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
-\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
-\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
+%\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
+%\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
 %\newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
@@ -99,37 +101,17 @@
 
 %default stuff
 \newcommand \ty \typesone
-\newcommand \red \reduceone
+\newcommand \red \reduce
 \newcommand \sub \reduceonesub
 \newcommand \spl \splitone
 \newcommand \col \colone
 
 %inference extension
-\newcommand {\infertypesone}  [3] 
-		[NONAME]{
-			\renewcommand \ty \typesone
-			\renewcommand \col \colone
-			\infer [\mathrm{#1\text{-}\bbone}] {#2}{#3}}
-\newcommand {\infertypestwo}  [3] 
-		[NONAME]{
-			\renewcommand \ty \typestwo
-			\renewcommand \col \coltwo
-			\infer [\mathrm{#1\text{-}\bbtwo}] {#2}{#3}}
 \newcommand {\infertypeswor}  [3] 
 		[NONAME]{
 			\renewcommand \ty \typeswor
 			\renewcommand \col \colwor
 			\infer [\mathrm{#1}] {#2}{#3}}
-\newcommand {\inferreduceone} [3] 
-		[NONAME]{
-			\renewcommand \red \reduceone
-			\renewcommand \sub \reduceonesub
-			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
-\newcommand {\inferreducetwo} [3] 
-		[NONAME]{
-			\renewcommand \red \reducetwo
-			\renewcommand \sub \reducetwosub
-			\infer [\mathrm{#1\Downarrow_\bbtwo}] {#2}{#3}}
 \newcommand {\inferreducewor} [3] 
 		[NONAME]{
 			\renewcommand \red \reducewor
@@ -139,16 +121,6 @@
 		[NONAME]{
 			\renewcommand \red \specwor
 			\renewcommand \sub \specworsub
-			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
-\newcommand {\inferRedsplitone} [3] 
-		[NONAME]{
-			\renewcommand \red \rsone
-			\renewcommand \sub \rsonesub
-			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
-\newcommand {\inferSpeculation} [3] 
-		[NONAME]{
-			\renewcommand \red \rstwo
-			\renewcommand \sub \rstwosub
 			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
 \newcommand {\infersplitone}  [3] 
 		[NONAME]{

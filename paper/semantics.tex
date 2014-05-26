@@ -52,42 +52,62 @@
 \end{figure}
 
 \begin{figure}
-\caption{\ellStaged~Straw Dynamic Semantics}
-\label{fig:erasureSemantics}
+\caption{\ellStaged~Dynamic Semantics (Core)}
+\label{fig:erasureSemanticsCore}
+\begin{mathpar}
+\inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{M}}}		{\cdot} 																		\and
+\inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\vallam{x}{M}}}		{\specwor e} 																	\and
+\inferreducewor [\to E]			{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
+\inferreducespc [\to I]			{\red {\lam{x}{A}{e}}}							{\sub} 																			\and
+\inferreducespc [\to E]			{\red {e_1~e_2}}									{\sub [1] & \sub [2]}															\and		
+\inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
+\inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
+\inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
+\inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbtwo e {DUM}} 								
+\end{mathpar}
+\end{figure}	
+
+\begin{figure}
+\caption{\ellStaged~Dynamic Semantics (Sums and Products)}
+\label{fig:erasureSemanticsSumProd}
 \begin{mathpar}
 \inferreducewor [\rmunit]		{\red {()}{()}}									{\cdot} 																		\and
-\inferreducewor [int]				{\red {i}{i}}										{\cdot} 																		\and
-\inferreducewor [bool]			{\red {b}{b}}										{\cdot} 																		\and
-\inferreducewor [\to I]			{\red {\lam{x}{A}{e}} {\vallam{x}{M}}}			{\cdot} 																		\and
-\inferreducewor [\to E]			{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
-\inferreducewor [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}				{\sub [1] & \red{[v_1/x]e_2}{v_2}} 											\and
 \inferreducewor [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}			{\sub [1] & \sub [2]} 														\\
 \inferreducewor [\times E_1]		{\red {\pio~e}{v_1}}								{\red{e}{\valprod{v_1}{v_2}}} 												\and
 \inferreducewor [\times E_2]		{\red {\pit~e}{v_2}}								{\red{e}{\valprod{v_1}{v_2}}} 												\and
 \inferreducewor [+ I_1]			{\red {\inl~e} {\inl~v}}							{\sub} 																			\and
 \inferreducewor [+ I_2]			{\red {\inr~e} {\inr~v}}							{\sub} 																			\and
-\inferreducewor [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinl~v} & \red {[v/x_2]e_2}{v'}} 							\and
-\inferreducewor [+ E_2]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}	{\red {e_1}{\valinr~v} & \red {[v/x_3]e_3}{v'}} 							\and
-\inferreducewor [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}				{\red{e_1}{\bf true}  & \red{e_2}{v}} 										\and
-\inferreducewor [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{v}}				{\red{e_1}{\bf false} & \red{e_3}{v}}										\and
-\inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
-\inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
-\inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
-
+%
+\inferreducewor [+ E_1]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\valinl~v} & \redone {[v/x_2]e_2}{v'}} 					\and
+\inferreducewor [+ E_2]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\valinr~v} & \redone {[v/x_3]e_3}{v'}}						\and
+\inferreducewor [+ E_1]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\valinl~v} & \redtwo {[v/x_2]e_2}{v'} & \specwor {e_3}}	\and
+\inferreducewor [+ E_2]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\valinr~v} & \redtwo {[v/x_3]e_3}{v'} & \specwor {e_2}}	\and
+%
 \inferreducespc [\rmunit]		{\red {()}}									{\cdot} 								\and
-\inferreducespc [int]				{\red {i}}										{\cdot} 								\and
-\inferreducespc [bool]			{\red {b}}										{\cdot} 								\and
-\inferreducespc [\to I]			{\red {\lam{x}{A}{e}}}						{\sub} 									\and
-\inferreducespc [\to E]			{\red {e_1~e_2}}								{\sub [1] & \sub [2]}					\and
-\inferreducespc [let]				{\red {\letin{x}{e_1}{e_2}}}					{\sub [1] & \sub [2]} 				\and
 \inferreducespc [\times I]		{\red {(e_1,e_2)}}							{\sub [1] & \sub [2]} 				\and
 \inferreducespc [\times E_1]		{\red {\pio~e}}								{\sub [1]} 							\and
 \inferreducespc [\times E_2]		{\red {\pit~e}}								{\sub [1]} 							\and
 \inferreducespc [+ I_1]			{\red {\inl~e}}								{\sub} 									\and
 \inferreducespc [+ I_2]			{\red {\inr~e}}								{\sub} 									\and
 \inferreducespc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}}		{\sub [1] & \sub [2] & \sub [3]} 	\and
-\inferreducespc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}}				{\sub [1] & \sub [2] & \sub [3]} 	\and
-\inferreducespc [\fut E]			{\red {\prev~e}}								{\reducexpl \bbone \bbtwo e {DUM}} 	\and
+\end{mathpar}
+\end{figure}
+
+\begin{figure}
+\caption{\ellStaged~Dynamic Semantics (Derivable Constructs)}
+\label{fig:erasureSemanticsExtra}
+\begin{mathpar}
+\inferreducewor [int]				{\red {i}{i}}											{\cdot} 																		\and
+\inferreducewor [bool]			{\red {b}{b}}											{\cdot} 																		\and
+\inferreducewor [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}					{\sub [1] & \red{[v_1/x]e_2}{v_2}} 											\and
+\inferreducewor [if_T] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\bf true}  & \redone {e_2}{v}} 								\and
+\inferreducewor [if_F] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\bf false} & \redone {e_3}{v}}								\and
+\inferreducewor [if_T] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf true}  & \redtwo {e_2}{v} & \specwor {e_3}}			\and
+\inferreducewor [if_F] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf false} & \redtwo {e_3}{v} & \specwor {e_2}}			\and
+\inferreducespc [int]				{\red {i}}												{\cdot} 																		\and
+\inferreducespc [bool]			{\red {b}}												{\cdot} 																		\and
+\inferreducespc [let]				{\red {\letin{x}{e_1}{e_2}}}							{\sub [1] & \sub [2]} 														\and
+\inferreducespc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}}						{\sub [1] & \sub [2] & \sub [3]} 											
 \end{mathpar}
 \end{figure}
 
