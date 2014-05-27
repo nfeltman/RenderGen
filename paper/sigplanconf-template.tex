@@ -36,7 +36,7 @@
 \usepackage{proof}
 \usepackage{mathpartir}
 \usepackage{mathabx}
-
+\usepackage{listings}
 
 \begin{document}
 
@@ -196,7 +196,65 @@ Then talk about a many-to-one pipeline like spark.  It clear how to target somet
 
 \section{Examples of Algorithm Derivation}
 
-Fast exponent example.  Quickselect example.
+Fast exponent example.  
+
+\lstset{language=ML, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
+\begin{lstlisting} 
+let exp (b : $int, e : int) : $int =
+	if e == 0 then
+		next{1}
+	else if (e mod 2) == 0 then
+		next{let x = prev{exp(b,e/2)} in x*x}
+	else
+		next{prev{b} * prev{exp (b,e-1)}}		
+\end{lstlisting}
+
+splits into
+
+\begin{lstlisting} 
+let exp (b, e) =
+	((), roll (
+		if e == 0 then
+			inL ()
+		else 
+			inR (
+				if (e mod 2) == 0 then
+					inL (#2 (exp (b,e/2)))
+				else
+					inR (#2 (exp (b,e-1)))
+			)
+	))
+\end{lstlisting}
+
+and
+
+\begin{lstlisting} 
+let exp ((b, e), p) =
+	case unroll p of
+	  () => 1
+	| d  =>
+		case d of
+		  r => let x = exp ((b,()),r) in x*x
+		| r => b * exp ((b,()),r)
+\end{lstlisting}
+
+Quickselect example.
+
+\begin{lstlisting} 
+let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) = 
+	case unroll l of
+	  () => next {0}
+	| (h,t) => 
+		let (left,right,n) = partition h t in
+		next{
+			let n = prev{hold n} in
+			case compare prev{i} n of
+			  () (*LT*) => prev {qs left i}
+			| () (*EQ*) => hold h
+			| () (*GT*) => 
+				prev {qs right next{prev{i}-n-1}}
+		}	
+\end{lstlisting}
 
 Things to try: an interpreter which, partially evaluated, does cps or something.
 
