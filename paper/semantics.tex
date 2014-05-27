@@ -55,15 +55,15 @@
 \caption{\ellStaged~Dynamic Semantics (Core)}
 \label{fig:erasureSemanticsCore}
 \begin{mathpar}
-\inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{M}}}		{\cdot} 																		\and
-\inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\vallam{x}{M}}}		{\specwor e} 																	\and
+\inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\cdot} 																		\and
+\inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\specwor e} 																	\and
 \inferreducewor [\to E]			{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
 \inferreducespc [\to I]			{\red {\lam{x}{A}{e}}}							{\sub} 																			\and
 \inferreducespc [\to E]			{\red {e_1~e_2}}									{\sub [1] & \sub [2]}															\and		
 \inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
 \inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
 \inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
-\inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbtwo e {DUM}} 								
+\inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbone e {DUM}} 								
 \end{mathpar}
 \end{figure}	
 
