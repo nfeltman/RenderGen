@@ -26,4 +26,7 @@ fun zip2 f (a,b) (c,d) = (f a c, f b d)
 fun trn ((a,b),(c,d)) = ((a,c),(b,d))
 fun bimap f g (a,b) = (f a, g b)
 
+fun unzip [] = ([],[])
+  | unzip ((x,y)::r) = let val (xs,ys) = unzip r in (x::xs,y::ys) end
+
 end

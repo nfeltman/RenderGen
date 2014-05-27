@@ -71,7 +71,7 @@ k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int *
 j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
 						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE),
 j("fastexp",			"letrec exp ((b,e) : ($int)*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
-						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243),
+						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243) ,
 j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"letrec partition ((p,l) : int*mu unit + int * 0) : int*((mu unit + int * 0) * (mu unit + int * 0)) = "^
@@ -86,7 +86,7 @@ j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + in
 									"if prev{i} < n then prev{qs (left,i)} " ^
 									"else if prev{i} == n then prev{hold h} " ^
 									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
-						"in let c = cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,empty)))))), next{2})", ansNI 4)
+						"in let c = cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,empty)))))), next{2})", ansNI 4)  
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -117,7 +117,7 @@ fun testProgram verbose name p t =
 		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
 		
 		(* Splitting *)
-		val (split1, _, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
+		val (split1, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
 		
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);
@@ -160,7 +160,7 @@ fun testProgram verbose name p t =
 		(* Epilogue *)
 		fun printTestResult b = emit (if b then "P" else "F")
 		val _ = if List.all (fn b=>b) results 
-				then (debug "\n"; emit (case results of [] => "no tests!" | _ => "all pass!\n"); debug "\n") 
+				then (debug "\n"; emit (case results of [] => "no tests!\n" | _ => "all pass!\n"); debug "\n") 
 				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
 	in
 	(*	printTerm (PrintPSF.convertDiag rDiag);
