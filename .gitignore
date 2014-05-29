@@ -185,5 +185,7 @@ pip-log.txt
 *.aux
 *.log
 *.synctex.gz
+*.bbl
+*.blg
 
 
