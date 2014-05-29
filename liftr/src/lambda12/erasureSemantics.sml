@@ -2,8 +2,11 @@
 structure ErasureSemantics = 
 struct
 
+local
 open LangCommon
 open Lambda12
+open SourceLang
+in
 
 datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
 				| V1next of value2
@@ -27,4 +30,5 @@ fun eval1 env (E1 exp) = evalF env eval1 extendLookup1 V1 V1unwrap exp
 and eval2 env (E2 exp) = evalF env eval2 extendLookup2 V2 (fn (V2 v) => v) exp
   | eval2 env (E2prev e) = unnext (eval1 env e)
 
+end
 end

@@ -2,9 +2,13 @@
 structure DiagonalSemantics = 
 struct
 
+local
 open LangCommon
 open Lambda12
+open SourceLang
 structure P = Prims.PrimEval
+
+in
 
 (* first stage values *)				
 datatype value1	= V1 of (value1,(var, value1) context,var pattern,expr1) valueF
@@ -18,6 +22,7 @@ fun unV2 (V2 v) = v
 	
 fun chain2 r1 r2 = E (Fpi(Right, E (Ftuple (r1,r2))))
 fun chain3 r1 r2 r3 = chain2 r1 (chain2 r2 r3)
+
 fun eval1 env (E1 exp) = 
 	let
 		fun map1 f (a,b) = (f a, b)
@@ -82,5 +87,6 @@ and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
   | trace2 env (E2prev e) = (case eval1 env e of (V1 VFunit, r) => r | _ => raise Stuck)
 
 fun eval2 env (E exp) = evalF env eval2 (extendContext,lookup) V2 unV2 exp
+end
 
 end

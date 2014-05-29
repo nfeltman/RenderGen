@@ -2,6 +2,7 @@
 structure Examples = 
 struct
 
+open SourceLang
 open Lambda12c
 open LangCommon
 open ErasureSemantics
@@ -170,9 +171,9 @@ fun testProgram verbose name p t =
 	end
 
 
-fun runtests () = List.app (fn (name,prog,t) => testProgram 2 name prog t) (List.concat programs)
+fun runtests v = List.app (fn (name,prog,t) => testProgram v name prog t) (List.concat programs)
 
 (* 
-val compiled = CM.make "sources.cm"; if compiled then Examples.runtests() else ();
+val compiled = CM.make "sources.cm"; if compiled then Examples.runtests 1 else ();
 *)
 end

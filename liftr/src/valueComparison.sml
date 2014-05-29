@@ -2,10 +2,13 @@
 structure ValueComparison = 
 struct
 
+local
 open PSFSemantics
 open Lambda12
+open SourceLang
 structure E = ErasureSemantics
 structure D = DiagonalSemantics
+in
 
 exception ConversionError
 
@@ -30,7 +33,7 @@ and splitErasureValue2 v =
 		case v of 
 		  E.V2 (VFint i) => Vint i
 		| E.V2 (VFbool b) => Vbool b
-		| E.V2 E.VFunit => Vtuple []
+		| E.V2 VFunit => Vtuple []
 		| E.V2 (VFroll v) => Vroll (splitErasureValue2 v)
 		| E.V2 (VFtuple (v1,v2)) => Vtuple [splitErasureValue2 v1, splitErasureValue2 v2]
 		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
@@ -64,5 +67,6 @@ fun valueEq v1 v2 =
 	| (Vtuple vs1, Vtuple vs2) => LangCommon.listeq valueEq vs1 vs2
 	| (Vroll vs1, Vroll vs2) => valueEq vs1 vs2
 	| (_,_) => false
-
+end
+	
 end

@@ -2,9 +2,12 @@
 structure PropStage = 
 struct
 
+local
 open LangCommon
 open Lambda12c
 open Lambda12
+open SourceLang
+in
 
 exception StagePropException
 
@@ -29,15 +32,6 @@ and prop2r G (Estandard exp) = E2 (replaceVars prop2r G Variable.newvar (mapExpr
 val prop1 = prop1r empty
 val prop2 = prop2r empty
   
-(*
-fun propProgram p = 
-	let		
-		fun propFunc (Lambda12c.FuncDec1 (f,t1,t2,v,e)) = 
-				Lambda12.FuncDec1 (f, propTy1 t1, propTy1 t2, v, prop1 e)
-	(*	  | propFunc (Lambda12c.FuncDec2 (f,t1,t2,v,e)) = 
-				Lambda12.FuncDec2 (f, propTy2 t1, propTy2 t2, v, prop2 e) *)
-	in
-		map propFunc p
-	end *)
+end
 	
 end
