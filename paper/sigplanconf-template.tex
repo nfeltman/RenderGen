@@ -1,25 +1,3 @@
-%-----------------------------------------------------------------------------
-%
-%               Template for sigplanconf LaTeX Class
-%
-% Name:         sigplanconf-template.tex
-%
-% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
-%               file for SIGPLAN conference proceedings.
-%
-% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
-%               sigplanconf-guide.pdf
-%
-% Author:       Paul C. Anagnostopoulos
-%               Windfall Software
-%               978 371-2316
-%               paul@windfall.com
-%
-% Created:      15 February 2005
-%
-%-----------------------------------------------------------------------------
-
-
 \documentclass{sigplanconf}
 
 % The following \documentclass options may be useful:
@@ -198,7 +176,7 @@ Then talk about a many-to-one pipeline like spark.  It clear how to target somet
 
 Fast exponent example.  
 
-\lstset{language=ML, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
+\lstset{language=ML, columns=fullflexible, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
 \begin{lstlisting} 
 let exp (b : $int, e : int) : $int =
 	if e == 0 then
@@ -296,11 +274,3 @@ Acknowledgments, if needed.
 
 
 \end{document}
-
-%                       Revision History
-%                       -------- -------
-%  Date         Person  Ver.    Change
-%  ----         ------  ----    ------
-
-%  2013.06.29   TU      0.1--4  comments on permission/copyright notices
-
