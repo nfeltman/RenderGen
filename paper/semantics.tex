@@ -1,7 +1,5 @@
 
 \begin{figure}
-\caption{\ellStaged~Valid Types}
-\label{fig:validTypes}
 \begin{mathpar}
 \infertypeswor [\rmunit] 	{{\tt unit} \istypewor}								{\cdot} 																			\and
 \infertypeswor [int]			{{\tt int} \istypewor}								{\cdot} 																			\and
@@ -11,11 +9,11 @@
 \infertypeswor [\to]			{A \to B \istypewor}									{A \istypewor & B \istypewor} 													\and
 \infertypeswor [\fut]			{\fut A \istypeone}									{A \istypetwo} 													
 \end{mathpar}
+\caption{\ellStaged~Valid Types}
+\label{fig:validTypes}
 \end{figure}
 
 \begin{figure}
-\caption{\ellStaged~Valid Values}
-\label{fig:validTypes}
 \begin{mathpar}
 \infertypeswor [\rmunit] 	{() \isvalwor}											{\cdot} 																			\and
 \infertypeswor [int]			{i \isvalwor}											{\cdot} 																			\and
@@ -26,11 +24,11 @@
 \infertypeswor [\to]			{\lam x A e \isvalwor}								{\cdot} 																			\and
 \infertypeswor [\fut]			{\next~v \isvalone}									{v \isvaltwo} 													
 \end{mathpar}
+\caption{\ellStaged~Valid Values}
+\label{fig:validTypes}
 \end{figure}
 
 \begin{figure}
-\caption{\ellStaged~Static Semantics}
-\label{fig:coreStatics}
 \begin{mathpar}
 \infertypeswor [\rmunit] 	{\ty {()}\rmunit}								{\cdot} 																			\and
 \infertypeswor [int]			{\ty {i}{\rm int}}							{\cdot} 																			\and
@@ -49,11 +47,11 @@
 \infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
 \infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
 \end{mathpar}
+\caption{\ellStaged~Static Semantics}
+\label{fig:coreStatics}
 \end{figure}
 
 \begin{figure}
-\caption{\ellStaged~Dynamic Semantics (core)}
-\label{fig:erasureSemanticsCore}
 \begin{mathpar}
 \inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\cdot} 																		\and
 \inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\specwor e} 																	\and
@@ -79,6 +77,8 @@
 \inferreducewor [if_T] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf true}  & \redtwo {e_2}{v} & \specwor {e_3}}			\and
 \inferreducewor [if_F] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf false} & \redtwo {e_3}{v} & \specwor {e_2}}
 \end{mathpar}
+\caption{\ellStaged~Dynamic Semantics (core)}
+\label{fig:erasureSemanticsCore}
 \end{figure}
 
 \begin{figure}
@@ -93,8 +93,6 @@
 \end{figure}	
 
 \begin{figure}
-\caption{\ellStaged~Speculation}
-\label{fig:erasureSemanticsSpec}
 \begin{mathpar}
 \inferreducespc [\to I]			{\red {\lam{x}{A}{e}}}							{\sub} 										\and
 \inferreducespc [\to E]			{\red {e_1~e_2}}									{\sub [1] & \sub [2]}						\and		
@@ -110,6 +108,8 @@
 \inferreducespc [let]				{\red {\letin{x}{e_1}{e_2}}}						{\sub [1] & \sub [2]} 					\and
 \inferreducespc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}}					{\sub [1] & \sub [2] & \sub [3]} 			
 \end{mathpar}
+\caption{\ellStaged~Speculation}
+\label{fig:erasureSemanticsSpec}
 \end{figure}
 
 %

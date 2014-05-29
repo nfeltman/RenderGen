@@ -41,8 +41,6 @@
 %\end{figure*}
 
 \begin{figure*}
-\caption{Term Splitting}
-\label{fig:termSplit}
 \begin{mathpar}
 \infersplitone [unit]			{\spl {()}{\rmunit}{((),()),\_.()}}															{\cdot} \and
 \infersplittwo [unit]			{\spl {()}{\rmunit}{(),\_.()}}																{\cdot} \and
@@ -84,12 +82,12 @@
 \infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
 								{(p_1,p_2,p_3),(l_1,l_2,l_3).\left(\tallif{r_1}{r_2}{r_2}\right)}}						{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
 \end{mathpar}
+\caption{Term Splitting}
+\label{fig:termSplit}
 \end{figure*}
 
 
 \begin{figure*}
-\caption{Sum and Function Splitting}
-\label{fig:advancedTypes}
 \begin{mathpar}
 \infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\vallam{x}{c},
 							\_.(\vallam{(x,l)}{r})}}												{\sub [,\col x A] {} B} 									\and
@@ -117,4 +115,6 @@
 									{x_2.r_2}{x_3.r_3}\right)}}				{\sub 1 {A+B} & \sub [,\col{x_2} A] 2 C 
 																									& \sub [,\col{x_3} B] 3 C} 								\and
 \end{mathpar}
+\caption{Sum and Function Splitting}
+\label{fig:advancedTypes}
 \end{figure*}

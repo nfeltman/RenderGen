@@ -70,16 +70,15 @@
 
 
 \begin{figure}
-\caption{\lamStaged~Syntax}
-\label{fig:lamStagedSyntax}
 \centering
 $\begin{aligned}
 \world &::= \bbone \gbar \bbtwo \\
 \type &::= \text{unit}~|~\text{int}~|~\text{bool} \\
 &\gbar \type \times \type 
  \gbar \type + \type \\
-&\gbar \type \to \type 
+&\gbar \type \to \type
  \gbar \fut \type \\
+&\gbar \alpha \gbar \mu \alpha.\tau \\
 \expr &::= ()\gbar\inte\gbar\bool\gbar \var  \\
 &\gbar \lam{\var}{\type}{\expr} 
  \gbar \expr~\expr \\
@@ -96,4 +95,6 @@ $\begin{aligned}
  \gbar \pause~\expr \\
 \context &::=\emptyC \gbar \context, \colwor \var \type
 \end{aligned} $
+\caption{\lamStaged~Syntax}
+\label{fig:lamStagedSyntax}
 \end{figure}
