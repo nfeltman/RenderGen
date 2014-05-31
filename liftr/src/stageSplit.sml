@@ -10,6 +10,11 @@ open LambdaPSF
 open Lambda12
 structure S = SourceLang
 
+infixr 9 `
+fun a ` b = a b
+
+type expr = unit LambdaPSF.expr
+
 fun convertPattern (S.Pvar v) = PPvar v
   | convertPattern (S.Ptuple (p1,p2)) = PPtuple [convertPattern p1, convertPattern p2]
   
@@ -53,74 +58,111 @@ fun chain3 (e1,e2,e3) =
 
 in
 
-datatype splitResult1 = NoPrec1 of unit expr * unit expr | WithPrec1 of unit expr * (ppatt * unit expr)
-datatype splitResult2 = NoPrec2 of unit expr | WithPrec2 of unit expr * (ppatt * unit expr)
+datatype stage1Part			= Splittable of (ppatt * expr) list * expr * expr
+							| Opaque of expr
+datatype 's1 splitResult1	= NoPrec1 of expr * expr 
+							| WithPrec1 of 's1 * (ppatt * expr)
+datatype splitResult2 		= NoPrec2 of expr | WithPrec2 of expr * (ppatt * expr)
 
-fun coerce1 (WithPrec1 res) = res
-  | coerce1 (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], (PPtuple [], e2))
+
+local
+
+fun toOpaque (Opaque e) = e
+  | toOpaque (Splittable (cont, v, p)) = foldl (fn ((x,e1),e2) => Elet (e1, (x,e2))) (Etuple [v,p]) cont
   
+fun toSplit (Opaque e) = 
+		let
+			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
+		in
+			([(PPtuple[PPvar v, PPvar p], e)], Evar v, Evar p)
+		end
+  | toSplit (Splittable s) = s
+
+fun mapSplitResult f (NoPrec1 vr) = NoPrec1 vr
+  | mapSplitResult f (WithPrec1 (a,b)) = WithPrec1 (f a,b)
+
+fun coerce (WithPrec1 (c, lr)) = (toOpaque c, lr)
+  | coerce (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], (PPtuple [], e2))
+
+fun addSubterm (NoPrec1 (e,r)) pa = (id,e,r,pa)
+ (* | addSubterm (WithPrec1 (Opaque (Etuple [v,p]),(l,r))) pa = (id,v,r,(p,l)::pa) *)
+  | addSubterm (WithPrec1 (Opaque c,(l,r))) pa = 
+		let
+			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
+		in
+			(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, (Evar p,l)::pa)
+		end
+		
+fun decompPA [] f v r = NoPrec1 (f v, r)
+  | decompPA [(p,l)] f v r = WithPrec1 (Opaque (f (Etuple [v,p])), (l,r))
+  | decompPA pa f v r = 
+		let val (p, l) = unzip pa in WithPrec1 (Opaque`f (Etuple [v, Etuple p]), (PPtuple l,r)) end
+		
+	
+fun merge1 (NoPrec1 (v,r)) f g = NoPrec1 (f v, g r)
+  | merge1 (WithPrec1 (Splittable (c, v,p),(l,r))) f g = WithPrec1 (Splittable (c,f v,p),(l, g r))
+  | merge1 (WithPrec1 (Opaque c, (l,r))) f g =
+		let
+			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
+		in
+			WithPrec1 (Opaque ` Elet (c,(PPtuple[PPvar v, PPvar p], Etuple [f (Evar v), Evar p])), (l,g r))
+		end
+
+fun simpleMerge2 (res1,res2) f g = 
+	let 
+		val (w1,v1,r1,pa) = addSubterm res1 []
+		val (w2,v2,r2,pa) = addSubterm res2 pa
+	in
+		decompPA pa (w1 o w2) (f (v1,v2)) (g (r1,r2))
+	end
+		
+fun simpleMerge23 (res1,res2) f g = 
+		case (mapSplitResult toSplit res1, mapSplitResult toSplit res2) of 
+		  (NoPrec1 (e1,r1), NoPrec1 (e2,r2)) => 
+			NoPrec1 (f (e1,e2), g (r1,r2))
+		| (NoPrec1 (e1,r1), WithPrec1 ((c2,v2,p2), (l2,r2))) => 
+			WithPrec1 ((c2, f (e1,v2), p2), (l2, g (r1,r2)))
+		| (WithPrec1 ((c1,v1,p1), (l1,r1)), NoPrec1 (e2,r2)) => 
+			WithPrec1 ((c1, f (v1,e2), p1), (l1, g (r1,r2)))
+		| (WithPrec1 ((c1,v1,p1), (l1,r1)), WithPrec1 ((c2,v2,p2), (l2,r2))) => 
+			WithPrec1 ((List.concat[c1, c2], f (v1,v2), Etuple[p1,p2]), (PPtuple[l1,l2], g (r1,r2)))
+
+fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
+(*  | unpackPredicate (Full1 (Etuple [v,p],(l,r))) link = 
+		let
+			val pvar = Variable.newvar "p"
+		in
+			(fn x=> Elet (p,(PPvar pvar, x)), v, r, fn p2 => Etuple[Evar pvar,p2], PPtuple[l,link])
+		end *)
+  | unpackPredicate (WithPrec1 (Opaque c,(l,r))) link = 
+		let
+			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
+		in
+			(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, fn p2 => Etuple[Evar p,p2], PPtuple[l,link])
+		end
+  
+fun makeTup (a,b) = Etuple [a,b]
+
+fun decompTuple (Etuple [v,p]) f = f (v,p)
+  | decompTuple c f = 
+		let
+			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
+		in
+			Elet (c,(PPtuple[PPvar v, PPvar p], f (Evar v, Evar p)))
+		end	
+fun caseBranch c addPrec side = 
+		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(side, (), p))])
+fun caseBranches addPrec (c2, b2) (c3, b3) = 
+		(caseBranch c2 addPrec Left, b2, caseBranch c3 addPrec Right, b3)
+in
+
+val coerce1 = coerce  
+
 (* assume here that the expression already type-checks *)
 fun stageSplit1 (E1 exp) = 
 	let
-		val split = stageSplit1 : expr1 -> splitResult1
-		fun id x = x
+		val split = stageSplit1 : expr1 -> stage1Part splitResult1
 		
-		fun addSubterm (NoPrec1 (e,r)) pa = (id,e,r,pa)
-		  | addSubterm (WithPrec1 (Etuple [v,p],(l,r))) pa = (id,v,r,(p,l)::pa)
-		  | addSubterm (WithPrec1 (c,(l,r))) pa = 
-				let
-					val (v,p) = (Variable.newvar "v", Variable.newvar "p")
-				in
-					(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, (Evar p,l)::pa)
-				end
-		
-		fun decompPA [] f v r = NoPrec1 (f v, r)
-		  | decompPA [(p,l)] f v r = WithPrec1 (f (Etuple [v,p]), (l,r))
-		  | decompPA pa f v r = 
-				let val (p, l) = unzip pa in WithPrec1 (f (Etuple [v, Etuple p]), (PPtuple l,r)) end
-		
-		fun merge1 res f g = 
-			let 
-				val (w,v,r,pa) = addSubterm res [] 
-			in
-				decompPA pa w (f v) (g r)
-			end
-			
-		fun simpleMerge2 (res1,res2) f g = 
-			let 
-				val (w1,v1,r1,pa) = addSubterm res1 [] 
-				val (w2,v2,r2,pa) = addSubterm res2 pa
-			in
-				decompPA pa (w1 o w2) (f (v1,v2)) (g (r1,r2))
-			end
-		
-		fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
-		  | unpackPredicate (WithPrec1 (Etuple [v,p],(l,r))) link = 
-				let
-					val pvar = Variable.newvar "p"
-				in
-					(fn x=> Elet (p,(PPvar pvar, x)), v, r, fn p2 => Etuple[Evar pvar,p2], PPtuple[l,link])
-				end
-		  | unpackPredicate (WithPrec1 (c,(l,r))) link = 
-				let
-					val (v,p) = (Variable.newvar "v", Variable.newvar "p")
-				in
-					(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, fn p2 => Etuple[Evar p,p2], PPtuple[l,link])
-				end
-		  
-		fun makeTup (a,b) = Etuple [a,b]
-		
-		fun decompTuple (Etuple [v,p]) f = f (v,p)
-		  | decompTuple c f = 
-				let
-					val (v,p) = (Variable.newvar "v", Variable.newvar "p")
-				in
-					Elet (c,(PPtuple[PPvar v, PPvar p], f (Evar v, Evar p)))
-				end	
-		fun caseBranch c addPrec side = 
-				decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(side, (), p))])
-		fun caseBranches addPrec (c2, b2) (c3, b3) = 
-				(caseBranch c2 addPrec Left, b2, caseBranch c3 addPrec Right, b3)
 	in
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
@@ -142,7 +184,7 @@ fun stageSplit1 (E1 exp) =
 						let 
 							val link = Variable.newvar "l"
 						in
-							WithPrec1 (Eapp (v1,v2), (PPvar link,Eapp (r1, Etuple [r2, Evar link])))
+							WithPrec1 (Opaque`Eapp (v1,v2), (PPvar link,Eapp (r1, Etuple [r2, Evar link])))
 						end
 					| (res1, res2) => 
 						let
@@ -152,7 +194,7 @@ fun stageSplit1 (E1 exp) =
 							val (v3,p3) = (Variable.newvar "v", Variable.newvar "p")
 						in
 							WithPrec1
-							(
+							( Opaque `
 							Elet (Etuple[c1,c2], (PPtuple [PPtuple[PPvar v1, PPvar p1], PPtuple[PPvar v2, PPvar p2]],
 								Elet (Eapp (Evar v1,Evar v2), (PPtuple [PPvar v3, PPvar p3], 
 									Etuple[Evar v3,Etuple[Evar p1,Evar p2,Evar p3]])))),
@@ -176,7 +218,7 @@ fun stageSplit1 (E1 exp) =
 				val (x2, x3) = (convertPattern x2, convertPattern x3)
 			in
 				WithPrec1 (
-					w1 (Ecase(v1, (x2,branch2), (x3,branch3))),
+					Opaque ` w1 (Ecase(v1, (x2,branch2), (x3,branch3))),
 					(l, Elet (r1, (PPvar z, Ecase(Evar link,(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))))))
 				)
 			end
@@ -187,7 +229,7 @@ fun stageSplit1 (E1 exp) =
 				val (branch2, lr2, branch3, lr3) = caseBranches pWrap (coerce1 (split e2)) (coerce1 (split e3))
 			in
 				WithPrec1(
-					w1 (Eif(v1, branch2, branch3)),
+					Opaque ` w1 (Eif(v1, branch2, branch3)),
 					(l, chain2(r1, Ecase(Evar link,lr2,lr3)))
 				)
 			end
@@ -198,8 +240,8 @@ fun stageSplit1 (E1 exp) =
 				val (w1,r1,pa) = 
 					case split e1 of
 					  NoPrec1 (e,r) => (fn z => Elet (e,(x,z)),r,[])
-					| WithPrec1 (Etuple [v,p],(l,r)) => (fn z => Elet (v,(x,z)),r,[(p,l)])
-					| WithPrec1 (c,(l,r)) =>
+				(*	| Full1 (Etuple [v,p],(l,r)) => (fn z => Elet (v,(x,z)),r,[(p,l)]) *)
+					| WithPrec1 (Opaque c,(l,r)) =>
 						let
 							val p = Variable.newvar "p"
 						in
@@ -219,15 +261,15 @@ fun stageSplit1 (E1 exp) =
   | stageSplit1 (E1next e) = (
 		case stageSplit2 e of
 		  NoPrec2 r => NoPrec1 (Eunit, r)
-		| WithPrec2 (p,b) => WithPrec1 (Etuple [Eunit, p],b))
+		| WithPrec2 (p,b) => WithPrec1 (Opaque ` Etuple [Eunit, p],b))
   | stageSplit1 (E1hold e) =
 		let
 			val (link, pi) = freshPi ()
 		in
 			case stageSplit1 e of
-			  NoPrec1 (i, r) => WithPrec1 (Etuple [Eunit,i], (PPvar link, chain2 (r, Evar link)))
-			| WithPrec1 (c, lr) =>
-				WithPrec1 (Etuple [Eunit,c], (PPvar link, chain2 (bind (pi 1) lr, pi 0)))
+			  NoPrec1 (i, r) => WithPrec1 (Opaque ` Etuple [Eunit,i], (PPvar link, chain2 (r, Evar link)))
+			| WithPrec1 (Opaque c, lr) =>
+				WithPrec1 (Opaque ` Etuple [Eunit,c], (PPvar link, chain2 (bind (pi 1) lr, pi 0)))
 		end
 
 and stageSplit2 (E2 exp) = 
@@ -269,6 +311,7 @@ and stageSplit2 (E2 exp) =
 		  NoPrec1 (Etuple [], r) => NoPrec2 r
 		| NoPrec1 (Evar _, r) => NoPrec2 r
 		| NoPrec1 (c,r) => WithPrec2 (chain2 (c,Eunit), (PPtuple [], r))
-		| WithPrec1 (c, lr) => WithPrec2 (Epi (1, c),lr))
+		| WithPrec1 (Opaque c, lr) => WithPrec2 (Epi (1, c),lr))
+end
 end
 end

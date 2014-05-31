@@ -17,6 +17,7 @@ exception Stuck
 
 fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 
+fun id x = x
 
 fun listeq eq (x::xs) (y::ys) = (eq x y) andalso (listeq eq xs ys)
   | listeq eq [] [] = true
