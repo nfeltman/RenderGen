@@ -25,7 +25,7 @@
 \infertypeswor [\fut]			{\next~v \isvalone}									{v \isvaltwo} 													
 \end{mathpar}
 \caption{\ellStaged~Valid Values}
-\label{fig:validTypes}
+\label{fig:validValues}
 \end{figure}
 
 \begin{figure}
@@ -82,14 +82,14 @@
 \end{figure}
 
 \begin{figure}
-\caption{\ellStaged~Dynamic Semantics ($\next$ and $\prev$)}
-\label{fig:erasureSemanticsNextPrev}
 \begin{mathpar}
 \inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
 \inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
 \inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
 \inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbone e {DUM}} 								
 \end{mathpar}
+\caption{\ellStaged~Dynamic Semantics ($\next$ and $\prev$)}
+\label{fig:erasureSemanticsNextPrev}
 \end{figure}	
 
 \begin{figure}
