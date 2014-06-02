@@ -1,8 +1,8 @@
 .PHONY: quick clean
 
-TEXFILES=sigplanconf-template.tex grammars.tex macros.tex semantics.tex splitting.tex
+TEXFILES=paper.tex grammars.tex macros.tex semantics.tex splitting.tex
 
-sigplanconf-template.pdf : $(TEXFILES)
+paper.pdf : $(TEXFILES)
 	pdflatex $< && bibtex $(patsubst %.tex,%,$<) && pdflatex $< && pdflatex $<
 
 quick : $(TEXFILES)
