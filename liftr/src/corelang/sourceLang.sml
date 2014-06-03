@@ -1,30 +1,4 @@
 
-
-structure ValuesBase = 
-struct
-	open LangCommon
-	datatype ('v,'c,'r,'e) valueF	= VFint of int
-									| VFbool of bool
-									| VFunit
-									| VFroll of 'v
-									| VFtuple of 'v * 'v
-									| VFinj of LR * 'v
-									| VFlam of 'c * ('r * 'e)
-	
-	fun unroll (VFroll v) = v
-	  | unroll _ = raise Stuck
-	fun untuple (VFtuple v) = v
-	  | untuple _ = raise Stuck
-	fun uninj (VFinj v) = v
-	  | uninj _ = raise Stuck
-	fun unbool (VFbool b) = b
-	  | unbool _ = raise Stuck
-	fun unint (VFint i) = i
-	  | unint _ = raise Stuck
-	fun unlam (VFlam e) = e
-	  | unlam _ = raise Stuck
-end
-
 structure SourceLang = 
 struct
 

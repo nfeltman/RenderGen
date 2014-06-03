@@ -7,6 +7,7 @@ Group is
 	  corelang/prim.sml
 	  corelang/sourceLang.sml
 	  corelang/coreTypes.sml
+	  corelang/coreValues.sml
 	  
 	  (* lambda12 *)
       lambda12/lambda12c.sml
