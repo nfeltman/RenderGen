@@ -78,15 +78,15 @@
 \newcommand {\redtwo} [2] {{#1} \Downarrow_\bbtwo^\bbtwo {#2}}
 \newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
 \newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
-%\newcommand {\rsone} [3] {{#1} \Downarrow_\bbone [{#2},{#3}]}
-%\newcommand {\rstwo} [2] {{#1} \downarrow {#2}}
+\newcommand {\diaone} [2] {{#1} \Downarrow_\bbone [{#2}]}
+\newcommand {\diatwo} [2] {{#1} \downarrow {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 %\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
 %\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
-%\newcommand {\rsonesub} [1] [] {\rsone{e_{#1}}{u_{#1}}{r_{#1}}}
-%\newcommand {\rstwosub} [1] [] {\rstwo{e_{#1}}{r_{#1}}}
+\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\gamma_{#1},v_{#1}}}
+\newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
 \newcommand {\vsplits} {\overset{\bbtwo}\curvearrowbotright}
@@ -98,6 +98,9 @@
 \newcommand {\splittwo} [4] [] { \Gamma{#1} \vdash {#2}:{#3} \overset{\bbtwo}\rightsquigarrow \left[{#4}\right]}
 \newcommand {\splitonesub} [3] [] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
 \newcommand {\splittwosub} [3] [] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
+
+%misc
+\newcommand {\gcomp} [2] {\gamma_{#1} \circ \gamma_{#2}}
 
 %default stuff
 \newcommand \ty \typesone
@@ -121,6 +124,16 @@
 		[NONAME]{
 			\renewcommand \red \specwor
 			\renewcommand \sub \specworsub
+			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
+\newcommand {\inferdiaone} [3] 
+		[NONAME]{
+			\renewcommand \red \diaone
+			\renewcommand \sub \diaonesub
+			\infer [\mathrm{#1\Downarrow}] {#2}{#3}}
+\newcommand {\inferdiaspc} [3] 
+		[NONAME]{
+			\renewcommand \red \diatwo
+			\renewcommand \sub \diatwosub
 			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
 \newcommand {\infersplitone}  [3] 
 		[NONAME]{

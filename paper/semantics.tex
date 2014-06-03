@@ -22,7 +22,7 @@
 \infertypeswor [+_1]			{\inl~v \isvalwor}									{v \isvalwor} 																		\and
 \infertypeswor [+_2]			{\inr~v \isvalwor}									{v \isvalwor} 																		\and
 \infertypeswor [\to]			{\lam x A e \isvalwor}								{\cdot} 																			\and
-\infertypeswor [\fut]			{\next~v \isvalone}									{v \isvaltwo} 													
+\infertypeswor [\fut]			{\hat y \isvalone}									{\cdot} 													
 \end{mathpar}
 \caption{\ellStaged~Valid Values}
 \label{fig:validValues}
@@ -51,6 +51,63 @@
 \label{fig:coreStatics}
 \end{figure}
 
+
+
+\begin{figure}
+\begin{mathpar}
+\inferdiaone [\to I]			{\red {\lam{x}{A}{e}} {\cdot,\vallam{x}{e}}}					{\cdot} 																					\and
+\inferdiaone [\to E]			{\red {e_1~e_2} {\gcomp 1 2 \circ \gamma',v'}}					{\red {e_1} {\gamma_1,\vallam{x}{e'}} & \sub [2] & \red {[v_1/x]e'}{\gamma',v'}}	\and
+%
+\inferdiaone [\rmunit]		{\red {()}{\cdot,()}}												{\cdot} 																					\and
+\inferdiaone [\times I]		{\red {(e_1,e_2)}{\gcomp 1 2,\valprod{v_1}{v_2}}}				{\sub [1] & \sub [2]} 																	\and
+\inferdiaone [\times E_1]	{\red {\pio~e}{\gamma,v_1}}										{\red{e}{\gamma,\valprod{v_1}{v_2}}} 													\and
+\inferdiaone [\times E_2]	{\red {\pit~e}{\gamma,v_2}}										{\red{e}{\gamma,\valprod{v_1}{v_2}}} 													\and
+\inferdiaone [+ I_1]			{\red {\inl~e} {\gamma,\inl~v}}									{\sub} 																						\and
+\inferdiaone [+ I_2]			{\red {\inr~e} {\gamma,\inr~v}}									{\sub} 																						\and
+%
+\inferdiaone [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2,v_2}}		{\red {e_1}{\gamma_1,\valinl~v} & \red {[v/x_2]e_2}{\gamma_2,v_2}} 					\and
+\inferdiaone [+ E_2]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2,v_3}}		{\red {e_1}{\gamma_1,\valinr~v} & \red {[v/x_3]e_3}{\gamma_3,v_3}}					\and
+%
+\inferdiaone [int]			{\red {i}{\cdot,i}}												{\cdot} 																					\and
+\inferdiaone [bool]			{\red {b}{\cdot,b}}												{\cdot} 																					\and
+\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2, v_2}}					{\sub [1] & \red{[v_1/x]e_2}{\gamma_2,v_2}}											\and
+\inferdiaone [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2,v}}					{\red {e_1}{\gamma_1,\bf true}  & \red {e_2}{\gamma_2,v}} 							\and
+\inferdiaone [if_F] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2,v}}					{\red {e_1}{\gamma_1,\bf false} & \red {e_3}{\gamma_3,v}}								
+\end{mathpar}
+\caption{\ellStaged~Diagonal Semantics (core)}
+\label{fig:erasureSemanticsCore}
+\end{figure}
+
+\begin{figure}
+\begin{mathpar}
+\inferdiaone [\fut I]			{\red {\next~e}{y \mapsto q,\hat y}}				{\diatwo e q}												\and
+\inferdiaspc [\fut E]			{\red {\prev~e} {\gamma (y)}}						{\diaone e {\gamma, \hat y}} 									
+\end{mathpar}
+\caption{\ellStaged~Diagonal Semantics ($\next$ and $\prev$)}
+\label{fig:erasureSemanticsNextPrev}
+\end{figure}
+
+\begin{figure}
+\begin{mathpar}
+\inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\sub} 										\and
+\inferdiaspc [\to E]			{\red {e_1~e_2}{q_1,q_2}}									{\sub [1] & \sub [2]}						\and		
+\inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
+\inferdiaspc [\times I]		{\red {(e_1,e_2)}{(q_1,q_2)}}								{\sub [1] & \sub [2]} 					\and
+\inferdiaspc [\times E_1]	{\red {\pio~e}{\pio~q}}										{\sub} 										\and
+\inferdiaspc [\times E_2]	{\red {\pit~e}{\pit~q}}										{\sub} 										\and
+\inferdiaspc [+ I_1]			{\red {\inl~e}{\inl~q}}										{\sub} 										\and
+\inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
+\inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
+									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \sub [2] & \sub [3]} 		\and
+\inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
+\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
+\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \sub [2]} 					\and
+\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 			
+\end{mathpar}
+\caption{\ellStaged~New Speculation}
+\label{fig:erasureSemanticsSpec}
+\end{figure}
+
 \begin{figure}
 \begin{mathpar}
 \inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\cdot} 																		\and
@@ -77,7 +134,7 @@
 \inferreducewor [if_T] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf true}  & \redtwo {e_2}{v} & \specwor {e_3}}			\and
 \inferreducewor [if_F] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf false} & \redtwo {e_3}{v} & \specwor {e_2}}
 \end{mathpar}
-\caption{\ellStaged~Dynamic Semantics (core)}
+\caption{\ellStaged~Old Semantics (core)}
 \label{fig:erasureSemanticsCore}
 \end{figure}
 
@@ -88,7 +145,7 @@
 \inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
 \inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbone e {DUM}} 								
 \end{mathpar}
-\caption{\ellStaged~Dynamic Semantics ($\next$ and $\prev$)}
+\caption{\ellStaged~Old Semantics ($\next$ and $\prev$)}
 \label{fig:erasureSemanticsNextPrev}
 \end{figure}	
 
@@ -108,7 +165,7 @@
 \inferreducespc [let]				{\red {\letin{x}{e_1}{e_2}}}						{\sub [1] & \sub [2]} 					\and
 \inferreducespc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}}					{\sub [1] & \sub [2] & \sub [3]} 			
 \end{mathpar}
-\caption{\ellStaged~Speculation}
+\caption{\ellStaged~Old Speculation}
 \label{fig:erasureSemanticsSpec}
 \end{figure}
 
