@@ -48,6 +48,7 @@ fun convertDiagValue1 v =
 		| D.V1 (VFtuple (v1,v2)) => Vtuple [convertDiagValue1 v1, convertDiagValue1 v2]
 		| D.V1 (VFinj (side,v)) => Vinj (side, convertDiagValue1 v)
 		| D.V1 (VFlam (x,e)) => raise ConversionError
+		| D.V1hat _ => Vtuple []
 		
 fun convertDiagValue2 v = 
 		case v of 

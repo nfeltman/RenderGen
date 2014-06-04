@@ -8,83 +8,92 @@ open Lambda12
 open SourceLang
 structure P = Prims.PrimEval
 
+infixr 9 `
+fun a ` b = a b
+
+fun map1 f (a,b) = (f a, b)
+fun map2 f (a,b) = (a, f b)
 in
 
 (* first stage values *)				
 datatype value1	= V1 of (value1,(var, value1) context,var pattern,expr1) valueF
+				| V1hat of var
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,unit) exprF
 datatype value2	= V2 of (value2,(var, value2) context,var pattern,expr) valueF
 
 fun unV1 (V1 v) = v
+  | unV1 _ = raise Stuck
+fun unhat (V1hat y) = y
+  | unhat _ = raise Stuck
 fun unV2 (V2 v) = v
-	
-fun chain2 r1 r2 = E (Fpi(Right, E (Ftuple (r1,r2))))
-fun chain3 r1 r2 r3 = chain2 r1 (chain2 r2 r3)
 
 fun eval1 env (E1 exp) = 
 	let
-		fun map1 f (a,b) = (f a, b)
-		fun map2 f (a,b) = (a, f b)
+		fun comp1 f (g, h) = (f o g, h)
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch env (v,r) (x,e) = 
+		fun evalBranch env (g,v) (x,e) = 
+			comp1 g ` eval1 (forPattern (extendContext, untuple o unV1) env x v) e 
+	in
+		case exp of 
+		  Fvar v => (id, lookup env v)
+		| Funit => (id, V VFunit)
+		| Fint i => (id, V ` VFint i)
+		| Fbool b => (id, V ` VFbool b)
+		| Flam (_, b) => (id, V ` VFlam (env,b))
+		| Fapp (e1,e2) => 
 			let 
-				val (u,q) = eval1 (forPattern (extendContext, untuple o unV1) env x v) e 
-			in 
-				(u,E (Flet (r,(x,q))))
+				val (g1,(env,branch)) = map2 (unlam o unV) (eval e1)
+			in
+				comp1 g1 (evalBranch env (eval e2) branch)
 			end
-		in
-			case exp of 
-			  Fvar v => (lookup env v, E (Fvar v))
-			| Funit => (V VFunit, E Funit)
-			| Fint i => (V (VFint i), E Funit)
-			| Fbool b => (V (VFbool b), E Funit)
-			| Flam (_, b) => (V (VFlam (env,b)), E Funit)
-			| Fapp (e1,e2) => 
-				let 
-					val ((env,branch), r1) = map1 (unlam o unV) (eval e1)
-				in
-					map2 (chain2 r1) (evalBranch env (eval e2) branch)
-				end
-			| Ftuple (e1, e2) => bimap (V o VFtuple) (E o Ftuple) (trn (eval e1, eval e2))
-			| Fpi (side, e) => (
-				case (side, map1 (untuple o unV) (eval e)) of
-				  (Left, ((v1,_), r)) => (v1, E (Fpi (Left, r)))
-				| (Right, ((_,v2), r)) => (v2, E (Fpi (Right, r))))
-			| Finj (side, _, e) => map1 (fn x => V (VFinj (side,x))) (eval e)
-			| Fcase (e, b1, b2) => 
-				let
-					val ((side,v),r) = map1 (uninj o unV) (eval e)
-				in
-					case side of
-					  Left  => evalBranch env (v,r) b1
-					| Right => evalBranch env (v,r) b2
-				end
-			| Fif (e1, e2, e3) => 
-				let
-					val (v,r) = map1 (unbool o unV) (eval e1)
-				in
-					map2 (chain2 r) (eval (if v then e2 else e3))
-				end
-			| Flet (e1,(x,e2)) => evalBranch env (eval e1) (x,e2)
-			| Fbinop (bo,e1,e2) => 
-				let
-					val (v1,r1) = eval e1
-					val (v2,r2) = eval e2
-					val convertP = convertPrim o unV
-				in
-					(V (unconvertPrim (P.evalPrim (bo, convertP v1, convertP v2))), chain3 r1 r2 (E Funit))
-				end
-			| Froll (_,e) => raise Stuck
-			| Funroll e => raise Stuck
-			| Ferror _ => raise Stuck
+		| Ftuple (e1, e2) => bimap (op o) (V o VFtuple) (trn (eval e1, eval e2))
+		| Fpi (side, e) => map2 ((projLR side) o untuple o unV) (eval e)
+		| Finj (side, _, e) => map2 (fn x => V ` VFinj (side,x)) (eval e)
+		| Fcase (e, b1, b2) => 
+			let
+				val (g,(side,v)) = map2 (uninj o unV) (eval e)
+			in
+				case side of
+				  Left  => evalBranch env (g,v) b1
+				| Right => evalBranch env (g,v) b2
+			end
+		| Fif (e1, e2, e3) => 
+			let
+				val (g,b) = map2 (unbool o unV) (eval e1)
+			in
+				comp1 g ` eval (if b then e2 else e3)
+			end
+		| Flet (e1,(x,e2)) => evalBranch env (eval e1) (x,e2)
+		| Fbinop (bo,e1,e2) => 
+			let
+				val (g1,v1) = eval e1
+				val (g2,v2) = eval e2
+				val convertP = convertPrim o unV
+			in
+				(g1 o g2, V (unconvertPrim (P.evalPrim (bo, convertP v1, convertP v2))))
+			end
+		| Froll (_,e) => map2 (V o VFroll) (eval e)
+		| Funroll e => map2 (unroll o unV) (eval e)
+		| Ferror _ => raise Stuck
+	end
+  | eval1 env (E1next e) = 
+		let
+			val y = Variable.newvar "y" 
+		in 
+			(fn r => E ` Flet (trace2 env e,(Pvar y,r)), V1hat y) 
 		end
-  | eval1 env (E1next e) = (V1 VFunit, trace2 env e)
-  | eval1 env (E1hold e) = (case eval1 env e of (V1 v,r) => (V1 VFunit, chain2 r ((E o Fint o unint) v)))
+  | eval1 env (E1hold e) =
+		let
+			val (g,v) = eval1 env e
+			val y = Variable.newvar "y" 
+		in
+			(fn r=> g ` E ` Flet (E ` Fint ` unint ` unV1 v, (Pvar y, r)), V1hat y)
+		end
 	
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
-  | trace2 env (E2prev e) = (case eval1 env e of (V1 VFunit, r) => r | _ => raise Stuck)
+  | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
 
 fun eval2 env (E exp) = evalF env eval2 (extendContext,lookup) V2 unV2 exp
 end
