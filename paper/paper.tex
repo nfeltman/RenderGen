@@ -126,7 +126,11 @@ We desire a semantics that meets the following goals:
 \item The result for a stage-2 expression should be the same as if all of the $\next$s and $\prev$s were interpreted as the identity function.
 \end{enumerate}
 
-In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior.  The semantics comprises the following judgments:
+In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior. 
+
+Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a table and replaces the whole expression with a reference to the table entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
+
+More formally, evaluation comprises the folowing judgments:
 
 \begin{center}
 \begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
@@ -141,11 +145,12 @@ $\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline
 \end{tabular}
 \end{center}
 
-Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
+Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
 
-We can think of our evaluation as proceeding in the standard way for stage-1 code. But when the evaluator encounters stage-2 code, it places that code off to the side in a table, and then keeps a reference to the table entry.  These references are then passed around as stage-1 values, and the tables are managed accordingly.
 
-The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  Those stage-2 computations are held in
+The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  
+
+...
 
 \subsection{Adherence to Goals}
 
@@ -156,6 +161,15 @@ That we meet our third goal is clear from just the structure of our judgments (.
 Under the strictest interpretation, we do not meet our third goal.  Consider the following examples (show speculating down an if).
 
 But as it turns out, a semantics which had the erasure behavior would not meet goal 3! (explain using the same example)
+
+\subsection{Comparison to Other Semantics}
+
+The differences between our diagonal semantics, the erasure semantics, and Davies' semantics can be characterized entirely by how they behave at $\next$ expressions:
+\begin{itemize}
+\item {\bf Erasure Semantics.} Evaluate contents of $\next$ immediately.
+\item {\bf Diagonal Semantics.} Speculate to find the $\prev$s, evaluate them in place, then place the contents of $\next$ into a table and create a hatted variable to act as a value.
+\item {\bf Davies' Semantics.} Speculate to find the $\prev$s, evaluate them in place, then treat the reduced $\next$ as a value.
+\end{itemize} 
 
 \section{Splitting Algorithm}
 
