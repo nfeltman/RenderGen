@@ -115,17 +115,40 @@ This implicitly requires that the languages in which $f_1$ and $f_2$ are express
 
 Introduce the next and prev concepts, along with typesystem.  Introduce binding time analysis here, and explain that we don't care about it.  Show some examples.  Introduce a hold operation.
 
-\section{Straw Semantics}
-
-Introduce the straw semantics, previously known as the ``erasure" semantics.
-
-\section{Data and Control Dependency}
-
-State a data-dependency theorem (that stage 1 values cannot depend on stage 2 values).  It should be true for the straw semantics!  Also state a control dependency theorem (that the execution of stage 1 code can't depend on stage 2 values).  This won't be true for the straw semantics, and show counterexample.
-
 \section{Diagonal Semantics}
 
-Present another semantics which obeys non-backwards control dependency.  This might be called the diagonal semantics.  Go through an example such as currying to build intuition for why this is really necessary (i.e., if we don't have these weird rules, currying breaks down!).
+We desire a semantics that meets the following goals,
+
+\begin{enumerate}
+\item In absence of $\next$ expressions, it should be equivalent to standard call-by-value evaluation.
+\item $\next$ and $\prev$ should be inverses of the other.
+\item All of the first stage work should be completed before second stage work.
+\item The result for a stage-2 expression should be the same as if all of the $\next$s and $\prev$s were interpreted as the identity function.
+\end{enumerate}
+
+In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior.  The semantics comprises the following judgments:
+
+\begin{center}
+\begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
+Judgment & Reads & Conditions \\ \hline 
+$\isvalone e$ & ``$e$ is a $\bbone$-value under context $\Xi$'' & ... \\ \hline 
+$\Xi \vdash \diaonesub$ & ``$e$ evaluates to future table $\gamma$ and value $v$'' 
+& $\typesone e A$ 
+	\newline $\isvalone v$ 
+	\newline ... \\ \hline 
+$\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline 
+\end{tabular}
+\end{center}
+
+\subsection{Adherence to Goals}
+
+We meet our first and second goals (show examples).
+
+That we meet our third goal is clear from just the structure of our judgments (...).
+
+Under the strictest interpretation, we do not meet our third goal.  Consider the following examples (show speculating down an if).
+
+But as it turns out, a semantics which had the erasure behavior would not meet goal 3! (explain using the same example)
 
 \section{Splitting Algorithm}
 
