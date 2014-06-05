@@ -9,12 +9,17 @@
 
 \usepackage{amsmath}
 %\usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
 \usepackage{mathpartir}
 \usepackage{mathabx}
 \usepackage{listings}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
 
 \begin{document}
 
@@ -170,6 +175,41 @@ The differences between our diagonal semantics, the erasure semantics, and Davie
 \item {\bf Diagonal Semantics.} Speculate to find the $\prev$s, evaluate them in place, then place the contents of $\next$ into a table and create a hatted variable to act as a value.
 \item {\bf Davies' Semantics.} Speculate to find the $\prev$s, evaluate them in place, then treat the reduced $\next$ as a value.
 \end{itemize} 
+
+\subsection{Metatheory}
+
+\TODO unfinished; where should this go? combine with table above
+
+\noindent\TODO terminology for $\Xi,\Gamma,\xi,v,q$?
+
+\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2
+
+\noindent\TODO put $\Xi$ and $\Gamma$ in the judgments where appropriate
+
+% local macros; put them in macros.tex once they are more finalized
+\newcommand{\wf}{\ \mathsf{wf}}
+\newcommand{\dom}[1]{\mathsf{dom}(#1)}
+\newcommand{\valoo}{\ \bbone\textsf{-}\mathsf{val} @ \bbone}
+\newcommand{\valot}{\ \bbone\textsf{-}\mathsf{val} @ \bbtwo}
+\newcommand{\valtt}{\ \bbtwo\textsf{-}\mathsf{val} @ \bbtwo}
+
+\begin{definition}
+Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
+contain only stage-2 variables.
+\end{definition}
+
+\begin{theorem}
+If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
+\end{theorem}
+
+\begin{theorem}
+If $\Xi;\Gamma\vdash\diaonesub$ then:
+\begin{enumerate}
+\item $\typesone e A$ for some 1-type $A$;
+\item $v\valoo$;
+\item \TODO unfinished
+\end{enumerate}
+\end{theorem}
 
 \section{Splitting Algorithm}
 
