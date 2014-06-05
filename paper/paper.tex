@@ -117,7 +117,7 @@ Introduce the next and prev concepts, along with typesystem.  Introduce binding 
 
 \section{Diagonal Semantics}
 
-We desire a semantics that meets the following goals,
+We desire a semantics that meets the following goals:
 
 \begin{enumerate}
 \item In absence of $\next$ expressions, it should be equivalent to standard call-by-value evaluation.
@@ -137,12 +137,19 @@ $\Xi \vdash \diaonesub$ & ``$e$ evaluates to future table $\gamma$ and value $v$
 	\newline $\isvalone v$ 
 	\newline ... \\ \hline 
 $\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline 
+...&...&... \\ \hline
 \end{tabular}
 \end{center}
 
+Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
+
+We can think of our evaluation as proceeding in the standard way for stage-1 code. But when the evaluator encounters stage-2 code, it places that code off to the side in a table, and then keeps a reference to the table entry.  These references are then passed around as stage-1 values, and the tables are managed accordingly.
+
+The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  Those stage-2 computations are held in
+
 \subsection{Adherence to Goals}
 
-We meet our first and second goals (show examples).
+We meet our first (discuss) and second goals (show examples).
 
 That we meet our third goal is clear from just the structure of our judgments (...).
 

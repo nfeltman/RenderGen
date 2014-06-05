@@ -1,6 +1,6 @@
 % core conventions and language names
-\newcommand {\bbone} {\mathbbm 1}
-\newcommand {\bbtwo} {\mathbbm 2}
+\newcommand {\bbone} {\ensuremath{\mathbbm 1}}
+\newcommand {\bbtwo} {\ensuremath{\mathbbm 2}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
 \newcommand {\ellResid} {$\mathrm{L^R}$}
 \newcommand {\ellTarget} {$\mathrm{L^T}$}
@@ -85,7 +85,7 @@
 %\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
-\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\gamma_{#1},v_{#1}}}
+\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1},v_{#1}}}
 \newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
@@ -100,7 +100,7 @@
 \newcommand {\splittwosub} [3] [] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
 
 %misc
-\newcommand {\gcomp} [2] {\gamma_{#1} \circ \gamma_{#2}}
+\newcommand {\gcomp} [2] {\xi_{#1} \circ \xi_{#2}}
 
 %default stuff
 \newcommand \ty \typesone
