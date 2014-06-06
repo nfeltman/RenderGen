@@ -1,13 +1,14 @@
-.PHONY: quick clean
 
-TEXFILES=paper.tex grammars.tex macros.tex semantics.tex splitting.tex
+MAIN_TEXFILE   := paper.tex
 
-paper.pdf : $(TEXFILES)
-	pdflatex $< && bibtex $(patsubst %.tex,%,$<) && pdflatex $< && pdflatex $<
+OTHER_TEXFILES := grammars.tex macros.tex semanticsfig.tex splittingfig.tex \
+                  abstract.tex intro.tex relatedwork.tex semantics.tex splitting.tex
 
-quick : $(TEXFILES)
-	pdflatex $<
+TEXMACRO_FILE  := 
 
-clean:
-	-rm *.log *.out *.aux *.bbl *.blg
+SPELL          :=   $(addsuffix .spell,  $(MAIN_TEXFILE) $(OTHER_TEXFILES))
+
+BIBFILE        := paper.bib
+
+include common.mk
 
