@@ -11,7 +11,14 @@ The first proposal we call the {\em erasure semantics}, because it corresponds t
 
 We say that erasure semantics gives us a notion of multi-stage evaluation.  One judgement is multistage evaluation at 1, and the other is multistage evaluation at 2.  The downside of this is that the erasure semantics doesn't seem to do all of the stage-1 work before the stage-2 work, for some notion of ``before''.  Of course, the erasure semantics might be equivalent to some other semantics which does have that property.  Unfortunately, this is false (show second-stage if example).
 
-...
+\begin{lstlisting} 
+next {
+	if 5*4*3*2 > 111 then
+		prev{hold (2+4)}
+	else
+		prev{hold (4*5)}
+}
+\end{lstlisting}
 
 The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the correct answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
 
@@ -28,6 +35,11 @@ The Davies semantics is comprised of two mutually recursive judgements: $\davies
 The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
 
 The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
+
+\begin{lstlisting} 
+let x = next {4+5} in
+next{prev{x} * prev{x}}
+\end{lstlisting}
 
 \subsection{Our Semantics}
 
