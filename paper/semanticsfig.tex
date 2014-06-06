@@ -80,8 +80,9 @@
 
 \begin{figure}
 \begin{mathpar}
-\inferdiaone [\fut I]			{\red {\next~e}{y \mapsto q,\hat y}}				{\diatwo e q}												\and
-\inferdiaspc [\fut E]			{\red {\prev~e} {\xi (y)}}						{\diaone e {\xi, \hat y}} 									
+\inferdiaone [hold]			{\red {\pause~e}{z \mapsto \xi (\letin{y}{i}{z}),\hat y}}			{\diaone e {\xi, i}}												\and
+\inferdiaone [\fut I]			{\red {\next~e}{z \mapsto \letin{y}{q}{z},\hat y}}			{\diatwo e q}												\and
+\inferdiaspc [\fut E]			{\red {\prev~e} {\xi (y)}}										{\diaone e {\xi, \hat y}} 									
 \end{mathpar}
 \caption{\ellStaged~Diagonal Semantics ($\next$ and $\prev$)}
 \label{fig:diaSemanticsNP}
