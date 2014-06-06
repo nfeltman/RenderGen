@@ -26,7 +26,7 @@ PDFLATEX_FLAGS = "--shell-escape"
 
 all: $(NAME).pdf
 
-$(NAME).pdf: $(GNUPLOT2EPS) $(TEXFILES) $(TEXMACRO_FILE) $(BIBFILE)
+$(NAME).pdf: $(TEXFILES) $(BIBFILE)
 	pdflatex ${PDFLATEX_FLAGS} $(NAME)
 	bibtex $(basename $(BIBFILE))
 	pdflatex ${PDFLATEX_FLAGS} $(NAME)
