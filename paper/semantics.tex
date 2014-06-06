@@ -218,3 +218,116 @@
 %								{\caseof{r_1}{x_2.r_2}{x_3.r_3}}}				{\sub [1] & \sub [2] & \sub[3]}					 						\and
 %\end{mathpar}
 %\end{figure*}
+
+\section{Semantics}
+
+There's more than one way to define a semantics for our language.  We start this section by considering two proposals, characterizing them mainly by how they handle values of $\fut$ type.
+
+\subsection{The Erasure Semantics}
+
+The first proposal we call the {\em erasure semantics}, because it corresponds to what one would get by simply {\em erasing} all of the $\next$ and $\prev$ terms that appear in \lamStaged.  In particular, we say that $\next v$ is a first-stage value of type $\fut A$ if and only if $v$ is a second-stage value of type $A$, (...)
+
+...
+
+We say that erasure semantics gives us a notion of multi-stage evaluation.  One judgement is multistage evaluation at 1, and the other is multistage evaluation at 2.  The downside of this is that the erasure semantics doesn't seem to do all of the stage-1 work before the stage-2 work, for some notion of ``before''.  Of course, the erasure semantics might be equivalent to some other semantics which does have that property.  Unfortunately, this is false (show second-stage if example).
+
+...
+
+The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the correct answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
+
+\subsection{Meta Semantics}
+
+A different semantics was provided in \cite{davies96}.  We briefly review a two-stage version of that semantics here.
+
+In the erasure semantics, $\next v$ is a value only if $v$ is fully reduced.  But in the meta semantics, $\next e$ is a value only if $e$ has no $\prev$ terms; $v$ is allowed to have unreduced stage-2 computation. 
+
+...
+
+The Davies semantics is comprised of two mutually recursive judgements: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
+
+The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
+
+The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
+
+\subsection{Our Semantics}
+
+We desire a semantics that meets the following goals:
+
+\begin{enumerate}
+\item Modulo termination, it should be equivalent to the erasure semantics.
+\item All of the first stage work should be completed before second stage work.  Ideally, it should just have a notion of partial evaluation, like the meta semantics.
+\item Should be $\next$-by-value, rather than $\next$-by-name, like the erasure semantics.  
+\end{enumerate}
+
+We meet all of these goals.
+
+In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior. 
+
+Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a table and replaces the whole expression with a reference to the table entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
+
+More formally, evaluation comprises the folowing judgments:
+
+\begin{center}
+\begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
+Judgment & Reads & Conditions \\ \hline 
+$\isvalone e$ & ``$e$ is a $\bbone$-value under context $\Xi$'' & ... \\ \hline 
+$\Xi \vdash \diaonesub$ & ``$e$ evaluates to future table $\xi$ and value $v$'' 
+& $\typesone e A$ 
+	\newline $\isvalone v$ 
+	\newline ... \\ \hline 
+$\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline 
+...&...&... \\ \hline
+\end{tabular}
+\end{center}
+
+Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
+
+
+The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  
+
+...
+
+\subsection{Other nice properties}
+
+\begin{enumerate}
+\item For some $\colone{e}{A}$ containing no $\next$ expressions, the semantics is derivationally equivalent to standard call-by-value evaluation.
+\end{enumerate}
+
+\subsection{Metatheory}
+
+\TODO unfinished; where should this go? combine with table above
+
+\noindent\TODO terminology for $\Xi,\Gamma,\xi,v,q$?
+
+\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2
+
+\noindent\TODO put $\Xi$ and $\Gamma$ in the judgments where appropriate
+
+% local macros; put them in macros.tex once they are more finalized
+\newcommand{\wf}{\ \mathsf{wf}}
+\newcommand{\dom}[1]{\mathsf{dom}(#1)}
+\newcommand{\valoo}{\ \bbone\textsf{-}\mathsf{val} @ \bbone}
+\newcommand{\valot}{\ \bbone\textsf{-}\mathsf{val} @ \bbtwo}
+\newcommand{\valtt}{\ \bbtwo\textsf{-}\mathsf{val} @ \bbtwo}
+
+\begin{definition}
+Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
+contain only stage-2 variables.
+\end{definition}
+
+\begin{theorem}
+If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
+\end{theorem}
+
+\begin{theorem}
+If $\Xi;\Gamma\vdash\diaonesub$ then:
+\begin{enumerate}
+\item $\typesone e A$ for some 1-type $A$;
+\item $v\valoo$;
+\item \TODO unfinished
+\end{enumerate}
+\end{theorem}
+
+
+
+

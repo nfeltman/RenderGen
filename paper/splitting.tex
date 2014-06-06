@@ -118,3 +118,135 @@
 \caption{Sum and Function Splitting}
 \label{fig:advancedTypes}
 \end{figure*}
+
+\section{Splitting Algorithm}
+
+[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
+
+The theorem that we want to be true is...
+
+%\begin{center}
+%\begin{tabular}{l}
+%If $\splittwo{e}{A}{p,l.r}$ \\
+%and $\reducetwo{e}{v}$ \\
+%then $\reduce{p}{u}$ \\
+%and $\reduce{[u/l]r}{w}$ \\
+%and $v = w$ 
+%\end{tabular}
+%\end{center}
+
+%\begin{center}
+%\begin{tabular}{l}
+%If $\splitone {e}{A}{c,l.r}$ \\
+%and $\colone {\gamma_1}{\Gamma}$ \\
+%and $\coltwo {\gamma_2}{\Gamma}$\\
+%and $\rsone{\gamma_1(e)}{v}{q}$ \\
+%and $\reducetwo{\gamma_2(q)}{w}$ \\
+%then $\reduce{|\gamma_1|(c)}{\valprod{v}{u}}$ \\
+%and $\reduce{[u/l]|\gamma_2|(r)}{w}$
+%\end{tabular}
+%~~~
+%\begin{tabular}{l}
+%If $\splittwo{e}{B}{p,l.r}$ \\
+%and $\colone {\gamma_1}{\Gamma}$ \\
+%and $\coltwo {\gamma_2}{\Gamma}$\\
+%and $\rstwo{\gamma_1(e)}{q}$ \\
+%and $\reducetwo{\gamma_2(q)}{w}$ \\
+%then $\reduce{|\gamma_1|(p)}{u}$ \\
+%and $\reduce{[u/l]|\gamma_2|(r)}{w}$ 
+%\end{tabular}
+%\end{center}
+
+\section{Examples for Staged Pipelines}
+
+Give the gist of one-to-one pipeline example (like client/server).
+Then talk about a one-to-many pipeline.
+Then talk about a many-to-one pipeline like spark.  It clear how to target something like this for known base types on the boundary, and for product types.  But sums on the boundary are hard!  We leave many-to-one as future-work.
+
+
+\section{Examples of Algorithm Derivation}
+
+Fast exponent example.  
+
+\lstset{language=ML, columns=fullflexible, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
+\begin{lstlisting} 
+let exp (b : $int, e : int) : $int =
+	if e == 0 then
+		next{1}
+	else if (e mod 2) == 0 then
+		next{let x = prev{exp(b,e/2)} in x*x}
+	else
+		next{prev{b} * prev{exp (b,e-1)}}		
+\end{lstlisting}
+
+splits into
+
+\begin{lstlisting} 
+let exp (b, e) =
+	((), roll (
+		if e == 0 then
+			inL ()
+		else 
+			inR (
+				if (e mod 2) == 0 then
+					inL (#2 (exp (b,e/2)))
+				else
+					inR (#2 (exp (b,e-1)))
+			)
+	))
+\end{lstlisting}
+
+and
+
+\begin{lstlisting} 
+let exp ((b, e), p) =
+	case unroll p of
+	  () => 1
+	| d  =>
+		case d of
+		  r => let x = exp ((b,()),r) in x*x
+		| r => b * exp ((b,()),r)
+\end{lstlisting}
+
+Quickselect example.
+
+\begin{lstlisting} 
+let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) = 
+	case unroll l of
+	  () => next {0}
+	| (h,t) => 
+		let (left,right,n) = partition h t in
+		next{
+			let n = prev{hold n} in
+			case compare prev{i} n of
+			  () (*LT*) => prev {qs left i}
+			| () (*EQ*) => hold h
+			| () (*GT*) => 
+				prev {qs right next{prev{i}-n-1}}
+		}	
+\end{lstlisting}
+
+Things to try: an interpreter which, partially evaluated, does cps or something.
+
+For each of these examples, talk about what partial evaluation would do and why that might be bad.
+
+\section{Related Work}
+
+Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's ambiguity.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
+
+Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
+
+Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict, but the authors did note that first-stage if statements were difficult to provide meaning to [need quote].
+
+[RTSL and SH]
+
+[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  They have the same many-to-one use case as Spark, but syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
+
+Davies (\cite{davies96}) explored the connection between linear temporal logic and its corresponding type system [circle](which we adapted into [circle sub 2]), and showed the equivalence between [circle] and existing systems for binding time analysis. That work provided $\beta$ and $\eta$ rules for the next and prev operators, but did not consider a full dynamic semantics for the whole language. Whereas [name of our type system] is appropriate for stage-splitting and partial evaluation, \cite{davies01} provides a similar system, [square], that is appropriate for meta-programming.  The main difference is that terms inside a [prev] operator do not see any stage-2 bindings declared outside of it.  They note that where [circle] corresponds to the non-branching temporal logic, [square] corresponds to the branching version.
+
+[Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
+
+[What's going on with names and necessity?]
+
+[Our work bears a lot of similarity to ML5, which also uses a modal type system.  The difference is that we target stages systems (each stage talks to the next), whereas they target distributed ones (all stages talk to all others). The type systems reflect this directly in the world accessibility relation.  There might be some analogue of stage-splitting in the ML5 work, but I have not yet isolated it (might be buried in CPS conversion).]
+

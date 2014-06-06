@@ -25,6 +25,9 @@
 
 \input {macros}
 \input {grammars}
+\input {abstract}
+\input {intro}
+\input {relatedwork}
 \input {semantics}
 \input {splitting}
 
@@ -62,7 +65,7 @@
 \maketitle
 
 \begin{abstract}
-This is the text of the abstract.
+\input{abstract}
 \end{abstract}
 
 \category{CR-number}{subcategory}{third-level}
@@ -75,304 +78,21 @@ term1, term2
 \keywords
 keyword1, keyword2
 
-\section{Introduction}
-
-Staged computation has existed as a programming technique for over three decades.  Jorring et al. (\cite{jorring86}) identify three classes of staging techniques: meta-programming, partial evaluation, and stage-splitting.  The first two of these have received significantly more attention than the third.
-
-We call these techniques {\em staged} in that part of their input comes in the first stage, and part comes in the second stage.  Likewise, some computation occurs at each stage as well.
-
-Countless meta-programming systems exist (...twelve thousand citations...\cite{devito13}), and their background theory and type-systems are well understood (\cite{davies01}).  Partial evaluation, too, is well-understood.  Partial evaluation systems exist... . This paper explores both theory and applications for stage-splitting.  
-
-\section{Stage-Splitting Definition and Comparison to Partial Evaluation}
-
-First, we review the definition of partial evaluation.  Informally, a partial evaluator takes the code for a function $f$, as well as the first-stage input $x$ to that function, and produces the code for a version of that function {\em specialized} to the first input, often called $f_x$.  This $f_x$ function can then be evaluated with the second-stage input to produce the same final answer that $f$ would have.  The goal of the process is that $f_x$ should be cheaper to evaluate than $f$, although this can't be guaranteed for all inputs.  We now state this theorem more formally: a partial evaluator is some function $p$ such that,
-\[
-	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
-\]
-where (borrowing notation from \cite{jones96}), $\llbracket f \rrbracket$ means the mathematical function corresponding to the code given by $f$.
-
-Informally, we define stage-splitting to be the process of taking some function $f$ into two other functions, $f_1$ and $f_2$, where $f_1$ computes a partial result from the first-stage input, and $f_2$ uses that partial result and the second-stage input to compute a final result which is the same as if we had just run the original $f$ on both inputs.  Again, more formally, a stage-splitter is some $s$ such that,
-\[
-	\forall f. \exists f_1,f_2. [s(f) = (f_1,f_2) \text{ and } 
-	\forall x,y.\llbracket f \rrbracket(x,y)=\llbracket f_2 \rrbracket(\llbracket f_1 \rrbracket(x),y)]
-\]
-
-We first discuss a few similarities between partial-evaluation and stage-splitting.  First off, both techniques have the same form of input, namely a bivariate function where the first input comes at stage one, and the second input comes at stage two.  
-
-Again in both cases, the governing equations are too weak to fully determine the definitions of $p$ and $s$.  Indeed, both admit completely trivial definitions.  Consider the stage-splitter which always returns the identity for $f_1$ and $f$ for $f_2$, or analogously the partial evaluator which always returns an $f_x$ that just closes over the input $x$ and internally calls $f$ once $y$ is available. The ambiguity of these equations (modulo standard program equivalence of the outputs) can be resolved by adding annotations to $f$ to clearly specify the parts of the computation that are first stage and the parts that are second stage.  Later, we show that the same annotations suffice for both partial evaluation and stage-splitting.  
-
-The differences between stage-splitting and partial evaluation are likewise evident from these governing equations.  For instance in partial evaluation, the existential $f_x$ depends on $x$, which means that the partial evaluator cannot be run until $x$ is known.  Moreover, if one wishes to specialize $f$ for multiple $x$'s, then the partial evaluator must be run several times.  Depending on the use case and cost of partial evaluation, this may be prohibitively expensive.  Alternatively, a stage-splitter need only be run once, and this can be done entirely before any $x$ is known.
-
-\subsection{Partial Evaluator from Stage-Splitter}
-
-We can recover a valid partial evaluator from a stage-splitter by stage-splitting the input function $f$ into $f_1$ and $f_2$, computing $\llbracket f_1 \rrbracket(x)$ to obtain $\bar x$, and then returning an $f_x$ such that $\llbracket f_x \rrbracket(y) = \llbracket f_2 \rrbracket(\bar x, y)$.  Note that this does not mean that stage-splitting is a strict generalization of partial evaluation.  In practice, partial evaluators easily perform optimizations (such as branch elimination, discussed later) which are beyond the scope of stage-splitting, and would require further technology than has been developed here.  It is best to think of stage-splitting as simply the first half of partial evaluation, where the back half is an optimizer. [Might be able to come up with a futamura projection-like statement here, which would be really really really cool.]
-
-\subsection{Stage-Splitter from Partial Evaluator}
-
-Likewise, we can easily recover a stage-splitter from a partial evaluator.  If $p$ is a valid partial evaluator, then we can define a stage splitter $s$ such that $s(f)=(f_1,f_2)$, where
-\begin{align*}
-[f_1](x) &= p (f,x) \\
-[f_2](l,y) &= [l] (y)
-\end{align*}
-This implicitly requires that the languages in which $f_1$ and $f_2$ are expressed are strong enough to write a partial evaluator, but that is the case in this paper.  A stage-splitter defined this way leaves much to be desired.  Firstly, partial evaluation of $f$ may be too expensive for the context in which $f_1$ needs to run.  Additionally, the intermediate data structure created this way may be much larger than necessary, as it would contain all of the residual code.
-
-\section{A Two-Stage Modal Language}
-
-Introduce the next and prev concepts, along with typesystem.  Introduce binding time analysis here, and explain that we don't care about it.  Show some examples.  Introduce a hold operation.
-
-\section{Semantics}
-
-There's more than one way to define a semantics for our language.  We start this section by considering two proposals, characterizing them mainly by how they handle values of $\fut$ type.
-
-\subsection{The Erasure Semantics}
-
-The first proposal we call the {\em erasure semantics}, because it corresponds to what one would get by simply {\em erasing} all of the $\next$ and $\prev$ terms that appear in \lamStaged.  In particular, we say that $\next v$ is a first-stage value of type $\fut A$ if and only if $v$ is a second-stage value of type $A$, (...)
-
-...
-
-We say that erasure semantics gives us a notion of multi-stage evaluation.  One judgement is multistage evaluation at 1, and the other is multistage evaluation at 2.  The downside of this is that the erasure semantics doesn't seem to do all of the stage-1 work before the stage-2 work, for some notion of ``before''.  Of course, the erasure semantics might be equivalent to some other semantics which does have that property.  Unfortunately, this is false (show second-stage if example).
-
-...
-
-The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the correct answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
-
-\subsection{Meta Semantics}
-
-A different semantics was provided in \cite{davies96}.  We briefly review a two-stage version of that semantics here.
-
-In the erasure semantics, $\next v$ is a value only if $v$ is fully reduced.  But in the meta semantics, $\next e$ is a value only if $e$ has no $\prev$ terms; $v$ is allowed to have unreduced stage-2 computation. 
-
-...
-
-The Davies semantics is comprised of two mutually recursive judgements: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
-
-The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
-
-The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
-
-\subsection{Our Semantics}
-
-We desire a semantics that meets the following goals:
-
-\begin{enumerate}
-\item Modulo termination, it should be equivalent to the erasure semantics.
-\item All of the first stage work should be completed before second stage work.  Ideally, it should just have a notion of partial evaluation, like the meta semantics.
-\item Should be $\next$-by-value, rather than $\next$-by-name, like the erasure semantics.  
-\end{enumerate}
-
-We meet all of these goals.
-
-In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior. 
-
-Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a table and replaces the whole expression with a reference to the table entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
-
-More formally, evaluation comprises the folowing judgments:
-
-\begin{center}
-\begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
-Judgment & Reads & Conditions \\ \hline 
-$\isvalone e$ & ``$e$ is a $\bbone$-value under context $\Xi$'' & ... \\ \hline 
-$\Xi \vdash \diaonesub$ & ``$e$ evaluates to future table $\xi$ and value $v$'' 
-& $\typesone e A$ 
-	\newline $\isvalone v$ 
-	\newline ... \\ \hline 
-$\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline 
-...&...&... \\ \hline
-\end{tabular}
-\end{center}
-
-Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
-
-
-The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  
-
-...
-
-\subsection{Other nice properties}
-
-\begin{enumerate}
-\item For some $\colone{e}{A}$ containing no $\next$ expressions, the semantics is derivationally equivalent to standard call-by-value evaluation.
-\end{enumerate}
-
-\subsection{Metatheory}
-
-\TODO unfinished; where should this go? combine with table above
-
-\noindent\TODO terminology for $\Xi,\Gamma,\xi,v,q$?
-
-\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2
-
-\noindent\TODO put $\Xi$ and $\Gamma$ in the judgments where appropriate
-
-% local macros; put them in macros.tex once they are more finalized
-\newcommand{\wf}{\ \mathsf{wf}}
-\newcommand{\dom}[1]{\mathsf{dom}(#1)}
-\newcommand{\valoo}{\ \bbone\textsf{-}\mathsf{val} @ \bbone}
-\newcommand{\valot}{\ \bbone\textsf{-}\mathsf{val} @ \bbtwo}
-\newcommand{\valtt}{\ \bbtwo\textsf{-}\mathsf{val} @ \bbtwo}
-
-\begin{definition}
-Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
-contain only stage-2 variables.
-\end{definition}
-
-\begin{theorem}
-If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
-\end{theorem}
-
-\begin{theorem}
-If $\Xi;\Gamma\vdash\diaonesub$ then:
-\begin{enumerate}
-\item $\typesone e A$ for some 1-type $A$;
-\item $v\valoo$;
-\item \TODO unfinished
-\end{enumerate}
-\end{theorem}
-
-\section{Splitting Algorithm}
-
-[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
-
-The theorem that we want to be true is...
-
-%\begin{center}
-%\begin{tabular}{l}
-%If $\splittwo{e}{A}{p,l.r}$ \\
-%and $\reducetwo{e}{v}$ \\
-%then $\reduce{p}{u}$ \\
-%and $\reduce{[u/l]r}{w}$ \\
-%and $v = w$ 
-%\end{tabular}
-%\end{center}
-
-%\begin{center}
-%\begin{tabular}{l}
-%If $\splitone {e}{A}{c,l.r}$ \\
-%and $\colone {\gamma_1}{\Gamma}$ \\
-%and $\coltwo {\gamma_2}{\Gamma}$\\
-%and $\rsone{\gamma_1(e)}{v}{q}$ \\
-%and $\reducetwo{\gamma_2(q)}{w}$ \\
-%then $\reduce{|\gamma_1|(c)}{\valprod{v}{u}}$ \\
-%and $\reduce{[u/l]|\gamma_2|(r)}{w}$
-%\end{tabular}
-%~~~
-%\begin{tabular}{l}
-%If $\splittwo{e}{B}{p,l.r}$ \\
-%and $\colone {\gamma_1}{\Gamma}$ \\
-%and $\coltwo {\gamma_2}{\Gamma}$\\
-%and $\rstwo{\gamma_1(e)}{q}$ \\
-%and $\reducetwo{\gamma_2(q)}{w}$ \\
-%then $\reduce{|\gamma_1|(p)}{u}$ \\
-%and $\reduce{[u/l]|\gamma_2|(r)}{w}$ 
-%\end{tabular}
-%\end{center}
-
-\section{Examples for Staged Pipelines}
-
-Give the gist of one-to-one pipeline example (like client/server).
-Then talk about a one-to-many pipeline.
-Then talk about a many-to-one pipeline like spark.  It clear how to target something like this for known base types on the boundary, and for product types.  But sums on the boundary are hard!  We leave many-to-one as future-work.
-
-
-\section{Examples of Algorithm Derivation}
-
-Fast exponent example.  
-
-\lstset{language=ML, columns=fullflexible, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
-\begin{lstlisting} 
-let exp (b : $int, e : int) : $int =
-	if e == 0 then
-		next{1}
-	else if (e mod 2) == 0 then
-		next{let x = prev{exp(b,e/2)} in x*x}
-	else
-		next{prev{b} * prev{exp (b,e-1)}}		
-\end{lstlisting}
-
-splits into
-
-\begin{lstlisting} 
-let exp (b, e) =
-	((), roll (
-		if e == 0 then
-			inL ()
-		else 
-			inR (
-				if (e mod 2) == 0 then
-					inL (#2 (exp (b,e/2)))
-				else
-					inR (#2 (exp (b,e-1)))
-			)
-	))
-\end{lstlisting}
-
-and
-
-\begin{lstlisting} 
-let exp ((b, e), p) =
-	case unroll p of
-	  () => 1
-	| d  =>
-		case d of
-		  r => let x = exp ((b,()),r) in x*x
-		| r => b * exp ((b,()),r)
-\end{lstlisting}
-
-Quickselect example.
-
-\begin{lstlisting} 
-let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) = 
-	case unroll l of
-	  () => next {0}
-	| (h,t) => 
-		let (left,right,n) = partition h t in
-		next{
-			let n = prev{hold n} in
-			case compare prev{i} n of
-			  () (*LT*) => prev {qs left i}
-			| () (*EQ*) => hold h
-			| () (*GT*) => 
-				prev {qs right next{prev{i}-n-1}}
-		}	
-\end{lstlisting}
-
-Things to try: an interpreter which, partially evaluated, does cps or something.
-
-For each of these examples, talk about what partial evaluation would do and why that might be bad.
-
-\section{Related Work}
-
-Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's ambiguity.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
-
-Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
-
-Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict, but the authors did note that first-stage if statements were difficult to provide meaning to [need quote].
-
-[RTSL and SH]
-
-[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  They have the same many-to-one use case as Spark, but syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
-
-Davies (\cite{davies96}) explored the connection between linear temporal logic and its corresponding type system [circle](which we adapted into [circle sub 2]), and showed the equivalence between [circle] and existing systems for binding time analysis. That work provided $\beta$ and $\eta$ rules for the next and prev operators, but did not consider a full dynamic semantics for the whole language. Whereas [name of our type system] is appropriate for stage-splitting and partial evaluation, \cite{davies01} provides a similar system, [square], that is appropriate for meta-programming.  The main difference is that terms inside a [prev] operator do not see any stage-2 bindings declared outside of it.  They note that where [circle] corresponds to the non-branching temporal logic, [square] corresponds to the branching version.
-
-[Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
-
-[What's going on with names and necessity?]
-
-[Our work bears a lot of similarity to ML5, which also uses a modal type system.  The difference is that we target stages systems (each stage talks to the next), whereas they target distributed ones (all stages talk to all others). The type systems reflect this directly in the world accessibility relation.  There might be some analogue of stage-splitting in the ML5 work, but I have not yet isolated it (might be buried in CPS conversion).]
-
-\appendix
-\section{Appendix Title}
-
-This is the text of the appendix, if you need one.
-
-\acks
-
-Acknowledgments, if needed.
+\input{intro}
+\input{relatedwork}
+\input{semantics}
+\input{splitting}
+
+%\appendix
+%\section{Appendix Title}
+%This is the text of the appendix, if you need one.
+
+%\acks
+%Acknowledgments, if needed.
 
 % We recommend abbrvnat bibliography style.
 
 \bibliography{paper}
 \bibliographystyle{abbrvnat}
-
 
 \end{document}
