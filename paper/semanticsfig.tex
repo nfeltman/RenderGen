@@ -56,7 +56,7 @@
 \begin{figure}
 \begin{mathpar}
 \inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot,\vallam{x}{e}}}					{\cdot} 																					\and
-\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2 \circ \xi',v'}}					{\red {e_1} {\xi_1,\vallam{x}{e'}} & \sub [2] & \red [\Xi,dom(\xi_1),dom(\xi_2);\Gamma] {[v_2/x]e'}{\xi',v'}}	\and
+\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2 \circ \xi',v'}}					{\red {e_1} {\xi_1,\vallam{x}{e'}} & \sub [2] & \red [\Xi,\dom{\xi_1},\dom{\xi_2};\Gamma] {[v_2/x]e'}{\xi',v'}}	\and
 %
 \inferdiaone [\rmunit]   	{\red {()}{\cdot,()}}												{\cdot} 																					\and
 \inferdiaone [\times I]  	{\red {(e_1,e_2)}{\gcomp 1 2,\valprod{v_1}{v_2}}}				{\sub [1] & \sub [2]} 																	\and
@@ -65,12 +65,12 @@
 \inferdiaone [+ I_1]  		{\red {\inl~e} {\xi,\inl~v}}										{\sub} 																						\and
 \inferdiaone [+ I_2]  		{\red {\inr~e} {\xi,\inr~v}}										{\sub} 																						\and
 %
-\inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2,v_2}}		{\red {e_1}{\xi_1,\valinl~v} & \red [\Xi,dom(\xi_1);\Gamma]{[v/x_2]e_2}{\xi_2,v_2}} 					\and
-\inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3,v_3}}		{\red {e_1}{\xi_1,\valinr~v} & \red [\Xi,dom(\xi_1);\Gamma]{[v/x_3]e_3}{\xi_3,v_3}}					\and
+\inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2,v_2}}		{\red {e_1}{\xi_1,\valinl~v} & \red [\Xi,\dom{\xi_1};\Gamma]{[v/x_2]e_2}{\xi_2,v_2}} 					\and
+\inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3,v_3}}		{\red {e_1}{\xi_1,\valinr~v} & \red [\Xi,\dom{\xi_1};\Gamma]{[v/x_3]e_3}{\xi_3,v_3}}					\and
 %
 \inferdiaone [int]			{\red {i}{\cdot,i}}												{\cdot} 																					\and
 \inferdiaone [bool]   		{\red {b}{\cdot,b}}												{\cdot} 																					\and
-\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2, v_2}}					{\sub [1] & \red [\Xi,dom(\xi_1);\Gamma] {[v_1/x]e_2}{\xi_2,v_2}}											\and
+\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2, v_2}}					{\sub [1] & \red [\Xi,\dom{\xi_1};\Gamma] {[v_1/x]e_2}{\xi_2,v_2}}											\and
 \inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2,v}}					{\red {e_1}{\xi_1,\bf true}  & \red {e_2}{\xi_2,v}} 							\and
 \inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3,v}}					{\red {e_1}{\xi_1,\bf false} & \red {e_3}{\xi_3,v}}								
 \end{mathpar}

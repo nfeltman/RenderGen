@@ -91,13 +91,15 @@ The evaluation judgment is very similar to standard call-by-value evaluation, as
 
 \noindent\TODO terminology for $\Xi,\Gamma,\xi,v,q$?
 
-\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2
+\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2. what is the
+terminology? (?, residuals, results?)
 
 \noindent\TODO put $\Xi$ and $\Gamma$ in the judgments where appropriate
 
+\noindent\TODO be uniform about which judgments have which contexts, etc
+
 % local macros; put them in macros.tex once they are more finalized
 \newcommand{\wf}{\ \mathsf{wf}}
-\newcommand{\dom}[1]{\mathsf{dom}(#1)}
 \newcommand{\valoo}{\ \bbone\textsf{-}\mathsf{val} @ \bbone}
 \newcommand{\valot}{\ \bbone\textsf{-}\mathsf{val} @ \bbtwo}
 \newcommand{\valtt}{\ \bbtwo\textsf{-}\mathsf{val} @ \bbtwo}
@@ -107,19 +109,43 @@ Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
 contain only stage-2 variables.
 \end{definition}
 
+\noindent\TODO don't call it a table
+
+\noindent\TODO what is the notation for $\xi$s? how do you build them?
+
+\noindent\TODO define reification explicitly as a metafunction
+
+\begin{definition}
+A table $\xi$ is well-formed ($\xi\wf$) if either:
+\begin{enumerate}
+\item $\xi = \cdot$; or
+\item $\xi = \xi',x\mapsto e$ where
+$\Xi,\dom{\xi'};\Gamma\vdash e : B @ \bbtwo$ and
+$\Xi,\dom{\xi'};\Gamma\vdash e \valot$.
+\end{enumerate}
+\end{definition}
+
 \begin{theorem}
 If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
 \end{theorem}
 
 \begin{theorem}
-If $\Xi;\Gamma\vdash\diaonesub$ then:
+If $\diaonesub$ then:
 \begin{enumerate}
 \item $\typesone e A$ for some 1-type $A$;
-\item $v\valoo$;
-\item \TODO unfinished
+\item $\xi\wf$;
+\item $\Xi,\dom\xi;\cdot\vdash v : A @ \bbone$; and
+\item $\Xi,\dom\xi;\cdot\vdash v\valoo$.
 \end{enumerate}
 \end{theorem}
 
-
+\begin{theorem}
+If $\diatwosub$ then:
+\begin{enumerate}
+\item $\typestwo e A$ for some 2-type $A$;
+\item $\Xi;\Gamma\vdash q : A @ \bbtwo$; and
+\item $\Xi;\Gamma\vdash q\valtt$.
+\end{enumerate}
+\end{theorem}
 
 
