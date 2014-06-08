@@ -65,7 +65,7 @@ let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) 
 			let n = prev{hold n} in
 			case compare prev{i} n of
 			  () (*LT*) => prev {qs left i}
-			| () (*EQ*) => hold h
+			| () (*EQ*) => prev {hold h}
 			| () (*GT*) => 
 				prev {qs right next{prev{i}-n-1}}
 		}	
