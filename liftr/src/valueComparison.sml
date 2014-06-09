@@ -8,6 +8,10 @@ open Lambda12
 open SourceLang
 structure E = ErasureSemantics
 structure D = DiagonalSemantics
+
+infixr 9 `
+fun a ` b = a b
+
 in
 
 exception ConversionError
@@ -39,16 +43,22 @@ and splitErasureValue2 v =
 		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
 		| E.V2 (VFlam (x,e)) => raise ConversionError
 		
-fun convertDiagValue1 v = 
+fun splitDiagValue1 v = 
 		case v of 
-		  D.V1 (VFint i) => Vint i
-		| D.V1 (VFbool b) => Vbool b
-		| D.V1 VFunit => Vtuple []
-		| D.V1 (VFroll v) => Vroll (convertDiagValue1 v)
-		| D.V1 (VFtuple (v1,v2)) => Vtuple [convertDiagValue1 v1, convertDiagValue1 v2]
-		| D.V1 (VFinj (side,v)) => Vinj (side, convertDiagValue1 v)
+		  D.V1 (VFint i) => (Vint i, D.E Funit) : value * DiagonalSemantics.expr
+		| D.V1 (VFbool b) => (Vbool b, D.E Funit)
+		| D.V1 VFunit => (Vtuple [], D.E Funit)
+		| D.V1 (VFroll v) => 
+			(case splitDiagValue1 v of 
+			(u,w) => (Vroll u, D.E ` Froll ((),w)))
+		| D.V1 (VFtuple (v1,v2)) => 
+			(case (splitDiagValue1 v1, splitDiagValue1 v2) of 
+			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], D.E ` Ftuple (w1,w2))) 
+		| D.V1 (VFinj (side,v)) => 
+			(case splitDiagValue1 v of 
+			(u,w) => (Vinj (side,u), w))
 		| D.V1 (VFlam (x,e)) => raise ConversionError
-		| D.V1hat _ => Vtuple []
+		| D.V1hat y => (Vtuple [], D.E ` Fvar y)
 		
 fun convertDiagValue2 v = 
 		case v of 

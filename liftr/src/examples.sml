@@ -69,8 +69,8 @@ k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int *
 						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (cons (5, cons (3, empty)))",ansI 8),
-j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
-						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE),
+(*j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
+						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE), *)
 j("fastexp",			"letrec exp ((b,e) : ($int)*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
 						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243) ,
 j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
@@ -126,15 +126,21 @@ fun testProgram verbose name p t =
 		val _ = debug (PrintPSF.pat2string (PrintPSF.convertPSFPattern l));
 		val _ = debug ".\n";
 		val _ = printTerm (PrintPSF.convertPSF split2);
+		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Erasure Semantics *)
 		val valErasure = ErasureSemantics.eval1 Contexts.empty propegated
 				
 		(* Diagonal Semantics *)
-	(*	val (v1Diag, rDiag) = DiagonalSemantics.eval1 empty propegated
-		val _ = (printTerm (PrintPSF.convertDiag rDiag);	print "\n~~~~~~~~~~~\n")
-		val v2Diag = DiagonalSemantics.eval2 empty rDiag
-		val (v1DiagC, v2DiagC) = (Comp.convertDiagValue1 v1Diag, Comp.convertDiagValue2 v2Diag) *)
+		val (xiDiag, v1Diag) = DiagonalSemantics.eval1 empty propegated
+		val (v1DiagC, diagBody) = Comp.splitDiagValue1 v1Diag
+		val diagResidual = xiDiag diagBody
+		val v2Diag = DiagonalSemantics.eval2 empty diagResidual
+		val v2DiagC = Comp.convertDiagValue2 v2Diag
+		
+		(* Printing Diagonal Semantics *)
+		val _ = printTerm ` PrintPSF.convertDiag diagResidual
+		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Evaluating Split Part *)
 		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate Contexts.empty split1
@@ -143,20 +149,21 @@ fun testProgram verbose name p t =
 		
 		(* Comparing *)
 		fun triComp a b c = (Comp.valueEq a b, Comp.valueEq a c, Comp.valueEq b c)
+		fun triCompAgainst v a b c = (Comp.valueEq v a, Comp.valueEq v b, Comp.valueEq v c)
 		val results = 
 		case t of
 		  NONE => []
 		| SAME => let
-		val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
-			val (ed1, es1, ds1) = (*triComp v1Eras v1DiagC v1Split*) triComp v1Eras v1Split v1Split
-			val (ed2, es2, ds2) = (*triComp v2Eras v2DiagC v2Split*) triComp v2Eras v2Split v2Split
+			val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
+			val (ed1, es1, ds1) = triComp v1Eras v1DiagC v1Split
+			val (ed2, es2, ds2) = triComp v2Eras v2DiagC v2Split
 			in [ed1, es1, ds1, ed2, es2, ds2] end
 		| EXACT v => let
 			val (v1Eras,v2Eras) = Comp.splitErasureValue1 valErasure
 			val (v1Suplied,v2Suplied) = Comp.splitErasureValue1 v
-			val (ae1, as1, es1) = triComp v1Suplied v1Eras v1Split
-			val (ae2, as2, es2) = triComp v2Suplied v2Eras v2Split
-			in [ae1, as1, es1, ae2, as2, es2] end
+			val (ae1, ad1, as1) = triCompAgainst v1Suplied v1Eras v1DiagC v1Split
+			val (ae2, ad2, as2) = triCompAgainst v2Suplied v2Eras v2DiagC v2Split
+			in [ae1, ad1, as1, ae2, ad2, as2] end
 		
 		(* Epilogue *)
 		fun printTestResult b = emit (if b then "P" else "F")
