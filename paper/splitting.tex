@@ -75,19 +75,6 @@ Things to try: an interpreter which, partially evaluated, does cps or something.
 
 For each of these examples, talk about what partial evaluation would do and why that might be bad.
 
-\section{Related Work}
-
-Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's ambiguity.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
-
-Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
-
-Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict, but the authors did note that first-stage if statements were difficult to provide meaning to [need quote].
-
-[RTSL and SH]
-
-[Discuss Yong's recent paper here.  It does some pretty sophisticated binding time analysis, with a somewhat straightforward splitting after that.  They have the same many-to-one use case as Spark, but syntactic restrictions prevent sum types on the boundary, sort of.  If we wanted to faithfully represent their system in ours, we would need some mechanisms for abstraction over stage, which we do not have.]
-
-Davies (\cite{davies96}) explored the connection between linear temporal logic and its corresponding type system [circle](which we adapted into [circle sub 2]), and showed the equivalence between [circle] and existing systems for binding time analysis. That work provided $\beta$ and $\eta$ rules for the next and prev operators, but did not consider a full dynamic semantics for the whole language. Whereas [name of our type system] is appropriate for stage-splitting and partial evaluation, \cite{davies01} provides a similar system, [square], that is appropriate for meta-programming.  The main difference is that terms inside a [prev] operator do not see any stage-2 bindings declared outside of it.  They note that where [circle] corresponds to the non-branching temporal logic, [square] corresponds to the branching version.
 
 [Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
 
