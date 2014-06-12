@@ -6,26 +6,34 @@ Introduce the next and prev concepts, along with typesystem.  Introduce binding 
 
 \section{Semantics}
 
-There's more than one way to define a semantics for our language.  We start this section by considering two proposals, characterizing them mainly by how they handle values of $\fut$ type.
+Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
 
 \subsection{The Erasure Semantics}
 
-The first proposal we call the {\em erasure semantics}, because it corresponds to what one would get by simply {\em erasing} all of the $\next$ and $\prev$ terms that appear in \lamStaged.  In particular, we say that $\next v$ is a first-stage value of type $\fut A$ if and only if $v$ is a second-stage value of type $A$, (...)
+We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgements, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
 
-...
+Both judgments behave normally at non-staged features.  We cover their behavior at staged features below:
 
-We say that erasure semantics gives us a notion of multi-stage evaluation.  One judgement is multistage evaluation at 1, and the other is multistage evaluation at 2.  The downside of this is that the erasure semantics doesn't seem to do all of the stage-1 work before the stage-2 work, for some notion of ``before''.  Of course, the erasure semantics might be equivalent to some other semantics which does have that property.  Unfortunately, this is false (show second-stage if example).
+\begin{mathpar}
+\infer {\next~e \erasone \next~v} {e \erastwo v} \and
+\infer {\prev~e \erastwo \next~v} {e \erasone v} \and
+\infer {\pause~e \erasone \next~i} {e \erasone i}
+\end{mathpar}
+
+Essentially, we immediately evaluate under the $\next$, yielding a value for $\fut$ types. The $\prev$ terms remove this wrapper.  As expected, $\pause$ also gives us a way to inject into the wrapper at integers.
+
+The erasure semantics has some undesirable properties.  By intention, it interleaves the execution of stage-\bbone~and stage-\bbtwo~code, so the evaluation can't really be said to be staged (i.e. stage-\bbone~work is done before stage-\bbtwo~work).  Moreover, the erasure semantics cannot be equivalent to any semantics which does have this property!  To see why, consider the following code, which types to int at \bbtwo:
 
 \begin{lstlisting} 
-next {
-	if 5*4*3*2 > 111 then
-		prev{hold (2+4)}
-	else
-		prev{hold (4*5)}
-}
+if 5*4*3*2 > 111 then
+	prev{ hold (2+4) }
+else
+	prev{ loopForever () (* does not terminate *) }
 \end{lstlisting}
 
-The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the correct answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
+Under the erasure semantics (using $\erastwo$), this code takes the top branch and evaluates to 6.  But in order know that the {\tt loopForever} function need not be called, the predicate had to be evaluated prior.  But the predicate is stage-\bbtwo, whereas {\tt loopForever} is stage-\bbone.  To borrow terminology from \cite{cave14}, this violates causality.  In order to avoid this problem, a valid semantics must {\em speculate} down the branches of any stage-\bbtwo~if or case statement (or similarly into the body of a stage-\bbtwo function) to find and evaluate all of the stage-\bbone~code.  Both of the other semantics we will consider have this property.
+
+The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the ``correct'' answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
 
 \subsection{Meta Semantics}
 
@@ -68,7 +76,7 @@ More formally, evaluation comprises the folowing judgments:
 \begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
 Judgment & Reads & Conditions \\ \hline 
 $\isvalone e$ & ``$e$ is a $\bbone$-value under context $\Xi$'' & ... \\ \hline 
-$\Xi \vdash \diaonesub$ & ``$e$ evaluates to future table $\xi$ and value $v$'' 
+$\diaonesub$ & ``$e$ evaluates to future table $\xi$ and value $v$'' 
 & $\typesone e A$ 
 	\newline $\isvalone v$ 
 	\newline ... \\ \hline 
