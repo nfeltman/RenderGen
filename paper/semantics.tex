@@ -128,9 +128,9 @@ let x1 = 4+5 in
  x1 * x1 * 15
 \end{lstlisting}
 
-Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a table and replaces the whole expression with a reference to the table entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
+Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a context and replaces the whole expression with a reference to the context entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
 
-More formally, evaluation comprises the folowing judgments:
+More formally, evaluation comprises the following judgments:
 
 \begin{center}
 \begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
@@ -148,7 +148,7 @@ $\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline
 Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
 
 
-The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future table} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a 1-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  
+The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a \bbone-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  The mapping between these hatted variables and stage-two expressions is
 
 ...
 
