@@ -6,67 +6,127 @@ Introduce the next and prev concepts, along with typesystem.  Introduce binding 
 
 \section{Semantics}
 
-Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
+%Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
 
-\subsection{The Erasure Semantics}
+%\subsection{The Erasure Semantics}
+%
+%We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgements, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
+%
+%Both judgments behave normally at non-staged features.  We cover their behavior at staged features below:
+%
+%\begin{mathpar}
+%\infer {\next~e \erasone \next~v} {e \erastwo v} \and
+%\infer {\prev~e \erastwo \next~v} {e \erasone v} \and
+%\infer {\pause~e \erasone \next~i} {e \erasone i}
+%\end{mathpar}
+%
+%Essentially, we immediately evaluate under the $\next$, yielding a value for $\fut$ types. The $\prev$ terms remove this wrapper.  As expected, $\pause$ also gives us a way to inject into the wrapper at integers.
+%
+%The erasure semantics has some undesirable properties.  By intention, it interleaves the execution of stage-\bbone~and stage-\bbtwo~code, so the evaluation can't really be said to be staged (i.e. stage-\bbone~work is done before stage-\bbtwo~work).  Moreover, the erasure semantics cannot be equivalent to any semantics which does have this property!  To see why, consider the following code, which types to int at \bbtwo:
+%
+%\begin{lstlisting} 
+%if 5*4*3*2 > 111 then
+%	prev{ hold (2+4) }
+%else
+%	prev{ loopForever () (* does not terminate *) }
+%\end{lstlisting}
+%
+%Under the erasure semantics (using $\erastwo$), this code takes the top branch and evaluates to 6.  But in order know that the {\tt loopForever} function need not be called, the predicate had to be evaluated prior.  But the predicate is stage-\bbtwo, whereas {\tt loopForever} is stage-\bbone.  To borrow terminology from \cite{cave14}, this violates causality.  In order to avoid this problem, a valid semantics must {\em speculate} down the branches of any stage-\bbtwo~if or case statement (or similarly into the body of a stage-\bbtwo function) to find and evaluate all of the stage-\bbone~code.  Both of the other semantics we will consider have this property.
+%
+%The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the ``correct'' answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
+%
+%\subsection{Meta Semantics}
+%
+%A different semantics was provided in \cite{davies96}.  We briefly review a two-stage version of that semantics here.
+%
+%In the erasure semantics, $\next v$ is a value only if $v$ is fully reduced.  But in the meta semantics, $\next e$ is a value only if $e$ has no $\prev$ terms; $v$ is allowed to have unreduced stage-2 computation. 
+%
+%...
+%
+%The Davies semantics is comprised of two mutually recursive judgements: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
+%
+%The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
+%
+%The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
+%
+%\begin{lstlisting} 
+%let x = next {4+5} in
+%next{prev{x} * prev{x}}
+%\end{lstlisting}
+%
+%\subsection{Our Semantics}
+%
+%We desire a semantics that meets the following goals:
+%
+%\begin{enumerate}
+%\item Modulo termination, it should be equivalent to the erasure semantics.
+%\item All of the first stage work should be completed before second stage work.  Ideally, it should just have a notion of partial evaluation, like the meta semantics.
+%\item Should be $\next$-by-value, rather than $\next$-by-name, like the erasure semantics.  
+%\end{enumerate}
+%
+%We meet all of these goals.
 
-We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgements, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
+In this section, we discuss the dynamic semantics of our language.  Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle $\next$, $\prev$, and $\pause$ constructs.  
 
-Both judgments behave normally at non-staged features.  We cover their behavior at staged features below:
-
-\begin{mathpar}
-\infer {\next~e \erasone \next~v} {e \erastwo v} \and
-\infer {\prev~e \erastwo \next~v} {e \erasone v} \and
-\infer {\pause~e \erasone \next~i} {e \erasone i}
-\end{mathpar}
-
-Essentially, we immediately evaluate under the $\next$, yielding a value for $\fut$ types. The $\prev$ terms remove this wrapper.  As expected, $\pause$ also gives us a way to inject into the wrapper at integers.
-
-The erasure semantics has some undesirable properties.  By intention, it interleaves the execution of stage-\bbone~and stage-\bbtwo~code, so the evaluation can't really be said to be staged (i.e. stage-\bbone~work is done before stage-\bbtwo~work).  Moreover, the erasure semantics cannot be equivalent to any semantics which does have this property!  To see why, consider the following code, which types to int at \bbtwo:
-
+There are two feasible ways to partially evaluate the following stage-\bbtwo~expression:
 \begin{lstlisting} 
-if 5*4*3*2 > 111 then
-	prev{ hold (2+4) }
-else
-	prev{ loopForever () (* does not terminate *) }
+let x = (next {4+5}, 7+8) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+\end{lstlisting}
+We can either duplicate the contents of the first $\next$ expression to produce,
+\begin{lstlisting}
+(4+5) * (4+5) * 15
+\end{lstlisting}
+or we can bind the contents of the $\next$ expression, and simply duplicate the variable,
+\begin{lstlisting} 
+let x1 = 4+5 in
+x1 * x1 * 15
 \end{lstlisting}
 
-Under the erasure semantics (using $\erastwo$), this code takes the top branch and evaluates to 6.  But in order know that the {\tt loopForever} function need not be called, the predicate had to be evaluated prior.  But the predicate is stage-\bbtwo, whereas {\tt loopForever} is stage-\bbone.  To borrow terminology from \cite{cave14}, this violates causality.  In order to avoid this problem, a valid semantics must {\em speculate} down the branches of any stage-\bbtwo~if or case statement (or similarly into the body of a stage-\bbtwo function) to find and evaluate all of the stage-\bbone~code.  Both of the other semantics we will consider have this property.
-
-The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the ``correct'' answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
-
-\subsection{Meta Semantics}
-
-A different semantics was provided in \cite{davies96}.  We briefly review a two-stage version of that semantics here.
-
-In the erasure semantics, $\next v$ is a value only if $v$ is fully reduced.  But in the meta semantics, $\next e$ is a value only if $e$ has no $\prev$ terms; $v$ is allowed to have unreduced stage-2 computation. 
-
-...
-
-The Davies semantics is comprised of two mutually recursive judgements: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
-
-The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
-
-The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
-
-\begin{lstlisting} 
-let x = next {4+5} in
-next{prev{x} * prev{x}}
+Davies chose the first, whereas we choose the second technique. We think it makes more sense from the point of view of cost.  That said, it's not immediately clear how to get this behavior.  We first present an informal example to give an intuition for what our semantics does.  We start with the same example as before, but wrapped with a $\prev$:
+\begin{lstlisting}
+prev {
+let x = (next {4+5}, 7+8) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+}
 \end{lstlisting}
-
-\subsection{Our Semantics}
-
-We desire a semantics that meets the following goals:
-
-\begin{enumerate}
-\item Modulo termination, it should be equivalent to the erasure semantics.
-\item All of the first stage work should be completed before second stage work.  Ideally, it should just have a notion of partial evaluation, like the meta semantics.
-\item Should be $\next$-by-value, rather than $\next$-by-name, like the erasure semantics.  
-\end{enumerate}
-
-We meet all of these goals.
-
-In this section, we introduce a dynamic semantics for our language.  Although our type system is virtually identical to that in \cite{davies96}, the semantics is different in terms of cost and termination behavior. 
+The first thing we need to do is evaluate the binding for $x$.  Of course, we can't evaluate inside the $\next$ statement, but we still need to produce a value that will get substituted.  What we do instead is replace the body of the $\next$ by a variable and make an explicit substitution, which then floats up to the top of the containing $\prev$:
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+let x = (next{x1}, 15) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+}
+\end{lstlisting}
+We're now free to perform the stage-\bbone~substitution for $x$.  
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+next{
+	prev{#1 (next{x1}, 15)} 
+	* prev{#1 (next{x1}, 15)} 
+	* prev{hold (#2 (next{x1}, 15))}
+}
+}
+\end{lstlisting}
+To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them:
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+	next{ x1 * x1 * 15 }
+}
+\end{lstlisting}
+The final step in evaluating the outer $\prev$ is reifying the contained substitutions into let statements, yielding
+\begin{lstlisting} 
+let x1 = 4+5 in
+ x1 * x1 * 15
+\end{lstlisting}
 
 Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a table and replaces the whole expression with a reference to the table entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
 
