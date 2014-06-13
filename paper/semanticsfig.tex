@@ -80,10 +80,12 @@
 
 \begin{figure}
 \begin{mathpar}
-\inferdiaone [\fut I]			{\red {\next~e}{z \mapsto \letin{y}{q}{z},\hat y}}				{\diatwo e q}										\and
-\inferdiaspc [\fut E]			{\red {\prev~e} {\xi (y)}}											{\diaone e {\xi, \hat y}} 						\and
-\inferdiaone [hold]			{\red {\pause~e}{z \mapsto \xi (\letin{y}{i}{z}),\hat y}}		{\diaone e {\xi, i}}								\and
-\inferdiaone [hatted var]	{\red {\hat y}{\cdot,\hat y}}										{\cdot}								
+\inferdiaone [\fut I]			{\red {\next~e}{z \mapsto \letin{y}{q}{z},\hat y}}				{\diatwo e q}															\and
+\inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi, \hat y} & \reify{\xi}yq}							\and
+\inferdiaone [hold]			{\red {\pause~e}{z \mapsto \xi (\letin{y}{i}{z}),\hat y}}		{\diaone e {\xi, i}}													\and
+\inferdiaone [hatted var]	{\red {\hat y}{\cdot,\hat y}}										{\cdot}																	\and
+\infer							{\reify{(y \mapsto q_1) \circ \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
+\infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
 \caption{\ellStaged~Diagonal Semantics ($\next$ and $\prev$)}
 \label{fig:diaSemanticsNP}

@@ -156,8 +156,6 @@ The evaluation judgment is very similar to standard call-by-value evaluation, as
 
 \begin{enumerate}
 \item For some $\colone{e}{A}$ containing no $\next$ expressions, the semantics is derivationally equivalent to standard call-by-value evaluation.
-\item Second-stage cost is identical to the erasure semantics.
-\item First stage cost is different that erasure, do to speculation.  We always evaluate stage-1 code once, which increases cost, except when that stage-1 code was inside a 2-lambda that got evaluated many times.
 \end{enumerate}
 
 \subsection{Metatheory}
