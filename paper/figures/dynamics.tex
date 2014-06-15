@@ -1,4 +1,4 @@
-\begin{figure}
+\begin{figure*}
 \begin{mathpar}
 \inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot,\vallam{x}{e}}}					{\cdot} 																					\and
 \inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2 \circ \xi',v'}}					{\red {e_1} {\xi_1,\vallam{x}{e'}} & \sub [2] & \red [\Xi,\dom{\xi_1},\dom{\xi_2};\Gamma] {[v_2/x]e'}{\xi',v'}}	\and
@@ -21,9 +21,9 @@
 \end{mathpar}
 \caption{\ellStaged~Diagonal Semantics (core)}
 \label{fig:diaSemanticsCore}
-\end{figure}
+\end{figure*}
 
-\begin{figure}
+\begin{figure*}
 \begin{mathpar}
 \inferdiaone [\fut I]			{\red {\next~e}{z \mapsto \letin{y}{q}{z},\hat y}}				{\diatwo e q}															\and
 \inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi, \hat y} & \reify{\xi}yq}							\and
@@ -34,7 +34,7 @@
 \end{mathpar}
 \caption{\ellStaged~Diagonal Semantics ($\next$ and $\prev$)}
 \label{fig:diaSemanticsNP}
-\end{figure}
+\end{figure*}
 
 \begin{figure}
 \begin{mathpar}
