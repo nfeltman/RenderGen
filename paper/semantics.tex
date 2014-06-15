@@ -2,13 +2,45 @@
 
 \section{A Two-Stage Modal Language}
 
-Introduce the next and prev concepts, along with typesystem.  Introduce binding time analysis here, and explain that we don't care about it.  Show some examples.  Introduce a hold operation.
-
 \input {figures/grammars}
 \input {figures/statics}
-\input {figures/dynamics}
+
+The grammar and type system for our language, \lang, are given in \ref{fig:grammar} and \ref{fig:staticSemantics}.
+At the type level, the only difference between our language and that of \cite{davies96} is that we restrict ours to two stages.
+The features of \lang can be split into two categories: the staging features ($\next$, $\prev$, and $\pause$), and the non-staging features.
+
+All of the non-stage features have the standard type-level behavior, 
+with the small caveat that variables can only be referenced at the stage they were declared.
+
+The $\next$ expression allows us to embed [kayvon wants a different word here] stage-\bbtwo~code in stage-\bbone~code, 
+creating a $\fut$ type at stage-\bbone.  
+This $\fut$ wrapper can only be removed by the $\prev$ construct, which ensures that the result is used only at stage \bbtwo.
+
+The $\pause$ construct gives us a way to move integers from stage \bbone~to stage \bbtwo.  
+It is technically derivable (somewhat inefficiently) from the other features, 
+but we provide it as a primitive for the sake of simplifying our examples.
+
+We formulated our typing judgements in the style of \ref{davies96}, where the whole judgement is annotated with a stage.  
+Variables in the context are annotated with a stage and must be used at the same stage they were declared at.
+
+We now present an example of multi-stage fast-exponent.  
+The exponent ($e$) is provided at the first stage, whereas the base ($b$) is provided at the second stage.
+The code works by squaring if the exponent is even, and multiplication by the base if the exponent is odd.
+We see that all of the exponent math can be done at the first stage.
+
+\begin{lstlisting} 
+let exp (b : $int, e : int) : $int =
+	if e == 0 then
+		next{1}
+	else if (e mod 2) == 0 then
+		next{let x = prev{exp(b,e/2)} in x*x}
+	else
+		next{prev{b} * prev{exp (b,e-1)}}		
+\end{lstlisting}
 
 \section{Semantics}
+
+\input {figures/dynamics}
 
 %Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
 
@@ -72,7 +104,7 @@ Introduce the next and prev concepts, along with typesystem.  Introduce binding 
 
 In this section, we discuss the dynamic semantics of our language.  
 Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
-Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs ($\next$, $\prev$, and $\pause$).  
+Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
 
 We present here two reasonable interpretations of these staging constructs, 
 in the context of the following stage-\bbtwo~example:
