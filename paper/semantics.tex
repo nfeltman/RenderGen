@@ -66,26 +66,39 @@ Introduce the next and prev concepts, along with typesystem.  Introduce binding 
 %
 %We meet all of these goals.
 
-In this section, we discuss the dynamic semantics of our language.  Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle $\next$, $\prev$, and $\pause$ constructs.  
+In this section, we discuss the dynamic semantics of our language.  
+Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
+Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs ($\next$, $\prev$, and $\pause$).  
 
-There are two feasible ways to partially evaluate the following stage-\bbtwo~expression:
+We present here two reasonable interpretations of these staging constructs, 
+in the context of the following stage-\bbtwo~example:
 \begin{lstlisting} 
+prev{
 let x = (next {4+5}, 7+8) in
 next{
 	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
 }
+}
 \end{lstlisting}
-We can either duplicate the contents of the first $\next$ expression to produce,
+The first option is to duplicate the contents of the first $\next$ expression to produce,
 \begin{lstlisting}
 (4+5) * (4+5) * 15
 \end{lstlisting}
-or we can bind the contents of the $\next$ expression, and simply duplicate the variable,
+Essentially, we're treating $\next$ as a value a stage-\bbone, so long as all of its contained $\prev$s are reduced.  
+This is the technique of \cite{davies96}.
+Instead of this, we take a second, nearly equivalent approach.  
+That is to bind the contents of the first $\next$ expression to some variable (here, $x1$) and then duplicate that variable,
 \begin{lstlisting} 
 let x1 = 4+5 in
 x1 * x1 * 15
 \end{lstlisting}
 
-Davies chose the first, whereas we choose the second technique. We think it makes more sense from the point of view of cost.  That said, it's not immediately clear how to get this behavior.  We first present an informal example to give an intuition for what our semantics does.  We start with the same example as before, but wrapped with a $\prev$:
+We think that this interpretation makes more sense from the point of view of cost, 
+since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
+This is {\em nearly} equivalent to the first expression, because they have different termination behavior 
+when a non-terminating stage-\bbtwo~expression is declared but never used.
+
+Now that we know {\em what} the behavior is that we want, we can explain {\em how} our semantics achieves that behavior.  We start with the same example:
 \begin{lstlisting}
 prev {
 let x = (next {4+5}, 7+8) in
@@ -127,6 +140,12 @@ The final step in evaluating the outer $\prev$ is reifying the contained substit
 let x1 = 4+5 in
  x1 * x1 * 15
 \end{lstlisting}
+
+Once again, the point here is that we did not duplicate the $4+5$ in our residual.  
+Instead we lifted it out into a substitution, leaving a hatted variable [note: add hats above] in its place,
+and we reified the substitution into a let-binding at the enclosing $\prev$.
+
+\subsection{more formally...}
 
 Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a context and replaces the whole expression with a reference to the context entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
 
