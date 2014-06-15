@@ -1,8 +1,7 @@
 
 MAIN_TEXFILE   := paper.tex
 
-OTHER_TEXFILES := grammars.tex macros.tex semanticsfig.tex splittingfig.tex \
-                  abstract.tex intro.tex relatedwork.tex semantics.tex splitting.tex
+OTHER_TEXFILES := macros.tex abstract.tex intro.tex relatedwork.tex semantics.tex splitting.tex
 
 TEXMACRO_FILE  := 
 
