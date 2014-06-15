@@ -1,4 +1,4 @@
-\documentclass{sigplanconf}
+\documentclass[preprint]{sigplanconf}
 
 % The following \documentclass options may be useful:
 
@@ -21,12 +21,9 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
 
-\begin{document}
-
 \input {macros}
-\input {grammars}
-\input {semanticsfig}
-\input {splittingfig}
+
+\begin{document}
 
 \lstset{language=ML, columns=fullflexible, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
 
@@ -49,8 +46,8 @@
                                   % (paid open-access papers, 
                                   % short abstracts)
 
-\titlebanner{banner above paper title}        % These are ignored unless
-\preprintfooter{short description of paper}   % 'preprint' option specified.
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{short description of paper}   % 'preprint' option specified.
 
 \title{Stage-Splitting a Modal Language}
 
@@ -77,9 +74,15 @@ term1, term2
 \keywords
 keyword1, keyword2
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \input{intro}
+
 \input{semantics}
+
+\pagebreak
 \input{splitting}
+
 \input{relatedwork}
 
 %\appendix

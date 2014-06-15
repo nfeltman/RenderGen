@@ -1,4 +1,33 @@
-%
+\begin{figure}
+\centering
+$\begin{aligned}
+\world &::= \bbone \gbar \bbtwo \\
+\type &::= \text{unit}~|~\text{int}~|~\text{bool}
+ \gbar \type \times \type 
+ \gbar \type + \type \\
+&\gbar \type \to \type
+ \gbar \fut \type
+ \gbar \alpha \gbar \mu \alpha.\tau \\
+\expr &::= ()\gbar\inte\gbar\bool\gbar \var
+ \gbar \lam{\var}{\type}{\expr} 
+ \gbar \expr~\expr \\
+&\gbar (\expr, \expr) 
+ \gbar \pio~\expr 
+ \gbar \pit~\expr
+ \gbar \inl~\expr 
+ \gbar \inr~\expr \\
+&\gbar \caseof {\expr}{\var.\expr}{\var.\expr}
+ \gbar \ifthen {\expr}{\expr}{\expr} \\
+&\gbar \letin{\var}{\expr}{\expr}
+ \gbar \next~\expr 
+ \gbar \prev~\expr 
+ \gbar \pause~\expr \\
+\context &::=\emptyC \gbar \context, \colwor \var \type
+\end{aligned} $
+\caption{\lamStaged~Syntax}
+\label{fig:lamStagedSyntax}
+\end{figure}
+
 %
 %\begin{figure}
 %\caption{\ellStaged~Syntax}
@@ -67,34 +96,3 @@
 %\end{aligned} $
 %\end{tabular}
 %\end{figure}
-
-
-\begin{figure}
-\centering
-$\begin{aligned}
-\world &::= \bbone \gbar \bbtwo \\
-\type &::= \text{unit}~|~\text{int}~|~\text{bool} \\
-&\gbar \type \times \type 
- \gbar \type + \type \\
-&\gbar \type \to \type
- \gbar \fut \type \\
-&\gbar \alpha \gbar \mu \alpha.\tau \\
-\expr &::= ()\gbar\inte\gbar\bool\gbar \var  \\
-&\gbar \lam{\var}{\type}{\expr} 
- \gbar \expr~\expr \\
-&\gbar (\expr, \expr) 
- \gbar \pio~\expr 
- \gbar \pit~\expr \\
-&\gbar \inl~\expr 
- \gbar \inr~\expr \\
-&\gbar \caseof {\expr}{\var.\expr}{\var.\expr} \\
-&\gbar \ifthen {\expr}{\expr}{\expr} \\
-&\gbar \letin{\var}{\expr}{\expr} \\
-&\gbar \next~\expr 
- \gbar \prev~\expr 
- \gbar \pause~\expr \\
-\context &::=\emptyC \gbar \context, \colwor \var \type
-\end{aligned} $
-\caption{\lamStaged~Syntax}
-\label{fig:lamStagedSyntax}
-\end{figure}

@@ -1,0 +1,53 @@
+\begin{figure}
+\begin{mathpar}
+\infertypeswor [\rmunit] 	{{\tt unit} \istypewor}								{\cdot} 																			\and
+\infertypeswor [int]			{{\tt int} \istypewor}								{\cdot} 																			\and
+\infertypeswor [bool]			{{\tt bool} \istypewor}								{\cdot} 																			\and
+\infertypeswor [\times]		{A \times B \istypewor}								{A \istypewor & B \istypewor} 													\and
+\infertypeswor [+]			{A + B \istypewor}									{A \istypewor & B \istypewor} 													\and
+\infertypeswor [\to]			{A \to B \istypewor}									{A \istypewor & B \istypewor} 													\and
+\infertypeswor [\fut]			{\fut A \istypeone}									{A \istypetwo} 													
+\end{mathpar}
+\caption{\ellStaged~Valid Types}
+\label{fig:validTypes}
+\end{figure}
+
+\begin{figure}
+\begin{mathpar}
+\infertypeswor [\rmunit] 	{() \isvalwor}											{\cdot} 																			\and
+\infertypeswor [int]			{i \isvalwor}											{\cdot} 																			\and
+\infertypeswor [bool]			{b \isvalwor}											{\cdot} 																			\and
+\infertypeswor [\times]		{(v_1, v_2) \isvalwor}								{v_1 \isvalwor & v_2 \isvalwor} 												\and
+\infertypeswor [+_1]			{\inl~v \isvalwor}									{v \isvalwor} 																		\and
+\infertypeswor [+_2]			{\inr~v \isvalwor}									{v \isvalwor} 																		\and
+\infertypeswor [\to]			{\lam x A e \isvalwor}								{\cdot} 																			\and
+\infertypeswor [\fut]			{\isvalone {\hat y}}									{\cdot} 													
+\end{mathpar}
+\caption{\ellStaged~Valid Values}
+\label{fig:validValues}
+\end{figure}
+
+\begin{figure*}
+\begin{mathpar}
+\infertypeswor [\rmunit] 	{\ty {()}\rmunit}								{\cdot} 																			\and
+\infertypeswor [int]			{\ty {i}{\rm int}}							{\cdot} 																			\and
+\infertypeswor [bool]			{\ty {b} \rmbool}								{\cdot} 																			\and
+\infertypeswor [hyp]			{\ty x A}										{\col x A \in \Gamma} 															\and
+\infertypeswor [\to I]		{\ty {\lam{x}{A}{e}} {A \to B}}				{A \istypewor & \ty [,\col x A] e B} 											\and
+\infertypeswor [\to E]		{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 											\and
+\infertypeswor [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}				{\ty {e_1} A & \ty [,\col x A] {e_2} B} 										\and
+\infertypeswor [\times I]	{\ty {(e_1,e_2)}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 														\and
+\infertypeswor [\times E_1]	{\ty {\pio~e} A}								{\ty e {A\times B}} 																\and
+\infertypeswor [\times E_2]	{\ty {\pit~e} B}								{\ty e {A\times B}} 																\and
+\infertypeswor [+ I_1]		{\ty {\inl~e} {A + B}}						{\ty e A} 																			\and
+\infertypeswor [+ I_2]		{\ty {\inr~e} {A + B}}						{\ty e B} 																			\and
+\infertypeswor [+ E]			{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C} 	\and
+\infertypeswor [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}			{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} 								\and
+\infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
+\infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
+\end{mathpar}
+\caption{\ellStaged~Static Semantics}
+\label{fig:coreStatics}
+\end{figure*}
+
+
