@@ -6,10 +6,10 @@
 \input {figures/statics}
 
 Every expression in \lang can be understood as having a {\em stage},
-namely either stage-\bbone~a stage-\bbtwo, in addition to a type.
+namely either \bbone~or \bbtwo, in addition to a type.
 Just as the type tells us {\em what} an expression will reduce to,
 a stage tells us {\em when} it will fully reduce. 
-The reason for a two-stage restriction (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
+The reason for a two-stage design (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
 
 The only types that exist at stage \bbtwo~are the familiar products, sums, functions, and base types.
 In addition to this usual set, stage~\bbone~also has one more type: $\fut A$, where $A$ is a stage-\bbtwo~type.
@@ -21,7 +21,7 @@ Although there is a strict one-way dependence between the two stages at the type
 Specifically, $\next$ allows us to embed a stage-\bbtwo~expression into stage \bbone,
 whereas $\prev$ allows us to embed a stage-\bbone~expression into stage \bbtwo.
 These $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
-and our concrete syntax, we surround their arguments with \{braces\} to clearly indicate the stage boundary.
+and we surround their arguments with \{braces\} in our concrete syntax to clearly indicate the stage boundaries with in a program.
 The problem of how to turn an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
 We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
 
@@ -31,22 +31,31 @@ Variables in the context are annotated with a stage and must be used at the same
 All of the non-stage constructs have the expected type-level behavior.  
 This is made manifest as rules which are entirely abstract over stage.
 
-[still working below this line...]
-
-The $\next$ expression allows us to embed [kayvon wants a different word here] stage-\bbtwo~expression in stage-\bbone~expression, 
-creating a $\fut$ type at stage-\bbone.  
-This $\fut$ wrapper can only be removed by the $\prev$ construct, which ensures that the result is used only at stage \bbtwo.
+Note that $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
+Specifically, $\next$, given an argument with type $A$ at stage \bbtwo, forms a $\fut A$ at stage \bbone.  
+That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
+This promise can only be ``cashed in" be the $\prev$ construct.  
+Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality.
 
 The $\pause$ construct is a mechnism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
 Although $\pause$ can be implemented from our other features, 
 we provide it as a primitive to simplify our examples. 
 
-Below is an example of fast-exponent written in \lang.  
-The function excepts an exponent integer at the first stage, 
-a base ($b$) has type $\fut int$, indicated that it's content is accessible only at the second stage,
-and produces a circle int at stage two.
-The code works by squaring if the exponent is even, and multiplication by the base if the exponent is odd.
-The type system here is sufficient to prove that all of the decomposition of the exponent can be done at the first stage.
+\subsection {Staged Fast Exponentiation}
+
+Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
+\[
+	\mathit{fe}(b,p) = \left \{ \begin{array}{ll} 
+		1 &  e = 0 \\ 
+		\mathit{fe}(b,p/2)^2 & p \text{ even} \\ 
+		b \cdot \mathit{fe}(b,p-1) & p \text{ odd} \end{array}
+	\right .
+\]
+It is often observed that the decomposition of the power depends only on the power at prior recursive levels.
+For this reason, we can stage an implemention of fast exponentiation so that the power is available at the first stage and the base is available at the second stage.
+This implies that the result is then available only at the second stage.
+
+We implemented staged fast exponentiation in \lang~below:
 
 \begin{lstlisting} 
 let exp (b : $int, e : int) : $int =
@@ -58,7 +67,10 @@ let exp (b : $int, e : int) : $int =
 		next{prev{b} * prev{exp (b,e-1)}}		
 \end{lstlisting}
 
-...segue into semantics here... talk about residual generation...
+The type of the resursive function is $\fut{\rm int} \times {\rm int} \to \fut{\rm int}$.
+Note how the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the first stage.
+
+Given this definition of fast exponent, the question the remains how it can be run.  For this, we need a semantics for \lang.
 
 \subsection{Semantics}
 
@@ -125,7 +137,6 @@ let exp (b : $int, e : int) : $int =
 %We meet all of these goals.
 
 
-% add concept of residuals
 In this section, we discuss the dynamic semantics of our language.  
 Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
 Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
