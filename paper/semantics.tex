@@ -5,28 +5,48 @@
 \input {figures/grammars}
 \input {figures/statics}
 
+Every expression in \lang can be understood as having a {\em stage},
+namely either stage-\bbone~a stage-\bbtwo, in addition to a type.
+Just as the type tells us {\em what} an expression will reduce to,
+a stage tells us {\em when} it will fully reduce. 
+The reason for a two-stage restriction (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
+
+The only types that exist at stage \bbtwo~are the familiar products, sums, functions, and base types.
+In addition to this usual set, stage~\bbone~also has one more type: $\fut A$, where $A$ is a stage-\bbtwo~type.
+This can be understood as the {\em promise} of a value of type $A$ at stage \bbtwo.
+We'll see shortly that the promise given by $\fut A$ can only be treated opaquely at stage one; 
+it cannot be ``cashed out" for an actual $A$ until the second stage.
+
+Although there is a strict one-way dependence between the two stages at the type level, they are mutually dependent at the term level.
+Specifically, $\next$ allows us to embed a stage-\bbtwo~expression into stage \bbone,
+whereas $\prev$ allows us to embed a stage-\bbone~expression into stage \bbtwo.
+These $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
+and our concrete syntax, we surround their arguments with \{braces\} to clearly indicate the stage boundary.
+The problem of how to turn an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
+We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
+
 The grammar and type system for our language, \lang, are given in \ref{fig:grammar} and \ref{fig:staticSemantics}.
-At the type level, the only difference between our language and that of \cite{davies96} is that we restrict ours to two stages.
-The features of \lang can be split into two categories: the staging features ($\next$, $\prev$, and $\pause$), and the non-staging features.
+We formulated our typing judgements in the style of \ref{davies96}, where the whole judgement is annotated with a stage.  
+Variables in the context are annotated with a stage and must be used at the same stage at which they were declared.
+All of the non-stage constructs have the expected type-level behavior.  
+This is made manifest as rules which are entirely abstract over stage.
 
-All of the non-stage features have the standard type-level behavior, 
-with the small caveat that variables can only be referenced at the stage they were declared.
+[still working below this line...]
 
-The $\next$ expression allows us to embed [kayvon wants a different word here] stage-\bbtwo~code in stage-\bbone~code, 
+The $\next$ expression allows us to embed [kayvon wants a different word here] stage-\bbtwo~expression in stage-\bbone~expression, 
 creating a $\fut$ type at stage-\bbone.  
 This $\fut$ wrapper can only be removed by the $\prev$ construct, which ensures that the result is used only at stage \bbtwo.
 
-The $\pause$ construct gives us a way to move integers from stage \bbone~to stage \bbtwo.  
-It is technically derivable (somewhat inefficiently) from the other features, 
-but we provide it as a primitive for the sake of simplifying our examples.
+The $\pause$ construct is a mechnism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
+Although $\pause$ can be implemented from our other features, 
+we provide it as a primitive to simplify our examples. 
 
-We formulated our typing judgements in the style of \ref{davies96}, where the whole judgement is annotated with a stage.  
-Variables in the context are annotated with a stage and must be used at the same stage they were declared at.
-
-We now present an example of multi-stage fast-exponent.  
-The exponent ($e$) is provided at the first stage, whereas the base ($b$) is provided at the second stage.
+Below is an example of fast-exponent written in \lang.  
+The function excepts an exponent integer at the first stage, 
+a base ($b$) has type $\fut int$, indicated that it's content is accessible only at the second stage,
+and produces a circle int at stage two.
 The code works by squaring if the exponent is even, and multiplication by the base if the exponent is odd.
-We see that all of the exponent math can be done at the first stage.
+The type system here is sufficient to prove that all of the decomposition of the exponent can be done at the first stage.
 
 \begin{lstlisting} 
 let exp (b : $int, e : int) : $int =
@@ -38,7 +58,9 @@ let exp (b : $int, e : int) : $int =
 		next{prev{b} * prev{exp (b,e-1)}}		
 \end{lstlisting}
 
-\section{Semantics}
+...segue into semantics here... talk about residual generation...
+
+\subsection{Semantics}
 
 \input {figures/dynamics}
 
@@ -102,6 +124,8 @@ let exp (b : $int, e : int) : $int =
 %
 %We meet all of these goals.
 
+
+% add concept of residuals
 In this section, we discuss the dynamic semantics of our language.  
 Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
 Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
