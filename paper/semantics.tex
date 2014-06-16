@@ -6,27 +6,31 @@
 \input {figures/statics}
 
 Every expression in \lang can be understood as having a {\em stage},
-namely either \bbone~or \bbtwo, in addition to a type.
-Just as the type tells us {\em what} an expression will reduce to,
-a stage tells us {\em when} it will fully reduce. 
+either \bbone~or \bbtwo, in addition to a type.
+Just as a type describes \emph{which} values an expression reduces to,
+the stage tells us \emph{when} it will be fully reduced. 
+% FIXME why?
 The reason for a two-stage design (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
 
-The only types that exist at stage \bbtwo~are the familiar products, sums, functions, and base types.
-In addition to this usual set, stage~\bbone~also has one more type: $\fut A$, where $A$ is a stage-\bbtwo~type.
-This can be understood as the {\em promise} of a value of type $A$ at stage \bbtwo.
+The only types that exist at stage \bbtwo{} are products, sums, functions, and base types.
+In addition to this usual set, stage \bbone{} also has one more type: $\fut A$,
+where $A$ is a stage-\bbtwo{} type.
+This can be understood as \emph{promising} a value of type $A$ at stage \bbtwo.
 We'll see shortly that the promise given by $\fut A$ can only be treated opaquely at stage one; 
-it cannot be ``cashed out" for an actual $A$ until the second stage.
+it cannot be redeemed for an actual $A$ until the second stage.
 
-Although there is a strict one-way dependence between the two stages at the type level, they are mutually dependent at the term level.
-Specifically, $\next$ allows us to embed a stage-\bbtwo~expression into stage \bbone,
-whereas $\prev$ allows us to embed a stage-\bbone~expression into stage \bbtwo.
+Although there is a strict one-way dependence between the two stages at the type
+level, their terms are defined mutually recursively:
+$\next$ embeds stage-\bbtwo{} expressions into stage \bbone,
+whereas $\prev$ embeds stage-\bbone{} expressions into stage \bbtwo.
 These $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
 and we surround their arguments with \{braces\} in our concrete syntax to clearly indicate the stage boundaries with in a program.
 The problem of how to turn an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
 We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
 
-The grammar and type system for our language, \lang, are given in \ref{fig:grammar} and \ref{fig:staticSemantics}.
-We formulated our typing judgements in the style of \ref{davies96}, where the whole judgement is annotated with a stage.  
+The grammar and type system for our language, \lang, are given in
+\ref{fig:lamStagedSyntax} and \ref{fig:coreStatics}.
+We formulated our typing judgments in the style of \cite{davies96}, where the whole judgment is annotated with a stage.  
 Variables in the context are annotated with a stage and must be used at the same stage at which they were declared.
 All of the non-stage constructs have the expected type-level behavior.  
 This is made manifest as rules which are entirely abstract over stage.
@@ -37,7 +41,7 @@ That is, it forms the promise of a future $A$ out of a construction for an $A$ a
 This promise can only be ``cashed in" be the $\prev$ construct.  
 Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality.
 
-The $\pause$ construct is a mechnism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
+The $\pause$ construct is a mechanism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
 Although $\pause$ can be implemented from our other features, 
 we provide it as a primitive to simplify our examples. 
 
@@ -52,7 +56,7 @@ Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 	\right .
 \]
 It is often observed that the decomposition of the power depends only on the power at prior recursive levels.
-For this reason, we can stage an implemention of fast exponentiation so that the power is available at the first stage and the base is available at the second stage.
+For this reason, we can stage an implementation of fast exponentiation so that the power is available at the first stage and the base is available at the second stage.
 This implies that the result is then available only at the second stage.
 
 We implemented staged fast exponentiation in \lang~below:
@@ -67,9 +71,10 @@ let exp (b : $int, e : int) : $int =
 		next{prev{b} * prev{exp (b,e-1)}}		
 \end{lstlisting}
 
-The type of the resursive function is $\fut{\rm int} \times {\rm int} \to \fut{\rm int}$.
-Note how the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the first stage.
+The type of the recursive function is $\fut{\rm int} \times {\rm int} \to \fut{\rm int}$.
+Note that the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the first stage.
 
+% FIXME but do we give a cost semantics?
 Given this definition of fast exponent, the question the remains how it can be run.  For this, we need a semantics for \lang.
 
 \subsection{Semantics}
@@ -80,7 +85,7 @@ Given this definition of fast exponent, the question the remains how it can be r
 
 %\subsection{The Erasure Semantics}
 %
-%We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgements, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
+%We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgments, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
 %
 %Both judgments behave normally at non-staged features.  We cover their behavior at staged features below:
 %
@@ -113,7 +118,7 @@ Given this definition of fast exponent, the question the remains how it can be r
 %
 %...
 %
-%The Davies semantics is comprised of two mutually recursive judgements: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
+%The Davies semantics is comprised of two mutually recursive judgments: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
 %
 %The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
 %
@@ -139,7 +144,7 @@ Given this definition of fast exponent, the question the remains how it can be r
 
 In this section, we discuss the dynamic semantics of our language.  
 Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
-Similar to \cite{davies96}, we want our semantics to have the form of a judgement that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
+Similar to \cite{davies96}, we want our semantics to have the form of a judgment that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
 
 We present here two reasonable interpretations of these staging constructs, 
 in the context of the following stage-\bbtwo~example:
@@ -238,6 +243,7 @@ $\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline
 Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
 
 
+% FIXME we need a real name for hatted variables
 The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a \bbone-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  The mapping between these hatted variables and stage-two expressions is
 
 ...

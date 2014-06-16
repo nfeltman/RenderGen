@@ -16,6 +16,8 @@
 \usepackage{mathpartir}
 \usepackage{mathabx}
 \usepackage{listings}
+\usepackage{hyperref}
+\renewcommand\ref\autoref
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -80,7 +82,7 @@ keyword1, keyword2
 
 \input{semantics}
 
-\pagebreak
+\vfill\eject\pagebreak
 \input{splitting}
 
 \input{relatedwork}
