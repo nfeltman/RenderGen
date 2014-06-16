@@ -187,5 +187,6 @@ pip-log.txt
 *.synctex.gz
 *.bbl
 *.blg
+*.out
 
 
