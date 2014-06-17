@@ -29,16 +29,16 @@ The problem of how to turn an unstaged program into a staged one by inserting th
 We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
 
 The grammar and type system for our language, \lang, are given in
-\ref{fig:lamStagedSyntax} and \ref{fig:coreStatics}.
+\ref{fig:grammar} and \ref{fig:statics}.
 We formulated our typing judgments in the style of \cite{davies96}, where the whole judgment is annotated with a stage.  
 Variables in the context are annotated with a stage and must be used at the same stage at which they were declared.
 All of the non-stage constructs have the expected type-level behavior.  
 This is made manifest as rules which are entirely abstract over stage.
 
-Note that $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
+In addition to determining the stage, $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
 Specifically, $\next$, given an argument with type $A$ at stage \bbtwo, forms a $\fut A$ at stage \bbone.  
 That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
-This promise can only be ``cashed in" be the $\prev$ construct.  
+This promise can only be redeemed be the $\prev$ construct.  
 Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality.
 
 The $\pause$ construct is a mechanism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
@@ -49,10 +49,10 @@ we provide it as a primitive to simplify our examples.
 
 Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 \[
-	\mathit{fe}(b,p) = \left \{ \begin{array}{ll} 
-		1 &  e = 0 \\ 
-		\mathit{fe}(b,p/2)^2 & p \text{ even} \\ 
-		b \cdot \mathit{fe}(b,p-1) & p \text{ odd} \end{array}
+	\mathit{fexp}(b,p) = \left \{ \begin{array}{ll} 
+		1 &  p = 0 \\ 
+		\mathit{fexp}(b,p/2)^2 & p \text{ even} \\ 
+		b \cdot \mathit{fexp}(b,p-1) & p \text{ odd} \end{array}
 	\right .
 \]
 It is often observed that the decomposition of the power depends only on the power at prior recursive levels.
@@ -62,19 +62,19 @@ This implies that the result is then available only at the second stage.
 We implemented staged fast exponentiation in \lang~below:
 
 \begin{lstlisting} 
-let exp (b : $int, e : int) : $int =
+let fexp (b : $int, e : int) : $int =
 	if e == 0 then
 		next{1}
 	else if (e mod 2) == 0 then
-		next{let x = prev{exp(b,e/2)} in x*x}
+		next{let x = prev{fexp(b,e/2)} in x*x}
 	else
-		next{prev{b} * prev{exp (b,e-1)}}		
+		next{prev{b} * prev{fexp(b,e-1)}}		
 \end{lstlisting}
 
 The type of the recursive function is $\fut{\rm int} \times {\rm int} \to \fut{\rm int}$.
 Note that the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the first stage.
 
-% FIXME but do we give a cost semantics?
+% FIXME but do we give a cost semantics? no
 Given this definition of fast exponent, the question the remains how it can be run.  For this, we need a semantics for \lang.
 
 \subsection{Semantics}

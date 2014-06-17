@@ -8,7 +8,7 @@
 \infertypeswor [\to]			{A \to B \istypewor}									{A \istypewor & B \istypewor} 													\and
 \infertypeswor [\fut]			{\fut A \istypeone}									{A \istypetwo} 													
 \end{mathpar}
-\caption{\ellStaged~Valid Types}
+\caption{\lang~Valid Types}
 \label{fig:validTypes}
 \end{figure}
 
@@ -23,7 +23,7 @@
 \infertypeswor [\to]			{\lam x A e \isvalwor}								{\cdot} 																			\and
 \infertypeswor [\fut]			{\isvalone {\hat y}}									{\cdot} 													
 \end{mathpar}
-\caption{\ellStaged~Valid Values}
+\caption{\lang~Valid Values}
 \label{fig:validValues}
 \end{figure}
 
@@ -45,9 +45,10 @@
 \infertypeswor [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}			{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} 								\and
 \infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
 \infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
+\infertypeswor [hold]			{\typestwo {\pause~e} {\fut {\rm int}}}		{\typesone e {\rm int}}		 													\and
 \end{mathpar}
-\caption{\ellStaged~Static Semantics}
-\label{fig:coreStatics}
+\caption{\lang~Static Semantics}
+\label{fig:statics}
 \end{figure*}
 
 
