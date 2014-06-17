@@ -85,7 +85,7 @@
 %\newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
 \newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
 \newcommand {\diaone} [3] [\Xi;\Gamma] {{#1} \vdash {#2} \Downarrow_\bbone [{#3}]}
-\newcommand {\diatwo} [3] [\Xi;\Gamma] {{#1} \vdash {#2} \downarrow {#3}}
+\newcommand {\diatwo} [3] [\Xi;\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 %\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
 %\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
@@ -138,12 +138,12 @@
 		[NONAME]{
 			\renewcommand \red \diaone
 			\renewcommand \sub \diaonesub
-			\infer [\mathrm{#1\Downarrow}] {#2}{#3}}
+			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
 \newcommand {\inferdiaspc} [3] 
 		[NONAME]{
 			\renewcommand \red \diatwo
 			\renewcommand \sub \diatwosub
-			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
+			\infer [\mathrm{#1\Downarrow_\bbtwo}] {#2}{#3}}
 \newcommand {\infersplitone}  [3] 
 		[NONAME]{
 			\renewcommand \spl \splitone
