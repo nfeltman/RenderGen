@@ -55,27 +55,26 @@ Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 		b \cdot \mathit{fexp}(b,p-1) & p \text{ odd} \end{array}
 	\right .
 \]
-It is often observed that the decomposition of the power depends only on the power at prior recursive levels.
-For this reason, we can stage an implementation of fast exponentiation so that the power is available at the first stage and the base is available at the second stage.
-This implies that the result is then available only at the second stage.
 
-We implemented staged fast exponentiation in \lang~below:
+Without going into details of how recursion is handled, we implement staged fast exponentiation in \lang~below.  
+We use {\tt \$} in place of $\fut$ in this an other examples.
 
 \begin{lstlisting} 
 let fexp (b : $int, e : int) : $int =
 	if e == 0 then
 		next{1}
 	else if (e mod 2) == 0 then
-		next{let x = prev{fexp(b,e/2)} in x*x}
+		next{let x = prev{fexp(b,p/2)} in x*x}
 	else
-		next{prev{b} * prev{fexp(b,e-1)}}		
+		next{prev{b} * prev{fexp(b,p-1)}}		
 \end{lstlisting}
 
-The type of the recursive function is $\fut{\rm int} \times {\rm int} \to \fut{\rm int}$.
-Note that the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the first stage.
+Although the code for {\tt fexp} looks very much like the stage-less mathematical definition above, it is in fact a staged program.  
+See how the {\tt if}s and exponent decomposition are all at stage \bbone, since they occur within $\prev$ blocks.  
+Essentially, the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the stage \bbone~without requiring us to disrupt the elegant functional structure of the code.
 
-% FIXME but do we give a cost semantics? no
-Given this definition of fast exponent, the question the remains how it can be run.  For this, we need a semantics for \lang.
+This example also illustrates how stage \bbone~and stage \bbtwo~code can be arbitrarily nested.  Normal notions of eager evaluation reduce code in a leaf-to-root way, but this conflicts with the precept that we evaluate stage \bbone~before stage \bbtwo.  
+To resolve this conflict, we need a formal semantics for \lang.
 
 \subsection{Semantics}
 
