@@ -17,11 +17,16 @@
 \usepackage{mathabx}
 \usepackage{listings}
 \usepackage{hyperref}
-\renewcommand\ref\autoref
+
+\usepackage{cleveref}
+\AtBeginDocument{\renewcommand\ref\cref}
+\crefname{figure}{Figure}{Figures}
+
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
 
 \input {macros}
 

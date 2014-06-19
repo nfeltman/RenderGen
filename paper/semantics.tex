@@ -1,5 +1,3 @@
-
-
 \section{A Two-Stage Modal Language}
 
 \input {figures/grammars}
@@ -24,18 +22,21 @@ level, their terms are defined mutually recursively:
 $\next$ embeds stage-\bbtwo{} expressions into stage \bbone,
 whereas $\prev$ embeds stage-\bbone{} expressions into stage \bbtwo.
 These $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
-and we surround their arguments with \{braces\} in our concrete syntax to clearly indicate the stage boundaries with in a program.
+and we surround their arguments with \{braces\} in the concrete syntax to clearly indicate the stage boundaries with in a program.
 The problem of how to turn an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
 We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
 
-The grammar and type system for our language, \lang, are given in
-\ref{fig:grammar} and \ref{fig:statics}.
-We formulated our typing judgments in the style of \cite{davies96}, where the whole judgment is annotated with a stage.  
-Variables in the context are annotated with a stage and must be used at the same stage at which they were declared.
-All of the non-stage constructs have the expected type-level behavior.  
-This is made manifest as rules which are entirely abstract over stage.
+%We formulated our typing judgments in the style of \cite{davies96}, where the
+%whole judgment is annotated with a stage.  
 
-In addition to determining the stage, $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
+The grammar and type system for our language, \lang, are given in
+\ref{fig:grammar,fig:statics}.
+We annotate the typing judgment and context variables with stages; only $\fut$
+and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
+of a term or type.
+%This is made manifest as rules which are entirely abstract over stage.
+%In addition to determining the stage, $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
+
 Specifically, $\next$, given an argument with type $A$ at stage \bbtwo, forms a $\fut A$ at stage \bbone.  
 That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
 This promise can only be redeemed be the $\prev$ construct.  
@@ -45,7 +46,7 @@ The $\pause$ construct is a mechanism to wrap stage \bbone~integers so that they
 Although $\pause$ can be implemented from our other features, 
 we provide it as a primitive to simplify our examples. 
 
-\subsection {Staged Fast Exponentiation}
+\subsection{Staged Evaluation}
 
 Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 \[
@@ -56,8 +57,9 @@ Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 	\right .
 \]
 
-Without going into details of how recursion is handled, we implement staged fast exponentiation in \lang~below.  
-We use {\tt \$} in place of $\fut$ in this an other examples.
+Ignoring for the moment how to define recursive functions in \lang, we can
+implement staged fast exponentiation as follows:%
+\footnote{We render $\fut$ as {\tt \$} in code examples.}
 
 \begin{lstlisting} 
 let fexp (b : $int, e : int) : $int =
@@ -69,17 +71,110 @@ let fexp (b : $int, e : int) : $int =
 		next{prev{b} * prev{fexp(b,p-1)}}		
 \end{lstlisting}
 
-Although the code for {\tt fexp} looks very much like the stage-less mathematical definition above, it is in fact a staged program.  
-See how the {\tt if}s and exponent decomposition are all at stage \bbone, since they occur within $\prev$ blocks.  
-Essentially, the type system is sufficient to prove the observation that all of the decomposition of the exponent can be done at the stage \bbone~without requiring us to disrupt the elegant functional structure of the code.
+Although the code for {\tt fexp} looks very much like the unstaged mathematical
+definition above, it is in fact a staged program: the {\tt if}s and exponent
+decomposition are all at stage \bbone, since they occur within $\prev$ blocks.
+Essentially, the type system is sufficient to prove the observation that all of
+the decomposition of the exponent can be done at the stage \bbone~without
+requiring us to disrupt the elegant functional structure of the code.
 
-This example also illustrates how stage \bbone~and stage \bbtwo~code can be arbitrarily nested.  Normal notions of eager evaluation reduce code in a leaf-to-root way, but this conflicts with the precept that we evaluate stage \bbone~before stage \bbtwo.  
-To resolve this conflict, we need a formal semantics for \lang.
+This example also illustrates how stage \bbone{} and stage \bbtwo{} code can be
+arbitrarily nested.  Ordinary evaluation always eliminates outermost redexes
+first, but this conflicts with the precept that we evaluate all stage \bbone{}
+code before stage \bbtwo{} code, in the case that stage \bbone{} code is inside
+stage \bbtwo{} code.
 
-\subsection{Semantics}
+A suitably staged dynamic semantics for \lang{} must therefore evaluate
+\emph{all} the stage \bbone{} subexpressions of a term before its stage
+\bbtwo{} subexpressions.
+
+Consider how we could achieve this in the following stage \bbtwo{} term:
+\begin{lstlisting} 
+prev{
+let x = (next {4+5}, 7+8) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+}
+\end{lstlisting}
+One option is to duplicate the contents of the first $\next$ expression, to produce
+\begin{lstlisting}
+(4+5) * (4+5) * 15
+\end{lstlisting}
+
+Here we are essentially treating $\next\{e\}$ as a stage \bbone{} value, so long
+as all the $\prev$ subterms of $e$ are reduced. This is the approach taken by
+\cite{davies96}.
+
+We take a different approach in our dynamic semantics, which is to let-bind the
+contents of the first $\next$ expression to some variable (here, $x1$) and
+duplicate that variable,
+\begin{lstlisting} 
+let x1 = 4+5 in
+x1 * x1 * 15
+\end{lstlisting}
+
+We think that this interpretation makes more sense from the point of view of cost, 
+since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
+This is \emph{nearly} equivalent to the first expression, because they have different termination behavior 
+when a non-terminating stage-\bbtwo~expression is declared but never used.
+
+How do our semantics achieve this behavior? In the original term,
+\begin{lstlisting}
+prev {
+let x = (next {4+5}, 7+8) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+}
+\end{lstlisting}
+we must start by evaluating the binding for $x$.  We can't evaluate inside the
+$\next$ statement, but must still substitute some result into the body of the
+\texttt{let}. We replace the contents of $\next$ with a variable and make an
+explicit substitution, which then floats up to the top of the containing
+$\prev$:
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+let x = (next{x1}, 15) in
+next{
+	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
+}
+}
+\end{lstlisting}
+We're now free to perform the stage-\bbone~substitution for $x$.  
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+next{
+	prev{#1 (next{x1}, 15)} 
+	* prev{#1 (next{x1}, 15)} 
+	* prev{hold (#2 (next{x1}, 15))}
+}
+}
+\end{lstlisting}
+To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them:
+\begin{lstlisting} 
+prev{
+[4+5/x1]
+	next{ x1 * x1 * 15 }
+}
+\end{lstlisting}
+The final step in evaluating the outer $\prev$ is reifying the contained substitutions into let statements, yielding
+\begin{lstlisting} 
+let x1 = 4+5 in
+ x1 * x1 * 15
+\end{lstlisting}
+
+Once again, the point here is that we did not duplicate the $4+5$ in our residual.  
+Instead we lifted it out into a substitution, leaving a hatted variable [\TODO add hats above] in its place,
+and we reified the substitution into a let-binding at the enclosing $\prev$.
+
+\subsection{Dynamics}
 
 \input {figures/dynamics}
 
+%{{{ stuff nico commented out
 %Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
 
 %\subsection{The Erasure Semantics}
@@ -139,132 +234,104 @@ To resolve this conflict, we need a formal semantics for \lang.
 %\end{enumerate}
 %
 %We meet all of these goals.
+%}}}
+%{{{ stuff carlo commented out
+%Abstractly, we can think of our evaluation as proceeding in the standard way for
+%stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it
+%places $e$ off to the side in a context and replaces the whole expression with a
+%reference to the context entry.  These references are then passed around as
+%stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?
+%To ensure that all stage-1 code is evaluated before any stage-2 code, we must
+%evaluate all of the 1-code contained in $e$ before inserting it into the table.
+%This entails searching $e$ for all contained $\prev$s and evaluating them in
+%place.  
 
+%The evaluation judgment operates on stage-1 code, whereas the
+%speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the
+%crossover points between 1-code and 2-code, they are correspondingly the only
+%places where the evaluation and speculation judgments depend on the other. 
 
-In this section, we discuss the dynamic semantics of our language.  
-Before we can get into the details of the semantics, we have to first make some decisions about the behavior we want it to have.  
-Similar to \cite{davies96}, we want our semantics to have the form of a judgment that partially evaluates an expression to create a residual that can be evaluated at the second stage in the standard way.  Again like Davies, we choose a call-by-value paradigm as our baseline at both stages.  The only significant freedom that this leaves is how to handle the staging constructs.  
+%The evaluation judgment is very similar to standard call-by-value evaluation.
+%The input to evaluation is a stage-1 expression (usually
+%$e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered
+%later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and
+%the {\em partial value} (usually $v$).  We cover the latter first.  The partial
+%value is essentially the result of the first-stage portion of $e$, and must be a
+%\bbone-value of the same type as $e$.  As usual, this means that $v$ must be
+%composed only of base primitives, tuples, injections, and lambdas (corresponding
+%to base types, products, sums, and functions).  Analogously, the value
+%corresponding to $\fut$ is a construct called a {\em hatted variable} (written
+%$\hat y$), which signifies a reference to some stage-2 computation.  The mapping
+%between these hatted variables and stage-two expressions is
+%}}}
 
-We present here two reasonable interpretations of these staging constructs, 
-in the context of the following stage-\bbtwo~example:
-\begin{lstlisting} 
-prev{
-let x = (next {4+5}, 7+8) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
-\end{lstlisting}
-The first option is to duplicate the contents of the first $\next$ expression to produce,
-\begin{lstlisting}
-(4+5) * (4+5) * 15
-\end{lstlisting}
-Essentially, we're treating $\next$ as a value a stage-\bbone, so long as all of its contained $\prev$s are reduced.  
-This is the technique of \cite{davies96}.
-Instead of this, we take a second, nearly equivalent approach.  
-That is to bind the contents of the first $\next$ expression to some variable (here, $x1$) and then duplicate that variable,
-\begin{lstlisting} 
-let x1 = 4+5 in
-x1 * x1 * 15
-\end{lstlisting}
+% TODO move these to macros.tex once they're finalized
+\newcommand{\pval}{\ensuremath{\mathsf{pval}}}
+\newcommand{\res}{\ensuremath{\mathsf{res}}}
+\renewcommand{\val}{\ensuremath{\mathsf{val}}}
 
-We think that this interpretation makes more sense from the point of view of cost, 
-since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
-This is {\em nearly} equivalent to the first expression, because they have different termination behavior 
-when a non-terminating stage-\bbtwo~expression is declared but never used.
+The algorithm described above creates three different kinds of expressions which
+cannot be evaluated further at a particular stage:
+\begin{itemize}
+\item Partial values ($\pval$s) are stage \bbone{} terms whose stage \bbone{}
+subexpressions have all been fully evaluated. In the example above,
+\verb|next {x1 * x1 * 15}|.
+\item Residuals ($\res$es) are stage \bbtwo{} terms whose stage \bbone{}
+subexpressions have all been fully evaluated. In the example above,
+\verb|4+5|.
+\item Values ($\val$s) are stage \bbtwo{} terms which are fully evaluated; these
+are the results of a computation after both stages have been completed. In the
+example above, the term evaluates to \verb|1215|.
+\end{itemize}
+The $\redonesym$ judgment takes an open stage \bbone{} term to a pair of an
+environment $\xi$ mapping newly-created variables to stage \bbtwo{} residuals,
+and a partial value $v$ which may refer to those variables. This judgment
+necessarily traverse stage \bbtwo{} subexpressions in order to find their stage
+\bbone{} subexpressions; we call this process \emph{speculation}. Speculation is
+implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo{} term to a
+residual.
 
-Now that we know {\em what} the behavior is that we want, we can explain {\em how} our semantics achieves that behavior.  We start with the same example:
-\begin{lstlisting}
-prev {
-let x = (next {4+5}, 7+8) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
-\end{lstlisting}
-The first thing we need to do is evaluate the binding for $x$.  Of course, we can't evaluate inside the $\next$ statement, but we still need to produce a value that will get substituted.  What we do instead is replace the body of the $\next$ by a variable and make an explicit substitution, which then floats up to the top of the containing $\prev$:
-\begin{lstlisting} 
-prev{
-[4+5/x1]
-let x = (next{x1}, 15) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
-\end{lstlisting}
-We're now free to perform the stage-\bbone~substitution for $x$.  
-\begin{lstlisting} 
-prev{
-[4+5/x1]
-next{
-	prev{#1 (next{x1}, 15)} 
-	* prev{#1 (next{x1}, 15)} 
-	* prev{hold (#2 (next{x1}, 15))}
-}
-}
-\end{lstlisting}
-To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them:
-\begin{lstlisting} 
-prev{
-[4+5/x1]
-	next{ x1 * x1 * 15 }
-}
-\end{lstlisting}
-The final step in evaluating the outer $\prev$ is reifying the contained substitutions into let statements, yielding
-\begin{lstlisting} 
-let x1 = 4+5 in
- x1 * x1 * 15
-\end{lstlisting}
+\TODO finish explaining how the nested evaluation actually works.
+explain reification, hatted variables, and contexts.
 
-Once again, the point here is that we did not duplicate the $4+5$ in our residual.  
-Instead we lifted it out into a substitution, leaving a hatted variable [note: add hats above] in its place,
-and we reified the substitution into a let-binding at the enclosing $\prev$.
+A function $f$ which accepts inputs at both stages \bbone{} and \bbtwo{} can be
+given a type of the form $A\to\fut(B\to C)$.%
+\footnote{We can rewrite \texttt{fexp} in this form, or simply apply the following
+higher-order function which makes the adjustment:
 
-\subsection{more formally...}
+\TODO write the function here}
+Given its stage \bbone{} argument $a:A$, we can evaluate the partially-applied
+function:
+$\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
+The result is an environment $\xi$ and a partial value $v$ of type $\fut(B\to
+C)$. Next, we reify this environment into a sequence of \verb|let|-bindings
+enclosing $v$, via $\reify\xi{v}{f_a}$. A canonical forms theorem on $v$
+ensures that the resulting $f_a$ has type $B\to C$ in \langTwo.
+Finally, given a stage \bbtwo{} argument $b:B$, we can stage-\bbtwo{} evaluate
+the ultimate result of the function, $f_a~b \mathop{\tworedsym} c$.
 
-Abstractly, we can think of our evaluation as proceeding in the standard way for stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it places $e$ off to the side in a context and replaces the whole expression with a reference to the context entry.  These references are then passed around as stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?  To ensure that all stage-1 code is evaluated before any stage-2 code, we must evaluate all of the 1-code contained in $e$ before inserting it into the table.  This entails searching $e$ for all contained $\prev$s and evaluating them in place.  
+\TODO make sure this is true (haven't written the canonical forms theorems yet)
 
-More formally, evaluation comprises the following judgments:
+That this sequence of evaluations is in fact staged follows from our
+characterizations of partial values, residuals, and values, that $\redonesym$
+outputs a partial value, and that $\reifysym$ outputs an expression in \langTwo.
 
-\begin{center}
-\begin{tabular}{|c|p{2.5cm}|p{2.5cm}|} \hline
-Judgment & Reads & Conditions \\ \hline 
-$\isvalone e$ & ``$e$ is a $\bbone$-value under context $\Xi$'' & ... \\ \hline 
-$\diaonesub$ & ``$e$ evaluates to future table $\xi$ and value $v$'' 
-& $\typesone e A$ 
-	\newline $\isvalone v$ 
-	\newline ... \\ \hline 
-$\diatwosub$ & ``$e$ speculates to $q$'' & ... \\ \hline 
-...&...&... \\ \hline
-\end{tabular}
-\end{center}
+\begin{remark}
+For any $\colone{e}{A}$ containing no $\next$ subexpressions, $\redonesym$ will
+always compute an empty environment, and a partial value identical to the result
+of call-by-value evaluation of $e$.
+%derivationally equivalent to standard call-by-value evaluation.
+\end{remark}
 
-Evaluation and speculation are the main judgments here, the rest being largely administrative.  The evaluation judgment operates on stage-1 code, whereas the speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the crossover points between 1-code and 2-code, they are correspondingly the only places where the evaluation and speculation judgments depend on the other. 
-
-
-% FIXME we need a real name for hatted variables
-The evaluation judgment is very similar to standard call-by-value evaluation, as goal 1 would suggest.  The input to evaluation is a stage-1 expression (usually $e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and the {\em partial value} (usually $v$).  We cover the latter first.  The partial value is essentially the result of the first-stage portion of $e$, and must be a \bbone-value of the same type as $e$.  As usual, this means that $v$ must be composed only of base primitives, tuples, injections, and lambdas (corresponding to base types, products, sums, and functions).  Analogously, the value corresponding to $\fut$ is a construct called a {\em hatted variable} (written $\hat y$), which signifies a reference to some stage-2 computation.  The mapping between these hatted variables and stage-two expressions is
-
-...
-
-\subsection{Other nice properties}
-
-\begin{enumerate}
-\item For some $\colone{e}{A}$ containing no $\next$ expressions, the semantics is derivationally equivalent to standard call-by-value evaluation.
-\end{enumerate}
+\TODO 
+If we change the highlighted rules to something slightly different, then we get
+precisely the semantics from \cite{davies96}. This essentially bypasses the
+environment bookkeeping in $\redonesym$, by inlining residuals instead of
+hoisting them in \verb|let|-bindings.
 
 \subsection{Metatheory}
 
-\TODO unfinished; where should this go? combine with table above
-
-\noindent\TODO terminology for $\Xi,\Gamma,\xi,v,q$?
-
-\noindent\TODO need to define 1-vals at 1 and 2, and 2-vals at 2. what is the
-terminology? (?, residuals, results?)
-
-\noindent\TODO put $\Xi$ and $\Gamma$ in the judgments where appropriate
-
-\noindent\TODO be uniform about which judgments have which contexts, etc
+\noindent\TODO terminology for the contexts?
 
 % local macros; put them in macros.tex once they are more finalized
 \newcommand{\wf}{\ \mathsf{wf}}
@@ -277,14 +344,8 @@ Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
 contain only stage-2 variables.
 \end{definition}
 
-\noindent\TODO don't call it a table
-
-\noindent\TODO what is the notation for $\xi$s? how do you build them?
-
-\noindent\TODO define reification explicitly as a metafunction
-
 \begin{definition}
-A table $\xi$ is well-formed ($\xi\wf$) if either:
+An environment $\xi$ is well-formed ($\xi\wf$) if either:
 \begin{enumerate}
 \item $\xi = \cdot$; or
 \item $\xi = \xi',x\mapsto e$ where

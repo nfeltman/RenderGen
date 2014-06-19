@@ -82,7 +82,7 @@ In addition to the partitioning of a calculation across multiple domains, the ex
 
 We'll start by analyzing a simple two-stage language called \ellStaged.  We say it is simple in that it supports boolean, integer, and product types, as well as let bindings, if expressions, and various primitive operations.  Notably, we leave out functions, fixed point operators, and full sum types, which will be added later.
 
-The grammar for types, terms, values, and contexts in \ellStaged are given in Figure \ref{fig:coreSyntax}.  The first thing to notice is that stage $\bbone$ and stage $\bbtwo$ code are syntactically seperated at the type, term, and value levels, despite heavy overlap.  It would be tempting to merge the two stages into one syntactic class and maintain the stage invariants with the typing judgements.  Such a trick would reduce the total number of rules presented later, but at the cost of making those rules type derivation-directed, rather than syntax directed.  Alternatively, we chose to have one context merged accross both stages, rather than one context for each stage.  The intended effect of this decision is for bindings in one stage to shadow binding to the same variables in the other stage.  The reasons for this will become clear later.
+The grammar for types, terms, values, and contexts in \ellStaged are given in \ref{fig:coreSyntax}.  The first thing to notice is that stage $\bbone$ and stage $\bbtwo$ code are syntactically seperated at the type, term, and value levels, despite heavy overlap.  It would be tempting to merge the two stages into one syntactic class and maintain the stage invariants with the typing judgements.  Such a trick would reduce the total number of rules presented later, but at the cost of making those rules type derivation-directed, rather than syntax directed.  Alternatively, we chose to have one context merged accross both stages, rather than one context for each stage.  The intended effect of this decision is for bindings in one stage to shadow binding to the same variables in the other stage.  The reasons for this will become clear later.
 
 At the type and value levels, stage $\bbone$ can refer to stage $\bbtwo$, but stage $\bbtwo$ cannot refer back to stage $\bbone$.  Alternatively, the two stages are mutually recursive at the term level.  These two patterns together fulfill the promise of {\em mixed code, staged evalutation}.
 
@@ -91,7 +91,7 @@ In the rest of this document, I will tend to use $\{A,B,C\}$ for types, $\{v,u,w
 
 \subsection{Static Semantics}
 
-The static semantics for \ellStaged~is given in Figure \ref{fig:coreStatics}.  Modulo the two-stage restriction and current absence of functions, it's based off of the system in \cite{davies96}, which was inspired by temporal logic (the source of our $\fut$ modality).  The static semantics comprises two judgements.  Those are:
+The static semantics for \ellStaged~is given in \ref{fig:coreStatics}.  Modulo the two-stage restriction and current absence of functions, it's based off of the system in \cite{davies96}, which was inspired by temporal logic (the source of our $\fut$ modality).  The static semantics comprises two judgements.  Those are:
 
 \begin{center}
 \begin{tabular}{|l|l|} \hline

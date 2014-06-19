@@ -32,11 +32,11 @@
 \infer							{\reify{(y \mapsto q_1) \circ \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
-\caption{\lang~Dynamic Semantics: $\next$ and $\prev$)}
+\caption{\lang~Dynamic Semantics: $\next$ and $\prev$}
 \label{fig:diaSemanticsNP}
 \end{figure*}
 
-\begin{figure}
+\begin{figure*}
 \begin{mathpar}
 \inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Xi;\Gamma,x] e q} 			\and
 \inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
@@ -55,7 +55,7 @@
 \end{mathpar}
 \caption{\lang~Dynamic Semantics: Speculation}
 \label{fig:diaSemanticsSpec}
-\end{figure}
+\end{figure*}
 %
 %\begin{figure}
 %\begin{mathpar}
