@@ -1,4 +1,4 @@
-\section{A Two-Stage Modal Language}
+\section{The \lang\ Language}
 
 \input {figures/grammars}
 \input {figures/statics}
@@ -16,21 +16,21 @@ either \bbone~or \bbtwo, which defines when it is fully reduced.
 %the expression's stage tells us \emph{when} it will be fully reduced. 
 % FIXME why?
 %The reason for a two-stage design (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
-Stage-\bbone{} and stage-\bbtwo{} types include products, sums, functions, and base types.
-In addition to these types, stage-\bbone{} expressions may also be of type $\fut A$,
-representing an enclosed stage-\bbtwo{} expression of type $A$.
-$\fut A$ terms must be treated opaquely by stage-\bbone{} code
-as they cannot be reduced (to values with type $A$) until stage \bbtwo. 
+Stage-\bbone\ and stage-\bbtwo\ types include products, sums, functions, and base types.
+In addition to these types, stage-\bbone\ expressions may also be of type $\fut A$,
+representing an enclosed stage-\bbtwo\ expression of type $A$.
+(The type system of \lang\ is adopted directly from that of the modal language \lamCircle\,\cite{davies96}, but is restricted to two stages for simplicity.) $\fut A$ terms must be treated opaquely by stage-\bbone\ code
+as they cannot be reduced (to values with type $A$) until stage \bbtwo. Like in \lamCircle\, there is no reciprocal modality.
 
-\needsfix{Although there is a strict one-way dependence between the two stages at the type
-level}, stage-\bbone{} and stage-\bbtwo{} terms are defined mutually recursively:
-the $\next$ construct embeds stage-\bbtwo{} expressions into stage \bbone,
-whereas $\prev$ embeds stage-\bbone{} expressions into stage \bbtwo.
+Although there is a strict one-way dependence between the two stages at the type
+level, stage-\bbone\ and stage-\bbtwo\ terms are defined mutually recursively:
+the $\next$ construct embeds stage-\bbtwo\ expressions into stage \bbone,
+whereas $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.
 The $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
 and we surround their arguments with braces in \lang\ syntax to clearly indicate stage boundaries within a program.
 
 The grammar and type system for \lang\ is given in
-\ref{fig:grammar,fig:statics}. (The figures annotate typing judgments and context variables with stages.)
+\ref{fig:grammar,fig:statics}. (Typing judgments and context variables are annotated with stages.)
 Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
 of a term or type.
 %We formulated our typing judgments in the style of \cite{davies96}, where the
@@ -43,12 +43,10 @@ of a term or type.
 Specifically, given an argument with type $A$ at stage \bbtwo, $\next$ forms a $\fut A$ at stage \bbone.  
 %That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
 Stage \bbtwo\ expressions can obtain the original stage \bbtwo\ argument via the $\prev$ construct.  
-Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality.
+Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality\,\cite{cave14}.
 The $\pause$ construct serves to wrap stage \bbone\ integers for use in stage \bbtwo.  
 Although it is possible to implement $\pause$ from other \lang\ features, 
 we provide it as a core primitive to simplify our examples. 
-
-We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged \lang\ program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent splitting.
 
 \subsection{Staged Evaluation}
 
@@ -80,17 +78,19 @@ let fexp (b : $int, e : int) : $int =
 Although the code for {\tt fexp} looks very much like the unstaged mathematical
 definition above, it is in fact a staged program: the {\tt if} predicates and exponent
 decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
-\needsfix{Essentially, the type system is sufficient to prove the observation that all of
-the decomposition of the exponent can be done at the stage \bbone\ without
-requiring disruption of the elegant functional structure of the code.}
+%\needsfix{Essentially, the type system is sufficient to prove the observation that all of
+%the decomposition of the exponent can be done at the stage \bbone\ without
+%requiring disruption of the elegant functional structure of the code.}
+We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged \lang\ program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer (as done above) or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent splitting.
 
-A key attribute of the {\tt fexp} code example is the nesting of stage-\bbone\ and stage-\bbtwo\ expressions. Ordinary term evaluation always eliminates outermost redexes first, 
+
+A key attribute of the {\tt fexp} code example is the nesting of stage-\bbone\ and stage-\bbtwo\ expressions. Ordinary term evaluation eliminates outermost redexes first, 
 however in the case that stage \bbone\ expressions are contained inside
 stage \bbtwo\ ones (such as in the example above), this strategy conflicts with the precept of staged execution: that all stage \bbone\ code be evaluated before the evaluation of stage \bbtwo\ code. Therefore, a suitably staged dynamic semantics for \lang\ must evaluate
 \emph{all} the stage \bbone\ subexpressions of a term before its stage
 \bbtwo\ subexpressions.
 
-To understand how this behavior can be achieved, consider the following stage-\bbone\ term:
+To understand how this behavior can be achieved, consider evaluation of the stage-\bbone\ term below. (The term contains nested $\next$ and $\prev$ blocks.):
 \begin{lstlisting} 
 let x = (next {1+2}, 3+4) in
   next{ prev{#1 x} * prev{#1 x} * prev{hold(#2 x)} }
@@ -100,7 +100,7 @@ One option is to duplicate the contents of the first $\next$ expression, to prod
 (1+2) * (1+2) * 7
 \end{lstlisting}
 
-Here we are essentially treating $\next\{e\}$ as a stage \bbone{} value, so long
+Here we are essentially treating $\next\{e\}$ as a stage-\bbone\ value, so long
 as all the $\prev$ subterms of $e$ are reduced. This is the approach taken by
 \cite{davies96}.
 
@@ -112,17 +112,12 @@ let x1 = 1+2 in
   x1 * x1 * 7
 \end{lstlisting}
 
-We think that this interpretation makes more sense from the point of view of cost, 
-since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
-This is \emph{nearly} equivalent to the first expression, because they have different termination behavior 
-when a non-terminating stage-\bbtwo~expression is declared but never used.
+% We think that this interpretation makes more sense from the point of view of cost, 
+% since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
+% This is \emph{nearly} equivalent to the first expression, because they have different termination behavior 
+% when a non-terminating stage-\bbtwo~expression is declared but never used.
 
-How do our semantics achieve this behavior? In the original term,
-\begin{lstlisting}
-let x = (next {1+2}, 3+4) in
-  next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
-\end{lstlisting}
-we must start by evaluating the binding for $x$.  We can't evaluate inside the
+To achieve this behavior, we must start by evaluating the binding for $x$.  We can't evaluate inside the
 $\next$ statement, but must still substitute some result into the body of the
 \texttt{let}. We replace the contents of $\next$ with a variable and make an
 explicit substitution, which then floats up to the top of the containing
