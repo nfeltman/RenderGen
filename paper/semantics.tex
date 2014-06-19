@@ -83,7 +83,6 @@ decomposition are all stage-\bbone\ terms, since they occur within $\prev$ block
 %requiring disruption of the elegant functional structure of the code.}
 We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged \lang\ program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer (as done above) or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent splitting.
 
-
 A key attribute of the {\tt fexp} code example is the nesting of stage-\bbone\ and stage-\bbtwo\ expressions. Ordinary term evaluation eliminates outermost redexes first, 
 however in the case that stage \bbone\ expressions are contained inside
 stage \bbtwo\ ones (such as in the example above), this strategy conflicts with the precept of staged execution: that all stage \bbone\ code be evaluated before the evaluation of stage \bbtwo\ code. Therefore, a suitably staged dynamic semantics for \lang\ must evaluate
