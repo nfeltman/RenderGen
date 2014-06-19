@@ -22,8 +22,8 @@ representing an enclosed stage-\bbtwo{} expression of type $A$.
 $\fut A$ terms must be treated opaquely by stage-\bbone{} code
 as they cannot be reduced (to values with type $A$) until stage \bbtwo. 
 
-Although there is a strict one-way dependence between the two stages at the type
-level, stage-\bbone{} and stage-\bbtwo{} terms are defined mutually recursively:
+\needsfix{Although there is a strict one-way dependence between the two stages at the type
+level}, stage-\bbone{} and stage-\bbtwo{} terms are defined mutually recursively:
 the $\next$ construct embeds stage-\bbtwo{} expressions into stage \bbone,
 whereas $\prev$ embeds stage-\bbone{} expressions into stage \bbtwo.
 The $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
@@ -48,15 +48,11 @@ The $\pause$ construct serves to wrap stage \bbone\ integers for use in stage \b
 Although it is possible to implement $\pause$ from other \lang\ features, 
 we provide it as a core primitive to simplify our examples. 
 
-% As our concern is stage splitting of explicitly staged programs expressed in \lang.
-We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent spitting.
-
-%The problem of how to convert an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
-%We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
+We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged \lang\ program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent splitting.
 
 \subsection{Staged Evaluation}
 
-As a simple example of expressing staged programs in \lang\, consider the following fast exponentiation algorithm below, which 
+As a simple example of expressing staged programs in \lang, consider the following fast exponentiation algorithm, which 
 calculates $b^p$ in $\log p$ time:
 \[
 	\mathit{fexp}(b,p) = \left \{ \begin{array}{ll} 
@@ -68,7 +64,7 @@ calculates $b^p$ in $\log p$ time:
 
 % Ignoring for the moment how to define recursive functions in \lang,
 \noindent
-The algorithm is expressed in \lang\ below:%
+The stage-\bbone\ term below defines the function {\tt fexp} that implements the fast exponentiation algorithm:%
 \footnote{We render $\fut$ as {\tt \$} in code examples.}
 
 \begin{lstlisting} 
@@ -82,34 +78,26 @@ let fexp (b : $int, e : int) : $int =
 \end{lstlisting}
 
 Although the code for {\tt fexp} looks very much like the unstaged mathematical
-definition above, it is in fact a staged program: the {\tt if}s and exponent
-decomposition are all at stage \bbone, since they occur within $\prev$ blocks.
-Essentially, the type system is sufficient to prove the observation that all of
-the decomposition of the exponent can be done at the stage \bbone~without
-requiring us to disrupt the elegant functional structure of the code.
+definition above, it is in fact a staged program: the {\tt if} predicates and exponent
+decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
+\needsfix{Essentially, the type system is sufficient to prove the observation that all of
+the decomposition of the exponent can be done at the stage \bbone\ without
+requiring disruption of the elegant functional structure of the code.}
 
-This example also illustrates how stage \bbone{} and stage \bbtwo{} code can be
-arbitrarily nested.  Ordinary evaluation always eliminates outermost redexes
-first, but this conflicts with the precept that we evaluate all stage \bbone{}
-code before stage \bbtwo{} code, in the case that stage \bbone{} code is inside
-stage \bbtwo{} code.
+A key attribute of the {\tt fexp} code example is the nesting of stage-\bbone\ and stage-\bbtwo\ expressions. Ordinary term evaluation always eliminates outermost redexes first, 
+however in the case that stage \bbone\ expressions are contained inside
+stage \bbtwo\ ones (such as in the example above), this strategy conflicts with the precept of staged execution: that all stage \bbone\ code be evaluated before the evaluation of stage \bbtwo\ code. Therefore, a suitably staged dynamic semantics for \lang\ must evaluate
+\emph{all} the stage \bbone\ subexpressions of a term before its stage
+\bbtwo\ subexpressions.
 
-A suitably staged dynamic semantics for \lang{} must therefore evaluate
-\emph{all} the stage \bbone{} subexpressions of a term before its stage
-\bbtwo{} subexpressions.
-
-Consider how we could achieve this in the following stage \bbtwo{} term:
+To understand how this behavior can be achieved, consider the following stage-\bbone\ term:
 \begin{lstlisting} 
-prev{
-let x = (next {4+5}, 7+8) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
+let x = (next {1+2}, 3+4) in
+  next{ prev{#1 x} * prev{#1 x} * prev{hold(#2 x)} }
 \end{lstlisting}
 One option is to duplicate the contents of the first $\next$ expression, to produce
 \begin{lstlisting}
-(4+5) * (4+5) * 15
+(1+2) * (1+2) * 7
 \end{lstlisting}
 
 Here we are essentially treating $\next\{e\}$ as a stage \bbone{} value, so long
@@ -120,8 +108,8 @@ We take a different approach in our dynamic semantics, which is to let-bind the
 contents of the first $\next$ expression to some variable (here, $x1$) and
 duplicate that variable,
 \begin{lstlisting} 
-let x1 = 4+5 in
-x1 * x1 * 15
+let x1 = 1+2 in
+  x1 * x1 * 7
 \end{lstlisting}
 
 We think that this interpretation makes more sense from the point of view of cost, 
@@ -131,12 +119,8 @@ when a non-terminating stage-\bbtwo~expression is declared but never used.
 
 How do our semantics achieve this behavior? In the original term,
 \begin{lstlisting}
-prev {
-let x = (next {4+5}, 7+8) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
+let x = (next {1+2}, 3+4) in
+  next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
 \end{lstlisting}
 we must start by evaluating the binding for $x$.  We can't evaluate inside the
 $\next$ statement, but must still substitute some result into the body of the
@@ -144,39 +128,31 @@ $\next$ statement, but must still substitute some result into the body of the
 explicit substitution, which then floats up to the top of the containing
 $\prev$:
 \begin{lstlisting} 
-prev{
-[4+5/x1]
-let x = (next{x1}, 15) in
-next{
-	prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}
-}
-}
+[1+2/x1]
+let x = (next{x1}, 7) in
+next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
 \end{lstlisting}
 We're now free to perform the stage-\bbone~substitution for $x$.  
 \begin{lstlisting} 
-prev{
-[4+5/x1]
+[1+2/x1]
 next{
-	prev{#1 (next{x1}, 15)} 
-	* prev{#1 (next{x1}, 15)} 
-	* prev{hold (#2 (next{x1}, 15))}
-}
+	prev{#1 (next{x1}, 7)} *
+	prev{#1 (next{x1}, 7)} *
+	prev{hold (#2 (next{x1}, 7))}
 }
 \end{lstlisting}
 To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them:
 \begin{lstlisting} 
-prev{
-[4+5/x1]
-	next{ x1 * x1 * 15 }
-}
+[1+2/x1]
+	next{ x1 * x1 * 7 }
 \end{lstlisting}
 The final step in evaluating the outer $\prev$ is reifying the contained substitutions into let statements, yielding
 \begin{lstlisting} 
-let x1 = 4+5 in
- x1 * x1 * 15
+let x1 = 1+2 in
+  x1 * x1 * 7
 \end{lstlisting}
 
-Once again, the point here is that we did not duplicate the $4+5$ in our residual.  
+Once again, the point here is that we did not duplicate the $1+2$ in our residual.  
 Instead we lifted it out into a substitution, leaving a hatted variable [\TODO add hats above] in its place,
 and we reified the substitution into a let-binding at the enclosing $\prev$.
 
@@ -285,10 +261,10 @@ cannot be evaluated further at a particular stage:
 \begin{itemize}
 \item Partial values ($\pval$s) are stage \bbone{} terms whose stage \bbone{}
 subexpressions have all been fully evaluated. In the example above,
-\verb|next {x1 * x1 * 15}|.
+\verb|next {x1 * x1 * 7}|.
 \item Residuals ($\res$es) are stage \bbtwo{} terms whose stage \bbone{}
 subexpressions have all been fully evaluated. In the example above,
-\verb|4+5|.
+\verb|1+2|.
 \item Values ($\val$s) are stage \bbtwo{} terms which are fully evaluated; these
 are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|1215|.
