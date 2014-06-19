@@ -128,7 +128,7 @@ next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
 \end{lstlisting}
 We're now free to perform the stage-\bbone~substitution for $x$.  
 \begin{lstlisting} 
-[1+2/x1]
+[x1|->1+2]
 next{
 	prev{#1 (next{x1}, 7)} *
 	prev{#1 (next{x1}, 7)} *
