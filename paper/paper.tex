@@ -32,7 +32,13 @@
 
 \begin{document}
 
-\lstset{language=ML, columns=fullflexible, basicstyle=\ttfamily, tabsize=4, escapeinside={"*}{*"}}
+\lstset{language=ML,
+        columns=fullflexible,
+        basicstyle=\ttfamily,
+        tabsize=4,
+        escapeinside={"*}{*"},
+        literate={|->}{{\ $\mapsto$\ }}1
+                 {$}{{$\fut$}}1}
 
 \special{papersize=8.5in,11in}
 \setlength{\pdfpageheight}{\paperheight}
