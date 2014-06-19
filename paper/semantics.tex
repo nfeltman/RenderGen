@@ -3,52 +3,61 @@
 \input {figures/grammars}
 \input {figures/statics}
 
-Every expression in \lang can be understood as having a {\em stage},
-either \bbone~or \bbtwo, in addition to a type.
-Just as a type describes \emph{which} values an expression reduces to,
-the stage tells us \emph{when} it will be fully reduced. 
+In this section, we describe \lang, a simple two-stage language
+used as the basis for defining and analyzing stage splitting.
+%The grammar and type system for \lang\ is given in
+%\ref{fig:grammar,fig:statics}.
+Every expression in \lang\ has a statically known {\em stage},
+either \bbone~or \bbtwo, which defines when it is fully reduced.
+%\footnote{Typing judgments and context variables are annotated with stages.}
+%
+% in addition to a type.
+% Just as a type describes \emph{which} values an expression reduces to,
+%the expression's stage tells us \emph{when} it will be fully reduced. 
 % FIXME why?
-The reason for a two-stage design (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
-
-The only types that exist at stage \bbtwo{} are products, sums, functions, and base types.
-In addition to this usual set, stage \bbone{} also has one more type: $\fut A$,
-where $A$ is a stage-\bbtwo{} type.
-This can be understood as \emph{promising} a value of type $A$ at stage \bbtwo.
-We'll see shortly that the promise given by $\fut A$ can only be treated opaquely at stage one; 
-it cannot be redeemed for an actual $A$ until the second stage.
+%The reason for a two-stage design (as opposed to \cite{davies96}, which allows an infinite number of stages) will be discussed later.
+Stage-\bbone{} and stage-\bbtwo{} types include products, sums, functions, and base types.
+In addition to these types, stage-\bbone{} expressions may also be of type $\fut A$,
+representing an enclosed stage-\bbtwo{} expression of type $A$.
+$\fut A$ terms must be treated opaquely by stage-\bbone{} code
+as they cannot be reduced (to values with type $A$) until stage \bbtwo. 
 
 Although there is a strict one-way dependence between the two stages at the type
-level, their terms are defined mutually recursively:
-$\next$ embeds stage-\bbtwo{} expressions into stage \bbone,
+level, stage-\bbone{} and stage-\bbtwo{} terms are defined mutually recursively:
+the $\next$ construct embeds stage-\bbtwo{} expressions into stage \bbone,
 whereas $\prev$ embeds stage-\bbone{} expressions into stage \bbtwo.
-These $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
-and we surround their arguments with \{braces\} in the concrete syntax to clearly indicate the stage boundaries with in a program.
-The problem of how to turn an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
-We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
+The $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
+and we surround their arguments with braces in \lang\ syntax to clearly indicate stage boundaries within a program.
 
+The grammar and type system for \lang\ is given in
+\ref{fig:grammar,fig:statics}. (The figures annotate typing judgments and context variables with stages.)
+Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
+of a term or type.
 %We formulated our typing judgments in the style of \cite{davies96}, where the
 %whole judgment is annotated with a stage.  
-
-The grammar and type system for our language, \lang, are given in
-\ref{fig:grammar,fig:statics}.
-We annotate the typing judgment and context variables with stages; only $\fut$
-and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
-of a term or type.
+%The grammar and type system for \lang\ is given in
+%\ref{fig:grammar,fig:statics}.
+% We annotate typing judgments and context variables with stages;
 %This is made manifest as rules which are entirely abstract over stage.
 %In addition to determining the stage, $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
-
-Specifically, $\next$, given an argument with type $A$ at stage \bbtwo, forms a $\fut A$ at stage \bbone.  
-That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
-This promise can only be redeemed be the $\prev$ construct.  
+Specifically, given an argument with type $A$ at stage \bbtwo, $\next$ forms a $\fut A$ at stage \bbone.  
+%That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
+Stage \bbtwo\ expressions can obtain the original stage \bbtwo\ argument via the $\prev$ construct.  
 Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality.
+The $\pause$ construct serves to wrap stage \bbone\ integers for use in stage \bbtwo.  
+Although it is possible to implement $\pause$ from other \lang\ features, 
+we provide it as a core primitive to simplify our examples. 
 
-The $\pause$ construct is a mechanism to wrap stage \bbone~integers so that they can be used at stage \bbtwo.  
-Although $\pause$ can be implemented from our other features, 
-we provide it as a primitive to simplify our examples. 
+% As our concern is stage splitting of explicitly staged programs expressed in \lang.
+We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent spitting.
+
+%The problem of how to convert an unstaged program into a staged one by inserting these constructs is called {\em binding time analysis}.
+%We do not consider that problem here, and instead assume that it has been solved either automatically or by a programmer. 
 
 \subsection{Staged Evaluation}
 
-Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
+As a simple example of expressing staged programs in \lang\, consider the following fast exponentiation algorithm below, which 
+calculates $b^p$ in $\log p$ time:
 \[
 	\mathit{fexp}(b,p) = \left \{ \begin{array}{ll} 
 		1 &  p = 0 \\ 
@@ -57,8 +66,9 @@ Fast exponentiation is a method for calculating $b^p$ in $\log p$ time:
 	\right .
 \]
 
-Ignoring for the moment how to define recursive functions in \lang, we can
-implement staged fast exponentiation as follows:%
+% Ignoring for the moment how to define recursive functions in \lang,
+\noindent
+The algorithm is expressed in \lang\ below:%
 \footnote{We render $\fut$ as {\tt \$} in code examples.}
 
 \begin{lstlisting} 
