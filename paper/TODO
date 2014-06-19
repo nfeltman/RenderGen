@@ -8,7 +8,7 @@ rename "hatted variables"
 
 can we call this an "explicit substitution"?
 
-should we position \lambda12 as a core calculus and Mockingbird as the
+should we position \lambda12 as a core calculus and (the implementation) as the
 implementation, cf the current treatment of \lambda12 as "the language"?
 
 be careful about appeals to "cost", if we don't have a cost model
