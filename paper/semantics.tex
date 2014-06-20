@@ -111,8 +111,7 @@ We take a different approach.
 Instead of duplicating the contents of the first $\next$ expression, we bind them to some variable (here, {\tt y}) and
 duplicate only a reference to that variable.  This produces:
 \begin{lstlisting} 
-let y = 1+2 in
-  y * y * 7
+let y = 1+2 in y * y * 7
 \end{lstlisting}
 
 % We think that this interpretation makes more sense from the point of view of cost, 
@@ -121,38 +120,49 @@ let y = 1+2 in
 % when a non-terminating stage-\bbtwo~expression is declared but never used.
 
 Achieving this behavior mechanically requires us to resolve a contradiction:
-we must substitute for \texttt{x} at stage \bbone, but we cannot evaluate inside the
-$\next$ block bound to it. Our solution is to replace the $\next$ with a new variable and create an
-explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s contents.  
+we must substitute for \texttt{x} at stage \bbone, but we cannot evaluate inside the $\next$ block bound to it. 
+Our solution is to replace the $\next$ with a new variable and create an explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s contents.  
 This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
+prev {
 [y|->1+2]
-let x = (yhat, 7) in
-next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
+  let x = (yhat, 7) in
+  next{prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}}
+}
 \end{lstlisting}
 Note that the variable left behind is rendered with a hat.  By treating this {\em hatted variable} as a value, we're now free to perform the stage-\bbone~substitution for {\tt x}.  
 \begin{lstlisting} 
-[x1|->1+2]
-next{
-	prev{#1 (yhat, 7)} *
-	prev{#1 (yhat, 7)} *
-	prev{hold (#2 (next{x1}, 7))}
+prev {
+[y|->1+2]
+  next{
+    prev{#1 (yhat, 7)} * prev{#1 (yhat, 7)} *
+    prev{hold (#2 (yhat, 7))}
+  }
 }
 \end{lstlisting}
-To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them:
+To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them. 
+As a rule, these will reduce to hatted variables, and $\prev$ removes the hat, leaving the variable in place:
 \begin{lstlisting} 
-[x1|->1+2]
-	next{ x1 * x1 * 7 }
+prev {
+[y|->1+2]
+    next{ y * y * 7 }
+}
 \end{lstlisting}
-The final step in evaluating the outer $\prev$ is reifying the contained substitutions into let statements, yielding
+Once again, we lift the contents of the $\next$ into a substitution:
 \begin{lstlisting} 
-let x1 = 1+2 in
-  x1 * x1 * 7
+prev {
+[y|->1+2]
+[z|->y*y*7]
+    zhat
+}
+\end{lstlisting}
+Finally, when evaluating the outer $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
+\begin{lstlisting} 
+let y = 1+2 in
+let z = y * y * 7 in z
 \end{lstlisting}
 
-Once again, the point here is that we did not duplicate the $1+2$ in our residual.  
-Instead we lifted it out into a substitution, leaving a hatted variable [\TODO add hats above] in its place,
-and we reified the substitution into a let-binding at the enclosing $\prev$.
+Thus we have evaluated all of the stage \bbone\ expressions of this program without duplicating the contents of $\next$ blocks.
 
 \subsection{Dynamics}
 
