@@ -100,7 +100,7 @@ prev{
 }
 \end{lstlisting}
 Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
-One option, taken by \cite{davies96}, is to treat $\next\{\mathtt{1+2}\}$ as a value for the purposes of stage-\bbone~evaluation, 
+One option, taken by \cite{davies96}, is to treat \verb|next{1+2}| as a value for the purposes of stage-\bbone~evaluation, 
 consequently duplicating it during substitution for {\tt x}.  
 This produces:
 \begin{lstlisting}
@@ -267,29 +267,37 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
 \begin{itemize}
-\item Partial values ($\pval$s) are stage \bbone{} terms whose stage \bbone{}
+\item 
+Partial values ($\pval$s) are stage \bbone\ terms that have been fully evaluated, 
+but which may contain hatted variables. In the example above, 
+\verb|(|$\hat {\tt y}$\verb|,7)|.
+\item Residuals ($\res$es) are stage \bbtwo\ terms whose stage \bbone\
 subexpressions have all been fully evaluated. In the example above,
-\verb|next {x1 * x1 * 7}|.
-\item Residuals ($\res$es) are stage \bbtwo{} terms whose stage \bbone{}
-subexpressions have all been fully evaluated. In the example above,
-\verb|1+2|.
-\item Values ($\val$s) are stage \bbtwo{} terms which are fully evaluated; these
+\verb|(1+2)| and \verb|(let z = y*y*7 in z)|.
+\item Values ($\val$s) are stage \bbtwo\ terms which are fully evaluated; these
 are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|63|.
 \end{itemize}
-The $\redonesym$ judgment takes an open stage \bbone{} term to a pair of an
-environment $\xi$ mapping newly-created variables to stage \bbtwo{} residuals,
-and a partial value $v$ which may refer to those variables. This judgment
-necessarily traverse stage \bbtwo{} subexpressions in order to find their stage
-\bbone{} subexpressions; we call this process \emph{speculation}. Speculation is
-implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo{} term to a
-residual.
+The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future environment} $\xi$ and a partial value $v$.
+The future environment is a mapping from newly-created variables 
+(which then may appear---hatted---in $v$)
+to residuals.  It is the formal manifestation of the floating substitutions in our example.
+This judgment, upon encountering a stage \bbtwo\ subexpression, must necessarily search into it in order to find its stage
+\bbone\ subexpressions; we call this process \emph{speculation}. 
+Speculation is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual.
 
-\TODO finish explaining how the nested evaluation actually works.
-explain reification, hatted variables, and contexts.
+\TODO next
+
+\TODO prev
+
+\TODO reification
+
+\TODO hold
+
+\TODO contexts
 
 A function $f$ which accepts inputs at both stages \bbone{} and \bbtwo{} can be
-given a type of the form $A\to\fut(B\to C)$.%
+given a type of the form $A\to\fut(B\to C)$%
 \footnote{We can rewrite \texttt{fexp} in this form, or simply apply the following
 higher-order function which makes the adjustment:
 
@@ -301,8 +309,8 @@ higher-order function which makes the adjustment:
 %				prev{f (next {b}, p)}
 %		}	
 %\end{lstlisting}
-\TODO code written, but listings don't work in footnotes! commented out in source
-}
+\TODO code written, but listings don't work in footnotes! commented out in source until we get working
+}.
 Given its stage \bbone{} argument $a:A$, we can evaluate the partially-applied
 function:
 $\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
@@ -331,6 +339,9 @@ If we change the highlighted rules to something slightly different, then we get
 precisely the semantics from \cite{davies96}. This essentially bypasses the
 environment bookkeeping in $\redonesym$, by inlining residuals instead of
 hoisting them in \verb|let|-bindings.
+From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
+But moreover, because a reified residual will always be evaluated whether or not its result is consumed, 
+our semantics terminates strictly less often than that of \cite{davies96}.
 
 \subsection{Metatheory}
 
