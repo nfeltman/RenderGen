@@ -282,19 +282,41 @@ The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future envi
 The future environment is a mapping from newly-created variables 
 (which then may appear---hatted---in $v$)
 to residuals.  It is the formal manifestation of the floating substitutions in our example.
-This judgment, upon encountering a stage \bbtwo\ subexpression, must necessarily search into it in order to find its stage
-\bbone\ subexpressions; we call this process \emph{speculation}. 
-Speculation is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual.
+For all of the normal features of \lang (\ref{fig:diaSemanticsCore}), first stage evaluation has the same behavior and effect on values as standard evaluation,
+and the final future environment is gotten by merging the future environments of the subterms.
 
-\TODO next
+When this judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it searches into the block's stage \bbtwo\ content to find any contained stage
+\bbone\ subexpressions and evaluate them in place.  
+We call this search process \emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual.
+Once the contents of the $\next$ block are speculated into a residual ($q$), 
+we then return a fresh hatted variable ($\hat y$), 
+along with a future environment which maps that variable to our residual ($y \mapsto q$).
 
-\TODO prev
+At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does nothing but recursively speculate into every subexpression.
+Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a hatted variable ($\hat y$).
+The context is then reified (using the $\reifysym$ judgment) into a series of let bindings, with $y$---stripped of its hat---at the bottom.
 
-\TODO reification
+Because the inputs to evaluation and speculation are sometimes open on variables, we adorn our judgments with two contexts.
+The first of these ($\Xi$) keeps track of those hatted variables that may appear in the input.
+Since hatted variables can only be introduced to terms via substitution ({\em i.e.} they do not appear in the original program), 
+this context is augmented only at stage \bbone\ substitution sites.
+The second context ($\Gamma$) keeps track of stage \bbtwo\ variables, which are declared in original program.
+% We chose to keep these as two separate contexts, because only $\Xi$ is needed for well-formedness of partial values.
 
-\TODO hold
+If we change the $\next$ and $\prev$ rules to 
+\begin{mathpar}
+\infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
+\infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
+\end{mathpar}
+and treat $\next~q$ as a partial value, where $q$ is a residual,
+then we get precisely the semantics from \cite{davies96}. This essentially bypasses the
+environment bookkeeping in $\redonesym$, by inlining residuals instead of
+hoisting them in \verb|let|-bindings.
+From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
+But moreover, because a reified residual will always be evaluated whether or not its result is consumed, 
+our semantics terminates strictly less often than that of \cite{davies96}.
 
-\TODO contexts
+\subsection {A Partial Evaluation System}
 
 A function $f$ which accepts inputs at both stages \bbone{} and \bbtwo{} can be
 given a type of the form $A\to\fut(B\to C)$%
@@ -311,13 +333,13 @@ higher-order function which makes the adjustment:
 %\end{lstlisting}
 \TODO code written, but listings don't work in footnotes! commented out in source until we get working
 }.
-Given its stage \bbone{} argument $a:A$, we can evaluate the partially-applied
+Given its stage \bbone\ argument $a:A$, we can evaluate the partially-applied
 function:
 $\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
 The result is an environment $\xi$ and a partial value $v$ of type $\fut(B\to
 C)$. Next, we reify this environment into a sequence of \verb|let|-bindings
 enclosing $v$, via $\reify\xi{v}{f_a}$. A canonical forms theorem on $v$
-ensures that the resulting $f_a$ has type $B\to C$ in \langTwo.
+ensures that the resulting $f_a$ has type $B\to C$ in the residual language.
 Finally, given a stage \bbtwo{} argument $b:B$, we can stage-\bbtwo{} evaluate
 the ultimate result of the function, $f_a~b \mathop{\tworedsym} c$.
 
@@ -333,15 +355,6 @@ always compute an empty environment, and a partial value identical to the result
 of call-by-value evaluation of $e$.
 %derivationally equivalent to standard call-by-value evaluation.
 \end{remark}
-
-\TODO 
-If we change the highlighted rules to something slightly different, then we get
-precisely the semantics from \cite{davies96}. This essentially bypasses the
-environment bookkeeping in $\redonesym$, by inlining residuals instead of
-hoisting them in \verb|let|-bindings.
-From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
-But moreover, because a reified residual will always be evaluated whether or not its result is consumed, 
-our semantics terminates strictly less often than that of \cite{davies96}.
 
 \subsection{Metatheory}
 
