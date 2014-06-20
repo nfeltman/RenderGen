@@ -85,30 +85,34 @@ We note that our work does not consider the problem of {\em binding time analysi
 
 A key attribute of the {\tt fexp} code example is the nesting of stage-\bbone\ and stage-\bbtwo\ expressions. Ordinary term evaluation eliminates outermost redexes first, 
 however in the case that stage \bbone\ expressions are contained inside
-stage \bbtwo\ ones (such as in the example above), this strategy conflicts with the precept of staged execution: that all stage \bbone\ code be evaluated before the evaluation of stage \bbtwo\ code. Therefore, a suitably staged dynamic semantics for \lang\ must evaluate
+stage \bbtwo\ ones (such as in the example above), this strategy conflicts with the precept of staged execution: that all stage \bbone\ code be evaluated before the evaluation of stage \bbtwo\ code. 
+Accordingly, a suitably staged dynamic semantics for \lang\ must evaluate
 \emph{all} the stage \bbone\ subexpressions of a term before its stage
 \bbtwo\ subexpressions.
 
-To understand how this behavior can be achieved, consider evaluation of the stage-\bbone\ term below. (The term contains nested $\next$ and $\prev$ blocks.):
+\subsection{Non-Duplicating First-Stage Evaluation}
+
+To understand how this behavior can be achieved, consider evaluation of the stage-\bbtwo\ term below, which contains nested $\next$ and $\prev$ blocks:
 \begin{lstlisting} 
-let x = (next {1+2}, 3+4) in
+prev{
+  let x = (next {1+2}, 3+4) in
   next{ prev{#1 x} * prev{#1 x} * prev{hold(#2 x)} }
+}
 \end{lstlisting}
-One option is to duplicate the contents of the first $\next$ expression, to produce
+Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
+One option, taken by \cite{davies96}, is to treat $\next\{\mathtt{1+2}\}$ as a value for the purposes of stage-\bbone~evaluation, 
+consequently duplicating it during substitution for {\tt x}.  
+This produces:
 \begin{lstlisting}
 (1+2) * (1+2) * 7
 \end{lstlisting}
 
-Here we are essentially treating $\next\{e\}$ as a stage-\bbone\ value, so long
-as all the $\prev$ subterms of $e$ are reduced. This is the approach taken by
-\cite{davies96}.
-
-We take a different approach in our dynamic semantics, which is to let-bind the
-contents of the first $\next$ expression to some variable (here, $x1$) and
-duplicate that variable,
+We take a different approach.  
+Instead of duplicating the contents of the first $\next$ expression, we bind them to some variable (here, {\tt y}) and
+duplicate only a reference to that variable.  This produces:
 \begin{lstlisting} 
-let x1 = 1+2 in
-  x1 * x1 * 7
+let y = 1+2 in
+  y * y * 7
 \end{lstlisting}
 
 % We think that this interpretation makes more sense from the point of view of cost, 
@@ -116,22 +120,22 @@ let x1 = 1+2 in
 % This is \emph{nearly} equivalent to the first expression, because they have different termination behavior 
 % when a non-terminating stage-\bbtwo~expression is declared but never used.
 
-To achieve this behavior, we must start by evaluating the binding for $x$.  We can't evaluate inside the
-$\next$ statement, but must still substitute some result into the body of the
-\texttt{let}. We replace the contents of $\next$ with a variable and make an
-explicit substitution, which then floats up to the top of the containing
-$\prev$:
+Achieving this behavior mechanically requires us to resolve a contradiction:
+we must substitute for \texttt{x} at stage \bbone, but we cannot evaluate inside the
+$\next$ block bound to it. Our solution is to replace the $\next$ with a new variable and create an
+explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s contents.  
+This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
-[x1|->1+2]
-let x = (next{x1}, 7) in
+[y|->1+2]
+let x = (yhat, 7) in
 next{ prev{#1 x} * prev{#1 x} * prev{hold (#2 x)} }
 \end{lstlisting}
-We're now free to perform the stage-\bbone~substitution for $x$.  
+Note that the variable left behind is rendered with a hat.  By treating this {\em hatted variable} as a value, we're now free to perform the stage-\bbone~substitution for {\tt x}.  
 \begin{lstlisting} 
 [x1|->1+2]
 next{
-	prev{#1 (next{x1}, 7)} *
-	prev{#1 (next{x1}, 7)} *
+	prev{#1 (yhat, 7)} *
+	prev{#1 (yhat, 7)} *
 	prev{hold (#2 (next{x1}, 7))}
 }
 \end{lstlisting}
@@ -279,7 +283,16 @@ given a type of the form $A\to\fut(B\to C)$.%
 \footnote{We can rewrite \texttt{fexp} in this form, or simply apply the following
 higher-order function which makes the adjustment:
 
-\TODO write the function here}
+%\begin{lstlisting} 
+%let adjust (f : $int * int -> $int) =
+%	fn (p : int) => 
+%		next{
+%			fn (b : int) => 
+%				prev{f (next {b}, p)}
+%		}	
+%\end{lstlisting}
+\TODO code written, but listings don't work in footnotes! commented out in source
+}
 Given its stage \bbone{} argument $a:A$, we can evaluate the partially-applied
 function:
 $\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.

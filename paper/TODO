@@ -15,10 +15,17 @@ be careful about appeals to "cost", if we don't have a cost model
 
 Spark citation?
 
-some inconsistency about q vs v in figure 6?
-
 in which language is the output of reification?
 
 define L2 and its evaluation \downarrow_\bbtwo
 
 KF: should the Figure 1 grammar have braces?
+
+NF: call prev and next "blocks"
+
+================================================
+
+Resolved:
+
+some inconsistency about q vs v in figure 6?
+ - NF : I don't see a problem
