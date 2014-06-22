@@ -1,6 +1,61 @@
 
 \section{Splitting Algorithm}
 
+Motivate splitting here.  (Depends on intro)
+Consider splitting at \bbtwo. 
+The basic idea is that, for a given input program, we want to find all of the stage \bbone\ content, pull that out into a single term, 
+and also produce a stage \bbtwo\ term, which takes the results of the stage \bbone\ part and produces the final answer.
+We call these two parts the {\em precomputation} and the {\em residual}, respectively.
+More formally, we want to take some $\coltwo e A$ and produce a $p : \tau$ and a $r : \tau \to A$ such that $e$ and $(r~p)$ reduce to the same value.
+Consider the following stage \bbtwo\ example:
+\begin{lstlisting}
+if 6*7 > 41 then
+	hold{1+2} * 3
+else 
+	hold{2*3} + hold {4*5}
+\end{lstlisting}
+Under the definitions above, this should split into:
+\begin{lstlisting}
+(1+2,2*3,4*5)
+\end{lstlisting}
+and
+\begin{lstlisting}
+fn (l1,l2,l3) => 
+    if 6*7 > 41 then l1 * 3 else l2 + l3
+\end{lstlisting}
+Essentially what we've done is find all of the $\pause$ expressions, 
+bundle them into a tuple in then precomputation, 
+and then unbundle them into the correct place in the residual.
+Note how splitting has the same speculative behavior as our \lang\ dynamics,
+wherein we run the stage \bbone\ code in {\em both} branches of the stage \bbtwo\ {\tt if} expression.
+
+Now consider splitting the following expression, where the {\tt if} is at stage \bbone, rather than stage \bbtwo:
+\begin{lstlisting}
+prev {
+  if 6*7 > 41 then
+    next{1+hold{2*3}}
+  else 
+    next{4+5}
+}
+\end{lstlisting}
+This splits into
+\begin{lstlisting}
+if 6*7 > 41 then inL (2*3) else inR ()
+\end{lstlisting}
+and
+\begin{lstlisting}
+fn l => 
+  case l of
+    l1 => 1+l1
+  | () => 4+5
+\end{lstlisting}
+In this example, we 
+
+[develope the more formal version...]
+
+  $\diatwo [\cdot;\cdot] e q$ and $\reduce q v$ iff $\reduce {r~p} {v}$.
+
+
 \input{figures/splitting-term}
 \input{figures/splitting-sumfun}
 

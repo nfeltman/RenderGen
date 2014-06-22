@@ -25,6 +25,8 @@ KF: should the Figure 1 grammar have braces?
 
 NF: call prev and next "blocks"
 
+NF: make hold change stage rather than add \fut
+
 ================================================
 
 Resolved:
