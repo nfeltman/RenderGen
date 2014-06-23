@@ -7,6 +7,9 @@ The basic idea is that, for a given input program, we want to find all of the st
 and also produce a stage \bbtwo\ term, which takes the results of the stage \bbone\ part and produces the final answer.
 We call these two parts the {\em precomputation} and the {\em residual}, respectively.
 More formally, we want to take some $\coltwo e A$ and produce a $p : \tau$ and a $r : \tau \to A$ such that $e$ and $(r~p)$ reduce to the same value.
+
+\subsection {Splitting If Statements}
+
 Consider the following stage \bbtwo\ example:
 \begin{lstlisting}
 if 6*7 > 41 then
@@ -49,17 +52,56 @@ fn l =>
     l1 => 1+l1
   | () => 4+5
 \end{lstlisting}
-In this example, we 
+Here, there's no need to speculate.
+Instead, we evaluate the stage \bbone\ portion of only the active branch, and then inject the result into a sum type.
+Then in the residual, we case on that sum and resume the stage \bbtwo\ portion of the correct branch.
 
-[develope the more formal version...]
+\subsection {Splitting at the First Stage}
+
+Consider the example from section \ref{nonDup}:
+
+\begin{lstlisting} 
+prev{
+  let x = (next {1+2}, 3+4) in
+  next{prev{#1 x} * prev{#1 x} * prev{hold(#2 x)}}
+}
+\end{lstlisting}
+
+It's not clear whether the {\tt x} binding should be thought of as happening at stage \bbone\ or stage \bbtwo.
+The variable itself is of course at stage \bbone, but the expression that is bound to it has some stage \bbtwo\ content, namely \verb|1+2|.
+The solution is to think of {\tt x} as existing at both stages, and so it appears in the precomputation {\em and} the residual.
+Here's the precomputation:
+\begin{lstlisting} 
+let x = ((), 3+4) in 
+#2 x
+\end{lstlisting}
+and the residual:
+\begin{lstlisting} 
+fn l =>
+  let x = (1+2, ()) in 
+  (#1 x) * (#1 x) * l
+\end{lstlisting}
+What we see is that {\tt x}, which has type $\rmint \times \fut \rmint$ in the original program, 
+has types $\rmint \times \rmint$ in the precomputation and $\rmunit \times \rmint$ in the residual.
+
+\subsection {Splitting Functions}
+
+\TODO functions
+
+\subsection {Formal Setup}
+
+[develop the more formal version...]
 
   $\diatwo [\cdot;\cdot] e q$ and $\reduce q v$ iff $\reduce {r~p} {v}$.
 
+[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
+
+\subsection {Boundary Type Worst Case}
+
+\TODO add the example which is the worst case for figuring out boundary types
 
 \input{figures/splitting-term}
 \input{figures/splitting-sumfun}
-
-[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
 
 \section{Examples for Staged Pipelines}
 
