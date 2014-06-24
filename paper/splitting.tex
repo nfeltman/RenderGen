@@ -81,14 +81,23 @@ fn l =>
   let x = (1+2, ()) in 
   (#1 x) * (#1 x) * l
 \end{lstlisting}
-What we see is that {\tt x}, which has type $\rmint \times \fut \rmint$ in the original program, 
-has types $\rmint \times \rmint$ in the precomputation and $\rmunit \times \rmint$ in the residual.
+What we see is that {\tt x}, which has type $A = \rmint \times \fut \rmint$ in the original program, 
+has types $A_1 = \rmint \times \rmint$ in the precomputation and $A_2 = \rmunit \times \rmint$ in the residual.
+We call $A_1$ and $A_2$ the first and second {\em images} of $A$.
 
 \subsection {Splitting Functions}
 
-\TODO functions
+The trick when splitting functions is that the contents themselves may be multi-stage.
+Thus the boundary type appears as output of the first stage and input of the second stage.
+This makes it hard to type the output, because the boundary types are not represented in the original function type.
 
 \subsection {Formal Setup}
+
+We express residuals as functions in the informal development above.
+For reasons of concision, we equivalently represent residuals as terms open on a variable in the formal judgements.
+
+The $\splitonesym$ judgment takes an open stage \bbone\ term to a combined term and a residual.
+The $\splittwosym$ judgment takes an open stage \bbtwo\ term to a precomputation and a residual.
 
 [develop the more formal version...]
 
