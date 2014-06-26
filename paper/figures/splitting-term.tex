@@ -21,8 +21,12 @@
 									(l_1,l_2).\letin{x}{r_1}{r_2}
 								\end{array}}}																					{\sub 1 A & \sub [,\col{x}{A}] 2 B} 		\and
 \infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\vallam{x}{c},
-							\_.(\vallam{(x,l)}{r})}}												{\sub [,\col x A] {} B} 									\and
-\infersplitone [\to E]	{\spl {e_1~e_2}{B}{\ldots}}											{\sub 1 {A \to B} & \sub 2 A}							\and
+							\_.(\vallam{(x,l)}{r})}}																			{\sub [,\col x A] {} B} 									\and
+\infersplitone [\to E]	{\spl {e_1~e_2}{B}{
+									\talllet{((y_1,z_1),(y_2,z_2))}{(c_1,c_2)}{
+									\talllet{(y_3,z_3)}{y_1~y_2}{(y_3,(z_1,z_2,z_3))}},
+							(l_1,l_2,l_3).(r_1~(r_2,l_3))
+							}}																									{\sub 1 {A \to B} & \sub 2 A}							\and
 \infersplitone [+ I_1]	{\spl {\inl~e}{A+B}{\letin{(y,z)}{c}{(\inl~y,z)},l.r}}			{\sub {} A}												\and
 \infersplitone [+ I_2]	{\spl {\inr~e}{A+B}{\letin{(y,z)}{c}{(\inr~y,z)},l.r}}			{\sub {} A}												\and
 \infersplitone [+ E]		{\spl {\left(\tallcase{e_1}{x_2.e_2}{x_3.e_3}\right)}{C}

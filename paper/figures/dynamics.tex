@@ -28,7 +28,7 @@
 \inferdiaone [\fut I]			{\red {\next~e}{y \mapsto q,\hat y}}								{\diatwo e q}															\and
 \inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi, \hat y} & \reify{\xi}yq}							\and
 \inferdiaone [hold]			{\red {\pause~e}{\xi \circ (y \mapsto i),\hat y}}					{\diaone e {\xi, i}}													\and
-\inferdiaone [hatted var]	{\red {\hat y}{\cdot,\hat y}}										{\cdot}																	\and
+\inferdiaone [hat]			{\red {\hat y}{\cdot,\hat y}}										{y \in \Xi}															\and
 \infer							{\reify{(y \mapsto q_1) \circ \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
@@ -41,6 +41,7 @@
 \inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
 \inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
 \inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
+\inferdiaspc [hyp]			{\red {x}{x}}													{x \in \Gamma}								\and
 \inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Xi;\Gamma,x] e q} 			\and
 \inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
 \inferdiaspc [\times I]		{\red {(e_1,e_2)}{(q_1,q_2)}}								{\sub [1] & \sub [2]} 					\and
