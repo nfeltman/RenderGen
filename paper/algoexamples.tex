@@ -52,10 +52,10 @@ let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) 
 	| (h,t) => 
 		let (left,right,n) = partition h t in
 		next{
-			let n = prev{hold n} in
+			let n = hold{n} in
 			case compare prev{i} n of
 			  () (*LT*) => prev {qs left i}
-			| () (*EQ*) => prev {hold h}
+			| () (*EQ*) => hold {h}
 			| () (*GT*) => 
 				prev {qs right next{prev{i}-n-1}}
 		}	

@@ -96,7 +96,7 @@ To understand how this behavior can be achieved, consider evaluation of the stag
 \begin{lstlisting} 
 prev{
   let x = (next {1+2}, 3+4) in
-  next{ prev{#1 x} * prev{#1 x} * prev{hold(#2 x)} }
+  next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
 }
 \end{lstlisting}
 Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
@@ -127,7 +127,7 @@ This substitution then floats up to the top of the containing $\prev$ block:
 prev {
 [y|->1+2]
   let x = (yhat, 7) in
-  next{prev{#1 x} * prev{#1 x} * prev{hold (#2 x)}}
+  next{prev{#1 x} * prev{#1 x} *  hold{#2 x}}
 }
 \end{lstlisting}
 Note that the variable left behind is rendered with a hat.  By treating this {\em hatted variable} as a value, we're now free to perform the stage-\bbone~substitution for {\tt x}.  
@@ -136,7 +136,7 @@ prev {
 [y|->1+2]
   next{
     prev{#1 (yhat, 7)} * prev{#1 (yhat, 7)} *
-    prev{hold (#2 (yhat, 7))}
+    hold{#2 (yhat, 7)}
   }
 }
 \end{lstlisting}
@@ -189,7 +189,7 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 %
 %\begin{lstlisting} 
 %if 5*4*3*2 > 111 then
-%	prev{ hold (2+4) }
+%	hold{2+4}
 %else
 %	prev{ loopForever () (* does not terminate *) }
 %\end{lstlisting}

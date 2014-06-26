@@ -45,7 +45,7 @@
 \infertypeswor [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}			{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} 								\and
 \infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
 \infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
-\infertypeswor [hold]			{\typestwo {\pause~e} {\fut {\rm int}}}		{\typesone e {\rm int}}		 													\and
+\infertypeswor [hold]			{\typestwo {\pause~e} \rmint}				{\typesone e {\rm int}}		 													\and
 \end{mathpar}
 \caption{\lang~Static Semantics}
 \label{fig:statics}
