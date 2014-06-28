@@ -1,12 +1,19 @@
 
 \section{Splitting Algorithm}
 
-Motivate splitting here.  (Depends on intro)
-Consider splitting at \bbtwo. 
-The basic idea is that, for a given input program, we want to find all of the stage \bbone\ content, pull that out into a single term, 
-and also produce a stage \bbtwo\ term, which takes the results of the stage \bbone\ part and produces the final answer.
-We call these two parts the {\em precomputation} and the {\em residual}, respectively.
-More formally, we want to take some $\coltwo e A$ and produce a $p : \tau$ and a $r : \tau \to A$ such that $e$ and $(r~p)$ reduce to the same value.
+The basic idea is that we want to take a term which contains interleaved stage \bbone\ and stage \bbtwo\ code
+and untangle it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.
+To facilitate communication between the stages, there is a data structure passed between the stages, 
+which is an output of the stage \bbone\ term and and input to the stage \bbtwo\ term.
+
+As with the dynamics, the form of the splitting statement depends on the external stage of the term.
+We consider splitting for stage \bbtwo\ terms first, as it has a simpler form.  
+For example, take \verb|hold{1+2} < 5|.
+We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
+which are called the {\em precomputation} and {\em residual}, respectively.  
+For this splitting to be correct, the residual applied to the precomputation should yield the same result as the original term.  
+
+The form of splitting for stage \bbone\ terms is more complicated.
 
 \subsection {Splitting If Statements}
 
