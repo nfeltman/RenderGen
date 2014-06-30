@@ -23,8 +23,11 @@
 	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
 	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
 \infer [\fut\vsplito]
-	{\valnext~v \vsplito [(),v']}
-	{v \vsplits v'} 
+	{\hat y \vsplito [(),y]}
+	{v \vsplits v'} \and
+\infer [\to\vsplito]
+	{\lam x A e \vsplito [\lambda x.c, \lambda (x,l).r]}
+	{\splitone [x:A] e B {c,l.r}} 
 \end{mathpar}
 \caption{Value Splitting}
 \label{fig:valSplit}

@@ -115,10 +115,10 @@
 
 \newcommand {\splitonesym} {\overset{\bbone}\rightsquigarrow}
 \newcommand {\splittwosym} {\overset{\bbtwo}\rightsquigarrow}
-\newcommand {\splitone} [4] [] { \Gamma{#1} \vdash {#2}:{#3} \splitonesym \left[{#4}\right]}
-\newcommand {\splittwo} [4] [] { \Gamma{#1} \vdash {#2}:{#3} \splittwosym \left[{#4}\right]}
-\newcommand {\splitonesub} [3] [] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
-\newcommand {\splittwosub} [3] [] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splitone} [4] [\Gamma] {{#1} \vdash {#2}:{#3} \splitonesym \left[{#4}\right]}
+\newcommand {\splittwo} [4] [\Gamma] {{#1} \vdash {#2}:{#3} \splittwosym \left[{#4}\right]}
+\newcommand {\splitonesub} [3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splittwosub} [3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
 
 %misc
 \newcommand{\dom}[1]{\mathsf{dom}(#1)}
