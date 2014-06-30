@@ -14,21 +14,21 @@
 %\end{mathpar}
 %\end{figure*}
 %
-%\begin{figure*}
-%\caption{Value Splitting}
-%\label{fig:valSplit}
-%\begin{mathpar}
-%\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
-%\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
-%\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
-%\infer [\times\vsplito]	
-%	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
-%	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
-%\infer [\fut\vsplito]
-%	{\valnext~v \vsplito [(),v']}
-%	{v \vsplits v'} 
-%\end{mathpar}
-%\end{figure*}
+\begin{figure*}
+\begin{mathpar}
+\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
+\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
+\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
+\infer [\times\vsplito]	
+	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
+	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
+\infer [\fut\vsplito]
+	{\valnext~v \vsplito [(),v']}
+	{v \vsplits v'} 
+\end{mathpar}
+\caption{Value Splitting}
+\label{fig:valSplit}
+\end{figure*}
 %
 %\begin{figure*}
 %\caption{Context Splitting}
@@ -41,7 +41,7 @@
 %\end{figure*}
 
 
-The theorem that we want to be true is...
+%The theorem that we want to be true is...
 
 %\begin{center}
 %\begin{tabular}{l}
