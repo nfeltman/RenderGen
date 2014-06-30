@@ -14,103 +14,64 @@ which are called the {\em precomputation} and {\em residual}, respectively.
 For this splitting to be correct, the residual applied to the precomputation should yield the same result as the original term.  
 
 The form of splitting for stage \bbone\ terms is more complicated.
-
-\subsection {Splitting If Statements}
-
-Consider the following stage \bbtwo\ example:
+To see why, consider the term \verb|(next{hold{1+2} < 5},3*4)|.
+As before, the comparison operation is part of stage \bbtwo, 
+and the addition operation is a stage \bbone\ precomputation, the result of which will eventually become input to the residual.
+The multiplication operation, however, is neither part of the residual nor a precomputation to support it.
+Instead it is the {\em immediate result} of stage \bbone, 
+because it is available to the stage \bbone\ context around our original term.
+For example:
 \begin{lstlisting}
-if 6*7 > 41 then
-	hold{1+2} * 3
-else 
-	hold{2*3} + hold {4*5}
+let x = (next{hold{1+2} < 5},3*4) in
+next{ if prev{#1 x} then 7 else hold {#2 x} }
 \end{lstlisting}
-Under the definitions above, this should split into:
-\begin{lstlisting}
-(1+2,2*3,4*5)
-\end{lstlisting}
-and
-\begin{lstlisting}
-fn (l1,l2,l3) => 
-    if 6*7 > 41 then l1 * 3 else l2 + l3
-\end{lstlisting}
-Essentially what we've done is find all of the $\pause$ expressions, 
-bundle them into a tuple in then precomputation, 
-and then unbundle them into the correct place in the residual.
-Note how splitting has the same speculative behavior as our \lang\ dynamics,
-wherein we run the stage \bbone\ code in {\em both} branches of the stage \bbtwo\ {\tt if} expression.
-
-Now consider splitting the following expression, where the {\tt if} is at stage \bbone, rather than stage \bbtwo:
-\begin{lstlisting}
-prev {
-  if 6*7 > 41 then
-    next{1+hold{2*3}}
-  else 
-    next{4+5}
-}
-\end{lstlisting}
-This splits into
-\begin{lstlisting}
-if 6*7 > 41 then inL (2*3) else inR ()
-\end{lstlisting}
-and
-\begin{lstlisting}
-fn l => 
-  case l of
-    l1 => 1+l1
-  | () => 4+5
-\end{lstlisting}
-Here, there's no need to speculate.
-Instead, we evaluate the stage \bbone\ portion of only the active branch, and then inject the result into a sum type.
-Then in the residual, we case on that sum and resume the stage \bbtwo\ portion of the correct branch.
-
-\subsection {Splitting at the First Stage}
-
-Consider the example from section \ref{nonDup}:
-
-\begin{lstlisting} 
-prev{
-  let x = (next {1+2}, 3+4) in
-  next{prev{#1 x} * prev{#1 x} * hold{#2 x}}
-}
-\end{lstlisting}
-
-It's not clear whether the {\tt x} binding should be thought of as happening at stage \bbone\ or stage \bbtwo.
-The variable itself is of course at stage \bbone, but the expression that is bound to it has some stage \bbtwo\ content, namely \verb|1+2|.
-The solution is to think of {\tt x} as existing at both stages, and so it appears in the precomputation {\em and} the residual.
-Here's the precomputation:
-\begin{lstlisting} 
-let x = ((), 3+4) in 
-#2 x
-\end{lstlisting}
-and the residual:
-\begin{lstlisting} 
-fn l =>
-  let x = (1+2, ()) in 
-  (#1 x) * (#1 x) * l
-\end{lstlisting}
-What we see is that {\tt x}, which has type $A = \rmint \times \fut \rmint$ in the original program, 
-has types $A_1 = \rmint \times \rmint$ in the precomputation and $A_2 = \rmunit \times \rmint$ in the residual.
-We call $A_1$ and $A_2$ the first and second {\em images} of $A$.
-
-\subsection {Splitting Functions}
-
-The trick when splitting functions is that the contents themselves may be multi-stage.
-Thus the boundary type appears as output of the first stage and input of the second stage.
-This makes it hard to type the output, because the boundary types are not represented in the original function type.
+To support this, stage \bbone\ splitting produces two outputs: the {\em combined result} and the residual,
+where the combined result reduces to a tuple containing the immediate result and the precomputation.
 
 \subsection {Formal Setup}
 
-We express residuals as functions in the informal development above.
-For reasons of concision, we equivalently represent residuals as terms open on a variable in the formal judgements.
+We now discuss the formal definition of splitting.
+The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$.
+The $\splitonesym$ judgment sends a stage \bbone\ term ($e$) to a combined term ($c$) and residual ($l.r$),
+while $\splittwosym$ sends a stage \bbtwo\ term ($e$) to a precomputation ($p$) and a residual ($l.r$).
+For concision, we actually represent residuals as a term open on a single variable, rather than as functions.
+For both judgments, we use a context ($\Gamma$) to keep track of the open variables of $e$.
 
-The $\splitonesym$ judgment takes an open stage \bbone\ term to a combined term and a residual.
-The $\splittwosym$ judgment takes an open stage \bbtwo\ term to a precomputation and a residual.
+The rules\footnote{The rules are written using patterns, including the open variable of the residual.} 
+for splitting $\next$, $\prev$, and $\pause$ are given in \ref{fig:termSplitOne}.
+The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,
+while the rule for $\prev$ projects the combined result of its subexpression to just the precomputation.
+The $\pause$ rule treats the entire combined result of its subexpression as a precomputation, 
+and projects out the integer result in the residual\footnote{The residual of an integer expression is usually trivial, 
+but we have to include it here for termination purposes.}
 
-[develop the more formal version...]
+The rules of stage \bbtwo\ splitting are given in \ref{fig:termSplitTwo}.  
+Every rule works by bundling the precomputations of the constituent parts, and then unbundling them with a pattern.
+The rules of stage \bbone\ splitting are given in \ref{fig:termSplitOne}.  
 
-  $\diatwo [\cdot;\cdot] e q$ and $\reduce q v$ iff $\reduce {r~p} {v}$.
 
-[Present the splitting judgement.  Give statements of type and value correctness for splitting.  Give all of the splitting rules.  Talk through a few of them.]
+\subsection {Speculation}
+
+Notice in the stage \bbtwo\ rules for {\tt if}s, {\tt case}s, and functions, the precomputation is lifted out from within branches.
+This is the manifestation of the speculation behavior from the semantics.
+
+\subsection {Stage \bbone\ Divergence}
+Consider the case of stage \bbone\ {\tt if} and {\tt case} expressions.
+In both cases we have enough information at stage \bbone\ to know what branch to take, so there's no need to speculate.
+Instead, we evaluate the stage \bbone\ portion of only the active branch, and then inject precomputation into a sum type.
+Then in the residual, we case on that sum and resume the stage \bbtwo\ portion of the correct branch.
+
+\subsection {Stage \bbone\ Functions}
+
+The trick when splitting stage \bbone\ functions is that the contents themselves may be multi-stage.
+We handle this by splitting them into two functions:
+one in the immediate result which handles all the stage \bbone\ content of the original,
+and one in the residual which handles all of the stage \bbtwo\ content.
+Note that stage \bbone\ $\lambda$-expressions themselves have only a trivial precomputation.
+
+
+Thus the boundary type appears as output of the first stage and input of the second stage.
+This makes it hard to type the output, because the boundary types are not represented in the original function type.
 
 \subsection {Boundary Type Worst Case}
 
