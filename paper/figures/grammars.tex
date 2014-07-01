@@ -18,8 +18,10 @@ $\begin{aligned}
  \gbar \inr~\expr \\
 &\gbar \caseof {\expr}{\var.\expr}{\var.\expr}
  \gbar \ifthen {\expr}{\expr}{\expr} \\
-&\gbar \letin{\var}{\expr}{\expr}
- \gbar \next~\expr 
+&\gbar \roll 
+ \gbar \unroll
+ \gbar \letin{\var}{\expr}{\expr} \\
+&\gbar \next~\expr 
  \gbar \prev~\expr 
  \gbar \pause~\expr \\
 \context &::=\emptyC \gbar \context, \colwor \var \type
