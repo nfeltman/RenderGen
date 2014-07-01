@@ -314,20 +314,18 @@ our semantics terminates strictly less often than that of \cite{davies96}.
 \subsection {A Partial Evaluation System}
 
 A function $f$ which accepts inputs at both stages \bbone{} and \bbtwo{} can be
-given a type of the form $A\to\fut(B\to C)$%
-\footnote{We can rewrite \texttt{fexp} in this form, or simply apply the following
-higher-order function which makes the adjustment:
-
-%\begin{lstlisting} 
-%let adjust (f : $int * int -> $int) =
-%	fn (p : int) => 
-%		next{
-%			fn (b : int) => 
-%				prev{f (next {b}, p)}
-%		}	
-%\end{lstlisting}
-\TODO code written, but listings don't work in footnotes! commented out in source until we get working
-}.
+given a type of the form $A\to\fut(B\to C)$.%
+\cprotect\footnote{We can rewrite \texttt{fexp} in this form, or simply apply
+the following higher-order function which makes the adjustment:
+\begin{lstlisting} 
+let adjust (f : $int * int -> $int) =
+  fn (p : int) => 
+    next{
+      fn (b : int) => 
+        prev{f (next {b}, p)}
+    }
+\end{lstlisting}}
+%
 Given its stage \bbone\ argument $a:A$, we can evaluate the partially-applied
 function:
 $\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.

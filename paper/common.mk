@@ -33,7 +33,7 @@ $(NAME).pdf: $(TEXFILES) $(BIBFILE)
 	pdflatex ${PDFLATEX_FLAGS} $(NAME)
 
 clean:
-	@rm -rf *.aux *.bbl *.log *.dvi *.blg *.ps *.bak *~ *.toc *.lot *.lof *.out $(NAME).pdf 
+	@rm -rf *.aux *.bbl *.log *.dvi *.blg *.ps *.bak *~ *.toc *.lot *.lof *.out *.cpt $(NAME).pdf 
 
 spell: $(SPELL)
 
