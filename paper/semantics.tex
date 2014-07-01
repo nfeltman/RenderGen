@@ -259,22 +259,17 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 %between these hatted variables and stage-two expressions is
 %}}}
 
-% TODO move these to macros.tex once they're finalized
-\newcommand{\pval}{\ensuremath{\mathsf{pval}}}
-\newcommand{\res}{\ensuremath{\mathsf{res}}}
-\renewcommand{\val}{\ensuremath{\mathsf{val}}}
-
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
 \begin{itemize}
 \item 
-Partial values ($\pval$s) are stage \bbone\ terms that have been fully evaluated, 
+Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully evaluated, 
 but which may contain hatted variables. In the example above, 
 \verb|(|$\hat {\tt y}$\verb|,7)|.
-\item Residuals ($\res$es) are stage \bbtwo\ terms whose stage \bbone\
+\item Residuals ($\ressym$es) are stage \bbtwo\ terms whose stage \bbone\
 subexpressions have all been fully evaluated. In the example above,
 \verb|(1+2)| and \verb|(let z = y*y*7 in z)|.
-\item Values ($\val$s) are stage \bbtwo\ terms which are fully evaluated; these
+\item Values ($\valsym$s) are stage \bbtwo\ terms which are fully evaluated; these
 are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|63|.
 \end{itemize}
@@ -360,12 +355,6 @@ of call-by-value evaluation of $e$.
 
 \noindent\TODO terminology for the contexts?
 
-% local macros; put them in macros.tex once they are more finalized
-\newcommand{\wf}{\ \mathsf{wf}}
-\newcommand{\valoo}{\ \bbone\textsf{-}\mathsf{val} @ \bbone}
-\newcommand{\valot}{\ \bbone\textsf{-}\mathsf{val} @ \bbtwo}
-\newcommand{\valtt}{\ \bbtwo\textsf{-}\mathsf{val} @ \bbtwo}
-
 \begin{definition}
 Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
 contain only stage-2 variables.
@@ -376,8 +365,9 @@ An environment $\xi$ is well-formed ($\xi\wf$) if either:
 \begin{enumerate}
 \item $\xi = \cdot$; or
 \item $\xi = \xi',x\mapsto e$ where
-$\Xi,\dom{\xi'};\Gamma\vdash e : B @ \bbtwo$ and
-$\Xi,\dom{\xi'};\Gamma\vdash e \valot$.
+$\xi'\wf$,
+$\Xi,\dom{\xi'};\Gamma\vdash \coltwo{e}{B}$, and
+$\Xi,\dom{\xi'};\Gamma\vdash e \res$.
 \end{enumerate}
 \end{definition}
 
@@ -386,21 +376,19 @@ If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
 \end{theorem}
 
 \begin{theorem}
-If $\diaonesub$ then:
+If $\diaonesub$ and $\typesone e A$ then
 \begin{enumerate}
-\item $\typesone e A$ for some 1-type $A$;
 \item $\xi\wf$;
-\item $\Xi,\dom\xi;\cdot\vdash v : A @ \bbone$; and
-\item $\Xi,\dom\xi;\cdot\vdash v\valoo$.
+\item $\Xi,\dom\xi;\cdot\vdash \colone{v}{A}$; and
+\item $\Xi,\dom\xi;\cdot\vdash v\pval$.
 \end{enumerate}
 \end{theorem}
 
 \begin{theorem}
-If $\diatwosub$ then:
+If $\diatwosub$ and $\typestwo e A$ then
 \begin{enumerate}
-\item $\typestwo e A$ for some 2-type $A$;
-\item $\Xi;\Gamma\vdash q : A @ \bbtwo$; and
-\item $\Xi;\Gamma\vdash q\valtt$.
+\item $\Xi;\Gamma\vdash \coltwo{q}{A}$; and
+\item $\Xi;\Gamma\vdash q\val$.
 \end{enumerate}
 \end{theorem}
 
