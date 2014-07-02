@@ -1,12 +1,14 @@
 \begin{figure}
 \begin{mathpar}
-\infertypeswor [\rmunit] 	{{\tt unit} \istypewor}								{\cdot} 																			\and
-\infertypeswor [int]			{{\tt int} \istypewor}								{\cdot} 																			\and
-\infertypeswor [bool]			{{\tt bool} \istypewor}								{\cdot} 																			\and
-\infertypeswor [\times]		{A \times B \istypewor}								{A \istypewor & B \istypewor} 													\and
-\infertypeswor [+]			{A + B \istypewor}									{A \istypewor & B \istypewor} 													\and
-\infertypeswor [\to]			{A \to B \istypewor}									{A \istypewor & B \istypewor} 													\and
-\infertypeswor [\fut]			{\fut A \istypeone}									{A \istypetwo} 													
+\infertypeswor [\rmunit] 	{\Gamma \vdash {\tt unit} \istypewor}						{\cdot} 																			\and
+\infertypeswor [int]			{\Gamma \vdash {\tt int} \istypewor}						{\cdot} 																			\and
+\infertypeswor [bool]			{\Gamma \vdash {\tt bool} \istypewor}						{\cdot} 																			\and
+\infertypeswor [\times]		{\Gamma \vdash A \times B \istypewor}						{\Gamma \vdash A \istypewor & \Gamma \vdash B \istypewor} 					\and
+\infertypeswor [+]			{\Gamma \vdash A + B \istypewor}							{\Gamma \vdash A \istypewor & \Gamma \vdash B \istypewor} 					\and
+\infertypeswor [\to]			{\Gamma \vdash A \to B \istypewor}							{\Gamma \vdash A \istypewor & \Gamma \vdash B \istypewor} 					\and
+\infertypeswor [\mu]			{\Gamma \vdash \mu \alpha. A \istypewor}					{\Gamma, \alpha \istypewor \vdash A \istypewor} 								\and
+\infertypeswor [var]			{\Gamma \vdash \alpha \istypewor}							{\alpha \istypewor \in \Gamma} 													\and
+\infertypeswor [\fut]			{\Gamma \vdash \fut A \istypeone}							{\Gamma \vdash A \istypetwo} 																
 \end{mathpar}
 \caption{\lang~Valid Types}
 \label{fig:validTypes}
