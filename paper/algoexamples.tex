@@ -2,31 +2,33 @@
 
 \section{Examples of Algorithm Derivation}
 
+\TODO put the \verb|fix|es in this code explicitly?
+
 Fast exponent example.  
 
 \begin{lstlisting} 
-let exp (b : $int, e : int) : $int =
+let fexp (b : $int, e : int) : $int =
 	if e == 0 then
 		next{1}
 	else if (e mod 2) == 0 then
-		next{let x = prev{exp(b,e/2)} in x*x}
+		next{let x = prev{fexp(b,e/2)} in x*x}
 	else
-		next{prev{b} * prev{exp (b,e-1)}}		
+		next{prev{b} * prev{fexp (b,e-1)}}		
 \end{lstlisting}
 
 splits into
 
 \begin{lstlisting} 
-let exp (b, e) =
+let fexp (b, e) =
 	((), roll (
 		if e == 0 then
 			inL ()
 		else 
 			inR (
 				if (e mod 2) == 0 then
-					inL (#2 (exp (b,e/2)))
+					inL (#2 (fexp (b,e/2)))
 				else
-					inR (#2 (exp (b,e-1)))
+					inR (#2 (fexp (b,e-1)))
 			)
 	))
 \end{lstlisting}
@@ -34,13 +36,13 @@ let exp (b, e) =
 and
 
 \begin{lstlisting} 
-let exp ((b, e), p) =
+let fexp ((b, e), p) =
 	case unroll p of
 	  () => 1
 	| d  =>
 		case d of
-		  r => let x = exp ((b,()),r) in x*x
-		| r => b * exp ((b,()),r)
+		  r => let x = fexp ((b,()),r) in x*x
+		| r => b * fexp ((b,()),r)
 \end{lstlisting}
 
 Quickselect example.

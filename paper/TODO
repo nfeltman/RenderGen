@@ -1,10 +1,6 @@
-add recursive type rules to everything
-
 figure 3 (valid values) is out of date
 
 avoid words "promises" and "future", which have a specific meaning in PL
-
-incomplete rule in figure 9 (sum and function splitting)
 
 rename "hatted variables"
 
@@ -26,6 +22,8 @@ KF: should the Figure 1 grammar have braces?
 NF: call prev and next "blocks"
 
 NF: make hold change stage rather than add \fut
+
+add a section on the actual implementation
 
 ================================================
 
