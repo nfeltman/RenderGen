@@ -25,6 +25,12 @@ NF: make hold change stage rather than add \fut
 
 add a section on the actual implementation
 
+rework semantics:
+  remove \Xi context
+  hat x turns into next x (which is a value)
+  remove hat rule
+  hatted variables instead introduce @2 variables in \Gamma
+
 ================================================
 
 Resolved:
