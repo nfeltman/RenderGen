@@ -1,12 +1,19 @@
 \section{Introduction}
 
-We often find ourselves in situations where the input to a computation arrives in two parts, at different points in time.  
+It is a common observation that some computations can be performed efficiently by using {\em staging}, wherein the execution of a program is split over two or more discrete points in time ({\em i.e.} stages).  This most often arises when we want to evaluate a multivariate function several times, with some inputs dynamic (varying across invocations) and some static (constant across invocations).  Examples include,
+\begin{itemize}
+\item Finding the $i$th largest element in a list, where the list is constant and $i$ varies.
+\item Computing the shading of a surfacing in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over $4\times4$ pixel blocks.  
+\item Running a language interpreter on a single program for multiple inputs.
+\end{itemize}
 
-The natural response is to try and do some part of the computation early, and the rest of the computation once the second input arrives.  
+The goal is to run programs in a way that doesn't repeat work unless it depends on the varying input.  There are two separate problems at play here.  The first is {\em binding-time analysis}, the problem of determining {\em what} portions of the program to run statically versus dynamically.  After that is {\em staged execution}, the problem of {\em how} to execute in a staged way. We  consider only the latter in this paper.  That is, we assume that programs are given in a representation, covered later, that fully determines staged execution.
 
-Since the computation runs in two parts, the total cost can be split as well, into $m+n$.
+We consider two possible models of staged execution, 
 
-Additionally, we can run the second stage multiple times.  Cost is now $m+bn$.
+\TODO partial eval
+
+\TODO stage-splitting
 
 Jorring et al. (\cite{jorring86}) identify three classes of staging techniques: meta-programming, partial evaluation, and stage-splitting.  The first two of these have received significantly more attention than the third.  Countless meta-programming systems exist (...twelve thousand citations...\cite{devito13}), and their background theory and type-systems are well understood (\cite{davies01}).  Partial evaluation, too, is well-understood.  Partial evaluation systems exist... . This paper explores both theory and applications for stage-splitting.  
 
