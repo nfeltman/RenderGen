@@ -92,10 +92,10 @@
 \newcommand {\istypetwo} {~{\rm type}~@~\bbtwo}
 \newcommand {\istypewor} {~{\rm type}~@~w}
 
-\newcommand {\reify} [3] {[{#1},{#2}]\overset{R}\Rightarrow{#3}}
+\newcommand {\reify} [3] {[{#1};{#2}]\overset{R}\Rightarrow{#3}}
 \newcommand {\erasone} {\Downarrow^e_\bbone}
 \newcommand {\erastwo} {\Downarrow^e_\bbtwo}
-\newcommand {\isvalone} [1] {\Xi \vdash {#1}~{\rm val}~@~\bbone}
+\newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~@~\bbone}
 \newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
 \newcommand {\isvalwor} {~{\rm val}~@~w}
 %\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
@@ -103,8 +103,8 @@
 %\newcommand {\redtwo} [2] {{#1} \Downarrow_\bbtwo^\bbtwo {#2}}
 %\newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
 \newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
-\newcommand {\diaone} [3] [\Xi;\Gamma] {{#1} \vdash {#2} \Downarrow_\bbone [{#3}]}
-\newcommand {\diatwo} [3] [\Xi;\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
+\newcommand {\diaone} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbone [{#3}]}
+\newcommand {\diatwo} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reifysym} {\overset{R}\Rightarrow}
 \newcommand {\redsym} {{\Downarrow}}
@@ -116,7 +116,7 @@
 %\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
-\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1},v_{#1}}}
+\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1};v_{#1}}}
 \newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
@@ -134,7 +134,7 @@
 
 %misc
 \newcommand{\dom}[1]{\mathsf{dom}(#1)}
-\newcommand {\gcomp} [2] {\xi_{#1} \circ \xi_{#2}}
+\newcommand {\gcomp} [2] {\xi_{#1}, \xi_{#2}}
 \newcommand {\daviesz} {\overset 0 \hookrightarrow}
 \newcommand {\davieso} {\overset 1 \hookrightarrow}
 
