@@ -55,13 +55,13 @@ fun convertSourceTypes convert ty =
 		| S.TFunit => Eatom "unit"
 		| S.TFvar i => Eatom (Int.toString i) 
 		| S.TFrec t => EprimApp ("mu", convert t)
-		| S.TFprod (t1, t2) => Ebinop ("*", convert t1, convert t2)
+		| S.TFprod [t1, t2] => Ebinop ("*", convert t1, convert t2)
 		| S.TFsum (t1, t2) => Ebinop ("+", convert t1, convert t2)
 		| S.TFarr (t1, t2) => Ebinop ("->", convert t1, convert t2)
 		
 structure S = SourceLang
 fun convertSourcePattern (S.Pvar x) = Pvar (Variable.toString x)
-  | convertSourcePattern (S.Ptuple (x1,x2)) = Ptuple [convertSourcePattern x1, convertSourcePattern x2]
+  | convertSourcePattern (S.Ptuple xs) = Ptuple (map convertSourcePattern xs)
 fun convertSource convert convertTy ex = 
 	let
 		fun convertBranch (x,e) = (convertSourcePattern x, convert e)
@@ -73,8 +73,8 @@ fun convertSource convert convertTy ex =
 		| S.Funit => Etuple []
 		| S.Flam (t,b) => Elam (convertTy t, convertBranch b)
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
-		| S.Ftuple (e1,e2) => Etuple [convert e1, convert e2]
-		| S.Fpi (i, e) => EprimApp (case i of Left => "#1" | Right => "#2", convert e)
+		| S.Ftuple es => Etuple (map convert es)
+		| S.Fpi (i, e) => EprimApp ("#" ^ (Int.toString (i+1)), convert e)
 		| S.Finj (i, t, e) => Eapp (EprimApp(case i of Left => "inl" | Right => "inr", convertTy t), convert e)
 		| S.Fcase (e1,b2,b3) => Ecase (convert e1, convertBranch b2, convertBranch b3)
 		| S.Fif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)

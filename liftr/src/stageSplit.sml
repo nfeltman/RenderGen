@@ -16,11 +16,8 @@ fun a ` b = a b
 type expr = unit LambdaPSF.expr
 
 fun convertPattern (S.Pvar v) = PPvar v
-  | convertPattern (S.Ptuple (p1,p2)) = PPtuple [convertPattern p1, convertPattern p2]
+  | convertPattern (S.Ptuple ps) = PPtuple (map convertPattern ps)
   
-fun index Left = 0
-  | index Right = 1
-
 val Eunit = Etuple []
 
 fun freshPi () = 
@@ -181,10 +178,10 @@ fun stageSplit1 (E1 exp) =
 							)
 						end
 			end
-		| S.Ftuple (e1, e2) => simpleMerge2 (split e1, split e2) makeTup makeTup : stage1Part splitResult1
-		| S.Fpi (side, e) => 
+		| S.Ftuple [e1, e2] => simpleMerge2 (split e1, split e2) makeTup makeTup : stage1Part splitResult1
+		| S.Fpi (i, e) => 
 			let
-				fun proj x = Epi (index side, x)
+				fun proj x = Epi (i, x)
 			in
 				merge1 (split e) proj proj
 			end
@@ -280,8 +277,8 @@ and stageSplit2 (E2 exp) =
 		| S.Fbool b => NoPrec2 (Ebool b)
 		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertPattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
-		| S.Ftuple (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Etuple [a,b])
-		| S.Fpi (lr, e) => merge1 (split e) (fn r => Epi (index lr, r))
+		| S.Ftuple [e1, e2] => merge2 (split e1, split e2) (fn (a,b) => Etuple [a,b])
+		| S.Fpi (i, e) => merge1 (split e) (fn r => Epi (i, r))
 		| S.Finj (lr, t, e) => merge1 (split e) (fn r => Einj (lr, (), r))
 		| S.Fif (e1, e2, e3) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
 		| S.Fcase (e1,(x2,e2),(x3,e3)) => merge3 (split e1, split e2, split e3) 

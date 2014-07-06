@@ -37,8 +37,14 @@ ws = [\ \t];
 ">="     => (Tokens.GTE(!pos,!pos));
 "<"      => (Tokens.LT(!pos,!pos));
 "<="     => (Tokens.LTE(!pos,!pos));
-"#1"     => (Tokens.PROJL(!pos,!pos));
-"#2"     => (Tokens.PROJR(!pos,!pos));
+"#1"     => (Tokens.PROJ(1,!pos,!pos));
+"#2"     => (Tokens.PROJ(2,!pos,!pos));
+"#3"     => (Tokens.PROJ(3,!pos,!pos));
+"#4"     => (Tokens.PROJ(4,!pos,!pos));
+"#5"     => (Tokens.PROJ(5,!pos,!pos));
+"#6"     => (Tokens.PROJ(6,!pos,!pos));
+"#7"     => (Tokens.PROJ(7,!pos,!pos));
+"#8"     => (Tokens.PROJ(8,!pos,!pos));
 {id}     => (case yytext of
 				  "true" => Tokens.TRUE(!pos,!pos)
 				| "false" => Tokens.FALSE(!pos,!pos)

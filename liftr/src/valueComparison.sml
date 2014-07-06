@@ -24,7 +24,7 @@ fun splitErasureValue1 v =
 		| E.V1 (VFroll v) => 
 			(case splitErasureValue1 v of 
 			(u,w) => (Vroll u, Vroll w))
-		| E.V1 (VFtuple (v1,v2)) => 
+		| E.V1 (VFtuple [v1,v2]) => 
 			(case (splitErasureValue1 v1, splitErasureValue1 v2) of 
 			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], Vtuple [w1,w2]))
 		| E.V1 (VFinj (side,v)) => 
@@ -39,7 +39,7 @@ and splitErasureValue2 v =
 		| E.V2 (VFbool b) => Vbool b
 		| E.V2 VFunit => Vtuple []
 		| E.V2 (VFroll v) => Vroll (splitErasureValue2 v)
-		| E.V2 (VFtuple (v1,v2)) => Vtuple [splitErasureValue2 v1, splitErasureValue2 v2]
+		| E.V2 (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
 		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
 		| E.V2 (VFlam (x,e)) => raise ConversionError
 		
@@ -51,9 +51,9 @@ fun splitDiagValue1 v =
 		| D.V1 (VFroll v) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vroll u, D.E ` Froll ((),w)))
-		| D.V1 (VFtuple (v1,v2)) => 
+		| D.V1 (VFtuple [v1,v2]) => 
 			(case (splitDiagValue1 v1, splitDiagValue1 v2) of 
-			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], D.E ` Ftuple (w1,w2))) 
+			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], D.E ` Ftuple [w1,w2])) 
 		| D.V1 (VFinj (side,v)) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vinj (side,u), w))
@@ -66,7 +66,7 @@ fun convertDiagValue2 v =
 		| D.V2 (VFbool b) => Vbool b
 		| D.V2 VFunit => Vtuple []
 		| D.V2 (VFroll v) => Vroll (convertDiagValue2 v)
-		| D.V2 (VFtuple (v1,v2)) => Vtuple [convertDiagValue2 v1, convertDiagValue2 v2]
+		| D.V2 (VFtuple vs) => Vtuple (map convertDiagValue2 vs)
 		| D.V2 (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)
 		| D.V2 (VFlam (x,e)) => raise ConversionError
 		

@@ -34,7 +34,7 @@ fun eval1 env (E1 exp) =
 		fun comp1 f (g, h) = (f o g, h)
 		val (eval,V,unV) = (eval1 env, V1, unV1)
 		fun evalBranch env (g,v) (x,e) = 
-			comp1 g ` eval1 (forPattern (extendContext, untuple o unV1) env x v) e 
+			comp1 g ` eval1 (forPattern (extendContext, untuple o unV1,Stuck) env x v) e 
 	in
 		case exp of 
 		  Fvar v => (id, lookup env v)
@@ -48,8 +48,8 @@ fun eval1 env (E1 exp) =
 			in
 				comp1 g1 (evalBranch env (eval e2) branch)
 			end
-		| Ftuple (e1, e2) => bimap (op o) (V o VFtuple) (trn (eval e1, eval e2))
-		| Fpi (side, e) => map2 ((projLR side) o untuple o unV) (eval e)
+		| Ftuple es => map2 (V o VFtuple) (List.foldr (fn ((g,v),(gs,vs))=>(g o gs,v::vs)) (id,[]) (map eval es))
+		| Fpi (i, e) => (case eval e of (g,v) => (g, List.nth(untuple ` unV v,i)))
 		| Finj (side, _, e) => map2 (fn x => V ` VFinj (side,x)) (eval e)
 		| Fcase (e, b1, b2) => 
 			let

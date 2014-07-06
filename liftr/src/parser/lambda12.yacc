@@ -16,7 +16,7 @@ open LangCommon
 
 %term ID of string | NUM of int | PLUS | TIMES | 
       SEMI | EOF | CARAT | DIV | SUB | LBRACE | 
-	  RBRACE | LPAR | RPAR | PROJL | PROJR | LET |
+	  RBRACE | LPAR | RPAR | PROJ of int | LET |
 	  IN | IF | THEN | ELSE | NEXT | PREV | INL | 
 	  INR | CASE | OF | HOLD | EQ | COMMA | FN |
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
@@ -52,8 +52,7 @@ BINOP : PLUS						(Prims.Iplus)
 	  | MOD							(Prims.Imod)
  
  BEXP : BEXP AEXP					(Eapp (BEXP, AEXP))
-	  | PROJL AEXP					(Epi(Left,AEXP))
-	  | PROJR AEXP					(Epi(Right,AEXP))
+	  | PROJ AEXP					(Epi(PROJ - 1,AEXP))
 	  | INL TY AEXP					(Einj(Left,TY,AEXP))
 	  | INR TY AEXP					(Einj(Right,TY,AEXP))
 	  | ROLL TY	AEXP				(Eroll (TY, AEXP))
@@ -67,7 +66,7 @@ BINOP : PLUS						(Prims.Iplus)
       | ID              											(Evar ID)
 	  | CASE EXP OF MATCH BAR MATCH									(Ecase(EXP,MATCH1,MATCH2))
 	  | LPAR RPAR													(Eunit)
-	  | LPAR EXP COMMA EXP RPAR										(Etuple(EXP1,EXP2))
+	  | LPAR EXP COMMA EXP RPAR										(Etuple[EXP1,EXP2])
 	  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 	  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 	  | LPAR EXP RPAR												(EXP) 
@@ -80,7 +79,7 @@ BINOP : PLUS						(Prims.Iplus)
 MATCH : PATT DARROW EXP				(PATT, EXP)
 
  PATT : ID							(Pvar (ID))
-	  | LPAR PATT COMMA PATT RPAR 	(Ptuple (PATT1, PATT2))
+	  | LPAR PATT COMMA PATT RPAR 	(Ptuple [PATT1, PATT2])
 
    TY : INT							(Tint)
       | BOOL						(Tbool)
@@ -88,7 +87,7 @@ MATCH : PATT DARROW EXP				(PATT, EXP)
 	  | NUM							(Tvar NUM)
 	  | MU TY						(Trec TY)
       | DOLLAR TY					(Tfut TY)
-      | TY TIMES TY					(Tprod(TY1,TY2))
+      | TY TIMES TY					(Tprod[TY1,TY2])
       | TY PLUS TY					(Tsum(TY1,TY2))
 	  | TY ARROW TY					(Tarr(TY1,TY2))
 	  | LPAR TY RPAR				(TY)

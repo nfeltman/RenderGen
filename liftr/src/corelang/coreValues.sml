@@ -4,7 +4,7 @@ struct
 									| VFbool of bool
 									| VFunit
 									| VFroll of 'v
-									| VFtuple of 'v * 'v
+									| VFtuple of 'v list
 									| VFinj of LangCommon.LR * 'v
 									| VFlam of 'c * ('r * 'e)
 	
