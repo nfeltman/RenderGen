@@ -11,7 +11,6 @@ datatype 'r pattern 		= Pvar of 'r
 							| Ptuple of ('r pattern) list
 							
 datatype ('e,'r,'t) exprF	= Fvar of 'r
-							| Funit
 							| Fint of int
 							| Fbool of bool
 							| Flam of 't * ('r pattern * 'e)
@@ -30,7 +29,6 @@ datatype ('e,'r,'t) exprF	= Fvar of 'r
 fun mapExpr fe ft exp =
 	case exp of
 	  Fvar v => Fvar v
-	| Funit => Funit
 	| Fint i => Fint i
 	| Fbool b => Fbool b
 	| Flam (t, (x,e)) => Flam (ft t, (x, fe e))
@@ -62,7 +60,6 @@ fun replaceVars recRep G f exp =
 	in
 		case exp of
 		  Fvar v => Fvar (lookup G v)
-		| Funit => Funit
 		| Fint i => Fint i
 		| Fbool b => Fbool b
 		| Flam (t, b) => Flam (t, forBranch b)
@@ -97,7 +94,6 @@ fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst primTypes
 		  Fvar v => lookupC gamma v
 		| Flam (t,b) => Twrap (TFarr (t, checkbranch t b))
 		| Fapp (e1,e2) => checkFun teq (unarr (Tunwrap (check e1)), check e2)
-		| Funit => Twrap TFunit
 		| Fint _ => Twrap TFint
 		| Fbool _ => Twrap TFbool
 		| Ftuple es => Twrap (TFprod (map check es))
@@ -130,7 +126,6 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 		  Fvar v => lookupC env v
 		| Flam (t, b) => Vwrap (VFlam (env,b))
 		| Fapp (e1, e2) => evalBranchE (eval e2) (unlam (Vunwrap (eval e1)))
-		| Funit => Vwrap VFunit
 		| Fint i => Vwrap (VFint i)
 		| Fbool b => Vwrap (VFbool b)
 		| Ftuple es => Vwrap (VFtuple (map eval es))

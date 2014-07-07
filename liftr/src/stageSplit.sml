@@ -143,7 +143,6 @@ fun stageSplit1 (E1 exp) =
 	in
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
-		| S.Funit   => NoPrec1 (Eunit,   Eunit)
 		| S.Fint i  => NoPrec1 (Eint i,  Eunit)
 		| S.Fbool b => NoPrec1 (Ebool b, Eunit)
 		| S.Flam (t, (x,e)) => 
@@ -285,7 +284,6 @@ and stageSplit2 (E2 exp) =
 	in
 		case exp of 
 		  S.Fvar v => NoPrec2 (Evar v)
-		| S.Funit => NoPrec2 Eunit
 		| S.Fint i => NoPrec2 (Eint i)
 		| S.Fbool b => NoPrec2 (Ebool b)
 		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertPattern x,r)))

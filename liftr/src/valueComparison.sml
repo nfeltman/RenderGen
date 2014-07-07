@@ -20,7 +20,6 @@ fun splitErasureValue1 v =
 		case v of 
 		  E.V1 (VFint i) => (Vint i, Vtuple [])
 		| E.V1 (VFbool b) => (Vbool b, Vtuple [])
-		| E.V1 VFunit => (Vtuple [], Vtuple [])
 		| E.V1 (VFroll v) => 
 			(case splitErasureValue1 v of 
 			(u,w) => (Vroll u, Vroll w))
@@ -37,7 +36,6 @@ and splitErasureValue2 v =
 		case v of 
 		  E.V2 (VFint i) => Vint i
 		| E.V2 (VFbool b) => Vbool b
-		| E.V2 VFunit => Vtuple []
 		| E.V2 (VFroll v) => Vroll (splitErasureValue2 v)
 		| E.V2 (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
 		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
@@ -45,9 +43,8 @@ and splitErasureValue2 v =
 		
 fun splitDiagValue1 v = 
 		case v of 
-		  D.V1 (VFint i) => (Vint i, D.E Funit) : value * DiagonalSemantics.expr
-		| D.V1 (VFbool b) => (Vbool b, D.E Funit)
-		| D.V1 VFunit => (Vtuple [], D.E Funit)
+		  D.V1 (VFint i) => (Vint i, D.E ` Ftuple []) : value * DiagonalSemantics.expr
+		| D.V1 (VFbool b) => (Vbool b, D.E ` Ftuple [])
 		| D.V1 (VFroll v) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vroll u, D.E ` Froll ((),w)))
@@ -64,7 +61,6 @@ fun convertDiagValue2 v =
 		case v of 
 		  D.V2 (VFint i) => Vint i
 		| D.V2 (VFbool b) => Vbool b
-		| D.V2 VFunit => Vtuple []
 		| D.V2 (VFroll v) => Vroll (convertDiagValue2 v)
 		| D.V2 (VFtuple vs) => Vtuple (map convertDiagValue2 vs)
 		| D.V2 (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)

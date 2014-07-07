@@ -38,7 +38,6 @@ fun eval1 env (E1 exp) =
 	in
 		case exp of 
 		  Fvar v => (id, lookup env v)
-		| Funit => (id, V VFunit)
 		| Fint i => (id, V ` VFint i)
 		| Fbool b => (id, V ` VFbool b)
 		| Flam (_, b) => (id, V ` VFlam (env,b))

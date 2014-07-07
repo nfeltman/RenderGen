@@ -2,7 +2,6 @@ structure ValuesBase =
 struct
 	datatype ('v,'c,'r,'e) valueF	= VFint of int
 									| VFbool of bool
-									| VFunit
 									| VFroll of 'v
 									| VFtuple of 'v list
 									| VFinj of LangCommon.LR * 'v
@@ -20,8 +19,6 @@ struct
 	  | unint _ = raise LangCommon.Stuck
 	fun unlam (VFlam e) = e
 	  | unlam _ = raise LangCommon.Stuck
-	fun ununit VFunit = ()
-	  | ununit _ = raise LangCommon.Stuck
 end
 
 signature ValueProvider = 
