@@ -23,9 +23,11 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ
-%nonterm EXP of expr | MATCH of patt * expr |
-	  TY of ty | AEXP of expr | BEXP of expr |
-	  BINOP of Prims.binops | PATT of patt
+%nonterm EXP of expr | AEXP of expr | BEXP of expr |
+	  EXPL of expr list |
+	  MATCH of patt * expr | BINOP of Prims.binops | 
+	  TY of ty | PRODL of ty list | 
+	  PATT of patt | PATTL of patt list
 
 %name L12Parse
 
@@ -37,7 +39,6 @@ open LangCommon
 (* the parser returns the value associated with the expression *)
 
   EXP : BEXP BINOP EXP				(Ebinop(BINOP,BEXP,EXP))
-	  | BEXP						(BEXP)
 	  | BEXP						(BEXP)
 
 BINOP : PLUS						(Prims.Iplus)
@@ -65,29 +66,38 @@ BINOP : PLUS						(Prims.Iplus)
 	  | FALSE														(Ebool false)
       | ID              											(Evar ID)
 	  | CASE EXP OF MATCH BAR MATCH									(Ecase(EXP,MATCH1,MATCH2))
-	  | LPAR RPAR													(Eunit)
-	  | LPAR EXP COMMA EXP RPAR										(Etuple[EXP1,EXP2])
+	  | LPAR RPAR													(Etuple [])
+	  | LPAR EXP RPAR												(EXP) 
+	  | LPAR EXP COMMA EXP EXPL RPAR								(Etuple (EXP1 :: EXP2 :: EXPL))
 	  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 	  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
-	  | LPAR EXP RPAR												(EXP) 
 	  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
 	  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 	  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
 	  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
 	  | LETR ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
+
+ EXPL : 							([])
+	  | COMMA EXP EXPL				(EXP :: EXPL)
 	  
 MATCH : PATT DARROW EXP				(PATT, EXP)
 
- PATT : ID							(Pvar (ID))
-	  | LPAR PATT COMMA PATT RPAR 	(Ptuple [PATT1, PATT2])
+ PATT : ID									(Pvar (ID))
+	  | LPAR PATT COMMA PATT PATTL RPAR 	(Ptuple (PATT1 :: PATT2 :: PATTL))
+
+PATTL : 							([])
+	  | COMMA PATT PATTL			(PATT :: PATTL)
 
    TY : INT							(Tint)
       | BOOL						(Tbool)
-      | UNIT						(Tunit)
+      | UNIT						(Tprod [])
 	  | NUM							(Tvar NUM)
 	  | MU TY						(Trec TY)
       | DOLLAR TY					(Tfut TY)
-      | TY TIMES TY					(Tprod[TY1,TY2])
+      | TY TIMES TY	PRODL			(Tprod (TY1 :: TY2 :: PRODL))
       | TY PLUS TY					(Tsum(TY1,TY2))
 	  | TY ARROW TY					(Tarr(TY1,TY2))
 	  | LPAR TY RPAR				(TY)
+	  
+PRODL : 							([])
+	  | TIMES TY PRODL				(TY :: PRODL)
