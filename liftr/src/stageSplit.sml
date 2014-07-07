@@ -83,13 +83,8 @@ fun coerce (WithPrec1 (c, lr)) = (toOpaque c, lr)
   | coerce (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], (PPtuple [], e2))
 
 fun merge1 (NoPrec1 (v,r)) f g = NoPrec1 (f v, g r)
-  | merge1 (WithPrec1 (Splittable (c, v,p),(l,r))) f g = WithPrec1 (Splittable (c,f v,p),(l, g r))
-  | merge1 (WithPrec1 (Opaque c, (l,r))) f g =
-		let
-			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
-		in
-			WithPrec1 (Opaque ` Elet (c,(PPtuple[PPvar v, PPvar p], Etuple [f (Evar v), Evar p])), (l,g r))
-		end
+  | merge1 (WithPrec1 (e,(l,r))) f g = 
+		case toSplit e of (c,v,p) => WithPrec1 (Splittable (c,f v,p),(l, g r))
 		
 fun simpleMerge2 (res1,res2) f g = 
 		case (mapSplitResult toSplit res1, mapSplitResult toSplit res2) of 
@@ -117,12 +112,6 @@ fun simpleMerge results f g =
 		end
 
 fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
-(*  | unpackPredicate (Full1 (Etuple [v,p],(l,r))) link = 
-		let
-			val pvar = Variable.newvar "p"
-		in
-			(fn x=> Elet (p,(PPvar pvar, x)), v, r, fn p2 => Etuple[Evar pvar,p2], PPtuple[l,link])
-		end *)
   | unpackPredicate (WithPrec1 (c,(l,r))) link = 
 		let
 			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
