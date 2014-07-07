@@ -18,7 +18,7 @@ datatype expr	= Estandard of (expr,string,ty) S.exprF
 
 				
 val Tint = Tstandard S.TFint
-val Tunit = Tstandard S.TFunit
+val Tunit = Tstandard (S.TFprod [])
 val Tbool = Tstandard S.TFbool
 val Tvar = Tstandard o S.TFvar
 val Trec = Tstandard o S.TFrec
@@ -27,7 +27,7 @@ val Tsum = Tstandard o S.TFsum
 val Tarr = Tstandard o S.TFarr
 
 val Evar = Estandard o S.Fvar
-val Eunit = Estandard S.Funit
+val Eunit = Estandard (S.Ftuple [])
 val Eint = Estandard o S.Fint
 val Ebool = Estandard o S.Fbool
 val Etuple = Estandard o S.Ftuple

@@ -24,9 +24,9 @@ fun splitErasureValue1 v =
 		| E.V1 (VFroll v) => 
 			(case splitErasureValue1 v of 
 			(u,w) => (Vroll u, Vroll w))
-		| E.V1 (VFtuple [v1,v2]) => 
-			(case (splitErasureValue1 v1, splitErasureValue1 v2) of 
-			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], Vtuple [w1,w2]))
+		| E.V1 (VFtuple vs) => 
+			(case unzip ` map splitErasureValue1 vs of 
+			(us,ws) => (Vtuple us, Vtuple ws))
 		| E.V1 (VFinj (side,v)) => 
 			(case splitErasureValue1 v of 
 			(u,w) => (Vinj (side,u), w))
@@ -51,9 +51,9 @@ fun splitDiagValue1 v =
 		| D.V1 (VFroll v) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vroll u, D.E ` Froll ((),w)))
-		| D.V1 (VFtuple [v1,v2]) => 
-			(case (splitDiagValue1 v1, splitDiagValue1 v2) of 
-			((u1,w1),(u2,w2)) => (Vtuple [u1,u2], D.E ` Ftuple [w1,w2])) 
+		| D.V1 (VFtuple vs) => 
+			(case unzip ` map splitDiagValue1 vs of 
+			(us,ws) => (Vtuple us, D.E ` Ftuple ws)) 
 		| D.V1 (VFinj (side,v)) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vinj (side,u), w))

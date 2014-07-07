@@ -102,6 +102,20 @@ fun simpleMerge2 (res1,res2) f g =
 		| (WithPrec1 ((c1,v1,p1), (l1,r1)), WithPrec1 ((c2,v2,p2), (l2,r2))) => 
 			WithPrec1 (Splittable (List.concat[c1, c2], f (v1,v2), Etuple[p1,p2]), (PPtuple[l1,l2], g (r1,r2)))
 
+fun simpleMerge results f g = 
+		let
+			fun h (NoPrec1 (e,r), (cs,vs,pls,rs)) = (cs,e::vs,pls,r::rs)
+			  | h (WithPrec1 ((c,v,p), (l,r)), (cs,vs,pls,rs)) = (c::cs, v::vs, (p,l)::pls,r::rs)
+			val (cs,vs,pls,rs) = foldr h ([],[],[],[]) (map (mapSplitResult toSplit) results)
+		in
+			case pls of
+			  [] => NoPrec1 (f vs, g rs)
+			| [(p,l)] => WithPrec1 (Splittable (List.concat cs, f vs, p), (l, g rs))
+			| many =>	
+				case unzip many of 
+				(ps,ls) => WithPrec1 (Splittable (List.concat cs, f vs, Etuple ps), (PPtuple ls, g rs))
+		end
+
 fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
 (*  | unpackPredicate (Full1 (Etuple [v,p],(l,r))) link = 
 		let
@@ -117,8 +131,6 @@ fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
 			(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, fn p2 => Etuple[Evar p,p2], PPtuple[l,link])
 		end
   
-fun makeTup (a,b) = Etuple [a,b]
-
 fun decompTuple (Etuple [v,p]) f = f (v,p)
   | decompTuple c f = 
 		let
@@ -178,7 +190,7 @@ fun stageSplit1 (E1 exp) =
 							)
 						end
 			end
-		| S.Ftuple [e1, e2] => simpleMerge2 (split e1, split e2) makeTup makeTup : stage1Part splitResult1
+		| S.Ftuple es => simpleMerge (map split es) Etuple Etuple
 		| S.Fpi (i, e) => 
 			let
 				fun proj x = Epi (i, x)
@@ -269,6 +281,18 @@ and stageSplit2 (E2 exp) =
 		  | merge3 (res1, res2, NoPrec2 e3) f = merge2 (res1, res2) (fn (x,y) => f (x, y, e3))
 		  | merge3 (WithPrec2 (p1,(l1,r1)), WithPrec2 (p2,(l2,r2)), WithPrec2 (p3,(l3,r3))) f = 
 					WithPrec2 (Etuple [p1,p2,p3], (PPtuple [l1,l2,l3], f (r1, r2, r3)))
+					
+		fun mergeList results f = 
+		let
+			fun h (NoPrec2 r, (pls,rs)) = (pls,r::rs)
+			  | h (WithPrec2 (p, (l,r)), (pls,rs)) = ((p,l)::pls,r::rs)
+			val (pls,rs) = foldr h ([],[]) results
+		in
+			case pls of
+			  [] => NoPrec2 (f rs)
+			| [(p,l)] => WithPrec2 (p, (l, f rs))
+			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs))
+		end
 	in
 		case exp of 
 		  S.Fvar v => NoPrec2 (Evar v)
@@ -277,7 +301,7 @@ and stageSplit2 (E2 exp) =
 		| S.Fbool b => NoPrec2 (Ebool b)
 		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertPattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
-		| S.Ftuple [e1, e2] => merge2 (split e1, split e2) (fn (a,b) => Etuple [a,b])
+		| S.Ftuple es => mergeList (map split es) Etuple
 		| S.Fpi (i, e) => merge1 (split e) (fn r => Epi (i, r))
 		| S.Finj (lr, t, e) => merge1 (split e) (fn r => Einj (lr, (), r))
 		| S.Fif (e1, e2, e3) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
