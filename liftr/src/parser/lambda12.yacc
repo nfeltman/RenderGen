@@ -26,7 +26,8 @@ open LangCommon
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  MATCH of patt * expr | BINOP of Prims.binops | 
-	  TY of ty | PRODL of ty list | 
+	  TY of ty | ATY of ty | BTY of ty | CTY of ty | 
+	  DTY of ty | PRODL of ty list | 
 	  PATT of patt | PATTL of patt list
 
 %name L12Parse
@@ -88,16 +89,22 @@ MATCH : PATT DARROW EXP				(PATT, EXP)
 PATTL : 							([])
 	  | COMMA PATT PATTL			(PATT :: PATTL)
 
-   TY : INT							(Tint)
+   TY : DTY ARROW TY				(Tarr(DTY,TY))
+	  | DTY 						(DTY)
+  DTY : MU DTY						(Trec DTY)
+	  | CTY							(CTY)
+  CTY : BTY PLUS BTY				(Tsum(BTY1,BTY2))
+	  | BTY							(BTY)
+   
+  BTY : ATY TIMES ATY PRODL			(Tprod (ATY1 :: ATY2 :: PRODL))
+	  | ATY							(ATY)
+PRODL : 							([])
+	  | TIMES ATY PRODL				(ATY :: PRODL)
+  
+  ATY : INT							(Tint)
       | BOOL						(Tbool)
       | UNIT						(Tprod [])
 	  | NUM							(Tvar NUM)
-	  | MU TY						(Trec TY)
-      | DOLLAR TY					(Tfut TY)
-      | TY TIMES TY	PRODL			(Tprod (TY1 :: TY2 :: PRODL))
-      | TY PLUS TY					(Tsum(TY1,TY2))
-	  | TY ARROW TY					(Tarr(TY1,TY2))
+      | DOLLAR ATY					(Tfut ATY)
 	  | LPAR TY RPAR				(TY)
 	  
-PRODL : 							([])
-	  | TIMES TY PRODL				(TY :: PRODL)

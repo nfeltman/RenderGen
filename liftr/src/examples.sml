@@ -47,9 +47,9 @@ k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
 j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45",SAME),
 k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y",ansI 1156),
 k("caseRight", 			"case inr int 34 of x => x * x | y => y + y",ansI 68),
-k("highOrder1", 		"(fn f:(int->int) => f 5) (fn x:int=>x+x)",ansI 10),
+k("highOrder1", 		"(fn f:int->int => f 5) (fn x:int=>x+x)",ansI 10),
 k("closure", 			"(let x = 3 in fn y:int=> x*y) 5",ansI 15),
-k("higherOrder1", 		"(fn f:(int->int) => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
+k("higherOrder1", 		"(fn f:int->int => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
 j("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))",SAME),
 j("datastruct3", 		"letfun map (f : int -> $int) = " ^ 
 						"fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
@@ -57,25 +57,28 @@ j("datastruct3", 		"letfun map (f : int -> $int) = " ^
 j("datastruct4", 		"letfun map (f : int -> $int) = " ^ 
 						"fn ((M1,M2),(M3,M4)):((int*int)*(int*int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
 						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))",SAME),
+j("datastruct5", 		"letfun map (f : int -> $int) = " ^ 
+						"fn (M1,M2,M3,M4):(int*int*int*int) => (f M1, f M2, f M3, f M4) in " ^ 
+						"map (fn x:int => next{prev{hold (x*x)}+4}) (1, 2, 3, 4)",SAME),
 k("roll1",				"roll (int) 5",SAME),
 k("roll2",				"roll (int * bool) (234, true)",SAME),
 k("unroll1",			"#1 (unroll (roll (int * bool) (234, true)))",ansI 234),
 k("emptyList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in empty",SAME),
 k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
-						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"cons (5, cons (3, empty))",SAME),
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
 k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
-						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (cons (5, cons (3, empty)))",ansI 8),
 (*j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
 						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE), *)
-j("fastexp",			"letrec exp ((b,e) : ($int)*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
+j("fastexp",			"letrec exp ((b,e) : $int*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
 						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243) ,
 j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
-						"letfun cons (ht : int * mu unit + int * 0) = roll (unit + (int * 0)) (inr unit ht) in "^
-						"letrec partition ((p,l) : int*mu unit + int * 0) : int*((mu unit + int * 0) * (mu unit + int * 0)) = "^
+						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"letrec partition ((p,l) : int*(mu unit + int * 0)) : int*((mu unit + int * 0) * (mu unit + int * 0)) = "^
 							"case unroll l of em => (0,(empty,empty)) | (h,t) => "^
 								"let (s,(left,right)) = partition (p,t) in "^
 								"if h<p then (s+1, (cons (h,left),right)) else (s,(left, cons(h,right))) in " ^
