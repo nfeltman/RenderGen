@@ -81,6 +81,29 @@ This makes it hard to type the output, because the boundary types are not repres
 
 \subsection{Value Splitting, Etc}
 
+...
+
+\subsection{Metatheory}
+
+\begin{definition}
+For residuals $q_1$ and $q_2$, define $q_1 \le_\beta q_2$ (``$q_1$ is $\beta$-smaller than $q_2$'') if they are
+identical modulo internal beta reductions of $q_2$.
+\end{definition}
+
+Note, this is the empty-context version for stage \bbtwo.
+We'll really need ones with contexts and stage \bbone.
+
+\begin{theorem}
+If $\cdot\vdash e : A \splittwosym [p:\tau,l.r]$ then,
+\begin{enumerate}
+\item $\cdot \vdash e : A~@~\bbtwo$ and
+\item $\types [\cdot] p \tau$ and
+\item $\types [l:\tau] r A$ and
+\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
+\item $q \equiv (\letin{l}{u}{r})$
+\end{enumerate}
+\end{theorem}
+
 \input{figures/splitting-misc}
 
 \section{Examples for Staged Pipelines}

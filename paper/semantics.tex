@@ -247,7 +247,7 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 
 %The evaluation judgment is very similar to standard call-by-value evaluation.
 %The input to evaluation is a stage-1 expression (usually
-%$e$), as well as two administrative contexts ($\Gamma$ and $\Xi$), covered
+%$e$), as well as two administrative contexts ($\Gamma$), covered
 %later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and
 %the {\em partial value} (usually $v$).  We cover the latter first.  The partial
 %value is essentially the result of the first-stage portion of $e$, and must be a
@@ -291,12 +291,10 @@ At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does not
 Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a hatted variable ($\hat y$).
 The context is then reified (using the $\reifysym$ judgment) into a series of let bindings, with $y$---stripped of its hat---at the bottom.
 
-Because the inputs to evaluation and speculation are sometimes open on variables, we adorn our judgments with two contexts.
-The first of these ($\Xi$) keeps track of those hatted variables that may appear in the input.
+Because the inputs to evaluation and speculation are sometimes open on variables, we adorn our judgments with a context.
 Since hatted variables can only be introduced to terms via substitution ({\em i.e.} they do not appear in the original program), 
 this context is augmented only at stage \bbone\ substitution sites.
 The second context ($\Gamma$) keeps track of stage \bbtwo\ variables, which are declared in original program.
-% We chose to keep these as two separate contexts, because only $\Xi$ is needed for well-formedness of partial values.
 
 If we change the $\next$ and $\prev$ rules to 
 \begin{mathpar}
@@ -351,42 +349,40 @@ of call-by-value evaluation of $e$.
 
 \subsection{Metatheory}
 
-\noindent\TODO terminology for the contexts?
-
 \begin{definition}
-Contexts $\Xi$ and $\Gamma$ are well-formed ($\Xi\wf$, $\Gamma\wf$) if they
-contain only stage-2 variables.
+Contexts $\Gamma$ is well-formed ($\Gamma\wf$) if it
+contains only stage-2 variables.
 \end{definition}
 
 \begin{definition}
-An environment $\xi$ is well-formed ($\xi\wf$) if either:
+An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
 \begin{enumerate}
 \item $\xi = \cdot$; or
 \item $\xi = \xi',x\mapsto e$ where
-$\xi'\wf$,
-$\Xi,\dom{\xi'};\Gamma\vdash \coltwo{e}{B}$, and
-$\Xi,\dom{\xi'};\Gamma\vdash e \res$.
+$\Gamma\vdash\xi'\wf$ and
+$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
+$\Gamma,\dom{\xi'}\vdash e \res$.
 \end{enumerate}
 \end{definition}
 
 \begin{theorem}
-If $\Xi;\typesone e A$ then $\Xi\wf$, $\Gamma\wf$, and $A\istypeone$.
+If $\typesone e A$ then $\Gamma\wf$ and $A\istypeone$.
 \end{theorem}
 
 \begin{theorem}
 If $\diaonesub$ and $\typesone e A$ then
 \begin{enumerate}
-\item $\xi\wf$;
-\item $\Xi,\dom\xi;\cdot\vdash \colone{v}{A}$; and
-\item $\Xi,\dom\xi;\cdot\vdash v\pval$.
+\item $\Gamma\vdash\xi\wf$;
+\item $\Gamma,\dom\xi\vdash \colone{v}{A}$; and
+\item $\Gamma,\dom\xi\vdash v\pval$.
 \end{enumerate}
 \end{theorem}
 
 \begin{theorem}
 If $\diatwosub$ and $\typestwo e A$ then
 \begin{enumerate}
-\item $\Xi;\Gamma\vdash \coltwo{q}{A}$; and
-\item $\Xi;\Gamma\vdash q\val$.
+\item $\Gamma\vdash \coltwo{q}{A}$; and
+\item $\Gamma\vdash q\val$.
 \end{enumerate}
 \end{theorem}
 
