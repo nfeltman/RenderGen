@@ -33,6 +33,21 @@ of-app	: of (app E1 E2) B
 %%of-prev	: of (prev E) A
 %%			<- of E (fut A).
 
+%% uniqueness of typing
+idty : ty W -> ty W -> type.
+idty/refl : idty T T.
+
+of-unique : of M T1 -> of M T2 -> idty T1 T2 -> type.
+%mode of-unique +D1 +D2 -E.
+- : of-unique of-ztup of-ztup idty/refl.
+- : of-unique (of-lam D) (of-lam D) idty/refl.
+- : of-unique (of-app D1 D2) (of-app E1 E2) idty/refl
+    <- of-unique D1 E1 idty/refl
+    <- of-unique D2 E2 idty/refl.
+%worlds () (of-unique _ _ _).
+%total D (of-unique D _ _).
+
+
 %% REDUCTION JUDGMENT
 red : term -> term -> type. %name red Dred.
 %mode red +E -V.
@@ -60,14 +75,14 @@ pres : red E V -> of E (A : ty W) -> pval V -> of V A -> type.
 pres-ztup	: pres red-ztup of-ztup pval-ztup of-ztup.
 pres-lam	: pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
 pres-app	: pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-				<- pres DredE1 DofE1 pval-lam (of-lam DofM) %% inversion
-				<- pres DredE2 DofE2 _ DofV2
-				<- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
+				<- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B)) %% inversion
+				<- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
+				<- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
 %%pres-next	: pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
 %%				<- pres Dred DofE DvalV DofV.
 %%pres-prev	: pres (red-prev Dred) (of-prev DofE) DvalV DofV 
 %%				<- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
 
 %worlds () (pres _ _ _ _).
-%%total Dred (pres Dred _ _ _).
+%total Dred (pres Dred _ _ _).
              
