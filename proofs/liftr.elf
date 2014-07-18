@@ -1,88 +1,129 @@
 %{ liftr.elf }%
 
+i : type.
+z : i.
+s : i -> i.
+
+add : i -> i -> i -> type.
+%mode add +M +N -P.
+add/z : add z N N.
+add/s : add (s M) N (s P) <- add M N P.
+%worlds () (add M _ _).
+%total (M) (add M _ _).
+
+id : i -> i -> type.
+id/refl : id N N.
+
+id/cong : id M N -> id (s M) (s N) -> type.
+%mode id/cong +E1 -E2.
+- : id/cong id/refl id/refl.
+%worlds () (id/cong _ _).
+%total {} (id/cong _ _).
+
+unique/add : add M N P1 -> add M N P2 -> id P1 P2 -> type.
+%mode unique/add +D1 +D2 -E.
+- : unique/add add/z add/z id/refl.
+- : unique/add (add/s D1 : add (s M) N (s P1))
+               (add/s D2 : add (s M) N (s P2)) Eout
+    <- id/cong E Eout
+    <- unique/add D1 D2 E.
+%worlds () (unique/add _ _ _).
+%total D (unique/add D _ _).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% WORLDS
 wor : type. %name wor W.
 wor1 : wor.
 %%wor2 : wor.
 
 %% TYPES
-ty : wor -> type. %name ty T.
-unit	: ty W.
-arr		: ty W -> ty W -> ty W.
-%%fut		: ty wor2 -> ty wor1.
+ty : type. %name ty T.
+unit  : ty.
+arr    : ty -> ty -> ty.
+%%fut    : ty wor2 -> ty wor1.
 
 %% TERMS
 term : type. %name term E.
-ztup	: term.
-lam		: ty W -> (term -> term) -> term.
-app		: term -> term -> term.
-%%next	: term -> term.
-%%prev	: term -> term.
+ztup  : wor -> term.
+%% annotate base constants with their world
+lam    : ty -> wor -> (term -> term) -> term.
+app    : term -> term -> term.
+%%next  : term -> term.
+%%prev  : term -> term.
 
 %% TYPING JUDGMENT
-of : term -> ty W -> type. %name of Dof.
-%% (not sure if this is needed for now) mode of +E -T +W.
-of-ztup	: of ztup unit.
-of-lam	: of (lam A ([x] M x)) (arr A B)
-			<- ({x: term} of x A -> of (M x) B).
-of-app	: of (app E1 E2) B
-			<- of E2 A
-			<- of E1 (arr A B).
-%%of-next	: of (next E) (fut A)
-%%			<- of E A.
-%%of-prev	: of (prev E) A
-%%			<- of E (fut A).
+of : term -> ty -> wor -> type. %name of Dof.
+of-ztup : of (ztup W) unit W.
+of-lam  : of (lam A W ([x] M x)) (arr A B) W
+      <- ({x: term} of x A W -> of (M x) B W).
+of-app  : of (app E1 E2) B W
+      <- of E2 A W
+      <- of E1 (arr A B) W.
+%%of-next  : of (next E) (fut A)
+%%      <- of E A.
+%%of-prev  : of (prev E) A
+%%      <- of E (fut A).
+
+%block var-of : some {A : ty} {W : wor} block {x:term} {_ : of x A W}.
+%worlds (var-of) (of _ _ _).
+%unique of +E -T -W.
 
 %% uniqueness of typing
-idty : ty W -> ty W -> type.
-idty/refl : idty T T.
+idty : ty -> wor -> ty -> wor -> type.
+idty/refl : idty T W T W.
 
-of-unique : of M T1 -> of M T2 -> idty T1 T2 -> type.
+%%arr-cong :
+%%  idty A1 A2 ->
+%%  idty B1 B2 -> 
+%%  idty (arr A1 B1) (arr A2 B2).
+
+of-unique : of M T1 W1 -> of M T2 W2 -> idty T1 W1 T2 W2 -> type.
 %mode of-unique +D1 +D2 -E.
-- : of-unique of-ztup of-ztup idty/refl.
-- : of-unique (of-lam D) (of-lam D) idty/refl.
-- : of-unique (of-app D1 D2) (of-app E1 E2) idty/refl
-    <- of-unique D1 E1 idty/refl
-    <- of-unique D2 E2 idty/refl.
+- : of-unique D D' idty/refl.
+%%- : of-unique of-ztup of-ztup idty/refl.
+%%- : of-unique (of-lam D) (of-lam D) idty/refl.
+%%- : of-unique (of-app Mof1 Nof1) (of-app Mof2 Nof2) idty/refl
+%    %%<- of-unique D1 E1 idty/refl
+%%    <- of-unique Nof1 Nof2 (idty/refl : idty T1 T1).
 %worlds () (of-unique _ _ _).
-%total D (of-unique D _ _).
-
+%total {} (of-unique _ _ _).
 
 %% REDUCTION JUDGMENT
 red : term -> term -> type. %name red Dred.
 %mode red +E -V.
 red-ztup : red ztup ztup.
-red-lam		: red (lam A M) (lam A M).
-red-app		: red (app E1 E2) V
-				<- red E2 V2
-				<- red E1 (lam A ([x] M x))
-				<- red (M V2) V.
-%%red-next	: red (next E) (next V)
-%%				<- red E V.
-%%red-prev	: red (prev E) V
-%%				<- red E (next V).
+red-lam  : red (lam A M) (lam A M).
+red-app  : red (app E1 E2) V
+        <- red E2 V2
+        <- red E1 (lam A ([x] M x))
+        <- red (M V2) V.
+%%red-next  : red (next E) (next V)
+%%        <- red E V.
+%%red-prev  : red (prev E) V
+%%        <- red E (next V).
 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
-pval-ztup	: pval ztup.
-pval-lam	: pval (lam _ _).
-%%pval-next	: pval (next E) wor1
-%%				<- pval E wor2.
+pval-ztup  : pval ztup.
+pval-lam  : pval (lam _ _).
+%%pval-next  : pval (next E) wor1
+%%        <- pval E wor2.
              
 %% PRESERVATION AND EVALUATION
 pres : red E V -> of E (A : ty W) -> pval V -> of V A -> type.
 %mode pres +T1 +R -V -T2.
-pres-ztup	: pres red-ztup of-ztup pval-ztup of-ztup.
-pres-lam	: pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
-pres-app	: pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-				<- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B)) %% inversion
-				<- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
-				<- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
-%%pres-next	: pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
-%%				<- pres Dred DofE DvalV DofV.
-%%pres-prev	: pres (red-prev Dred) (of-prev DofE) DvalV DofV 
-%%				<- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
+pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
+pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
+pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
+        <- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B)) %% inversion
+        <- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
+        <- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
+%%pres-next  : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
+%%        <- pres Dred DofE DvalV DofV.
+%%pres-prev  : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
+%%        <- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
 
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
-             
+
