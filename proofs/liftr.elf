@@ -1,37 +1,5 @@
 %{ liftr.elf }%
 
-i : type.
-z : i.
-s : i -> i.
-
-add : i -> i -> i -> type.
-%mode add +M +N -P.
-add/z : add z N N.
-add/s : add (s M) N (s P) <- add M N P.
-%worlds () (add M _ _).
-%total (M) (add M _ _).
-
-id : i -> i -> type.
-id/refl : id N N.
-
-id/cong : id M N -> id (s M) (s N) -> type.
-%mode id/cong +E1 -E2.
-- : id/cong id/refl id/refl.
-%worlds () (id/cong _ _).
-%total {} (id/cong _ _).
-
-unique/add : add M N P1 -> add M N P2 -> id P1 P2 -> type.
-%mode unique/add +D1 +D2 -E.
-- : unique/add add/z add/z id/refl.
-- : unique/add (add/s D1 : add (s M) N (s P1))
-               (add/s D2 : add (s M) N (s P2)) Eout
-    <- id/cong E Eout
-    <- unique/add D1 D2 E.
-%worlds () (unique/add _ _ _).
-%total D (unique/add D _ _).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% WORLDS
 wor : type. %name wor W.
 wor1 : wor.
@@ -69,34 +37,53 @@ of-app  : of (app E1 E2) B W
 %worlds (var-of) (of _ _ _).
 %unique of +E -T -W.
 
-%% uniqueness of typing
+%% UNIQUENESS OF TYPING
 idty : ty -> wor -> ty -> wor -> type.
 idty/refl : idty T W T W.
 
-%%arr-cong :
-%%  idty A1 A2 ->
-%%  idty B1 B2 -> 
-%%  idty (arr A1 B1) (arr A2 B2).
+idty-cong-arr :
+  idty A1 W1 A2 W2 ->
+  idty B1 W1 B2 W2 ->
+  idty (arr A1 B1) W1 (arr A2 B2) W2 -> type.
+%mode idty-cong-arr +D1 +D2 -D3.
+- : idty-cong-arr idty/refl idty/refl idty/refl.
+%worlds () (idty-cong-arr _ _ _).
+%total {} (idty-cong-arr _ _ _).
+
+idty-inj-arr :
+  idty (arr A1 B1) W1 (arr A2 B2) W2 ->
+  idty A1 W1 A2 W2 ->
+  idty B1 W1 B2 W2 -> type.
+%mode idty-inj-arr +D1 -D2 -D3.
+- : idty-inj-arr idty/refl idty/refl idty/refl.
+%worlds () (idty-inj-arr _ _ _).
+%total {} (idty-inj-arr _ _ _).
 
 of-unique : of M T1 W1 -> of M T2 W2 -> idty T1 W1 T2 W2 -> type.
 %mode of-unique +D1 +D2 -E.
-- : of-unique D D' idty/refl.
-%%- : of-unique of-ztup of-ztup idty/refl.
-%%- : of-unique (of-lam D) (of-lam D) idty/refl.
-%%- : of-unique (of-app Mof1 Nof1) (of-app Mof2 Nof2) idty/refl
-%    %%<- of-unique D1 E1 idty/refl
-%%    <- of-unique Nof1 Nof2 (idty/refl : idty T1 T1).
-%worlds () (of-unique _ _ _).
-%total {} (of-unique _ _ _).
+- : of-unique D D idty/refl.
+- : of-unique of-ztup of-ztup idty/refl.
+- : of-unique (of-lam D1) (of-lam D2) AtoBeq
+    <- ({e:term} {D : of e A W} of-unique (D1 e D) (D2 e D) Beq)
+    <- idty-cong-arr idty/refl Beq AtoBeq.
+- : of-unique (of-app (Mof1 : of M (arr A1 B1) W1)
+                      (Nof1 : of N A1 W1))
+              (of-app (Mof2 : of M (arr A2 B2) W2)
+                      (Nof2 : of N A2 W2))
+              Beq
+    <- of-unique Mof1 Mof2 AtoBeq
+    <- idty-inj-arr AtoBeq _ Beq.
+%worlds (var-of) (of-unique _ _ _).
+%total D (of-unique D _ _).
 
 %% REDUCTION JUDGMENT
 red : term -> term -> type. %name red Dred.
 %mode red +E -V.
-red-ztup : red ztup ztup.
-red-lam  : red (lam A M) (lam A M).
+red-ztup : red (ztup W) (ztup W).
+red-lam  : red (lam A W M) (lam A W M).
 red-app  : red (app E1 E2) V
         <- red E2 V2
-        <- red E1 (lam A ([x] M x))
+        <- red E1 (lam A W ([x] M x))
         <- red (M V2) V.
 %%red-next  : red (next E) (next V)
 %%        <- red E V.
@@ -105,18 +92,18 @@ red-app  : red (app E1 E2) V
 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
-pval-ztup  : pval ztup.
-pval-lam  : pval (lam _ _).
+pval-ztup  : pval (ztup _).
+pval-lam  : pval (lam _ _ _).
 %%pval-next  : pval (next E) wor1
 %%        <- pval E wor2.
              
 %% PRESERVATION AND EVALUATION
-pres : red E V -> of E (A : ty W) -> pval V -> of V A -> type.
+pres : red E V -> of E A W -> pval V -> of V A W -> type.
 %mode pres +T1 +R -V -T2.
 pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
 pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
 pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B)) %% inversion
+        <- pres (DredE1 : red E1 (lam A W M)) DofE1 pval-lam ((of-lam DofM) : of (lam A W M) (arr A B) W) %% inversion
         <- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
         <- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
 %%pres-next  : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
