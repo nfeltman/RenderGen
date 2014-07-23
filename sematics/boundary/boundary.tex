@@ -20,6 +20,7 @@
 \title{Boundary Types}
 \author{Nico}
 
+\newcommand {\next}{asdlfkj}
 \input {../../paper/macros}
 
 \begin{document}
@@ -27,56 +28,46 @@
 
 \newcommand {\ktype} {\rm Type}
 \newcommand {\ibk} [2] {{#1}~\rotatebox[origin=c]{270}{$\therefore$}~{#2}}
-\newcommand {\btcont} [2] {{#1}~\triangleright~{#2}}
-\newcommand {\bty} [5] [\Gamma] {{#1}\vdash {#2}\triangleright[{#3},{#4}.{#5}]}
-\newcommand {\btysub} [2] [] {\bty{e_{#1}:{#2}}{\tau_{#1}}{l_{#1}}{\sigma_{#1}}}
+\newcommand {\btcont} [3] {{#1}~\triangleright~[{#2},{#3}]}
+\newcommand {\bty} [4] [\Gamma] {{#1}\vdash {#2}\triangleright[{#3},{#4}]}
+\newcommand {\btysub} [2] [] {\bty{e_{#1}:{#2}}{\tau_{#1}}{\sigma_{#1}}}
 
-The internal boundary kind is given by:
+Consider a language with products and functions.  The internal boundary kind is given by:
 
 \begin{mathpar}
-\infer {\ibk {\rm int}{\rm Unit}} {\cdot} \and
-\infer {\ibk {\rm bool}{\rm Unit}} {\cdot} \and
+\infer {\ibk {\rm int}{\rm Unit}} {\cdot} \and 
+\infer {\ibk {\rm bool}{\rm Unit}} {\cdot} \and 
 \infer {\ibk {A \times B}{\kappa_A \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} \and 
-\infer {\ibk {A + B}{\kappa_A \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} \and 
 \infer {\ibk {A \to B}{\kappa_A \to \ktype \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} 
 \end{mathpar}
 
-The boundary type is given by:
+For a statement $e$, the judgment $\btcont {e:A} \tau \sigma$ means that $e$ has the internal boundary type $\tau$ and the external boundary type-constructor $\sigma$.  Invariant: for $\ibk A \kappa$, if $\btcont {e:A} \tau \sigma$ then $\sigma : \kappa$.
 
 \begin{mathpar}
-\infer {\bty {i:\rm int}\rmunit \_ {()}} {\cdot} \and
-\infer {\bty {b:\rm bool}\rmunit \_ {()}} {\cdot} \and
-\infer {\bty {\pause~e:\fut\rm int}{\tau\times{\rm int}} \_ {()}} {\bty {e:\rm int}\tau \_ {()}} \and
-\infer {\bty {x:A}\rmunit\_\sigma} {\btcont {x:A} \sigma \in \Gamma} \and
+\infer {\bty {i:\rm int}\rmunit {()}} {\cdot} \and
+\infer {\bty {b:\rm bool}\rmunit {()}} {\cdot} \and
+\infer {\bty {\pause~e:\fut\rm int}{\tau\times{\rm int}} {()}} {\bty {e:\rm int}\tau {()}} \and
+\infer {\bty [\Gamma,\btcont {x:A} \rmunit \sigma] {x:A}\rmunit\sigma} {\cdot} \and
 \infer 
-	{\bty {(e_1,e_2):A\times B} {\tau_1 \times \tau_2} {(l_1,l_2)} {(\sigma_1, \sigma_2)}} 
+	{\bty {(e_1,e_2):A\times B} {\tau_1 \times \tau_2} {(\sigma_1, \sigma_2)}} 
 	{\btysub [1] A & \btysub [2] B} 
 	\\
 \infer 
-	{\bty {\pio~e:A} \tau l {(\pi_1\sigma)}} 
+	{\bty {\pio~e:A} \tau {(\pi_1\sigma)}} 
 	{\btysub {A\times B}} \and
 \infer 
-	{\bty {\pit~e:B} \tau l {(\pi_2\sigma)}} 
+	{\bty {\pit~e:B} \tau {(\pi_2\sigma)}} 
 	{\btysub {A\times B}} 
 	\\
 \infer 
-	{\bty {\lam x A e : A \to B} \rmunit \_ {(\lambda \alpha:\kappa.(\tau,\sigma))}} 
-	{\ibk A \kappa & \bty [\Gamma, \btcont {x:A} \alpha] {e:B} \tau l \sigma} 
+	{\bty {\lam x A e : A \to B} \rmunit {(\lambda \alpha:\kappa.(\tau,\sigma))}} 
+	{\ibk A \kappa & \bty [\Gamma, \btcont {x:A} \rmunit \alpha] {e:B} \tau \sigma} 
 	\and
 \infer 
 	{\bty {e_1~e_2 : B}
 		{\tau_1 \times \tau_2 \times \pi_1 (\sigma_1~\sigma_2)} 
-		{(l_1,l_2,l)}
 		{(\pi_2(\sigma_1~\sigma_2))} }
 	{\btysub [1] {A \to B} & \btysub [2] A } 
-	\and
-\infer 
-	{\bty {\left(\tallif {e_1}{e_2}{e_3} \right): A} 
-		{\tau_1 \times (\tau_2 + \tau_3)}
-		{(l_1,l)}
-		{(\caseof l {l_2.\sigma_2}{l_3.\sigma_3})}} 
-	{\bty {e_1:\rm bool}{\tau_1}\_{()} & \btysub [2] A & \btysub [3] A } 
-	\and
 \end{mathpar}
 
 \end{document}

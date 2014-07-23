@@ -5,6 +5,8 @@
 tests/
 outputs/
 paper.pdf
+sematics/boundary/boundary.pdf
+
 
 #################
 ## Eclipse
@@ -190,5 +192,4 @@ pip-log.txt
 *.blg
 *.out
 *.cpt
-
 
