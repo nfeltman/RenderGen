@@ -1,0 +1,37 @@
+%% REDUCTION JUDGMENT
+red : term -> term -> type. %name red Dred.
+%mode red +E -V.
+red-ztup : red ztup ztup.
+red-lam  : red (lam A M) (lam A M).
+red-app  : red (app E1 E2) V
+        <- red E2 V2
+        <- red E1 (lam A ([x] M x))
+        <- red (M V2) V.
+%%red-next  : red (next E) (next V)
+%%        <- red E V.
+%%red-prev  : red (prev E) V
+%%        <- red E (next V).
+
+%% VALUE JUDGMENT
+pval : term -> type. %name pval Dpval.
+pval-ztup  : pval ztup.
+pval-lam  : pval (lam _ _).
+%%pval-next  : pval (next E) wor1
+%%        <- pval E wor2.
+             
+%% PRESERVATION AND EVALUATION
+pres : red E V -> of E A W -> pval V -> of V A W -> type.
+%mode pres +T1 +R -V -T2.
+pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
+pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
+pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
+        <- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B) W) %% inversion
+        <- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
+        <- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
+%%pres-next  : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
+%%        <- pres Dred DofE DvalV DofV.
+%%pres-prev  : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
+%%        <- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
+
+%worlds () (pres _ _ _ _).
+%total Dred (pres Dred _ _ _).

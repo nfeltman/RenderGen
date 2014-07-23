@@ -13,21 +13,30 @@ arr    : ty -> ty -> ty.
 
 %% TERMS
 term : type. %name term E.
-ztup  : wor -> term.
+ztup  : term.
 %% annotate base constants with their world
-lam    : ty -> wor -> (term -> term) -> term.
+lam    : ty -> (term -> term) -> term.
 app    : term -> term -> term.
 %%next  : term -> term.
 %%prev  : term -> term.
 
+%% TYPE WELL-FORMED
+ty-wf : ty -> wor -> type.
+ty-wf-unit	: ty-wf unit W.
+ty-wf-arr	: ty-wf (arr A B) W
+				<- ty-wf A W
+				<- ty-wf B W.
+%worlds () (ty-wf _ _).
+
 %% TYPING JUDGMENT
 of : term -> ty -> wor -> type. %name of Dof.
-of-ztup : of (ztup W) unit W.
-of-lam  : of (lam A W ([x] M x)) (arr A B) W
-      <- ({x: term} of x A W -> of (M x) B W).
+of-ztup	: of ztup unit W.
+of-lam 	: of (lam A ([x] M x)) (arr A B) W
+			<- ({x: term} of x A W -> of (M x) B W).
+%%			<- ty-wf A W.
 of-app  : of (app E1 E2) B W
-      <- of E2 A W
-      <- of E1 (arr A B) W.
+			<- of E2 A W
+			<- of E1 (arr A B) W.
 %%of-next  : of (next E) (fut A)
 %%      <- of E A.
 %%of-prev  : of (prev E) A
@@ -35,7 +44,7 @@ of-app  : of (app E1 E2) B W
 
 %block var-of : some {A : ty} {W : wor} block {x:term} {_ : of x A W}.
 %worlds (var-of) (of _ _ _).
-%unique of +E -T -W.
+%unique of +E -T +W.
 
 %% UNIQUENESS OF TYPING
 idty : ty -> wor -> ty -> wor -> type.
@@ -76,41 +85,5 @@ of-unique : of M T1 W1 -> of M T2 W2 -> idty T1 W1 T2 W2 -> type.
 %worlds (var-of) (of-unique _ _ _).
 %total D (of-unique D _ _).
 
-%% REDUCTION JUDGMENT
-red : term -> term -> type. %name red Dred.
-%mode red +E -V.
-red-ztup : red (ztup W) (ztup W).
-red-lam  : red (lam A W M) (lam A W M).
-red-app  : red (app E1 E2) V
-        <- red E2 V2
-        <- red E1 (lam A W ([x] M x))
-        <- red (M V2) V.
-%%red-next  : red (next E) (next V)
-%%        <- red E V.
-%%red-prev  : red (prev E) V
-%%        <- red E (next V).
 
-%% VALUE JUDGMENT
-pval : term -> type. %name pval Dpval.
-pval-ztup  : pval (ztup _).
-pval-lam  : pval (lam _ _ _).
-%%pval-next  : pval (next E) wor1
-%%        <- pval E wor2.
-             
-%% PRESERVATION AND EVALUATION
-pres : red E V -> of E A W -> pval V -> of V A W -> type.
-%mode pres +T1 +R -V -T2.
-pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
-pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
-pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres (DredE1 : red E1 (lam A W M)) DofE1 pval-lam ((of-lam DofM) : of (lam A W M) (arr A B) W) %% inversion
-        <- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
-        <- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
-%%pres-next  : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
-%%        <- pres Dred DofE DvalV DofV.
-%%pres-prev  : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
-%%        <- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
-
-%worlds () (pres _ _ _ _).
-%total Dred (pres Dred _ _ _).
 
