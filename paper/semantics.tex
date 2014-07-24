@@ -91,9 +91,6 @@ Accordingly, a suitably staged dynamic semantics for \lang\ must evaluate
 
 \subsection{Non-Duplicating First-Stage Evaluation}
 
-\TODO clean up the next few paragraphs; unclear how much of it should go in the
-paper
-
 To understand the difficulty of staged evaluation, consider the following
 example:
 \begin{lstlisting}
@@ -108,46 +105,42 @@ are not allowed to evaluate under the \verb|next|; on the other hand,
 computation steps.
 
 Intuitively, the solution is to say that \verb|next {1+2}| is a value \emph{at
-stage \bbone}, even though once we proceed to stage-\bbtwo\ evaluation, it will
-no longer be a value. Therefore, we evaluate the pair to
+stage \bbone}, even though it requires additional evaluation at stage \bbtwo.
+Therefore, we evaluate the pair to
 \begin{lstlisting}
 #2 (next {1+2}, 7)
 \end{lstlisting}
 and get \verb|7| as the answer.
 
-To complicate matters, consider a situation where we must substitute a stage
-\bbone\ value into some other expression. In the stage-\bbtwo\ term
+To complicate matters, consider a situation where we must substitute such a
+incompletely-evaluated expression. The following stage-\bbtwo\ term has type
+$\rmint$:
 \begin{lstlisting} 
 prev{
   let x = (next {1+2}, 3+4) in
   next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
 }
 \end{lstlisting}
-our stage-\bbone\ evaluation will clearly yield a term which is not fully
-reduced---since \verb|1+2| is needed to compute the end result, but we cannot
-reduce it to \verb|3| until stage \bbtwo.
+Stage-\bbone\ evaluation will not fully reduce this term, because the answer
+depends on the value of \verb|1+2|, but we cannot reduce this to \verb|3| until
+stage \bbtwo.
 
-On the other hand, if we simply treat \verb|(next {1+2}, 7)| as a value, then we
-will duplicate the \verb|1+2| computation in the term, and in fact we will
-evaluate it twice, in each computation of \verb|#1 (next {1+2}, 7)|.
-
-Our solution is to hoist these residuals, etc.
-
-\vspace{2em}
-\TODO old stuff below here. merge with above text:
-
-Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
-One option, taken by \cite{davies96}, is to treat \verb|next{1+2}| as a value for the purposes of stage-\bbone~evaluation, 
-consequently duplicating it during substitution for {\tt x}.  The two $\prev$ constructs eliminate the $\next$ wrappers,
-leaving the contained stage-\bbtwo\ code in place.
-This produces:
-\begin{lstlisting}
-(1+2) * (1+2) * 7
+If we simply treat \verb|(next {1+2}, 7)| as a value during stage \bbone, then
+we will substitute it for the three occurrences of \verb|x| in the body of the
+\verb|let| expression. Thus, the result of stage \bbone\ computation is
+\begin{lstlisting} 
+prev{
+  next{ prev{next {1+2}} * prev{next {1+2}} * 7 }
+}
 \end{lstlisting}
+When we evaluate this at stage \bbtwo, we will compute \verb|1+2| twice. Of
+course, this is not particularly expensive, but in general, the duplicated
+computation could be anything, even a recursive call to the function!
 
-We take a different approach.  
-Instead of duplicating the contents of the first $\next$ expression, we bind them to some variable (here, $\mathtt{y}$) and
-duplicate only a reference to that variable.  This produces:
+To avoid duplicating computations, we take a different approach.  Instead of
+duplicating the contents of the first $\next$ expression, we bind them to some
+variable (here, $\mathtt{y}$) and duplicate only a reference to that variable.
+This produces:
 \begin{lstlisting} 
 let y = 1+2 in y * y * 7
 \end{lstlisting}
