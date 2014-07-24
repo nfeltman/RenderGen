@@ -98,65 +98,63 @@ prev{
 \end{lstlisting}
 Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
 One option, taken by \cite{davies96}, is to treat \verb|next{1+2}| as a value for the purposes of stage-\bbone~evaluation, 
-consequently duplicating it during substitution for {\tt x}.  
+consequently duplicating it during substitution for {\tt x}.  The two $\prev$ constructs eliminate the $\next$ wrappers,
+leaving the contained stage-\bbtwo\ code in place.
 This produces:
 \begin{lstlisting}
 (1+2) * (1+2) * 7
 \end{lstlisting}
 
 We take a different approach.  
-Instead of duplicating the contents of the first $\next$ expression, we bind them to some variable (here, {\tt y}) and
+Instead of duplicating the contents of the first $\next$ expression, we bind them to some variable (here, $\mathtt{y}$) and
 duplicate only a reference to that variable.  This produces:
 \begin{lstlisting} 
 let y = 1+2 in y * y * 7
 \end{lstlisting}
 
-% We think that this interpretation makes more sense from the point of view of cost, 
-% since the contents of a $\next$ always appear once in the residual, regardless of how many times the result is used.  
-% This is \emph{nearly} equivalent to the first expression, because they have different termination behavior 
-% when a non-terminating stage-\bbtwo~expression is declared but never used.
-
 Achieving this behavior mechanically requires us to resolve a contradiction:
 we must substitute for \texttt{x} at stage \bbone, but we cannot evaluate inside the $\next$ block bound to it. 
-Our solution is to replace the $\next$ with a new variable and create an explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s contents.  
+Our solution is to replace the contents of the $\next$ with a new variable and create an explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s old contents.  
 This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
 prev {
-[y|->1+2]
-  let x = (yhat, 7) in
+[yhat|->1+2]
+  let x = (next{yhat}, 7) in
   next{prev{#1 x} * prev{#1 x} *  hold{#2 x}}
 }
 \end{lstlisting}
-Note that the variable left behind is rendered with a hat.  By treating this {\em hatted variable} as a value, we're now free to perform the stage-\bbone~substitution for {\tt x}.  
+As a convention, we render the new variable with a %stylish and fashionable
+hat.  We're now free to perform the stage-\bbone~substitution for {\tt x} without duplicating stage-\bbtwo\ work.
 \begin{lstlisting} 
 prev {
 [y|->1+2]
   next{
-    prev{#1 (yhat, 7)} * prev{#1 (yhat, 7)} *
-    hold{#2 (yhat, 7)}
+    prev{#1 (next {yhat}, 7)} * 
+    prev{#1 (next {yhat}, 7)} *
+    hold{#2 (next {yhat}, 7)}
   }
 }
 \end{lstlisting}
 To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them. 
-As a rule, these will reduce to hatted variables, and $\prev$ removes the hat, leaving the variable in place:
+As a rule, these will reduce to $\next$ expressions, which the $\prev$ eliminates, leaving the variable in place:
 \begin{lstlisting} 
 prev {
-[y|->1+2]
-    next{ y * y * 7 }
+[yhat|->1+2]
+    next{ yhat * yhat * 7 }
 }
 \end{lstlisting}
 Once again, we lift the contents of the $\next$ into a substitution:
 \begin{lstlisting} 
 prev {
-[y|->1+2]
-[z|->y*y*7]
-    zhat
+[yhat|->1+2]
+[zhat|->yhat*yhat*7]
+    next{ zhat }
 }
 \end{lstlisting}
 Finally, when evaluating the outer $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
-let y = 1+2 in
-let z = y * y * 7 in z
+let yhat = 1+2 in
+let zhat = yhat * yhat * 7 in z
 \end{lstlisting}
 
 Thus we have evaluated all of the stage \bbone\ expressions of this program without duplicating the contents of $\next$ blocks.
