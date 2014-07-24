@@ -12,12 +12,12 @@
 \inferdiaone [+ I_1]  		{\red {\inl~e} {\xi;\inl~v}}										{\sub} 																						\and
 \inferdiaone [+ I_2]  		{\red {\inr~e} {\xi;\inr~v}}										{\sub} 																						\and
 %
-\inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\valinl~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}} 					\and
-\inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\valinr~v} & \red [\Gamma,\dom{\xi_1},\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}					\and
+\inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\inl~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}} 					\and
+\inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\inr~v} & \red [\Gamma,\dom{\xi_1},\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}					\and
 %
 \inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2; v_2}}					{\sub [1] & \red [\Gamma,\dom{\xi_1}] {[v_1/x]e_2}{\xi_2;v_2}}											\and
-\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\bf true}  & \red {e_2}{\xi_2;v}} 							\and
-\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\bf false} & \red {e_3}{\xi_3;v}}							\and
+\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\tt true}  & \red {e_2}{\xi_2;v}} 							\and
+\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
 %
 \inferdiaone [\mu I]   		{\red {\roll~e}{\xi;\roll~v}}									{\sub}												\and
 \inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							\and
@@ -77,18 +77,18 @@
 %\inferreducewor [+ I_1]			{\red {\inl~e} {\inl~v}}							{\sub} 																			\and
 %\inferreducewor [+ I_2]			{\red {\inr~e} {\inr~v}}							{\sub} 																			\and
 %%
-%\inferreducewor [+ E_1]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\valinl~v} & \redone {[v/x_2]e_2}{v'}} 					\and
-%\inferreducewor [+ E_2]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\valinr~v} & \redone {[v/x_3]e_3}{v'}}						\and
-%\inferreducewor [+ E_1]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\valinl~v} & \redtwo {[v/x_2]e_2}{v'} & \specwor {e_3}}	\and
-%\inferreducewor [+ E_2]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\valinr~v} & \redtwo {[v/x_3]e_3}{v'} & \specwor {e_2}}	\and
+%\inferreducewor [+ E_1]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\inl~v} & \redone {[v/x_2]e_2}{v'}} 					\and
+%\inferreducewor [+ E_2]			{\redone {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redone {e_1}{\inr~v} & \redone {[v/x_3]e_3}{v'}}						\and
+%\inferreducewor [+ E_1]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\inl~v} & \redtwo {[v/x_2]e_2}{v'} & \specwor {e_3}}	\and
+%\inferreducewor [+ E_2]			{\redtwo {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}}		{\redtwo {e_1}{\inr~v} & \redtwo {[v/x_3]e_3}{v'} & \specwor {e_2}}	\and
 %%
 %\inferreducewor [int]				{\red {i}{i}}											{\cdot} 																		\and
 %\inferreducewor [bool]			{\red {b}{b}}											{\cdot} 																		\and
 %\inferreducewor [let]				{\red {\letin{x}{e_1}{e_2}}{v_2}}					{\sub [1] & \red{[v_1/x]e_2}{v_2}} 											\and
-%\inferreducewor [if_T] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\bf true}  & \redone {e_2}{v}} 								\and
-%\inferreducewor [if_F] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\bf false} & \redone {e_3}{v}}								\and
-%\inferreducewor [if_T] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf true}  & \redtwo {e_2}{v} & \specwor {e_3}}			\and
-%\inferreducewor [if_F] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\bf false} & \redtwo {e_3}{v} & \specwor {e_2}}
+%\inferreducewor [if_T] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\tt true}  & \redone {e_2}{v}} 								\and
+%\inferreducewor [if_F] 			{\redone {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redone {e_1}{\tt false} & \redone {e_3}{v}}								\and
+%\inferreducewor [if_T] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\tt true}  & \redtwo {e_2}{v} & \specwor {e_3}}			\and
+%\inferreducewor [if_F] 			{\redtwo {\ifthen{e_1}{e_2}{e_3}}{v}}				{\redtwo {e_1}{\tt false} & \redtwo {e_3}{v} & \specwor {e_2}}
 %\end{mathpar}
 %\caption{\ellStaged~Old Semantics (core)}
 %\label{fig:erasureSemanticsCore}
@@ -98,7 +98,7 @@
 %\begin{mathpar}
 %\inferreducewor [\fut I]			{\reducexpl \bbone \bbtwo {\next~e}{\next~v}}	{\reducexpl \bbtwo \bbtwo e v}												\and
 %\inferreducewor [\fut I]			{\reducexpl \bbone \bbone {\next~e}{DUM}}		{\specwor e }																	\and
-%\inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\valnext~v}} 									\and
+%\inferreducewor [\fut E]			{\reducexpl \bbtwo \bbtwo {\prev~e} v}			{\reducexpl \bbone \bbtwo e {\next~v}} 									\and
 %\inferreducespc [\fut E]			{\red {\prev~e}}									{\reducexpl \bbone \bbone e {DUM}} 								
 %\end{mathpar}
 %\caption{\ellStaged~Old Semantics ($\next$ and $\prev$)}
@@ -143,8 +143,8 @@
 %\inferSpeculation [\times I]		{\red {(e_1,e_2)}{(r_1,r_2)}}									{\sub [1] & \sub [2]}									\and
 %\inferSpeculation [\times E_1]	{\red {\pi_1~e}{\pi_1 r}}										{\red {e}{r}}											\and
 %\inferSpeculation [\times E_2]	{\red {\pi_2~e}{\pi_2 r}}										{\red {e}{r}} 											\and
-%\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_2)}}					{\red{e_1}{\bf true }{r_1} & \red{e_2}{u}{r_2}}	\and
-%\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_3)}}					{\red{e_1}{\bf false}{r_1} & \red{e_3}{u}{r_3}}	\and
+%\inferRedsplitone [if_T] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_2)}}					{\red{e_1}{\tt true }{r_1} & \red{e_2}{u}{r_2}}	\and
+%\inferRedsplitone [if_F] 		{\red {\ifthen{e_1}{e_2}{e_3}}{u}{(r_1;r_3)}}					{\red{e_1}{\tt false}{r_1} & \red{e_3}{u}{r_3}}	\and
 %\inferSpeculation [if] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{r_1}{r_2}{r_3}}}		{\sub [1] & \sub [2] & \sub [3]}					\\
 %\inferRedsplitone [\fut I]		{\red {\next~e}{()}{r}}											{\rstwosub}											\and
 %\inferSpeculation [\fut E]		{\red {\prev~e}{r}}												{\rsone {e}{()}{r}}
@@ -160,14 +160,14 @@
 %\inferRedsplitone [\to E]	{\red {e_1~e_2}{v'}{(r_1;\letin{x}{r_2}{r'})}}		{\red {e_1}{\vallam{x}{M}}{r_1} 
 %																							& \sub [2] & \red{[[e,x]/x]M}{v'}{r'}} 							\and
 %\inferSpeculation [\to E]	{\red {e_1~e_2}{r_1~r_2}}							{\sub [1] & \sub[2]}													\and
-%\inferRedsplitone [+ I_1]	{\red {\inl~e} {\valinl~v}{r}}						{\sub} 																	\and
-%\inferSpeculation [+ I_1]	{\red {\inl~e} {\valinl~r}}							{\sub} 																	\\
-%\inferRedsplitone [+ I_2]	{\red {\inr~e} {\valinr~v}{r}}						{\sub} 																	\and
-%\inferSpeculation [+ I_2]	{\red {\inr~e} {\valinr~r}}							{\sub} 																	\\
+%\inferRedsplitone [+ I_1]	{\red {\inl~e} {\inl~v}{r}}						{\sub} 																	\and
+%\inferSpeculation [+ I_1]	{\red {\inl~e} {\inl~r}}							{\sub} 																	\\
+%\inferRedsplitone [+ I_2]	{\red {\inr~e} {\inr~v}{r}}						{\sub} 																	\and
+%\inferSpeculation [+ I_2]	{\red {\inr~e} {\inr~r}}							{\sub} 																	\\
 %\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
-%								{\letin{x_2}{r_1}{r_2}}}								{\red {e_1}{\valinl~v}{r_1} & \red {[[v,x_2]/x_2]e_2}{v'}{r_2}} \and
+%								{\letin{x_2}{r_1}{r_2}}}								{\red {e_1}{\inl~v}{r_1} & \red {[[v,x_2]/x_2]e_2}{v'}{r_2}} \and
 %\inferRedsplitone [+ E_1]	{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{v'}
-%								{\letin{x_3}{r_1}{r_3}}}								{\red {e_1}{\valinr~v}{r_1} & \red {[[v,x_3]/x_3]e_3}{v'}{r_3}} \and
+%								{\letin{x_3}{r_1}{r_3}}}								{\red {e_1}{\inr~v}{r_1} & \red {[[v,x_3]/x_3]e_3}{v'}{r_3}} \and
 %\inferSpeculation [+ E]		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
 %								{\caseof{r_1}{x_2.r_2}{x_3.r_3}}}				{\sub [1] & \sub [2] & \sub[3]}					 						\and
 %\end{mathpar}
