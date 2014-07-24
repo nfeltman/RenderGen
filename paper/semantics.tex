@@ -99,12 +99,13 @@ example:
 \begin{lstlisting}
 #2 (next {1+2}, 3+4)
 \end{lstlisting}
-This is a stage-\bbone\ expression of type $\rmint$; the pair is a stage-\bbone\
-expression of type $(\fut\rmint)\times\rmint$. A conventional call-by-value
-evaluation strategy demands that we evaluate both components of the pair to
-values before we project from the pair. However, at stage \bbone\ we are not
-allowed to evaluate under the \verb|next|; on the other hand, \verb|next {1+2}|
-is not a value, in the sense that it requires additional computation steps.
+This is a stage-\bbone\ expression of type $\rmint$; the pair inside it is a
+stage-\bbone\ expression of type $(\fut\rmint)\times\rmint$. A conventional
+call-by-value evaluation strategy demands that we evaluate both components of
+the pair to values before we project from the pair. However, at stage \bbone\ we
+are not allowed to evaluate under the \verb|next|; on the other hand, 
+\verb|next {1+2}| is not a value, in the sense that it requires additional
+computation steps.
 
 Intuitively, the solution is to say that \verb|next {1+2}| is a value \emph{at
 stage \bbone}, even though once we proceed to stage-\bbtwo\ evaluation, it will
