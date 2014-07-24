@@ -20,7 +20,7 @@
 									(y, (z_1, z_2))}}\right),
 									(l_1,l_2).\letin{x}{r_1}{r_2}
 								\end{array}}}																					{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
-\infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\vallam{x}{c},
+\infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\lam{x}{A}{c},
 							\_.(\vallam{(x,l)}{r})}}																			{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplitone [\to E]	{\spl {e_1~e_2}{B}{
 									\talllet{((y_1,z_1),(y_2,z_2))}{(c_1,c_2)}{
@@ -64,7 +64,7 @@
 \infersplittwo [int]			{\spl {i}{\rm int}{(),\_.i}}																	{\cdot} \and
 \infersplittwo [unit]			{\spl {()}{\rmunit}{(),\_.()}}																{\cdot} \and
 \infersplittwo [hyp]			{\spl {v}{A}{(),\_.x}}																		{\col x A \in \Gamma} \and
-\infersplittwo [\to I]		{\spl {\lam{x}{A}{e}}{A \to B}{p,l.(\vallam{x}{r})}}										{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplittwo [\to I]		{\spl {\lam{x}{A}{e}}{A \to B}{p,l.(\lam{x}{A}{r})}}										{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplittwo [\to E]		{\spl {e_1~e_2}{B}{(p_1,p_2),(l_1,l_2).r_1~r_2}}											{\sub 1 {A \to B} & \sub 2 A}							\and
 \infersplittwo [\times I]	{\spl {(e_1,e_2)}{A\times B}{(p_1,p_2),(l_1,l_2).(r_1,r_2)}}								{\sub 1 A & \sub 2 B} \and
 \infersplittwo [\times E_1]	{\spl {\pio~e}{A}{p,l.\pio~r}}																{\sub {} {A\times B}} \and

@@ -3,8 +3,8 @@
 \inferdiaone [\rmunit]   	{\red {()}{\cdot;()}}												{\cdot} 																					\and
 \inferdiaone [int]			{\red {i}{\cdot;i}}												{\cdot} 																					\and
 \inferdiaone [bool]   		{\red {b}{\cdot;b}}												{\cdot} 																					\and
-\inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot;\vallam{x}{e}}}					{\cdot} 																					\and
-\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}							{\red {e_1} {\xi_1;\vallam{x}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
+\inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}					{\cdot} 																					\and
+\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}							{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
 %
 \inferdiaone [\times I]  	{\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}				{\sub [1] & \sub [2]} 																	\and
 \inferdiaone [\times E_1]	{\red {\pio~e}{\xi;v_1}}											{\red{e}{\xi;\valprod{v_1}{v_2}}} 													\and
@@ -66,9 +66,9 @@
 %
 %\begin{figure}
 %\begin{mathpar}
-%\inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\cdot} 																		\and
-%\inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\vallam{x}{e}}}		{\specwor e} 																	\and
-%\inferreducewor [\to E]			{\red {e_1~e_2} {v'}}								{\red {e_1} {\vallam{x}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
+%\inferreducewor [\to I]			{\redone {\lam{x}{A}{e}} {\lam{x}{A}{e}}}		{\cdot} 																		\and
+%\inferreducewor [\to I]			{\redtwo {\lam{x}{A}{e}} {\lam{x}{A}{e}}}		{\specwor e} 																	\and
+%\inferreducewor [\to E]			{\red {e_1~e_2} {v'}}								{\red {e_1} {\lam{x}{A}{M}} & \red{e_2}v & \red {[v/x]M} {v'}}			\and
 %%
 %\inferreducewor [\rmunit]		{\red {()}{()}}									{\cdot} 																		\and
 %\inferreducewor [\times I]		{\red {(e_1,e_2)}{\valprod{v_1}{v_2}}}			{\sub [1] & \sub [2]} 														\and
@@ -155,9 +155,9 @@
 %
 %\begin{figure*}
 %\begin{mathpar}
-%\inferRedsplitone [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{e}}{()}}			{\cdot} 																\and
-%\inferSpeculation [\to I]	{\red {\lam{x}{A}{e}}{\vallam{x}{r}}}				{\sub} 																	\and
-%\inferRedsplitone [\to E]	{\red {e_1~e_2}{v'}{(r_1;\letin{x}{r_2}{r'})}}		{\red {e_1}{\vallam{x}{M}}{r_1} 
+%\inferRedsplitone [\to I]	{\red {\lam{x}{A}{e}}{\lam{x}{A}{e}}{()}}			{\cdot} 																\and
+%\inferSpeculation [\to I]	{\red {\lam{x}{A}{e}}{\lam{x}{A}{r}}}				{\sub} 																	\and
+%\inferRedsplitone [\to E]	{\red {e_1~e_2}{v'}{(r_1;\letin{x}{r_2}{r'})}}		{\red {e_1}{\lam{x}{A}{M}}{r_1} 
 %																							& \sub [2] & \red{[[e,x]/x]M}{v'}{r'}} 							\and
 %\inferSpeculation [\to E]	{\red {e_1~e_2}{r_1~r_2}}							{\sub [1] & \sub[2]}													\and
 %\inferRedsplitone [+ I_1]	{\red {\inl~e} {\inl~v}{r}}						{\sub} 																	\and
