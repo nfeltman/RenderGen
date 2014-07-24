@@ -4,27 +4,29 @@
 \input {figures/statics}
 
 In this section, we describe \lang, a simple two-stage language
-used as the basis for defining and analyzing stage splitting.
+for which we define and analyze stage splitting.
 
 %The grammar and type system for \lang\ is given in
 %\ref{fig:grammar,fig:statics}.
-Every expression in \lang\ has both a type and a {\em stage}, either \bbone~or \bbtwo.
-Just as a type describes \emph{what} sort of value an expression reduces to, the stage tells us \emph{when} an expression will be fully reduced.  
-Within each stage, \lang\ reduces to the simply-typed lambda calculus augmented with products, sums, general recursion, and base types
-\footnote{It needn't be the case that we choose the same set of features at both levels, but this does simplify the exposition.}.
+The language \lang\ is essentially two copies of a typed lambda calculus with
+products, sums, and isorecursive types.%
+\footnote{It is possible for different stages to have different sets of
+features, but for simplicity we do not consider this.}
+Every valid expression has both a type and a stage, either \bbone~or \bbtwo,
+expressing in which copy of the language the term resides. Intuitively, the
+stage of a term expresses \emph{when} to evaluate it---all stage-\bbone\
+subexpressions are evaluated before stage-\bbtwo\ ones.
 
-In addition to these types, stage-\bbone\ expressions may also be of type $\fut A$,
-representing an enclosed stage-\bbtwo\ expression of type $A$. $\fut A$ terms must be treated opaquely by stage-\bbone\ code
-as they cannot be reduced (to values with type $A$) until stage \bbtwo.
-While $\fut$ allows use to embed stage-\bbtwo\ types within stage-\bbtwo\ types, 
+In addition, there is a stage-\bbone\ type $\fut A$, containing encapsulated
+stage-\bbtwo\ expressions of type $A$. Terms of type $\fut A$ are treated
+opaquely by stage-\bbone\ code, as they cannot be evaluated until stage \bbtwo.
+While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbtwo\ types,
 there is no way to embed a stage-\bbone\ type within a stage-\bbtwo\ type.
-
-Despite this one-way dependence between the two stages at the type level, 
-stage-\bbone\ and stage-\bbtwo\ terms are defined mutually recursively:
-the $\next$ construct embeds stage-\bbtwo\ expressions into stage \bbone,
-whereas $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.
-The $\next$ and $\prev$ constructs are the only expressions that interact with the stage of a term,
-and we surround their arguments with braces in \lang\ syntax to clearly indicate stage boundaries within a program.
+The $\next$ constructor embeds stage-\bbtwo\ expressions into stage \bbone,
+while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  These are the
+only ways in \lang\ to alter the stage of a term; we surround their arguments
+with braces in \lang\ syntax to clearly indicate stage boundaries within a
+program.
 
 The grammar and type system for \lang\ is given in
 \ref{fig:grammar,fig:statics}. (Typing judgments and context variables are annotated with stages.)
