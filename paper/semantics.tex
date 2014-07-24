@@ -91,13 +91,50 @@ Accordingly, a suitably staged dynamic semantics for \lang\ must evaluate
 
 \subsection{Non-Duplicating First-Stage Evaluation}
 
-To understand how this behavior can be achieved, consider evaluation of the stage-\bbtwo\ term below, which contains nested $\next$ and $\prev$ blocks:
+\TODO clean up the next few paragraphs; unclear how much of it should go in the
+paper
+
+To understand the difficulty of staged evaluation, consider the following
+example:
+\begin{lstlisting}
+#2 (next {1+2}, 3+4)
+\end{lstlisting}
+This is a stage-\bbone\ expression of type $\rmint$; the pair is a stage-\bbone\
+expression of type $(\fut\rmint)\times\rmint$. A conventional call-by-value
+evaluation strategy demands that we evaluate both components of the pair to
+values before we project from the pair. However, at stage \bbone\ we are not
+allowed to evaluate under the \verb|next|; on the other hand, \verb|next {1+2}|
+is not a value, in the sense that it requires additional computation steps.
+
+Intuitively, the solution is to say that \verb|next {1+2}| is a value \emph{at
+stage \bbone}, even though once we proceed to stage-\bbtwo\ evaluation, it will
+no longer be a value. Therefore, we evaluate the pair to
+\begin{lstlisting}
+#2 (next {1+2}, 7)
+\end{lstlisting}
+and get \verb|7| as the answer.
+
+To complicate matters, consider a situation where we must substitute a stage
+\bbone\ value into some other expression. In the stage-\bbtwo\ term
 \begin{lstlisting} 
 prev{
   let x = (next {1+2}, 3+4) in
   next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
 }
 \end{lstlisting}
+our stage-\bbone\ evaluation will clearly yield a term which is not fully
+reduced---since \verb|1+2| is needed to compute the end result, but we cannot
+reduce it to \verb|3| until stage \bbtwo.
+
+On the other hand, if we simply treat \verb|(next {1+2}, 7)| as a value, then we
+will duplicate the \verb|1+2| computation in the term, and in fact we will
+evaluate it twice, in each computation of \verb|#1 (next {1+2}, 7)|.
+
+Our solution is to hoist these residuals, etc.
+
+\vspace{2em}
+\TODO old stuff below here. merge with above text:
+
 Our goal is to evaluate away all of the stage-\bbone\ portions of this code, but there is more than one reasonable way to do this.
 One option, taken by \cite{davies96}, is to treat \verb|next{1+2}| as a value for the purposes of stage-\bbone~evaluation, 
 consequently duplicating it during substitution for {\tt x}.  The two $\prev$ constructs eliminate the $\next$ wrappers,
