@@ -299,7 +299,7 @@ cannot be evaluated further at a particular stage:
 \item 
 Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully evaluated, 
 but which may contain hatted variables. In the example above, 
-\verb|(|$\hat {\tt y}$\verb|,7)|.
+\verb|(|$\next \{\mathtt{\hat y}\}$\verb|,7)|.
 \item Residuals ($\ressym$es) are stage \bbtwo\ terms whose stage \bbone\
 subexpressions have all been fully evaluated. In the example above,
 \verb|(1+2)| and \verb|(let z = y*y*7 in z)|.
@@ -322,13 +322,18 @@ we then return a fresh hatted variable ($\hat y$),
 along with a future environment which maps that variable to our residual ($y \mapsto q$).
 
 At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does nothing but recursively speculate into every subexpression.
-Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a hatted variable ($\hat y$).
-The context is then reified (using the $\reifysym$ judgment) into a series of let bindings, with $y$---stripped of its hat---at the bottom.
+Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a $\next$-wrapped variable ($\next\{\hat y\}$).
+The context is then reified (using the $\reifysym$ judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of its $\next$---at the bottom.
 
-Because the inputs to evaluation and speculation are sometimes open on variables, we adorn our judgments with a context.
-Since hatted variables can only be introduced to terms via substitution ({\em i.e.} they do not appear in the original program), 
-this context is augmented only at stage \bbone\ substitution sites.
-The second context ($\Gamma$) keeps track of stage \bbtwo\ variables, which are declared in original program.
+The context ($\Gamma$) keeps track of stage \bbtwo\ variables in the input term. 
+These both appear in the original program at stage \bbtwo\ and are inserted by the semantics.
+
+As an optimization, we can include the special-case rule,
+\begin{mathpar}
+\inferdiaone [hat] {\red {\next~\hat y}{\cdot,\next~\hat y}}{\cdot}
+\end{mathpar}
+to avoid one-for-one variable bindings in the residual.
+We used this implicitly in the example in the previous section.
 
 If we change the $\next$ and $\prev$ rules to 
 \begin{mathpar}

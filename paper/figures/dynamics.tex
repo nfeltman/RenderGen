@@ -1,3 +1,19 @@
+
+\begin{figure}
+\begin{mathpar}
+\infertypeswor [\rmunit] 	{() \pval}										{\cdot} 																		\and
+\infertypeswor [int]			{i \pval}										{\cdot} 																		\and
+\infertypeswor [bool]			{b \pval}										{\cdot} 																		\and
+\infertypeswor [\times]		{(v_1, v_2) \pval}							{v_1 \pval & v_2 \pval} 														\and
+\infertypeswor [+_1]			{\inl~v \pval}									{v \pval} 																		\and
+\infertypeswor [+_2]			{\inr~v \pval}									{v \pval} 																		\and
+\infertypeswor [\to]			{\lam x A e \pval}							{\cdot} 																		\and
+\infertypeswor [\fut]			{(\next~\hat y) \pval}						{\cdot} 													
+\end{mathpar}
+\caption{\lang~Valid Partial Values}
+\label{fig:validPvalues}
+\end{figure}
+
 \begin{figure*}
 \begin{mathpar}
 \inferdiaone [\rmunit]   	{\red {()}{\cdot;()}}												{\cdot} 																					\and
@@ -31,7 +47,6 @@
 \inferdiaone [\fut I]			{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}								{\diatwo e q}															\and
 \inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}							\and
 \inferdiaspc [hold]			{\red {\pause~e} q}													{\diaone e {\xi; i} & \reify \xi i q}								\and
-\left[\inferdiaone [hat]			{\red {\next~\hat y}{\cdot,\next~\hat y}}{\cdot}\right]												\and
 \infer							{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
