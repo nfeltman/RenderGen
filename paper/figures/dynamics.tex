@@ -4,7 +4,7 @@
 \inferdiaone [int]			{\red {i}{\cdot;i}}												{\cdot} 																					\and
 \inferdiaone [bool]   		{\red {b}{\cdot;b}}												{\cdot} 																					\and
 \inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot;\vallam{x}{e}}}					{\cdot} 																					\and
-\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2 \circ \xi';v'}}					{\red {e_1} {\xi_1;\vallam{x}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
+\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}							{\red {e_1} {\xi_1;\vallam{x}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
 %
 \inferdiaone [\times I]  	{\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}				{\sub [1] & \sub [2]} 																	\and
 \inferdiaone [\times E_1]	{\red {\pio~e}{\xi;v_1}}											{\red{e}{\xi;\valprod{v_1}{v_2}}} 													\and
@@ -29,7 +29,7 @@
 \begin{figure*}
 \begin{mathpar}
 \inferdiaone [\fut I]			{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}								{\diatwo e q}															\and
-\inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi; \hat y} & \reify{\xi}{\hat y}q}							\and
+\inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}							\and
 \inferdiaspc [hold]			{\red {\pause~e} q}													{\diaone e {\xi; i} & \reify \xi i q}								\and
 \left[\inferdiaone [hat]			{\red {\next~\hat y}{\cdot,\next~\hat y}}{\cdot}\right]												\and
 \infer							{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
