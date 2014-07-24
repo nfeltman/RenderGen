@@ -278,19 +278,6 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 %speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the
 %crossover points between 1-code and 2-code, they are correspondingly the only
 %places where the evaluation and speculation judgments depend on the other. 
-
-%The evaluation judgment is very similar to standard call-by-value evaluation.
-%The input to evaluation is a stage-1 expression (usually
-%$e$), as well as two administrative contexts ($\Gamma$), covered
-%later.  Evaluation has two outputs: the {\em future context} (usually $\xi$) and
-%the {\em partial value} (usually $v$).  We cover the latter first.  The partial
-%value is essentially the result of the first-stage portion of $e$, and must be a
-%\bbone-value of the same type as $e$.  As usual, this means that $v$ must be
-%composed only of base primitives, tuples, injections, and lambdas (corresponding
-%to base types, products, sums, and functions).  Analogously, the value
-%corresponding to $\fut$ is a construct called a {\em hatted variable} (written
-%$\hat y$), which signifies a reference to some stage-2 computation.  The mapping
-%between these hatted variables and stage-two expressions is
 %}}}
 
 The algorithm described above creates three different kinds of expressions which
@@ -298,7 +285,8 @@ cannot be evaluated further at a particular stage:
 \begin{itemize}
 \item 
 Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully evaluated, 
-but which may contain hatted variables. In the example above, 
+but which may contain stage-\bbtwo\ variables wrapped in $\next$ blocks. 
+In the example above, 
 \verb|(|$\next \{\mathtt{\hat y}\}$\verb|,7)|.
 \item Residuals ($\ressym$es) are stage \bbtwo\ terms whose stage \bbone\
 subexpressions have all been fully evaluated. In the example above,
@@ -309,7 +297,7 @@ example above, the term evaluates to \verb|63|.
 \end{itemize}
 The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future environment} $\xi$ and a partial value $v$.
 The future environment is a mapping from newly-created variables 
-(which then may appear---hatted---in $v$)
+(which then may appear within $\next$ blocks in $v$)
 to residuals.  It is the formal manifestation of the floating substitutions in our example.
 For all of the normal features of \lang (\ref{fig:diaSemanticsCore}), first stage evaluation has the same behavior and effect on values as standard evaluation,
 and the final future environment is gotten by merging the future environments of the subterms.
@@ -318,8 +306,8 @@ When this judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it sea
 \bbone\ subexpressions and evaluate them in place.  
 We call this search process \emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual.
 Once the contents of the $\next$ block are speculated into a residual ($q$), 
-we then return a fresh hatted variable ($\hat y$), 
-along with a future environment which maps that variable to our residual ($y \mapsto q$).
+we then return a fresh variable wrapped in a $\next$ block ($\next~\hat y$), 
+along with a future environment which maps that variable to our residual ($\hat y \mapsto q$).
 
 At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does nothing but recursively speculate into every subexpression.
 Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a $\next$-wrapped variable ($\next\{\hat y\}$).
@@ -365,7 +353,7 @@ let adjust (f : $int * int -> $int) =
 %
 Given its stage \bbone\ argument $a:A$, we can evaluate the partially-applied
 function:
-$\cdot;\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
+$\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
 The result is an environment $\xi$ and a partial value $v$ of type $\fut(B\to
 C)$. Next, we reify this environment into a sequence of \verb|let|-bindings
 enclosing $v$, via $\reify\xi{v}{f_a}$. A canonical forms theorem on $v$
