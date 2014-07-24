@@ -90,18 +90,33 @@ For residuals $q_1$ and $q_2$, define $q_1 \le_\beta q_2$ (``$q_1$ is $\beta$-sm
 identical modulo internal beta reductions of $q_2$.
 \end{definition}
 
-Note, this is the empty-context version for stage \bbtwo.
-We'll really need ones with contexts and stage \bbone.
+The theorem we really want is this:
 
 \begin{theorem}
-If $\cdot\vdash e : A \splittwosym [p:\tau,l.r]$ then,
-\begin{enumerate}
+If $\cdot\vdash e : A \splittwosym [p,l.r]$ then,
+\begin{itemize}
 \item $\cdot \vdash e : A~@~\bbtwo$ and
-\item $\types [\cdot] p \tau$ and
 \item $\types [l:\tau] r A$ and
 \item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
-\item $q \equiv (\letin{l}{u}{r})$
-\end{enumerate}
+\item $q \le_\beta (\letin{l}{u}{r})$
+\end{itemize}
+\end{theorem}
+
+But this isn't strong enough to prove on its own.  
+Firstly, it only considers empty contexts, which is not enough.
+Second, it is only at the second stage.
+
+Here's an empty-context version for the first stage.
+
+\TODO fix below
+\begin{theorem}
+If $\cdot\vdash e : A \splitonesym [c,l.r]$ then,
+\begin{itemize}
+\item $\cdot \vdash e : A~@~\bbtwo$ and
+\item $\types [l:\tau] r A$ and
+\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
+\item $q \le_\beta (\letin{l}{u}{r})$
+\end{itemize}
 \end{theorem}
 
 \input{figures/splitting-misc}
