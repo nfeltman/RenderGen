@@ -134,6 +134,10 @@ prev{
   next{ prev{next {1+2}} * prev{next {1+2}} * 7 }
 }
 \end{lstlisting}
+Finally, the $\prev$s eliminate the $\next$s to yield the final residual:
+\begin{lstlisting} 
+(1+2) * (1+2) * 7
+\end{lstlisting}
 Stage-\bbtwo\ evaluation of this expression will compute \verb|1+2| twice. Of
 course, this is not particularly expensive, but in general, the duplicated
 computation could be anything, even a recursive call to the function! To avoid duplicating
