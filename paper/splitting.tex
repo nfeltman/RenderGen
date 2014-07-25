@@ -90,32 +90,66 @@ For residuals $q_1$ and $q_2$, define $q_1 \le_\beta q_2$ (``$q_1$ is $\beta$-sm
 identical modulo internal beta reductions of $q_2$.
 \end{definition}
 
-The theorem we really want is this:
+\subsubsection{Stage 2 no context, no types}
 
 \begin{theorem}
 If $\cdot\vdash e : A \splittwosym [p,l.r]$ then,
 \begin{itemize}
-\item $\cdot \vdash e : A~@~\bbtwo$ and
-\item $\types [l:\tau] r A$ and
+\item $\cdot \vdash e : A~@~\bbtwo$ 
 \item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
-\item $q \le_\beta (\letin{l}{u}{r})$
+\item $q \equiv (\letin{l}{u}{r})$
 \end{itemize}
 \end{theorem}
 
-But this isn't strong enough to prove on its own.  
-Firstly, it only considers empty contexts, which is not enough.
-Second, it is only at the second stage.
+\subsubsection{Stage 1 no context, no types}
 
-Here's an empty-context version for the first stage.
-
-\TODO fix below
 \begin{theorem}
 If $\cdot\vdash e : A \splitonesym [c,l.r]$ then,
 \begin{itemize}
-\item $\cdot \vdash e : A~@~\bbtwo$ and
-\item $\types [l:\tau] r A$ and
+\item $\typesone [\cdot] e A$ 
+\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\reify \xi {v_2} q$
+\item $q \equiv (\letin{l}{u}{r})$
+\end{itemize}
+\end{theorem}
+
+\subsubsection{Simple Types}
+
+\begin{theorem}
+If $\cdot\vdash e : A \splittwosym [p,l:\tau.r]$ then,
+\begin{itemize}
+\item $\cdot \vdash e : A~@~\bbtwo$ 
+\item $\types [\cdot] p \tau$ and $\types [l:\tau] r A$ 
 \item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
-\item $q \le_\beta (\letin{l}{u}{r})$
+\item $q \equiv (\letin{l}{u}{r})$
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}
+If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
+\begin{itemize}
+\item $\typesone [\cdot] e A$ 
+\item $A \tsplito [A_1,A_2]$
+\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau] r A_2$ 
+\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\reify \xi {v_2} q$
+\item $q \equiv (\letin{l}{u}{r}) : A_2$
+\end{itemize}
+\end{theorem}
+
+\subsubsection{\bbone-Dependent Types}
+\begin{theorem}
+If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
+\begin{itemize}
+\item $\typesone [\cdot] e A$ 
+\item $A \tsplito [A_1,a.A_2]$
+\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau,a:A_1] r A_2$ 
+\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\reify \xi {v_2} q$
+\item $q \equiv (\letin{l}{u}{r}) : A_2$
 \end{itemize}
 \end{theorem}
 

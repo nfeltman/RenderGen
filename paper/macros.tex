@@ -79,8 +79,8 @@
 \newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
 \newcommand {\colwor} [2] {{#1}:{#2}~@~w}
-\newcommand {\typesone} [3] [] { \Gamma{#1} \vdash \colone{#2}{#3}}
-\newcommand {\typestwo} [3] [] { \Gamma{#1} \vdash \coltwo{#2}{#3}}
+\newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
+\newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
 \newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
 \newcommand {\istypeone} {~{\rm type}~@~\bbone}
