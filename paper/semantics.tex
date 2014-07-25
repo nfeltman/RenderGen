@@ -147,7 +147,7 @@ let y = 1+2 in y * y * 7
 
 Achieving this behavior mechanically requires us to resolve a contradiction:
 we must substitute for \texttt{x} in stage \bbone, but we cannot evaluate inside the $\next$ block bound to it. 
-Our solution is to replace the contents of the $\next$ with a new variable and create an explicit substitution (shown with a $\mapsto$) binding that variable to the $\next$'s old contents.  
+Our solution is to replace the contents of the $\next$ with a new stage-\bbtwo\ variable and create an explicit substitution (shown with a $\mapsto$) binding that stage-\bbtwo\ variable to the $\next$'s old contents.  
 This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
 prev {
