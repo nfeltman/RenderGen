@@ -20,7 +20,7 @@ subexpressions are evaluated before stage-\bbtwo\ ones.
 In addition, there is a stage-\bbone\ type $\fut A$, containing encapsulated
 stage-\bbtwo\ expressions of type $A$. Terms of type $\fut A$ are treated
 opaquely by stage-\bbone\ code, as they cannot be evaluated until stage \bbtwo.
-While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbtwo\ types,
+While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbone\ types,
 there is no way to embed a stage-\bbone\ type within a stage-\bbtwo\ type.
 The $\next$ constructor embeds stage-\bbtwo\ expressions into stage \bbone,
 while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  These are the
