@@ -1,0 +1,100 @@
+%% TYPES
+ty : type. %name ty T.
+unit  : ty.
+arr    : ty -> ty -> ty.
+%%fut    : ty wor2 -> ty wor1.
+
+%% TERMS
+term : type. %name term E.
+ztup  : term.
+%% annotate base constants with their world
+lam    : ty -> (term -> term) -> term.
+app    : term -> term -> term.
+
+%% TYPING JUDGMENT
+of : term -> ty -> type. %name of Dof.
+of-ztup	: of ztup unit.
+of-lam 	: of (lam A ([x] M x)) (arr A B)
+			<- ({x: term} of x A -> of (M x) B).
+of-app  : of (app E1 E2) B
+			<- of E2 A
+			<- of E1 (arr A B).
+			
+%block var-of : some {A : ty} block {x:term} {_ : of x A}.
+%worlds (var-of) (of _ _).
+%unique of +E -1T.
+
+%% REDUCTION
+red : term -> term -> type. %name red Dred.
+%mode red +E -V.
+red-ztup : red ztup ztup.
+red-lam  : red (lam A M) (lam A M).
+red-app  : red (app E1 E2) V
+        <- red E2 V2
+        <- red E1 (lam A ([x] M x))
+        <- red (M V2) V.
+
+%% VALUE JUDGMENT
+pval : term -> type. %name pval Dpval.
+pval-ztup  : pval ztup.
+pval-lam  : pval (lam _ _).
+             
+
+%% UNIQUENESS OF TYPING 
+idty : ty -> ty -> type.
+idty/refl : idty T T.
+
+idty-cong-arr :
+  idty A1 A2 ->
+  idty B1 B2 ->
+  idty (arr A1 B1) (arr A2 B2) -> type.
+%mode idty-cong-arr +D1 +D2 -D3.
+- : idty-cong-arr idty/refl idty/refl idty/refl.
+%worlds () (idty-cong-arr _ _ _).
+%total {} (idty-cong-arr _ _ _).
+
+idty-inj-arr :
+  idty (arr A1 B1) (arr A2 B2) ->
+  idty A1 A2 ->
+  idty B1 B2 -> type.
+%mode idty-inj-arr +D1 -D2 -D3.
+- : idty-inj-arr idty/refl idty/refl idty/refl.
+%worlds () (idty-inj-arr _ _ _).
+%total {} (idty-inj-arr _ _ _).
+
+of-unique : of M T1 -> of M T2 -> idty T1 T2 -> type.
+%mode of-unique +D1 +D2 -E.
+- : of-unique D D idty/refl.
+- : of-unique of-ztup of-ztup idty/refl.
+- : of-unique (of-lam D1) (of-lam D2) AtoBeq
+    <- ({e:term} {D : of e A} of-unique (D1 e D) (D2 e D) Beq)
+    <- idty-cong-arr idty/refl Beq AtoBeq.
+- : of-unique (of-app (Mof1 : of M (arr A1 B1))
+                      (Nof1 : of N A1))
+              (of-app (Mof2 : of M (arr A2 B2))
+                      (Nof2 : of N A2))
+              Beq
+    <- of-unique Mof1 Mof2 AtoBeq
+    <- idty-inj-arr AtoBeq _ Beq.
+%worlds (var-of) (of-unique _ _ _).
+%total D (of-unique D _ _).
+
+%% PRESERVATION AND EVALUATION
+pres : red E V -> of E A -> pval V -> of V A -> type.
+%mode pres +T1 +R -V -T2.
+pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
+pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM). 
+pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
+        <- pres DredE1 DofE1 _ (of-lam DofM) %% inversion
+        <- pres (DredE2 : red E2 V2) DofE2 _ DofV2
+        <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
+%%        <- of-unique DofM DofM _.
+        
+%{ pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
+        <- pres (DredE1 : red E1 (lam A1 M)) (DofE1 : of E1 (arr A2 B)) pval-lam ((of-lam DofM) : of (lam A1 M) (arr A1 B)) %% inversion
+        <- pres (DredE2 : red E2 V2) DofE2 _ DofV2
+        <- pres (DredM : red (M V2) V3) (DofM V2 DofV2) DvalV3 DofV3
+        <- of-unique DofE1 (_ : of ) _. }%
+        
+%worlds () (pres _ _ _ _).
+%total Dred (pres Dred _ _ _).
