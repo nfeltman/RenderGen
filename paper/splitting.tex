@@ -86,72 +86,73 @@ This makes it hard to type the output, because the boundary types are not repres
 \subsection{Metatheory}
 
 \begin{definition}
-For residuals $q_1$ and $q_2$, define $q_1 \le_\beta q_2$ (``$q_1$ is $\beta$-smaller than $q_2$'') if they are
-identical modulo internal beta reductions of $q_2$.
+For residuals $q$ and $r$, define $q \equiv r$ to mean that 
+$\diatwo {e_1} {v_1}$ iff $\reduce {e_2} {v_2}$ where .
 \end{definition}
 
-\subsubsection{Stage 2 no context, no types}
+We give the following end-to-end correctness lemmas for closed terms (open term versions forthcoming).
 
-\begin{theorem}
+\begin{lemma}
 If $\cdot\vdash e : A \splittwosym [p,l.r]$ then,
 \begin{itemize}
 \item $\cdot \vdash e : A~@~\bbtwo$ 
-\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
+\item $\diatwo [\cdot] e q$ iff $\reduce p u$ where
 \item $q \equiv (\letin{l}{u}{r})$
 \end{itemize}
-\end{theorem}
+\end{lemma}
 
-\subsubsection{Stage 1 no context, no types}
-
-\begin{theorem}
+\begin{lemma}
 If $\cdot\vdash e : A \splitonesym [c,l.r]$ then,
 \begin{itemize}
 \item $\typesone [\cdot] e A$ 
-\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ where
 \item $\dom \xi \vdash v \vsplito [v_1,v_2]$
 \item $\reify \xi {v_2} q$
 \item $q \equiv (\letin{l}{u}{r})$
 \end{itemize}
-\end{theorem}
+\end{lemma}
 
-\subsubsection{Simple Types}
 
-\begin{theorem}
-If $\cdot\vdash e : A \splittwosym [p,l:\tau.r]$ then,
-\begin{itemize}
-\item $\cdot \vdash e : A~@~\bbtwo$ 
-\item $\types [\cdot] p \tau$ and $\types [l:\tau] r A$ 
-\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
-\item $q \equiv (\letin{l}{u}{r})$
-\end{itemize}
-\end{theorem}
 
-\begin{theorem}
-If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
-\begin{itemize}
-\item $\typesone [\cdot] e A$ 
-\item $A \tsplito [A_1,A_2]$
-\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau] r A_2$ 
-\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi {v_2} q$
-\item $q \equiv (\letin{l}{u}{r}) : A_2$
-\end{itemize}
-\end{theorem}
-
-\subsubsection{\bbone-Dependent Types}
-\begin{theorem}
-If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
-\begin{itemize}
-\item $\typesone [\cdot] e A$ 
-\item $A \tsplito [A_1,a.A_2]$
-\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau,a:A_1] r A_2$ 
-\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi {v_2} q$
-\item $q \equiv (\letin{l}{u}{r}) : A_2$
-\end{itemize}
-\end{theorem}
+%
+%\subsubsection{Simple Types}
+%
+%\begin{theorem}
+%If $\cdot\vdash e : A \splittwosym [p,l:\tau.r]$ then,
+%\begin{itemize}
+%\item $\cdot \vdash e : A~@~\bbtwo$ 
+%\item $\types [\cdot] p \tau$ and $\types [l:\tau] r A$ 
+%\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
+%\item $q \equiv (\letin{l}{u}{r})$
+%\end{itemize}
+%\end{theorem}
+%
+%\begin{theorem}
+%If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
+%\begin{itemize}
+%\item $\typesone [\cdot] e A$ 
+%\item $A \tsplito [A_1,A_2]$
+%\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau] r A_2$ 
+%\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+%\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+%\item $\reify \xi {v_2} q$
+%\item $q \equiv (\letin{l}{u}{r}) : A_2$
+%\end{itemize}
+%\end{theorem}
+%
+%\subsubsection{\bbone-Dependent Types}
+%\begin{theorem}
+%If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
+%\begin{itemize}
+%\item $\typesone [\cdot] e A$ 
+%\item $A \tsplito [A_1,a.A_2]$
+%\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau,a:A_1] r A_2$ 
+%\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
+%\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+%\item $\reify \xi {v_2} q$
+%\item $q \equiv (\letin{l}{u}{r}) : A_2$
+%\end{itemize}
+%\end{theorem}
 
 \input{figures/splitting-misc}
 

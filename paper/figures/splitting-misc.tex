@@ -33,6 +33,16 @@
 \caption{Value Splitting}
 \label{fig:valSplit}
 \end{figure*}
+
+\begin{figure*}
+\begin{mathpar}
+\infer {e_1 \equiv e_2 : \rmint} {\diatwo {e_1} {i} & \reduce {e_2} {i}} \and
+\infer {e_1 \equiv e_2 : A \times B} {e_1 \downarrow (u_1,v_1) & \reduce {e_2} {(u_2,v_2)} & v_1 \approx v_2} \and
+\infer {e_1 \equiv e_2} {\diatwo {e_1} {v_1} & \reduce {e_2} {v_2} & v_1 \approx v_2}
+\end{mathpar}
+\caption{Auxiliary Splitting Judgments}
+\label{fig:auxSplit}
+\end{figure*}
 %
 %\begin{figure*}
 %\caption{Context Splitting}
