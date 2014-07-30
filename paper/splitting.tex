@@ -102,7 +102,9 @@ $e_1 \tworedsym v_1$ iff $\reduce {e_2} {v_2}$ where $v_1 \sim v_2 : A$
 All I'm trying to say here is that two terms are equivalent if they evaluate to the same value,
 where "same" for functions means that those functions always evaluate to the same thing.
 
-We give the following end-to-end correctness lemmas for closed terms (open term versions forthcoming).
+We give the following end-to-end correctness lemmas for closed terms. 
+Open term versions forthcoming.
+The jury is still out on how to make these strong enough to prove that the partitioning between stages is correct.
 
 \begin{lemma}
 If $\cdot\vdash e : A \splittwosym [p,l.r]$ then,
@@ -124,7 +126,8 @@ If $\cdot\vdash e : A \splitonesym [c,l.r]$ then,
 \end{itemize}
 \end{lemma}
 
-
+You should think of these theorems as saying that 
+splitting commutes with evaluation.
 
 %
 %\subsubsection{Simple Types}
