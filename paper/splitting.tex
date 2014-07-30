@@ -85,10 +85,22 @@ This makes it hard to type the output, because the boundary types are not repres
 
 \subsection{Metatheory}
 
+We start with two careful definitions of equivalence ($\equiv$ on terms below, $\sim$ on values in \ref{fig:auxSplit}).  They are mutually dependent.
+
+There are two problems with these definitions:
+\begin{enumerate}
+\item I'm not sure how to encode $\equiv$ with relations, since the iff requires inversion rather than direct derivation.
+\item In the rule labeled PROBLEM, I have a sudden turnstile out of nowhere.  
+  What I'm trying to say with that premise is ``for any equivalent arguments, the bodies are equivalent".
+\end{enumerate}
+
 \begin{definition}
-For residuals $q$ and $r$, define $q \equiv r$ to mean that 
-$\diatwo {e_1} {v_1}$ iff $\reduce {e_2} {v_2}$ where .
+For residuals $q$ and $r$, define $q \equiv r : A$ to mean that 
+$e_1 \tworedsym v_1$ iff $\reduce {e_2} {v_2}$ where $v_1 \sim v_2 : A$
 \end{definition}
+
+All I'm trying to say here is that two terms are equivalent if they evaluate to the same value,
+where "same" for functions means that those functions always evaluate to the same thing.
 
 We give the following end-to-end correctness lemmas for closed terms (open term versions forthcoming).
 

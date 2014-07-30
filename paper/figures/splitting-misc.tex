@@ -36,9 +36,12 @@
 
 \begin{figure*}
 \begin{mathpar}
-\infer {e_1 \equiv e_2 : \rmint} {\diatwo {e_1} {i} & \reduce {e_2} {i}} \and
-\infer {e_1 \equiv e_2 : A \times B} {e_1 \downarrow (u_1,v_1) & \reduce {e_2} {(u_2,v_2)} & v_1 \approx v_2} \and
-\infer {e_1 \equiv e_2} {\diatwo {e_1} {v_1} & \reduce {e_2} {v_2} & v_1 \approx v_2}
+\infer {i \sim i : \rmint} {\cdot} \and
+\infer {(u_1,v_1) \sim (u_2,v_2) : A \times B} {u_1 \sim u_2 : A & v_1 \sim v_2 : B} \and
+\infer {\inl~v_1 \sim \inl~v_2 : A+B} {v_1 \sim v_2 : A} \and
+\infer {\inr~v_1 \sim \inr~v_2 : A+B} {v_1 \sim v_2 : A} \and
+\infer [{\rm PROBLEM}] {\lam {x_1} A {e_1} \sim \lam {x_2} A {e_2} : A \to B} 
+		{x_1 \equiv x_2 : A \vdash e_1 \equiv e_2 : B}
 \end{mathpar}
 \caption{Auxiliary Splitting Judgments}
 \label{fig:auxSplit}
