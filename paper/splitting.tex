@@ -102,27 +102,32 @@ $e_1 \tworedsym v_1$ iff $\reduce {e_2} {v_2}$ where $v_1 \sim v_2 : A$
 All I'm trying to say here is that two terms are equivalent if they evaluate to the same value,
 where "same" for functions means that those functions always evaluate to the same thing.
 
-We give the following end-to-end correctness lemmas for closed terms. 
-Open term versions forthcoming.
+We give the following end-to-end correctness lemmas for open terms. 
+It's a bit of a mess currently, but the $\Gamma$ is supposed to be all of the stage \bbone\ bindings, 
+whereas $\Gamma'$ is the stage \bbtwo\ bindings.
+Substitution splitting works just like value splitting, which is why they use the same symbol.
+
 The jury is still out on how to make these strong enough to prove that the partitioning between stages is correct.
 
 \begin{lemma}
-If $\cdot\vdash e : A \splittwosym [p,l.r]$ then,
+If $\Gamma, \Gamma'\vdash e : A \splittwosym [p,l.r]$ then for all substitutions $\gamma : \Gamma$,
 \begin{itemize}
-\item $\cdot \vdash e : A~@~\bbtwo$ 
-\item $\diatwo [\cdot] e q$ iff $\reduce p u$ where
-\item $q \equiv (\letin{l}{u}{r})$
+\item $\Gamma,\Gamma' \vdash e : A~@~\bbtwo$ 
+\item $\gamma \vsplito [\gamma_1, \gamma_2]$
+\item $\diatwo [\Gamma'] {\gamma(e)} q$ iff $\reduce {\gamma_1(p)} u$ where
+\item $\Gamma' \vdash q \equiv (\letin{l}{u}{\gamma_2(r)})$
 \end{itemize}
 \end{lemma}
 
 \begin{lemma}
-If $\cdot\vdash e : A \splitonesym [c,l.r]$ then,
+If $\Gamma, \Gamma'\vdash e : A \splitonesym [c,l.r]$ then for all $\gamma : \Gamma$,
 \begin{itemize}
-\item $\typesone [\cdot] e A$ 
-\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ where
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\typesone [\Gamma, \Gamma'] e A$ 
+\item $\gamma \vsplito [\gamma_1, \gamma_2]$
+\item $\diaone [\Gamma'] {\gamma(e)} {\xi;v}$ iff $\reduce {\gamma_1(c)} {(v_1,u)}$ where
+\item $\Gamma',\dom \xi \vdash v \vsplito [v_1,v_2]$
 \item $\reify \xi {v_2} q$
-\item $q \equiv (\letin{l}{u}{r})$
+\item $\Gamma'\vdash q \equiv (\letin{l}{u}{\gamma_2(r)})$
 \end{itemize}
 \end{lemma}
 
