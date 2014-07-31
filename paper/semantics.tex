@@ -278,6 +278,15 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 %places where the evaluation and speculation judgments depend on the other. 
 %}}}
 
+To fully evaluate an expression in \lang, we first evaluate all of its stage
+\bbone\ subexpressions as described above. This results in a stage \bbtwo\
+expression with no stage \bbone\ content; we say that it is a term in a
+monostaged%
+\footnote{In general, \lang could have more than two stages, in which case the
+expression would be in a language with one fewer stage.}
+language called \langTwo. Ordinary \langTwo\ evaluation, implemented by the
+$\tworedsym$ judgment, completes the evaluation of this term.
+
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
 \begin{itemize}
@@ -286,30 +295,39 @@ Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully evalua
 but which may contain stage-\bbtwo\ variables wrapped in $\next$ blocks. 
 In the example above, 
 \verb|(|$\next \{\mathtt{\hat y}\}$\verb|,7)|.
-\item Residuals ($\ressym$es) are stage \bbtwo\ terms whose stage \bbone\
-subexpressions have all been fully evaluated. In the example above,
+\item Residuals ($\ressym$es) are \langTwo\ terms---stage \bbtwo\ terms whose
+stage \bbone\ subexpressions have all been fully evaluated. In the example
+above,
 \verb|(1+2)| and \verb|(let z = y*y*7 in z)|.
-\item Values ($\valsym$s) are stage \bbtwo\ terms which are fully evaluated; these
+\item Values ($\valsym$s) are \langTwo\ terms which are fully evaluated; these
 are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|63|.
 \end{itemize}
-The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future environment} $\xi$ and a partial value $v$.
-The future environment is a mapping from newly-created variables 
-(which then may appear within $\next$ blocks in $v$)
-to residuals.  It is the formal manifestation of the floating substitutions in our example.
-For all of the normal features of \lang (\ref{fig:diaSemanticsCore}), first stage evaluation has the same behavior and effect on values as standard evaluation,
-and the final future environment is gotten by merging the future environments of the subterms.
+The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future
+environment} $\xi$ and a partial value $v$.  The future environment is a mapping
+from fresh stage \bbtwo\ variables (which may appear inside $\next$ blocks in
+$v$) to residuals---in our example, we represented this environment with
+explicit substitutions. For all of the normal features of \lang
+(\ref{fig:diaSemanticsCore}), first stage evaluation has the same behavior and
+effect on values as standard evaluation, and the final future environment is
+gotten by merging the future environments of the subterms.
 
-When this judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it searches into the block's stage \bbtwo\ content to find any contained stage
-\bbone\ subexpressions and evaluate them in place.  
-We call this search process \emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual.
-Once the contents of the $\next$ block are speculated into a residual ($q$), 
-we then return a fresh variable wrapped in a $\next$ block ($\next~\hat y$), 
-along with a future environment which maps that variable to our residual ($\hat y \mapsto q$).
+When this judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it
+searches into the block's stage \bbtwo\ content to find any contained stage
+\bbone\ subexpressions and evaluate them in place.  We call this search process
+\emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes
+a stage \bbtwo\ term to a residual.  Once the contents of the $\next$ block are
+speculated into a residual ($q$), we then return a fresh variable wrapped in a
+$\next$ block ($\next~\hat y$), along with a future environment which maps that
+variable to our residual ($\hat y \mapsto q$).
 
-At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does nothing but recursively speculate into every subexpression.
-Once speculation finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which produces a future context and (by canonical forms) a $\next$-wrapped variable ($\next\{\hat y\}$).
-The context is then reified (using the $\reifysym$ judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of its $\next$---at the bottom.
+At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does
+nothing but recursively speculate into every subexpression.  Once speculation
+finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which
+produces a future context and (by canonical forms) a $\next$-wrapped variable
+($\next\{\hat y\}$).  The context is then reified (using the $\reifysym$
+judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of
+its $\next$---at the bottom.
 
 The context ($\Gamma$) keeps track of stage \bbtwo\ variables in the input term. 
 These both appear in the original program at stage \bbtwo\ and are inserted by the semantics.
