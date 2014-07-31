@@ -34,7 +34,7 @@ red-app  : red (app E1 E2) V
         <- red E1 (lam A ([x] M x))
         <- red (M V2) V.
 
-%% VALUE JUDGMENT
+%% VALUES JUDGMENT
 pval : term -> type. %name pval Dpval.
 pval-ztup  : pval ztup.
 pval-lam  : pval (lam _ _).
@@ -79,22 +79,23 @@ of-unique : of M T1 -> of M T2 -> idty T1 T2 -> type.
 %worlds (var-of) (of-unique _ _ _).
 %total D (of-unique D _ _).
 
+%% LAMBDA VALUE INVERSION LEMMA
+lam-inverts : of (lam A1 _) (arr A2 _) -> idty A1 A2 -> type.
+- : lam-inverts (of-lam _) idty/refl.
+%mode lam-inverts +O -I.
+%worlds () (lam-inverts _ _).
+%total D (lam-inverts D _).
+
 %% PRESERVATION AND EVALUATION
+
 pres : red E V -> of E A -> pval V -> of V A -> type.
 %mode pres +T1 +R -V -T2.
 pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
-pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM). 
+pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).        
 pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres DredE1 DofE1 _ (of-lam DofM) %% inversion
+        <- pres (DredE1 : red E1 (lam A M)) (DofE1 : of E1 (arr A B)) pval-lam (of-lam DofM) %% inversion
         <- pres (DredE2 : red E2 V2) DofE2 _ DofV2
-        <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
-%%        <- of-unique DofM DofM _.
-        
-%{ pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres (DredE1 : red E1 (lam A1 M)) (DofE1 : of E1 (arr A2 B)) pval-lam ((of-lam DofM) : of (lam A1 M) (arr A1 B)) %% inversion
-        <- pres (DredE2 : red E2 V2) DofE2 _ DofV2
-        <- pres (DredM : red (M V2) V3) (DofM V2 DofV2) DvalV3 DofV3
-        <- of-unique DofE1 (_ : of ) _. }%
+        <- pres (DredM : red (M V2) V3) (DofM V2 DofV2) DvalV3 DofV3. 
         
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
