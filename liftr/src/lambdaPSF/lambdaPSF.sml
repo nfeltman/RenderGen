@@ -2,43 +2,31 @@
 structure LambdaPSF = 
 struct
 
+infixr 9 `
+fun a ` b = a b
+
 open LangCommon
+structure S = SourceLang
 
-datatype ty		= Tint
-				| Tbool
-				| Tprod of ty list
-				| Tsum of ty * ty
-				| Tfunc of ty * ty
-				| Tvar of int
-				| Trec of ty
+val PPtuple = S.Ptuple
+val PPvar = S.Pvar
 
-datatype ppatt	= PPvar of var
-				| PPtuple of ppatt list
-							
-datatype 't expr	= Evar of var
-					| Eint of int
-					| Ebool of bool
-					| Elam of 't * (ppatt * 't expr)
-					| Eapp of 't expr * 't expr
-					| Etuple of 't expr list
-					| Epi of int * 't expr
-					| Einj of LR * 't * 't expr
-					| Ecase of 't expr * (ppatt * 't expr) * (ppatt * 't expr)
-					| Eif of 't expr * 't expr * 't expr
-					| Elet of 't expr * (ppatt * 't expr)
-					| Ebinop of Prims.binops * 't expr * 't expr
-					| Eroll of 't expr
-					| Eunroll of 't expr
-					| Eerror of 't
+datatype expr = E of (expr,var,unit) S.exprF
 
-fun forPattern (f,_,_) g (PPvar x) t = f g x t
-  | forPattern (fu as (_,unpack,ex)) g (PPtuple xs) ts = 
-	let 
-		fun forPatternList g (x::xs) (t::ts) = forPatternList (forPattern fu g x t) xs ts
-		  | forPatternList g [] [] = g
-		  | forPatternList _ _ _ = raise ex (* mismatch between pattern and product *)
-	in
-		forPatternList g xs (unpack ts) 
-	end
-					
+fun Evar x = E ` S.Fvar x
+fun Eint x = E ` S.Fint x
+fun Ebool x = E ` S.Fbool x
+fun Elam x = E ` S.Flam x
+fun Eapp x = E ` S.Fapp x
+fun Etuple x = E ` S.Ftuple x
+fun Epi x = E ` S.Fpi x
+fun Einj x = E ` S.Finj x
+fun Ecase x = E ` S.Fcase x 
+fun Eif x = E ` S.Fif x
+fun Elet x = E ` S.Flet x
+fun Ebinop x = E ` S.Fbinop x
+fun Eroll x = E ` S.Froll x
+fun Eunroll x = E ` S.Funroll x
+fun Eerror x = E ` S.Ferror x
+		
 end

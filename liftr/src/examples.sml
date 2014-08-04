@@ -126,7 +126,7 @@ fun testProgram verbose name p t =
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);
 		val _ = debug "---\n";
-		val _ = debug (PrintPSF.pat2string (PrintPSF.convertPSFPattern l));
+		val _ = debug (PrintPSF.pat2string (PrintPSF.convertSourcePattern l));
 		val _ = debug ".\n";
 		val _ = printTerm (PrintPSF.convertPSF split2);
 		val _ = debug "~~~~~~~~~~~\n";
@@ -146,7 +146,7 @@ fun testProgram verbose name p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Evaluating Split Part *)
-		val (PSFSemantics.Vtuple [v1Split,pSplit]) = PSFSemantics.evaluate Contexts.empty split1
+		val (PSFSemantics.V (VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
 		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
 		
 		

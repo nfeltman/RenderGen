@@ -13,8 +13,6 @@ structure S = SourceLang
 infixr 9 `
 fun a ` b = a b
 
-type expr = unit LambdaPSF.expr
-
 fun convertPattern (S.Pvar v) = PPvar v
   | convertPattern (S.Ptuple ps) = PPtuple (map convertPattern ps)
   
@@ -27,22 +25,22 @@ fun freshPi () =
 		(l, fn i => Epi (i, Evar l))
 	end
 
-fun terminates e = (case e of
-	Evar _ => true
-  | Eint _ => true
-  | Ebool _ => true
-  | Elam _ => true
-  | Eapp _ => false
-  | Etuple es => List.all terminates es
-  | Epi (_,e) => terminates e
-  | Einj (_,_,e) => terminates e
-  | Ecase (e1,(_,e2),(_,e3)) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
-  | Eif (e1,e2,e3) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
-  | Elet (e1,(_,e2)) => (terminates e1) andalso (terminates e2)
-  | Ebinop (_,e1,e2) => (terminates e1) andalso (terminates e2)
-  | Eroll e => terminates e
-  | Eunroll e => terminates e
-  | Eerror _ => false)
+fun terminates (E e) = (case e of
+	S.Fvar _ => true
+  | S.Fint _ => true
+  | S.Fbool _ => true
+  | S.Flam _ => true
+  | S.Fapp _ => false
+  | S.Ftuple es => List.all terminates es
+  | S.Fpi (_,e) => terminates e
+  | S.Finj (_,_,e) => terminates e
+  | S.Fcase (e1,(_,e2),(_,e3)) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
+  | S.Fif (e1,e2,e3) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
+  | S.Flet (e1,(_,e2)) => (terminates e1) andalso (terminates e2)
+  | S.Fbinop (_,e1,e2) => (terminates e1) andalso (terminates e2)
+  | S.Froll (_,e) => terminates e
+  | S.Funroll e => terminates e
+  | S.Ferror _ => false)
 
 fun chain2 (e1,e2) = if terminates e1 then e2 else Epi (1, Etuple [e1,e2])
 fun chain3 (e1,e2,e3) = 
@@ -54,6 +52,7 @@ fun chain3 (e1,e2,e3) =
 
 in
 
+type ppatt	= var S.pattern
 datatype stage1Part			= Splittable of (ppatt * expr) list * expr * expr
 							| Opaque of expr
 datatype 's1 splitResult1	= NoPrec1 of expr * expr 
@@ -120,7 +119,7 @@ fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
 			(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, fn p2 => Etuple[Evar p,p2], PPtuple[l,link])
 		end
   
-fun decompTuple (Etuple [v,p]) f = f (v,p)
+fun decompTuple (E (S.Ftuple [v,p])) f = f (v,p)
   | decompTuple c f = 
 		let
 			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
@@ -131,6 +130,8 @@ fun caseBranch c addPrec side =
 		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(side, (), p))])
 fun caseBranches addPrec (c2, b2) (c3, b3) = 
 		(caseBranch c2 addPrec Left, b2, caseBranch c3 addPrec Right, b3)
+
+fun roll e = Eroll ((),e)
 in
 
 val coerce1 = coerce  
@@ -139,7 +140,6 @@ val coerce1 = coerce
 fun stageSplit1 (E1 exp) = 
 	let
 		val split = stageSplit1 : expr1 -> stage1Part splitResult1
-		
 	in
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
@@ -237,7 +237,7 @@ fun stageSplit1 (E1 exp) =
 			end
 		| S.Fbinop (bo,e1,e2) =>
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
-		| S.Froll (_,e) => merge1 (split e) Eroll Eroll
+		| S.Froll (_,e) => merge1 (split e) roll roll
 		| S.Funroll e => merge1 (split e) Eunroll Eunroll
 		| S.Ferror t => NoPrec1 (Eerror (), Eerror ())
 	end
@@ -296,7 +296,7 @@ and stageSplit2 (E2 exp) =
 			(fn (a,b,c) => Ecase (a,(convertPattern x2,b),(convertPattern x3,c)))
 		| S.Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
 		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertPattern x,b)))
-		| S.Froll (_,e) => merge1 (split e) Eroll
+		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
 		| S.Ferror t => NoPrec2 (Eerror ())
 	end

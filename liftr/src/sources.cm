@@ -16,7 +16,6 @@ Group is
 	  
 	  (* lambdaPSF *)
 	  lambdaPSF/lambdaPSF.sml
-      lambdaPSF/typecheckPSF.sml
 	  
 	  (* transformations *)
 	  propstage.sml

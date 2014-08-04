@@ -12,6 +12,12 @@ structure D = DiagonalSemantics
 infixr 9 `
 fun a ` b = a b
 
+val Vint = V o VFint
+val Vbool = V o VFbool
+val Vinj = V o VFinj
+val Vroll = V o VFroll
+val Vtuple = V o VFtuple
+
 in
 
 exception ConversionError
@@ -66,13 +72,13 @@ fun convertDiagValue2 v =
 		| D.V2 (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)
 		| D.V2 (VFlam (x,e)) => raise ConversionError
 		
-fun valueEq v1 v2 = 
+fun valueEq (V v1) (V v2) = 
 	case (v1,v2) of 
-	  (Vint i1, Vint i2) => i1 = i2
-	| (Vbool b1, Vbool b2) => b1 = b2
-	| (Vinj (s1,u1), Vinj (s2,u2)) => (s1 = s2) andalso (valueEq u1 u2)
-	| (Vtuple vs1, Vtuple vs2) => LangCommon.listeq valueEq vs1 vs2
-	| (Vroll vs1, Vroll vs2) => valueEq vs1 vs2
+	  (VFint i1, VFint i2) => i1 = i2
+	| (VFbool b1, VFbool b2) => b1 = b2
+	| (VFinj (s1,u1), VFinj (s2,u2)) => (s1 = s2) andalso (valueEq u1 u2)
+	| (VFtuple vs1, VFtuple vs2) => LangCommon.listeq valueEq vs1 vs2
+	| (VFroll vs1, VFroll vs2) => valueEq vs1 vs2
 	| (_,_) => false
 end
 	
