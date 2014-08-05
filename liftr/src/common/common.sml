@@ -3,13 +3,6 @@ structure LangCommon =
 struct
 
 type var = Variable.variable
-datatype LR = Left | Right
-
-fun projLR Left  (a,_) = a
-  | projLR Right (_,b) = b
-
-fun injLR Left  a t = (a,t)
-  | injLR Right b t = (t,b)
 
 exception TypeError
 exception ParseError
@@ -29,5 +22,9 @@ fun bimap f g (a,b) = (f a, g b)
 
 fun unzip [] = ([],[])
   | unzip ((x,y)::r) = let val (xs,ys) = unzip r in (x::xs,y::ys) end
+
+fun zip _ [] [] _ = []
+  | zip f (x::xs) (y::ys) ex = (f (x,y)) :: (zip f xs ys ex)
+  | zip _ _ _ ex = raise ex
 
 end

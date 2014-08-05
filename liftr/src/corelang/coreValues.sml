@@ -4,7 +4,7 @@ struct
 									| VFbool of bool
 									| VFroll of 'v
 									| VFtuple of 'v list
-									| VFinj of LangCommon.LR * 'v
+									| VFinj of int * 'v
 									| VFlam of 'c * ('r * 'e)
 	
 	fun unroll (VFroll v) = v
@@ -32,7 +32,7 @@ sig
 	val VFbool  : bool -> valueF
 	val VFroll  : v -> valueF
 	val VFtuple : v * v -> valueF
-	val VFinj   : LangCommon.LR * v -> valueF
+	val VFinj   : int * v -> valueF
 	val VFlam   : lamBody -> valueF
 	
 	val unint   : valueF -> int
@@ -40,7 +40,7 @@ sig
 	val ununit  : valueF -> unit
 	val unroll  : valueF -> v
 	val untuple : valueF -> v * v
-	val uninj   : valueF -> LangCommon.LR * v
+	val uninj   : valueF -> int * v
 	val unlam   : valueF -> lamBody
 end
 (*

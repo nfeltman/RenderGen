@@ -34,7 +34,7 @@ fun terminates (E e) = (case e of
   | S.Ftuple es => List.all terminates es
   | S.Fpi (_,e) => terminates e
   | S.Finj (_,_,e) => terminates e
-  | S.Fcase (e1,(_,e2),(_,e3)) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
+  | S.Fcase (e1,bs) => (terminates e1) andalso List.all (fn (x,e) => terminates e) bs
   | S.Fif (e1,e2,e3) => (terminates e1) andalso (terminates e2) andalso (terminates e3)
   | S.Flet (e1,(_,e2)) => (terminates e1) andalso (terminates e2)
   | S.Fbinop (_,e1,e2) => (terminates e1) andalso (terminates e2)
@@ -126,13 +126,16 @@ fun decompTuple (E (S.Ftuple [v,p])) f = f (v,p)
 		in
 			Elet (c,(PPtuple[PPvar v, PPvar p], f (Evar v, Evar p)))
 		end	
-fun caseBranch c addPrec side = 
-		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(side, (), p))])
+fun caseBranch c addPrec ts us = 
+		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])
 fun caseBranches addPrec (c2, b2) (c3, b3) = 
-		(caseBranch c2 addPrec Left, b2, caseBranch c3 addPrec Right, b3)
+		(caseBranch c2 addPrec [] [()], b2, caseBranch c3 addPrec [()] [], b3)
 
 fun roll e = Eroll ((),e)
+fun eraseTy xs = map (fn _ => ()) xs
 in
+
+exception Oops
 
 val coerce1 = coerce  
 
@@ -185,8 +188,8 @@ fun stageSplit1 (E1 exp) =
 			in
 				merge1 (split e) proj proj
 			end
-		| S.Finj (lr, t, e) => merge1 (split e) (fn v => Einj (lr,(),v)) id
-		| S.Fcase (e1, (x2,e2), (x3,e3)) => 
+		| S.Finj (ts, us, e) => merge1 (split e) (fn v => Einj (eraseTy ts, eraseTy us, v)) id
+		| S.Fcase (e1, [(x2,e2), (x3,e3)]) => 
 			let
 				val (link,z) = (Variable.newvar "l", Variable.newvar "z")
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
@@ -194,8 +197,8 @@ fun stageSplit1 (E1 exp) =
 				val (x2, x3) = (convertPattern x2, convertPattern x3)
 			in
 				WithPrec1 (
-					Opaque ` w1 (Ecase(v1, (x2,branch2), (x3,branch3))),
-					(l, Elet (r1, (PPvar z, Ecase(Evar link,(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))))))
+					Opaque ` w1 (Ecase(v1, [(x2,branch2), (x3,branch3)])),
+					(l, Elet (r1, (PPvar z, Ecase(Evar link,[(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))]))))
 				)
 			end
 		| S.Fif (e1, e2, e3) => 
@@ -206,7 +209,7 @@ fun stageSplit1 (E1 exp) =
 			in
 				WithPrec1(
 					Opaque ` w1 (Eif(v1, branch2, branch3)),
-					(l, chain2(r1, Ecase(Evar link,lr2,lr3)))
+					(l, chain2(r1, Ecase(Evar link,[lr2,lr3])))
 				)
 			end
 		| S.Flet (e1, (x,e2)) => 
@@ -269,18 +272,16 @@ and stageSplit2 (E2 exp) =
 		  | merge3 (res1, res2, NoPrec2 e3) f = merge2 (res1, res2) (fn (x,y) => f (x, y, e3))
 		  | merge3 (WithPrec2 (p1,(l1,r1)), WithPrec2 (p2,(l2,r2)), WithPrec2 (p3,(l3,r3))) f = 
 					WithPrec2 (Etuple [p1,p2,p3], (PPtuple [l1,l2,l3], f (r1, r2, r3)))
-					
-		fun mergeList results f = 
-		let
-			fun h (NoPrec2 r, (pls,rs)) = (pls,r::rs)
-			  | h (WithPrec2 (p, (l,r)), (pls,rs)) = ((p,l)::pls,r::rs)
-			val (pls,rs) = foldr h ([],[]) results
-		in
+				
+		fun h (NoPrec2 r, (pls,rs)) = (pls,r::rs)
+		  | h (WithPrec2 (p, (l,r)), (pls,rs)) = ((p,l)::pls,r::rs)	
+		fun finalize f (pls,rs) = (
 			case pls of
 			  [] => NoPrec2 (f rs)
 			| [(p,l)] => WithPrec2 (p, (l, f rs))
-			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs))
-		end
+			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs)) )
+		
+		fun mergeList results f = finalize f (foldr h ([],[]) results)
 	in
 		case exp of 
 		  S.Fvar v => NoPrec2 (Evar v)
@@ -290,10 +291,16 @@ and stageSplit2 (E2 exp) =
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| S.Ftuple es => mergeList (map split es) Etuple
 		| S.Fpi (i, e) => merge1 (split e) (fn r => Epi (i, r))
-		| S.Finj (lr, t, e) => merge1 (split e) (fn r => Einj (lr, (), r))
+		| S.Finj (ts, us, e) => merge1 (split e) (fn r => Einj (eraseTy ts, eraseTy us, r))
 		| S.Fif (e1, e2, e3) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
-		| S.Fcase (e1,(x2,e2),(x3,e3)) => merge3 (split e1, split e2, split e3) 
-			(fn (a,b,c) => Ecase (a,(convertPattern x2,b),(convertPattern x3,c)))
+		| S.Fcase (e,bs) => 
+			let
+				val (xs, es) = unzip bs
+				fun f (r::rs) = Ecase (r, zip id xs rs Oops)
+				  | f [] = raise Oops
+			in
+				mergeList (map split (e :: es)) f
+			end
 		| S.Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
 		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertPattern x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll

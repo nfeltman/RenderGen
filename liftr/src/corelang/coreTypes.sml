@@ -5,7 +5,7 @@ sig
 						| TFvar of int 
 						| TFrec of 't
 						| TFprod of 't list
-						| TFsum of 't * 't
+						| TFsum of 't list
 						| TFarr of 't * 't
 
 	val unint  : 't typeF -> unit
@@ -13,7 +13,7 @@ sig
 	val unrec  : 't typeF -> 't
 	val unprod : 't typeF -> 't list
 	val unarr  : 't typeF -> 't * 't
-	val unsum  : 't typeF -> 't * 't
+	val unsum  : 't typeF -> 't list
 	val mapType : ('t->'u) -> 't typeF -> 'u typeF
 	val teq : ('t -> 't -> bool) -> 't typeF -> 't typeF -> bool
 end
@@ -26,7 +26,7 @@ struct
 						| TFvar of int 
 						| TFrec of 't			(* binds *)
 						| TFprod of 't list
-						| TFsum of 't * 't
+						| TFsum of 't list
 						| TFarr of 't * 't
 
 	fun unint TFint = ()
@@ -48,7 +48,7 @@ struct
 	  | mapType _ TFbool = TFbool
 	  | mapType _ (TFvar i) = TFvar i
 	  | mapType f (TFrec t) = TFrec (f t)
-	  | mapType f (TFsum (t1,t2)) = TFsum (f t1, f t2)
+	  | mapType f (TFsum ts) = TFsum (map f ts)
 	  | mapType f (TFprod ts) = TFprod (map f ts)
 	  | mapType f (TFarr (t1,t2)) = TFarr (f t1, f t2)  
 	
@@ -57,7 +57,7 @@ struct
 	  | teq eq (TFvar j) (TFvar k) = (j = k)
 	  | teq eq (TFrec t) (TFrec u) = eq t u
 	  | teq eq (TFprod ts) (TFprod us) = listeq eq ts us
-	  | teq eq (TFsum (t1,t2)) (TFsum (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
+	  | teq eq (TFsum ts) (TFsum us) = listeq eq ts us
 	  | teq eq (TFarr (t1,t2)) (TFarr (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
 	  | teq _ _ _ = false
 end

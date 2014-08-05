@@ -49,14 +49,12 @@ fun eval1 env (E1 exp) =
 			end
 		| Ftuple es => map2 (V o VFtuple) (List.foldr (fn ((g,v),(gs,vs))=>(g o gs,v::vs)) (id,[]) (map eval es))
 		| Fpi (i, e) => (case eval e of (g,v) => (g, List.nth(untuple ` unV v,i)))
-		| Finj (side, _, e) => map2 (fn x => V ` VFinj (side,x)) (eval e)
-		| Fcase (e, b1, b2) => 
+		| Finj (ts, _, e) => map2 (fn x => V ` VFinj (length ts,x)) (eval e)
+		| Fcase (e, bs) => 
 			let
-				val (g,(side,v)) = map2 (uninj o unV) (eval e)
+				val (g,(i,v)) = map2 (uninj o unV) (eval e)
 			in
-				case side of
-				  Left  => evalBranch env (g,v) b1
-				| Right => evalBranch env (g,v) b2
+				evalBranch env (g,v) ` List.nth (bs,i)
 			end
 		| Fif (e1, e2, e3) => 
 			let

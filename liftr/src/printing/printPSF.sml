@@ -30,7 +30,7 @@ fun convertSourceTypes convert ty =
 		| S.TFrec t => EprimApp ("mu", convert t)
 		| S.TFprod [] => Eatom ("unit")
 		| S.TFprod ts => Einfix ("*", map convert ts)
-		| S.TFsum (t1, t2) => Einfix ("+", [convert t1, convert t2])
+		| S.TFsum ts => Einfix ("+", map convert ts)
 		| S.TFarr (t1, t2) => Einfix ("->", [convert t1, convert t2])
 		
 structure S = SourceLang
@@ -48,8 +48,8 @@ fun convertSource convert convertTy ex =
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
 		| S.Ftuple es => Etuple (map convert es)
 		| S.Fpi (i, e) => EprimApp ("#" ^ (Int.toString (i+1)), convert e)
-		| S.Finj (i, t, e) => Eapp (EprimApp(case i of Left => "inl" | Right => "inr", convertTy t), convert e)
-		| S.Fcase (e1,b2,b3) => Ecase (convert e1, convertBranch b2, convertBranch b3)
+		| S.Finj (ts, us, e) => Eapp (EprimApp("inj", Einfix ("+", (map convertTy ts) @ (Eatom "#" :: map convertTy us))), convert e)
+		| S.Fcase (e,bs) => Ecase (convert e, map convertBranch bs)
 		| S.Fif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)
 		| S.Flet (e, b) => Elet (convert e, convertBranch b)
 		| S.Fbinop (bo, e1, e2) => Einfix (opToString bo, [convert e1, convert e2])
