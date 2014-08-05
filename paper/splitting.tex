@@ -131,8 +131,41 @@ If $\Gamma, \Gamma'\vdash e : A \splitonesym [c,l.r]$ then for all $\gamma : \Ga
 \end{itemize}
 \end{lemma}
 
-You should think of these theorems as saying that 
-splitting commutes with evaluation.
+\TODO what about totality of splitting?
+
+%You should think of these theorems as saying that 
+%splitting commutes with evaluation.
+While these theorems are rather technical in nature, they imply that splitting a
+program and running it is the same as using the semantics from
+\ref{ssec:dynamics}.
+
+For example, if we have some multi-stage function $f:A\to\fut(B\to C)~@~\bbone$,
+then we expect \verb|prev{f a} b| will evaluate to the same value under our
+staged dynamic semantics and when split.
+
+Consider a term $\vdash e:\fut A~@~\bbone$ (like \verb|next{prev{f a} b}|) which
+might contain computation at both stages. The correctness theorem here states
+that:
+\begin{theorem}
+If $\vdash e:\fut A~@~\bbone$, then (by splitting)
+\begin{itemize}
+\item $\diaone [] e {\xi;v}$
+\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\reify \xi {v_2} q_S$
+\item $q_S \mathbin{\tworedsym} v_S$
+\end{itemize}
+if and only if (by the staged dynamic semantics)
+\begin{itemize}
+\item $\diaone [] e {\xi;v}$
+\item $\reify \xi v q_D$
+\item $q_D \mathbin{\tworedsym} v_D$
+\end{itemize}
+and if so, then $v_S = v_D$.
+\end{theorem}
+
+\TODO why does splitting not show up in this theorem?
+
+
 
 %
 %\subsubsection{Simple Types}
