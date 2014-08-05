@@ -88,14 +88,20 @@ decomposition are all stage-\bbone\ terms, since they occur within $\prev$ block
 A key attribute of this example is that stage-\bbone\ and stage-\bbtwo\ expressions are nested. Ordinary term evaluation eliminates outermost redexes first, 
 however in the case that stage \bbone\ expressions are contained inside
 stage \bbtwo\ ones (such as the recurive call to {\tt fexp} above), this strategy conflicts with the precept of staged execution: that all stage-\bbone\ code be evaluated before the evaluation of stage-\bbtwo\ code. 
-Therefore, a suitably staged dynamic semantics for \lang\ must evaluate
-\emph{all} the stage \bbone\ subexpressions of a term before its stage
-\bbtwo\ subexpressions.
+
+Thus, our dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
+subexpressions before any of its stage \bbtwo\ subexpressions. This results in a
+stage \bbtwo\ term with no stage \bbone\ content; we say this is a term in a
+monostaged%
+\footnote{In general, \lang could have more than two stages, in which case the
+expression would be in a language with one fewer stage.}
+language called \langTwo. Then, we perform the remainder of the evaluation with 
+$\tworedsym$, an ordinary dynamic semantics for \langTwo.
 
 \subsection{Non-Duplicating First-Stage Evaluation}
 
-To gain intuition about the challenges of ensuring staged evaluation of \lang, consider the following
-example:
+To gain intuition about the challenges of implementing this staged dynamic
+semantics, consider the following example:
 \begin{lstlisting}
 #2 (next {1+2}, 3+4)
 \end{lstlisting}
@@ -197,6 +203,7 @@ let zhat = yhat * yhat * 7 in z
 Thus we have evaluated all of the stage \bbone\ expressions of this program without duplicating the contents of $\next$ blocks.
 
 \subsection{Dynamics}
+\label{ssec:dynamics}
 
 \input {figures/dynamics}
 
@@ -277,15 +284,6 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 %crossover points between 1-code and 2-code, they are correspondingly the only
 %places where the evaluation and speculation judgments depend on the other. 
 %}}}
-
-To fully evaluate an expression in \lang, we first evaluate all of its stage
-\bbone\ subexpressions as described above. This results in a stage \bbtwo\
-expression with no stage \bbone\ content; we say that it is a term in a
-monostaged%
-\footnote{In general, \lang could have more than two stages, in which case the
-expression would be in a language with one fewer stage.}
-language called \langTwo. Ordinary \langTwo\ evaluation, implemented by the
-$\tworedsym$ judgment, completes the evaluation of this term.
 
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
