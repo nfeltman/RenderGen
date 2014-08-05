@@ -135,37 +135,54 @@ If $\Gamma, \Gamma'\vdash e : A \splitonesym [c,l.r]$ then for all $\gamma : \Ga
 
 %You should think of these theorems as saying that 
 %splitting commutes with evaluation.
-While these theorems are rather technical in nature, they imply that splitting a
-program and running it is the same as using the semantics from
-\ref{ssec:dynamics}.
+These lemmas are rather technical, but they ultimately imply that evaluating a
+closed term by splitting or by the dynamic semantics of \ref{ssec:dynamics} are
+equivalent. 
+We state this result for closed terms at each stage.
 
-For example, if we have some multi-stage function $f:A\to\fut(B\to C)~@~\bbone$,
-then we expect \verb|prev{f a} b| will evaluate to the same value under our
-staged dynamic semantics and when split.
-
-Consider a term $\vdash e:\fut A~@~\bbone$ (like \verb|next{prev{f a} b}|) which
-might contain computation at both stages. The correctness theorem here states
-that:
-\begin{theorem}
-If $\vdash e:\fut A~@~\bbone$, then (by splitting)
+\begin{theorem}[Correctness of splitting at $\bbone$]
+If $\vdash e:A~@~\bbone$, then (by splitting)
 \begin{itemize}
-\item $\diaone [] e {\xi;v}$
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi {v_2} q_S$
-\item $q_S \mathbin{\tworedsym} v_S$
+\item $\vdash e : A \splitonesym [c,l.r]$
+\item $\reduce {c} {(v_1,u)}$
+\item $\reduce {(\letin{l}{u}{r})} v_S$
 \end{itemize}
 if and only if (by the staged dynamic semantics)
 \begin{itemize}
 \item $\diaone [] e {\xi;v}$
-\item $\reify \xi v q_D$
-\item $q_D \mathbin{\tworedsym} v_D$
+\item $\reify \xi v q$
+\item $q \mathbin{\tworedsym} v_D$
 \end{itemize}
 and if so, then $v_S = v_D$.
 \end{theorem}
 
-\TODO why does splitting not show up in this theorem?
+\begin{theorem}[Correctness of splitting at $\bbtwo$]
+If $\vdash e:A~@~\bbtwo$, then (by splitting)
+\begin{itemize}
+\item $\vdash e : A \splittwosym [p,l.r]$
+\item $\reduce p u$
+\item $(\letin{l}{u}{r}) \mathbin{\tworedsym} v_S$
+\end{itemize}
+if and only if (by the staged dynamic semantics)
+\begin{itemize}
+\item $\diatwo [] e q$
+\item $q \mathbin{\tworedsym} v_D$
+\end{itemize}
+and if so, then $v_S = v_D$.
+\end{theorem}
 
+If we apply the former theorem to \verb|next{e}| of type $\fut A$, we
+essentially obtain the latter theorem at \verb|e|.
 
+The latter theorem implies that, given a multi-stage function $f:A\to\fut(B\to
+C)~@~\bbone$, the two methods of evaluating \verb|prev{f a} b| agree.
+However, we also expect that splitting $f$ directly will give us two functions,
+one which accepts an $A$ and outputs a value and $r$-residual, and another which
+takes in an $r$-residual and a $B$ and outputs a $C$. Moreover, the composition
+of these two functions should be extensionally equal to the staged dynamic
+semantics.
+
+\TODO write the theorem for $\vdash f:A\to\fut(B\to C)~@~\bbone$.
 
 %
 %\subsubsection{Simple Types}
