@@ -18,20 +18,41 @@ pval-ztup  : pval ztup.
 pval-lam  : pval (lam _ _).
 %%pval-next  : pval (next E) wor1
 %%        <- pval E wor2.
-             
+
+%% LAMBDA VALUE INVERSION LEMMA
+lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A1 A2 -> type.
+- : lam-inverts (of-lam _) idty/refl.
+%mode lam-inverts +O -I.
+%worlds () (lam-inverts _ _).
+%total D (lam-inverts D _).
+
 %% PRESERVATION AND EVALUATION
 pres : red E V -> of E A W -> pval V -> of V A W -> type.
 %mode pres +T1 +R -V -T2.
-pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
-pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).  
-pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres (DredE1 : red E1 (lam A M)) DofE1 pval-lam ((of-lam DofM) : of (lam A M) (arr A B) W) %% inversion
-        <- pres (DredE2 : red E2 V2)        DofE2 _ DofV2
-        <- pres (DredM : red (M V2) V3)     (DofM V2 DofV2) DvalV3 DofV3.
-%%pres-next  : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
+- : pres red-ztup of-ztup pval-ztup of-ztup.
+- : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).        
+- : pres 
+			(red-app 
+				(DredM : red (M V2) V3) 
+				(DredE1 : red E1 (lam A M)) 
+				(DredE2 : red E2 V2)) 
+			(of-app 
+				(DofE1 : of E1 (arr A' B) W)
+				(DofE2 : of E2 A' W)) 
+			DvalV3 
+			DofV3
+        <- pres DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B) W)					%% \x:A.M : A'->B
+        <- lam-inverts DofLam' (DidtyA : idty A A')										%% A = A'
+        <- idty-sym DidtyA (DidtyA' : idty A' A)										%% A' = A
+        <- idty-cong-arr DidtyA' idty/refl (DidtyArr : idty (arr A' B) (arr A B))		%% A'->B = A->B
+        <- of-resp DofLam' DidtyArr (of-lam ([x] [d:of x A W] DofM x d : of (M x) B W))	%% \A.M : A->B
+        <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)									%% V2 : A'
+        <- of-resp DofV2' DidtyA' (DofV2 : of V2 A W)									%% V2 : A
+        <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
+%%- : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
 %%        <- pres Dred DofE DvalV DofV.
-%%pres-prev  : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
+%%- : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
 %%        <- pres Dred DofE (pval-next DvalV) (of-next DofV). %% inversion
-
+        
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).

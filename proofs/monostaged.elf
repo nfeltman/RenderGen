@@ -39,10 +39,15 @@ pval : term -> type. %name pval Dpval.
 pval-ztup  : pval ztup.
 pval-lam  : pval (lam _ _).
              
-
-%% UNIQUENESS OF TYPING 
+%% TYPE IDENTITY
 idty : ty -> ty -> type.
 idty/refl : idty T T.
+
+idty-sym : idty A B -> idty B A -> type.
+%mode idty-sym +D1 -D2.
+- : idty-sym idty/refl idty/refl.
+%worlds () (idty-sym _ _).
+%total {} (idty-sym _ _).
 
 idty-cong-arr :
   idty A1 A2 ->
@@ -62,6 +67,14 @@ idty-inj-arr :
 %worlds () (idty-inj-arr _ _ _).
 %total {} (idty-inj-arr _ _ _).
 
+%% TYPING RESPECTS IDENTITY
+of-resp : of M A -> idty A B -> of M B -> type.
+%mode of-resp +D1 +D2 -D3.
+- : of-resp Dof idty/refl Dof.
+%worlds () (of-resp _ _ _).
+%total {} (of-resp _ _ _).
+
+%% UNIQUENESS OF TYPING 
 of-unique : of M T1 -> of M T2 -> idty T1 T2 -> type.
 %mode of-unique +D1 +D2 -E.
 - : of-unique D D idty/refl.
@@ -87,15 +100,28 @@ lam-inverts : of (lam A1 _) (arr A2 _) -> idty A1 A2 -> type.
 %total D (lam-inverts D _).
 
 %% PRESERVATION AND EVALUATION
-
 pres : red E V -> of E A -> pval V -> of V A -> type.
 %mode pres +T1 +R -V -T2.
-pres-ztup : pres red-ztup of-ztup pval-ztup of-ztup.
-pres-lam  : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).        
-pres-app  : pres (red-app DredM DredE1 DredE2) (of-app DofE1 DofE2) DvalV3 DofV3
-        <- pres (DredE1 : red E1 (lam A M)) (DofE1 : of E1 (arr A B)) pval-lam (of-lam DofM) %% inversion
-        <- pres (DredE2 : red E2 V2) DofE2 _ DofV2
-        <- pres (DredM : red (M V2) V3) (DofM V2 DofV2) DvalV3 DofV3. 
+- : pres red-ztup of-ztup pval-ztup of-ztup.
+- : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).        
+- : pres 
+			(red-app 
+				(DredM : red (M V2) V3) 
+				(DredE1 : red E1 (lam A M)) 
+				(DredE2 : red E2 V2)) 
+			(of-app 
+				(DofE1 : of E1 (arr A' B))
+				(DofE2 : of E2 A')) 
+			DvalV3 
+			DofV3
+        <- pres DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B))						%% \x:A.M : A'->B
+        <- lam-inverts DofLam' (DidtyA : idty A A')										%% A = A'
+        <- idty-sym DidtyA (DidtyA' : idty A' A)										%% A' = A
+        <- idty-cong-arr DidtyA' idty/refl (DidtyArr : idty (arr A' B) (arr A B))		%% A'->B = A->B
+        <- of-resp DofLam' DidtyArr (of-lam ([x] [d:of x A] DofM x d : of (M x) B))		%% \A.M : A->B
+        <- pres DredE2 DofE2 _ (DofV2' : of V2 A')										%% V2 : A'
+        <- of-resp DofV2' DidtyA' (DofV2 : of V2 A)										%% V2 : A
+        <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
         
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
