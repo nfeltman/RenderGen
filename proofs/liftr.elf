@@ -3,13 +3,13 @@
 %% WORLDS
 wor : type. %name wor W.
 wor1 : wor.
-%%wor2 : wor.
+wor2 : wor.
 
 %% TYPES
 ty : type. %name ty T.
 unit  : ty.
 arr    : ty -> ty -> ty.
-%%fut    : ty wor2 -> ty wor1.
+fut    : ty -> ty.
 
 %% TERMS
 term : type. %name term E.
@@ -17,8 +17,8 @@ ztup  : term.
 %% annotate base constants with their world
 lam    : ty -> (term -> term) -> term.
 app    : term -> term -> term.
-%%next  : term -> term.
-%%prev  : term -> term.
+next  : term -> term.
+prev  : term -> term.
 
 %% TYPE WELL-FORMED
 ty-wf : ty -> wor -> type.
@@ -37,10 +37,10 @@ of-lam 	: of (lam A ([x] M x)) (arr A B) W
 of-app  : of (app E1 E2) B W
 			<- of E2 A W
 			<- of E1 (arr A B) W.
-%%of-next  : of (next E) (fut A)
-%%      <- of E A.
-%%of-prev  : of (prev E) A
-%%      <- of E (fut A).
+of-next	: of (next E) (fut A) wor1
+			<- of E A wor2.
+of-prev	: of (prev E) A wor2
+			<- of E (fut A) wor1.
 
 %block var-of : some {A : ty} {W : wor} block {x:term} {_ : of x A W}.
 %worlds (var-of) (of _ _ _).
@@ -81,6 +81,7 @@ of-resp : of M A W -> idty A B -> of M B W -> type.
 %worlds () (of-resp _ _ _).
 %total {} (of-resp _ _ _).
 
+%{
 %% UNIQUENESS OF TYPING
 of-unique : of M T1 W -> of M T2 W -> idty T1 T2 -> type.
 %mode of-unique +D1 +D2 -E.
@@ -98,6 +99,4 @@ of-unique : of M T1 W -> of M T2 W -> idty T1 T2 -> type.
     <- idty-inj-arr AtoBeq _ Beq.
 %worlds (var-of) (of-unique _ _ _).
 %total D (of-unique D _ _).
-
-
-
+}%
