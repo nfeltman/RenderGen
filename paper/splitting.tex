@@ -6,19 +6,14 @@ and split it into two separate terms: one with all of the stage \bbone\ code and
 To facilitate communication between the stages, there is a data structure passed between the stages, 
 which is an output of the stage \bbone\ term and and input to the stage \bbtwo\ term.
 
-The input to our splitting algorithm is a term in \lang, and the output is two terms in \langmono, an
-unstaged language.  The grammar for \langmono is given in \ref{fig:monoGrammar}.  It has no
-staging features (we say that implicitly it has only one stage), and it is untyped.  
-Modulo these differences, \langmono has all of the same features as \lang, 
-although this is a matter of taste
-\footnote{Since \lang is untyped, we could encode everything with just functions.}.
-
 As with the dynamics, the form of the splitting statement depends on the external stage of the term.
 We consider splitting for stage \bbtwo\ terms first, as it has a simpler form.  
 For example, take \verb|hold{1+2} < 5|.
 We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
-which are called the {\em precomputation} and {\em residual}, respectively.  
-For this splitting to be correct, the residual applied to the precomputation should yield the same result as the original term.  
+which are called the {\em precomputation} and {\em residual}
+\footnote{We also used the term {\em residual} for the result of partial evaluation.
+Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual}
+and {\em evaluation-residual}.}, respectively.  
 
 The form of splitting for stage \bbone\ terms is more complicated.
 To see why, consider the term \verb|(next{hold{1+2} < 5},3*4)|.
@@ -35,13 +30,30 @@ next{ if prev{#1 x} then 7 else hold {#2 x} }
 To support this, stage \bbone\ splitting produces two outputs: the {\em combined result} and the residual,
 where the combined result reduces to a tuple containing the immediate result and the precomputation.
 
+We must also develop a notion of what it means for splitting to be correct.  
+Our general approach is to say that the dynamic semantics from \ref{sec:semantics} and splitting method are equivalent in some way.  
+In general, if a multi-stage program $P$ splits into stage-\bbone\ part $P_1$ and stage-\bbtwo\ part $P_2$, then
+\begin{enumerate}
+\item Partial evaluation of $P$ will terminate if and only if evaluation of $P_1$ terminates, and if so then
+\item the immediate results of each method will be equivalent, and
+\item the evaluation-residual and the splitting-residual ($P_2$ bound under the precomputation) are equivalent.
+\end{enumerate}
+
+This is straight-forward, given a careful definition of equivalence.
+
 \subsection {Formal Setup}
 
-We now discuss the formal definition of splitting.
 The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$.
-The $\splitonesym$ judgment sends a stage \bbone\ term ($e$) to a combined term ($c$) and residual ($l.r$),
+For both, the input is a term in \lang, and the output is two terms in \langmono, an
+unstaged language.  The grammar for \langmono is given in \ref{fig:monoGrammar}.  It has no
+staging features (we say that implicitly it has only one stage), and it is untyped.  
+Modulo these differences, \langmono has all of the same features as \lang, 
+although this is a matter of taste
+\footnote{Since \lang is untyped, we could encode everything with just functions.}.
+
+Specifically, the $\splitonesym$ judgment sends a stage \bbone\ term ($e$) to a combined term ($c$) and residual ($l.r$),
 while $\splittwosym$ sends a stage \bbtwo\ term ($e$) to a precomputation ($p$) and a residual ($l.r$).
-For concision, we actually represent residuals as a term open on a single variable, rather than as functions.
+For concision, we represent residuals as a term open on a single variable, rather than as functions.
 For both judgments, we use a context ($\Gamma$) to keep track of the open variables of $e$.
 
 The rules\footnote{The rules are written using patterns, including the open variable of the residual.} 
@@ -92,7 +104,9 @@ This makes it hard to type the output, because the boundary types are not repres
 
 \subsection{Metatheory}
 
-We start with two careful definitions of equivalence ($\equiv$ on terms, $\sim$ on values).  They are mutually dependent.
+We start with two mutually dependent definitions of equivalence.  
+Both relate evaluation-residuals on the left with splitting residuals on the right,
+but $\equiv$ operates on terms, whereas $\sim$ on values.
 
 \begin{definition}
 For evaluation-residual $q$ and splitting-residual $r$, define $q \equiv r : A$ to mean that 
@@ -110,8 +124,8 @@ For evaluation-residual value $v_1$ and splitting-residual value $v_2$, define $
 \end{itemize}
 \end{definition}
 
-All I'm trying to say here is that two terms are equivalent if they evaluate to the same value,
-where "same" for functions means that those functions always evaluate to the same thing.
+Essentially, we can read these as saying that two terms are equivalent if they evaluate to the same value,
+where "same" for functions means that those functions always evaluate to the same thing given equivalent inputs.
 
 We give the following end-to-end correctness lemmas for open terms. 
 It's a bit of a mess currently, but the $\Gamma$ is supposed to be all of the stage \bbone\ bindings, 
