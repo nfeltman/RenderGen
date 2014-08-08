@@ -19,13 +19,6 @@ pval-lam	: pval (lam _ _).
 pval-next	: pval (next E)
 				<- pval E.
 
-%% LAMBDA VALUE INVERSION LEMMA
-lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A1 A2 -> type.
-- : lam-inverts (of-lam _) idty/refl.
-%mode lam-inverts +O -I.
-%worlds () (lam-inverts _ _).
-%total D (lam-inverts D _).
-
 %% PRESERVATION AND EVALUATION
 pres : red E V -> of E A W -> pval V -> of V A W -> type.
 %mode pres +T1 +R -V -T2.

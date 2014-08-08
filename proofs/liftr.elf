@@ -22,18 +22,21 @@ prev  : term -> term.
 
 %% TYPE WELL-FORMED
 ty-wf : ty -> wor -> type.
+%mode ty-wf +T +W.
 ty-wf-unit	: ty-wf unit W.
 ty-wf-arr	: ty-wf (arr A B) W
 				<- ty-wf A W
 				<- ty-wf B W.
+ty-wf-fut	: ty-wf (fut A) wor1
+				<- ty-wf A wor2.
 %worlds () (ty-wf _ _).
 
 %% TYPING JUDGMENT
 of : term -> ty -> wor -> type. %name of Dof.
 of-ztup	: of ztup unit W.
 of-lam 	: of (lam A ([x] M x)) (arr A B) W
-			<- ({x: term} of x A W -> of (M x) B W).
-%%			<- ty-wf A W.
+			<- ({x: term} of x A W -> of (M x) B W)
+			<- ty-wf A W.
 of-app  : of (app E1 E2) B W
 			<- of E2 A W
 			<- of E1 (arr A B) W.
@@ -44,7 +47,22 @@ of-prev	: of (prev E) A wor2
 
 %block var-of : some {A : ty} {W : wor} block {x:term} {_ : of x A W}.
 %worlds (var-of) (of _ _ _).
-%unique of +E -T +W.
+%%unique of +E -T +W.
+
+%% OUTPUTS OF TYPING ARE WELL-FORMED
+of-wf : of E T W -> ty-wf T W -> type.
+%mode of-wf +D1 -D2. 
+- : of-wf of-ztup ty-wf-unit.
+- : of-wf (of-lam DofM Dwf1) (ty-wf-arr Dwf1 Dwf2)
+	<- ({x:term} {Dof : of x A W} of-wf (DofM x Dof) Dwf2).
+- : of-wf (of-app Dof1 Dof2) Dwf
+	<- of-wf Dof1 (ty-wf-arr _ Dwf). 
+- : of-wf (of-next Dof) (ty-wf-fut Dwf)
+	<- of-wf Dof Dwf.
+- : of-wf (of-prev Dof) Dwf
+	<- of-wf Dof (ty-wf-fut Dwf).
+%worlds () (of-wf _ _).
+%total D (of-wf D _).
 
 %% TYPE IDENTITY
 idty : ty -> ty -> type.
@@ -80,6 +98,14 @@ of-resp : of M A W -> idty A B -> of M B W -> type.
 - : of-resp Dof idty/refl Dof.
 %worlds () (of-resp _ _ _).
 %total {} (of-resp _ _ _).
+
+
+%% LAMBDA VALUE INVERSION LEMMA
+lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A1 A2 -> type.
+- : lam-inverts (of-lam _) idty/refl.
+%mode lam-inverts +O -I.
+%worlds () (lam-inverts _ _).
+%total D (lam-inverts D _).
 
 %{
 %% UNIQUENESS OF TYPING
