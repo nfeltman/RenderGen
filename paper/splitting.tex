@@ -92,18 +92,22 @@ This makes it hard to type the output, because the boundary types are not repres
 
 \subsection{Metatheory}
 
-We start with two careful definitions of equivalence ($\equiv$ on terms below, $\sim$ on values in \ref{fig:auxSplit}).  They are mutually dependent.
-
-There are two problems with these definitions:
-\begin{enumerate}
-\item I'm not sure how to encode $\equiv$ with relations, since the iff requires inversion rather than direct derivation.
-\item In the rule labeled PROBLEM, I have a sudden turnstile out of nowhere.  
-  What I'm trying to say with that premise is ``for any equivalent arguments, the bodies are equivalent".
-\end{enumerate}
+We start with two careful definitions of equivalence ($\equiv$ on terms, $\sim$ on values).  They are mutually dependent.
 
 \begin{definition}
-For residuals $q$ and $r$, define $q \equiv r : A$ to mean that 
-$e_1 \tworedsym v_1$ iff $\reduce {e_2} {v_2}$ where $v_1 \sim v_2 : A$
+For evaluation-residual $q$ and splitting-residual $r$, define $q \equiv r : A$ to mean that 
+$q \tworedsym v_q$ iff $\reduce {r} {v_r}$ where $v_q \sim v_r : A$, 
+\end{definition}
+
+\begin{definition}
+For evaluation-residual value $v_1$ and splitting-residual value $v_2$, define $v_1 \sim v_2 : A$ by the following cases:
+\begin{itemize}
+\item $i \sim i : \rmint$
+\item $(v_1,u_1) \sim (v_2,u_2) : A \times B$ where $v_1 \sim v_2 : A$ and $u_1 \sim u_2 : B$
+\item $\inl~v_1 \sim \inl~v_2 : A + B$ where $v_1 \sim v_2 : A$
+\item $\inr~v_1 \sim \inr~v_2 : A + B$ where $v_1 \sim v_2 : B$
+\item $\lam {x_1} A {e_1} \sim \lambda x_2.e_2 : A \to B$ where \\ $\forall (v_1 \sim v_2 : A). [v_1/x_1]e_1 \equiv [v_2/x_2]e_2 : B$
+\end{itemize}
 \end{definition}
 
 All I'm trying to say here is that two terms are equivalent if they evaluate to the same value,
