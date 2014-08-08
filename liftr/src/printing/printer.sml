@@ -8,7 +8,7 @@ datatype expr	= Eatom of string
 				| Elam of expr * (patt * expr)
 				| Eapp of expr * expr
 				| Etuple of expr list
-				| Ecase of expr * (patt * expr) * (patt * expr)
+				| Ecase of expr * (patt * expr) list
 				| Eif of expr * expr * expr
 				| Elet of expr * (patt * expr)
 				| Einfix of string * expr list
@@ -28,7 +28,7 @@ fun rp slot ex =
 		| Elam (t, b) => need 2 ` Elam (rp 0 t, rpb b)
 		| Eapp (e1, e2) => need 1 ` Eapp (rp 1 e1, rp 0 e2)
 		| Etuple es => Etuple (map top es)
-		| Ecase (e1,b1,b2) => need 2 ` Ecase (top e1, rpb b1, rpb b2)
+		| Ecase (e,bs) => need 2 ` Ecase (top e, map rpb bs)
 		| Eif (e1,e2,e3) => need 2 ` Eif (top e1, top e2, top e3)
 		| Elet (e,b) => need 2 ` Elet (top e, rpb b)
 		| Einfix (bo, es) => need 2 ` Einfix (bo, map (rp 1) es)
@@ -57,7 +57,8 @@ fun convertToLayout ex =
 		| Eapp (e1, e2) => % [c e1, c e2]
 		| Etuple [] => $ "()"
 		| Etuple (e0::es) => & ($ "(" :: c e0 :: foldr (fn (e,prev) => $ "," :: c e :: prev) [$ ")"] es)
-		| Ecase (e1,b1,b2) => % [&[$"case ", c e1, $ " of"], >> 2 (convertBranch b1), &[$"| ", convertBranch b2]]
+		| Ecase (_,[]) => $ "ZERO_BRANCH_CASE"
+		| Ecase (e,(b::bs)) => % (&[$"case ", c e, $ " of"] :: >> 2 (convertBranch b) :: map (fn b => &[$"| ", convertBranch b]) bs)
 		| Eif (e1,e2,e3) => % [&[$ "if ", c e1, $ " then"], >> 4 (c e2), $ "else", >> 4 (c e3)]
 		| Elet (e1,(v,e2)) => % [ %[ &[ $ "let ", $ (pat2string v), $ " ="], >> 4 (c e1), $ "in"], c e2]
 		| Einfix (bo, []) => $ ("("^bo^")")
