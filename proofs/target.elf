@@ -1,0 +1,21 @@
+
+%% TERMS
+term : type. %name term E.
+ztup  : term.
+lam    : (term -> term) -> term.
+app    : term -> term -> term.
+
+%% REDUCTION
+red : term -> term -> type. %name red Dred.
+%mode red +E -V.
+red-ztup : red ztup ztup.
+red-lam  : red (lam M) (lam M).
+red-app  : red (app E1 E2) V
+        <- red E2 V2
+        <- red E1 (lam M)
+        <- red (M V2) V.
+
+%% VALUES JUDGMENT
+val : term -> type. %name val Dpval.
+val-ztup : val ztup.
+val-lam  : val (lam _).
