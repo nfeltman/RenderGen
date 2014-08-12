@@ -45,11 +45,11 @@ This is straight-forward, given a careful definition of equivalence.
 
 The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$.
 For both, the input is a term in \lang, and the output is two terms in \langmono, an
-unstaged language.  The grammar for \langmono is given in \ref{fig:monoGrammar}.  It has no
+unstaged language.  The grammar for \langmono\ is given in \ref{fig:monoGrammar}.  It has no
 staging features (we say that implicitly it has only one stage), and it is untyped.  
-Modulo these differences, \langmono has all of the same features as \lang, 
+Modulo these differences, \langmono\ has all of the same features as \lang, 
 although this is a matter of taste
-\footnote{Since \lang is untyped, we could encode everything with just functions.}.
+\footnote{Since \langmono\ is untyped, we could encode everything with just functions.}.
 
 Specifically, the $\splitonesym$ judgment sends a stage \bbone\ term ($e$) to a combined term ($c$) and residual ($l.r$),
 while $\splittwosym$ sends a stage \bbtwo\ term ($e$) to a precomputation ($p$) and a residual ($l.r$).
