@@ -1,1 +1,57 @@
-%{ rowanSemantics.elf }%
+%% REDUCTION AND SPECULATION JUDGMENTS
+red : term -> term -> type. %name red Dred.
+spc : term -> term -> type. %name spc Dspc.
+%mode red +E -V.
+%mode spc +E -V.
+
+red-ztup : red ztup ztup.
+red-lam  : red (lam A M) (lam A M).
+red-app  : red (app E1 E2) V
+        <- red E2 V2
+        <- red E1 (lam A ([x] M x))
+        <- red (M V2) V.
+red-next  : red (next E) (next V)
+        <- spc E V.
+        
+spc-ztup : spc ztup ztup.
+spc-lam  : spc (lam A M) (lam A M).
+spc-app  : spc (app E1 E2) (app V1 V2)
+        <- spc E2 V2
+        <- spc E1 V1.
+spc-prev  : spc (prev E) V
+        <- red E (next V).
+
+%% RESIDUAL JUDGMENT
+res : term -> type. %name res Dres.
+res-ztup	: res ztup.
+%%res-lam	: res (lam _ M).
+res-app		: res (app E1 E2)
+			<- res E2
+			<- res E1. 
+				 
+%% VALUE JUDGMENT
+pval : term -> type. %name pval Dpval.
+pval-ztup	: pval ztup.
+pval-lam	: pval (lam _ _).
+pval-next	: pval (next E)
+				<- res E.
+				
+%% PRESERVATION AND EVALUATION
+presRed : red E V -> of E A wor1 -> pval V -> of V A wor1 -> type.
+presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
+%mode presRed +R +T1 -V -T2.
+%mode presSpc +R +T1 -V -T2.
+
+- : presRed red-ztup of-ztup pval-ztup of-ztup.
+- : presRed red-lam Dof pval-lam Dof.
+%%- : presRed (app E1 E2) V    <- red E2 V2    <- red E1 (lam A ([x] M x))    <- red (M V2) V.
+- : presRed (red-next Dred) (of-next DofE) (pval-next Dres) (of-next DofV)    
+	<- presSpc Dred DofE Dres DofV.
+        
+- : presSpc spc-ztup of-ztup res-ztup of-ztup.
+%%- : presSpc (lam A M) (lam A M).
+- : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
+    <- presSpc Dspc1 DofE1 DresV1 DofV1
+    <- presSpc Dspc2 DofE2 DresV2 DofV2.
+- : presSpc (spc-prev Dred) (of-prev DofE) Dres DofV
+    <- presRed Dred DofE (pval-next Dres) (of-next DofV).

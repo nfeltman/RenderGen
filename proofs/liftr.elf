@@ -49,6 +49,7 @@ of-prev	: of (prev E) A wor2
 %worlds (var-of) (of _ _ _).
 %%unique of +E -T +W.
 
+
 %% OUTPUTS OF TYPING ARE WELL-FORMED
 of-wf : of E T W -> ty-wf T W -> type.
 %mode of-wf +D1 -D2. 
@@ -61,8 +62,9 @@ of-wf : of E T W -> ty-wf T W -> type.
 	<- of-wf Dof Dwf.
 - : of-wf (of-prev Dof) Dwf
 	<- of-wf Dof (ty-wf-fut Dwf).
-%worlds (var-of) (of-wf _ _).
-%total D (of-wf D _).
+%%worlds (var-of) (of-wf _ _).
+%%total D (of-wf D _).
+
 
 %% TYPE IDENTITY
 idty : ty -> ty -> type.
@@ -102,7 +104,7 @@ of-resp : of M A W -> idty A B -> of M B W -> type.
 
 %% LAMBDA VALUE INVERSION LEMMA
 lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A1 A2 -> type.
-- : lam-inverts (of-lam _) idty/refl.
+- : lam-inverts (of-lam _ _) idty/refl.
 %mode lam-inverts +O -I.
 %worlds () (lam-inverts _ _).
 %total D (lam-inverts D _).

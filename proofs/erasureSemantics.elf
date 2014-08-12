@@ -21,9 +21,8 @@ pval-next	: pval (next E)
 
 %% PRESERVATION AND EVALUATION
 pres : red E V -> of E A W -> pval V -> of V A W -> type.
-%mode pres +T1 +R -V -T2.
 - : pres red-ztup of-ztup pval-ztup of-ztup.
-- : pres red-lam (of-lam DofM) pval-lam (of-lam DofM).        
+- : pres red-lam (of-lam DofM Dwf) pval-lam (of-lam DofM Dwf).        
 - : pres 
 			(red-app 
 				(DredM : red (M V2) V3) 
@@ -34,13 +33,13 @@ pres : red E V -> of E A W -> pval V -> of V A W -> type.
 				(DofE2 : of E2 A' W)) 
 			DvalV3 
 			DofV3
-        <- pres DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B) W)					%% \x:A.M : A'->B
-        <- lam-inverts DofLam' (DidtyA : idty A A')										%% A = A'
-        <- idty-sym DidtyA (DidtyA' : idty A' A)										%% A' = A
-        <- idty-cong-arr DidtyA' idty/refl (DidtyArr : idty (arr A' B) (arr A B))		%% A'->B = A->B
-        <- of-resp DofLam' DidtyArr (of-lam ([x] [d:of x A W] DofM x d : of (M x) B W))	%% \A.M : A->B
-        <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)									%% V2 : A'
-        <- of-resp DofV2' DidtyA' (DofV2 : of V2 A W)									%% V2 : A
+        <- pres DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B) W)						%% \x:A.M : A'->B
+        <- lam-inverts DofLam' (DidtyA : idty A A')											%% A = A'
+        <- idty-sym DidtyA (DidtyA' : idty A' A)											%% A' = A
+        <- idty-cong-arr DidtyA' idty/refl (DidtyArr : idty (arr A' B) (arr A B))			%% A'->B = A->B
+        <- of-resp DofLam' DidtyArr (of-lam _ ([x] [d:of x A W] DofM x d : of (M x) B W))	%% \A.M : A->B
+        <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)										%% V2 : A'
+        <- of-resp DofV2' DidtyA' (DofV2 : of V2 A W)										%% V2 : A
         <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
 - : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
         <- pres Dred DofE DvalV DofV.
