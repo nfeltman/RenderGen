@@ -398,24 +398,27 @@ of call-by-value evaluation of $e$.
 
 \subsection{Metatheory}
 
-\begin{definition}
-Contexts $\Gamma$ is well-formed ($\Gamma\wf$) if it
-contains only stage-2 variables.
-\end{definition}
+\TODO explain that the $\vdash_\bbtwo$ judgments are for \langTwo.
+
+%\begin{definition}
+%Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
+%contains only stage-2 variables.
+%\end{definition}
 
 \begin{definition}
 An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
 \begin{enumerate}
 \item $\xi = \cdot$; or
-\item $\xi = \xi',x\mapsto e$ where
+\item $\xi = \xi',x:B\mapsto e$ where
 $\Gamma\vdash\xi'\wf$ and
-$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
-$\Gamma,\dom{\xi'}\vdash e \res$.
+$\typeslangTwo[\Gamma,\dom{\xi'}] e B$
+%$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
+%$\Gamma,\dom{\xi'}\vdash e \res$.
 \end{enumerate}
 \end{definition}
 
 \begin{theorem}
-If $\typesone e A$ then $\Gamma\wf$ and $A\istypeone$.
+If $\typeswor e A$ then $\Gamma\wf$ and $A\istypewor$.
 \end{theorem}
 
 \begin{theorem}
@@ -430,9 +433,19 @@ If $\diaonesub$ and $\typesone e A$ then
 \begin{theorem}
 If $\diatwosub$ and $\typestwo e A$ then
 \begin{enumerate}
-\item $\Gamma\vdash \coltwo{q}{A}$; and
-\item $\Gamma\vdash q\val$.
+\item $\typeslangTwo q A$; and
+\item $\Gamma\vdash_\bbtwo q\val$.
 \end{enumerate}
 \end{theorem}
 
+\TODO fix the next theorem:
+
+\begin{theorem}
+If $\Gamma\vdash\xi\wf$ and
+$\Gamma,\dom\xi\vdash \colone{v}{A}$ and
+$\Gamma,\dom\xi\vdash v\pval$
+then 
+$\reify{\xi}{v}{q}$ and
+$\typeslangTwo q A$.
+\end{theorem}
 
