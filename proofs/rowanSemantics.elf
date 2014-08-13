@@ -14,7 +14,8 @@ red-next  : red (next E) (next V)
         <- spc E V.
         
 spc-ztup : spc ztup ztup.
-spc-lam  : spc (lam A M) (lam A M).
+spc-lam  : spc (lam A M) (lam A N)
+		<- ({x : term} {x' : term} spc x x' -> spc (M x) (N x')).
 spc-app  : spc (app E1 E2) (app V1 V2)
         <- spc E2 V2
         <- spc E1 V1.
@@ -24,7 +25,8 @@ spc-prev  : spc (prev E) V
 %% RESIDUAL JUDGMENT
 res : term -> type. %name res Dres.
 res-ztup	: res ztup.
-%%res-lam	: res (lam _ M).
+res-lam		: res (lam _ M)
+			<- {x : term} res x -> res (M x).
 res-app		: res (app E1 E2)
 			<- res E2
 			<- res E1. 
@@ -49,7 +51,9 @@ presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
 	<- presSpc Dred DofE Dres DofV.
         
 - : presSpc spc-ztup of-ztup res-ztup of-ztup.
-%%- : presSpc (lam A M) (lam A M).
+%%- : presSpc (spc-lam M) (of-lam DofM _) Dres DofV
+%%	<- {x : term} {Dofx : of x A wor2} {x' : term} {Dspc : spc x x'} 
+%%		presSpc (M x x' Dspc) (DofM Dofx) Dres DofV.
 - : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
     <- presSpc Dspc1 DofE1 DresV1 DofV1
     <- presSpc Dspc2 DofE2 DresV2 DofV2.
