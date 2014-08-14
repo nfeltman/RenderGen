@@ -2,26 +2,44 @@
 red : term -> term -> type. %name red Dred.
 %mode red +E -V.
 red-ztup : red ztup ztup.
+red-tup  : red (tup E1 E2) (tup V1 V2)
+			<- red E2 V2
+			<- red E1 V1.
+red-pi1  : red (pi1 E) V
+			<- red E (tup V _).
+red-pi2  : red (pi2 E) V
+			<- red E (tup _ V).
 red-lam  : red (lam A M) (lam A M).
 red-app  : red (app E1 E2) V
-        <- red E2 V2
-        <- red E1 (lam A ([x] M x))
-        <- red (M V2) V.
+			<- red E2 V2
+			<- red E1 (lam A ([x] M x))
+			<- red (M V2) V.
 red-next  : red (next E) (next V)
-        <- red E V.
+			<- red E V.
 red-prev  : red (prev E) V
-        <- red E (next V).
+			<- red E (next V).
 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
 pval-ztup	: pval ztup.
+pval-tup	: pval (tup E1 E2)
+				<- pval E2
+				<- pval E1.
 pval-lam	: pval (lam _ _).
 pval-next	: pval (next E)
 				<- pval E.
 
 %% PRESERVATION AND EVALUATION
 pres : red E V -> of E A W -> pval V -> of V A W -> type.
+%mode pres +D1 +D2 -D3 -D4.
 - : pres red-ztup of-ztup pval-ztup of-ztup.
+- : pres (red-tup Dred1 Dred2) (of-tup DofE1 DofE2) (pval-tup Dval1 Dval2) (of-tup DofV1 DofV2)
+		<- pres Dred1 DofE1 Dval1 DofV1
+		<- pres Dred2 DofE2 Dval2 DofV2.
+- : pres (red-pi1 Dred) (of-pi1 DofE) Dval DofV
+		<- pres Dred DofE (pval-tup Dval _) (of-tup DofV _).
+- : pres (red-pi2 Dred) (of-pi2 DofE) Dval DofV
+		<- pres Dred DofE (pval-tup _ Dval) (of-tup _ DofV).
 - : pres red-lam (of-lam DofM Dwf) pval-lam (of-lam DofM Dwf).        
 - : pres 
 			(red-app 
