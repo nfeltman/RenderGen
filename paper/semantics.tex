@@ -398,7 +398,8 @@ of call-by-value evaluation of $e$.
 
 \subsection{Metatheory}
 
-\TODO explain that the $\vdash_\bbtwo$ judgments are for \langTwo.
+Recall that residuals live in \langTwo; we will indicate typing judgments in
+\langTwo\ with $\vdash_\bbtwo$.
 
 %\begin{definition}
 %Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
@@ -438,14 +439,27 @@ If $\diatwosub$ and $\typestwo e A$ then
 \end{enumerate}
 \end{theorem}
 
-\TODO fix the next theorem:
+\begin{theorem}
+If $\Gamma\vdash\xi\wf$ and
+$\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
+then 
+$\reify{\xi}{\hat y}{q}$ and
+$\typeslangTwo q A$.
+\end{theorem}
+
+\TODO
+We want to generalize the previous theorem to all 1-types, not just $\fut A$,
+but then we must value-split the partial value, and then we don't know the type
+of the output. (?)
 
 \begin{theorem}
 If $\Gamma\vdash\xi\wf$ and
 $\Gamma,\dom\xi\vdash \colone{v}{A}$ and
 $\Gamma,\dom\xi\vdash v\pval$
-then 
-$\reify{\xi}{v}{q}$ and
-$\typeslangTwo q A$.
+then
+$v \vsplito [v_1,v_2]$ and
+$A$ type-splits to $A_1,A_2$ and
+$\reify{\xi}{v_2}{q}$ and
+$\typeslangTwo q A_2$.
 \end{theorem}
 
