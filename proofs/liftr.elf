@@ -126,11 +126,25 @@ of-resp : of M A W -> idty A B -> of M B W -> type.
 
 
 %% LAMBDA VALUE INVERSION LEMMA
-lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A1 A2 -> type.
+lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A2 A1 -> type.
 - : lam-inverts (of-lam _ _) idty/refl.
 %mode lam-inverts +O -I.
 %worlds () (lam-inverts _ _).
 %total D (lam-inverts D _).
+
+%% LAMBDA ANNOTATION CONSISTENCY
+lam-annot : of (lam A1 M) (arr A2 B) W -> of V A2 W -> of (lam A1 M) (arr A1 B) W -> of V A1 W -> type. 
+- : lam-annot 
+		(DofLam' : of (lam A1 M) (arr A2 B) W) 											%% \A1.M : A2->B
+		(DofV' : of V A2 W) 															%% V : A2
+		DofLam DofV 
+    <- lam-inverts DofLam' (DidtyA : idty A2 A1)										%% A1 = A2
+    <- idty-cong-arr DidtyA idty/refl (DidtyArr : idty (arr A2 B) (arr A1 B))			%% A2->B = A1->B
+    <- of-resp DofLam' DidtyArr DofLam													%% \A1.M : A1->B
+    <- of-resp DofV' DidtyA (DofV : of V A1 W).											%% V : A1
+%mode lam-annot +O1 +O2 -O3 -O4.
+%worlds () (lam-annot _ _ _ _).
+%total D (lam-annot D _ _ _).
 
 %{
 %% UNIQUENESS OF TYPING
