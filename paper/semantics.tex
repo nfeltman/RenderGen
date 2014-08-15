@@ -378,12 +378,9 @@ function:
 $\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
 The result is an environment $\xi$ and a partial value $v$ of type $\fut(B\to
 C)$. Next, we reify this environment into a sequence of \verb|let|-bindings
-enclosing $v$, via $\reify\xi{v}{f_a}$. A canonical forms theorem on $v$
-ensures that the resulting $f_a$ has type $B\to C$ in the residual language.
-Finally, given a stage \bbtwo{} argument $b:B$, we can stage-\bbtwo{} evaluate
-the ultimate result of the function, $f_a~b \mathop{\tworedsym} c$.
-
-\TODO make sure this is true (haven't written the canonical forms theorems yet)
+enclosing $v$, via $\reify\xi{v}{f_a}$. By \ref{thm:reify-type}, the resulting
+residual $f_a$ has type $B\to C$ in \langTwo, so we can apply it to some $b:B$
+and compute the final result of the function, $f_a~b \mathop{\tworedsym} c$.
 
 That this sequence of evaluations is in fact staged follows from our
 characterizations of partial values, residuals, and values, that $\redonesym$
@@ -439,7 +436,7 @@ If $\diatwosub$ and $\typestwo e A$ then
 \end{enumerate}
 \end{theorem}
 
-\begin{theorem}
+\begin{theorem}\label{thm:reify-type}
 If $\Gamma\vdash\xi\wf$ and
 $\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
 then 
@@ -448,18 +445,9 @@ $\typeslangTwo q A$.
 \end{theorem}
 
 \TODO
-We want to generalize the previous theorem to all 1-types, not just $\fut A$,
-but then we must value-split the partial value, and then we don't know the type
-of the output. (?)
+Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one
+integer term is guaranteed not to depend on the table, although one might be
+produced. One may either discard the table, or evaluate everything in the table
+(and terminating with the partial value iff everything in the table terminates).
 
-\begin{theorem}
-If $\Gamma\vdash\xi\wf$ and
-$\Gamma,\dom\xi\vdash \colone{v}{A}$ and
-$\Gamma,\dom\xi\vdash v\pval$
-then
-$v \vsplito [v_1,v_2]$ and
-$A$ type-splits to $A_1,A_2$ and
-$\reify{\xi}{v_2}{q}$ and
-$\typeslangTwo q A_2$.
-\end{theorem}
 
