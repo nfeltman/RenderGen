@@ -9,12 +9,16 @@ in
 
 datatype ty		= Tstandard of ty S.typeF
 				| Tfut of ty
+				| Tref of string
 
 type patt		= string S.pattern
 datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Ehold of expr
+				| Elett1 of string * ty * expr
+				| Elett2 of string * ty * expr
+				| Eletr of string * ty * ty * (patt * expr) * expr
 
 				
 val Tint = Tstandard S.TFint
@@ -44,24 +48,6 @@ val Ebinop = Estandard o S.Fbinop
 
 val Ptuple = S.Ptuple
 val Pvar = S.Pvar
-
-fun bind v e1 e2 = Elet (e1,(Pvar v,e2))
-(* add lifts maybe *)
-fun Eletr (f,t1,t2,b,e) = 
-	let
-		val tY = Tarr(Tvar 0,Tarr(t1,t2))
-	in
-	bind f 
-		(bind "r" 
-			(Elam(Trec tY, (Pvar "y", 
-				bind f
-					(Elam (t1,(Pvar "v", Eapp (Eapp (Eunroll (Evar "y"), Evar "y"), Evar "v"))))
-					(Elam (t1,b))
-			)))
-			(Eapp(Evar "r", Eroll(tY, Evar "r")))
-		)
-		e
-	end
 end
 	
 end
