@@ -68,9 +68,10 @@ k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int 
 						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"cons (5, cons (3, empty))",SAME),
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
-k("sumlist",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
-						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
-						"letrec sum (l : mu unit + int * 0) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
+j("sumlist",			"lettype1 list = mu unit + int * 0 in " ^
+						"let empty = roll (unit + (int * 0)) (inl (int * list) ()) in " ^
+						"letfun cons (ht : int * list) = roll (unit + (int * 0)) (inr unit ht) in "^
+						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (cons (5, cons (3, empty)))",ansI 8),
 (*j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
 						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE), *)
@@ -90,7 +91,35 @@ j("quickselect",		"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + in
 									"if prev{i} < n then prev{qs (left,i)} " ^
 									"else if prev{i} == n then prev{hold h} " ^
 									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
-						"in let c = cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,empty)))))), next{2})", ansNI 4)  
+						"in let c = cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,empty)))))), next{2})", ansNI 4),
+j("prefixtree",
+	"   lettype1 string = mu unit + bool * 0 in " ^
+	"   lettype2 string2 = mu unit + bool * 0 in " ^
+	"   lettype1 list = mu unit + string * 0 in " ^
+	"   let emptyS = roll (unit + bool * 0) (inl (bool * string) ()) in " ^
+	"   letfun consS (ht : bool * string) = roll (unit + (bool * 0)) (inr unit ht) in " ^
+	"   let emptyL = roll (unit + string * 0) (inl (string * list) ()) in " ^
+	"   letfun consL (ht : string * list) = roll (unit + (string * 0)) (inr unit ht) in " ^
+	"   letrec partition (l : list) : (bool * list * list) = " ^
+		"   case unroll l of " ^ 
+		"   em => (false,emptyL,emptyL) " ^
+		"   | (s,ss) => " ^
+			"   let (anyEmpty,ts,fs) = partition ss in " ^
+			"   case unroll s of " ^
+			"     em => (true,ts,fs) " ^
+			"   | (c,cs) => if c then (anyEmpty, consL(cs,ts), fs) else (anyEmpty, ts, consL(cs,fs)) " ^ 
+	"   in " ^
+	"   letrec exists ((l,s) : list * $string2) : $bool = " ^
+		"   let (anyEmpty, ts, fs) = partition l in " ^
+		"   next { " ^
+			"   case unroll prev{s} of " ^
+			"     em => prev{if anyEmpty then next{true} else next{false}} " ^
+			"   | (c,cs) => " ^
+				"   if c  " ^
+				"   then prev{exists (ts,next{cs})}  " ^
+				"   else prev{exists (fs,next{cs})} " ^ 
+		"   } " ^
+	"   in 4", ansI 4)  
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
