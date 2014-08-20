@@ -14,11 +14,11 @@ red-pi2  : red (pi2 E) V
 			<- red E (tup _ V).
 red-lam  : red (lam A M) (lam A M).
 red-app  : red (app E1 E2) V
-        <- red E2 V2
-        <- red E1 (lam A ([x] M x))
-        <- red (M V2) V.
+	        <- red E2 V2
+	        <- red E1 (lam A ([x] M x))
+	        <- red (M V2) V.
 red-next  : red (next E) (next V)
-        <- spc E V.
+        	<- spc E V.
         
 spc-ztup : spc ztup ztup.
 spc-tup  : spc (tup E1 E2) (tup V1 V2)
@@ -29,13 +29,16 @@ spc-pi1  : spc (pi1 E) (pi1 V)
 spc-pi2  : spc (pi2 E) (pi2 V)
 			<- spc E V.
 spc-lam  : spc (lam A M) (lam A N)
-		<- ({x : term} {x' : term} spc x x' -> spc (M x) (N x')).
+		<- {x : term} spc x x -> spc (M x) (N x).
 spc-app  : spc (app E1 E2) (app V1 V2)
         <- spc E2 V2
         <- spc E1 V1.
 spc-prev  : spc (prev E) V
         <- red E (next V).
-
+        
+%block var-spc : block {x : term} {_ : spc x x}.
+%worlds (var-spc) (red _ _) (spc _ _).
+        
 %% RESIDUAL JUDGMENT
 res : term -> type. %name res Dres.
 res-ztup	: res ztup.
@@ -50,7 +53,10 @@ res-lam		: res (lam _ M)
 				<- {x : term} res x -> res (M x).
 res-app		: res (app E1 E2)
 				<- res E2
-				<- res E1. 
+				<- res E1.
+				
+%block var-res : block {x : term} {_ : res x}.
+%worlds (var-res) (res _). 
 				 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
@@ -61,6 +67,8 @@ pval-tup	: pval (tup E1 E2)
 pval-lam	: pval (lam _ _).
 pval-next	: pval (next E)
 				<- res E.
+
+%worlds () (pval _). 
 				
 %% PRESERVATION AND EVALUATION
 presRed : red E V -> of E A wor1 -> pval V -> of V A wor1 -> type.
@@ -102,9 +110,12 @@ presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
 		<- presSpc Dspc DofE Dres DofV.
 - : presSpc (spc-pi2 Dspc) (of-pi2 DofE) (res-pi2 Dres) (of-pi2 DofV)
 		<- presSpc Dspc DofE Dres DofV.
-%%- : presSpc (spc-lam M) (of-lam DofM _) Dres DofV
-%%	<- {x : term} {Dofx : of x A wor2} {x' : term} {Dspc : spc x x'} 
-%%		presSpc (M x x' Dspc) (DofM Dofx) Dres DofV.
+- : presSpc 
+		(spc-lam (DspcM : {x : term} spc x x -> spc (M x) (N x))) 
+		(of-lam (DofM : {x: term} of x A wor2 -> of (M x) B wor2) _) 
+		(res-lam ([x:term] [_ : res x] Dres)) 
+		(of-lam DofV)
+		<- {x : term} {Dofx : of x A wor2} {Dspc : spc x x} presSpc (DspcM x Dspc) (DofM x Dofx) Dres DofV.
 - : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
     <- presSpc Dspc1 DofE1 DresV1 DofV1
     <- presSpc Dspc2 DofE2 DresV2 DofV2.
