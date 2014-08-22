@@ -53,6 +53,7 @@ ws = [\ \t];
 				| "letrec" => Tokens.LETR(!pos,!pos)
 				| "lettype1" => Tokens.LETT1(!pos,!pos)
 				| "lettype2" => Tokens.LETT2(!pos,!pos)
+				| "datatype" => Tokens.LETDT(!pos,!pos)
 				| "in" => Tokens.IN(!pos,!pos)
 				| "fix" => Tokens.FIX(!pos,!pos)
 				| "case" => Tokens.CASE(!pos,!pos)

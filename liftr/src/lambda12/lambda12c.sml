@@ -11,13 +11,14 @@ datatype ty		= Tstandard of ty S.typeF
 				| Tfut of ty
 				| Tref of string
 
+datatype stage	= StageOne | StageTwo
 type patt		= string S.pattern
 datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Ehold of expr
-				| Elett1 of string * ty * expr
-				| Elett2 of string * ty * expr
+				| Eletty of stage * string * ty * expr
+				| Eletdata of string * (string * ty) list * expr
 				| Eletr of string * ty * ty * (patt * expr) * expr
 
 				

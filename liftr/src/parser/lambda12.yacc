@@ -22,7 +22,7 @@ open LangCommon
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
-	  MU | MOD | DEQ | LETT1 | LETT2
+	  MU | MOD | DEQ | LETT1 | LETT2 | LETDT
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  MATCH of patt * expr | BINOP of Prims.binops | 
@@ -77,8 +77,9 @@ BINOP : PLUS						(Prims.Iplus)
 	  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
 	  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
 	  | LETR ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
-	  | LETT1 ID EQ TY IN EXP										(Elett1 (ID,TY,EXP))
-	  | LETT2 ID EQ TY IN EXP										(Elett2 (ID,TY,EXP))
+	  | LETT1 ID EQ TY IN EXP										(Eletty (StageOne,ID,TY,EXP))
+	  | LETT2 ID EQ TY IN EXP										(Eletty (StageTwo,ID,TY,EXP))
+	  | LETDT ID EQ ID OF TY BAR ID OF TY IN EXP					(Eletdata (ID1,[(ID2,TY1),(ID3,TY2)],EXP))
 
  EXPL : 							([])
 	  | COMMA EXP EXPL				(EXP :: EXPL)
