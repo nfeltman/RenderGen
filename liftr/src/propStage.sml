@@ -27,7 +27,6 @@ fun elabLetRec (f,t1,t2,b,e) =
 	
 exception StagePropException
 	
-(* let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) *) 
 fun elabDataType stage (ty,cts,e) = 
 	let
 		fun nameToZero (Tstandard t) = Tstandard (mapType nameToZero t)

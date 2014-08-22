@@ -128,8 +128,8 @@ fun decompTuple (E (S.Ftuple [v,p])) f = f (v,p)
 		end	
 fun caseBranch c addPrec ts us = 
 		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])
-fun caseBranches addPrec (c2, b2) (c3, b3) = 
-		(caseBranch c2 addPrec [] [()], b2, caseBranch c3 addPrec [()] [], b3)
+fun caseBranches addPrec (c2, c3) = 
+		(caseBranch c2 addPrec [] [()], caseBranch c3 addPrec [()] [])
 
 fun roll e = Eroll ((),e)
 fun eraseTy xs = map (fn _ => ()) xs
@@ -193,7 +193,8 @@ fun stageSplit1 (E1 exp) =
 			let
 				val (link,z) = (Variable.newvar "l", Variable.newvar "z")
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
-				val (branch2, (l2,r2), branch3, (l3,r3)) = caseBranches pWrap (coerce1 (split e2)) (coerce1 (split e3))
+				val ((c2,(l2,r2)),(c3,(l3,r3))) = (coerce1 (split e2), coerce1 (split e3))
+				val (branch2, branch3) = caseBranches pWrap (c2,c3)
 				val (x2, x3) = (convertPattern x2, convertPattern x3)
 			in
 				WithPrec1 (
@@ -205,7 +206,8 @@ fun stageSplit1 (E1 exp) =
 			let
 				val link = Variable.newvar "l"
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
-				val (branch2, lr2, branch3, lr3) = caseBranches pWrap (coerce1 (split e2)) (coerce1 (split e3))
+				val ((c2,lr2),(c3,lr3)) = (coerce1 (split e2), coerce1 (split e3))
+				val (branch2, branch3) = caseBranches pWrap (c2,c3)
 			in
 				WithPrec1(
 					Opaque ` w1 (Eif(v1, branch2, branch3)),
