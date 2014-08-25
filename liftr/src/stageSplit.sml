@@ -127,9 +127,7 @@ fun decompTuple (E (S.Ftuple [v,p])) f = f (v,p)
 			Elet (c,(PPtuple[PPvar v, PPvar p], f (Evar v, Evar p)))
 		end	
 fun caseBranch c addPrec ts us = 
-		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])
-fun caseBranches addPrec (c2, c3) = 
-		(caseBranch c2 addPrec [] [()], caseBranch c3 addPrec [()] [])
+		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])		
 
 fun roll e = Eroll ((),e)
 fun eraseTy xs = map (fn _ => ()) xs
@@ -189,17 +187,27 @@ fun stageSplit1 (E1 exp) =
 				merge1 (split e) proj proj
 			end
 		| S.Finj (ts, us, e) => merge1 (split e) (fn v => Einj (eraseTy ts, eraseTy us, v)) id
-		| S.Fcase (e1, [(x2,e2), (x3,e3)]) => 
+		| S.Fcase (e1, bs) => 
 			let
 				val (link,z) = (Variable.newvar "l", Variable.newvar "z")
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
-				val ((c2,(l2,r2)),(c3,(l3,r3))) = (coerce1 (split e2), coerce1 (split e3))
-				val (branch2, branch3) = caseBranches pWrap (c2,c3)
-				val (x2, x3) = (convertPattern x2, convertPattern x3)
+				
+				fun processBranches [] prefixes = ([],[],[])
+				  | processBranches ((x,e)::xes) prefixes = 
+					let
+						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
+						val x = convertPattern x
+						val (c,(l,r)) = coerce1 (split e)
+						val branch = caseBranch c pWrap prefixes suffixes
+					in
+						((x,branch)::branches, (l, Elet(Evar z,(x,r)))::residuals, ()::suffixes)
+					end
+					
+				val (branches, residuals, _) = processBranches bs []
 			in
 				WithPrec1 (
-					Opaque ` w1 (Ecase(v1, [(x2,branch2), (x3,branch3)])),
-					(l, Elet (r1, (PPvar z, Ecase(Evar link,[(l2, Elet(Evar z,(x2,r2))),(l3,Elet(Evar z,(x3,r3)))]))))
+					Opaque ` w1 (Ecase(v1, branches)),
+					(l, Elet (r1, (PPvar z, Ecase(Evar link,residuals))))
 				)
 			end
 		| S.Fif (e1, e2, e3) => 
@@ -207,7 +215,7 @@ fun stageSplit1 (E1 exp) =
 				val link = Variable.newvar "l"
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
 				val ((c2,lr2),(c3,lr3)) = (coerce1 (split e2), coerce1 (split e3))
-				val (branch2, branch3) = caseBranches pWrap (c2,c3)
+				val (branch2, branch3) = (caseBranch c2 pWrap [] [()], caseBranch c3 pWrap [()] [])
 			in
 				WithPrec1(
 					Opaque ` w1 (Eif(v1, branch2, branch3)),

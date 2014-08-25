@@ -47,6 +47,8 @@ k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
 j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45",SAME),
 k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y",ansI 1156),
 k("caseRight", 			"case inr int 34 of x => x * x | y => y + y",ansI 68),
+k("datatype3", 			"datatype t = A of int | B of int * int | C of int * int * int in " ^
+						"case unroll (B (3,4)) of x => x | (x,y) => x+y | (x,y,z) => x+y+z",ansI 7),
 k("highOrder1", 		"(fn f:int->int => f 5) (fn x:int=>x+x)",ansI 10),
 k("closure", 			"(let x = 3 in fn y:int=> x*y) 5",ansI 15),
 k("higherOrder1", 		"(fn f:int->int => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
