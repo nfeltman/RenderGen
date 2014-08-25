@@ -12,6 +12,7 @@ datatype testLevel = NONE | SAME | EXACT of value1
 val ansI = EXACT o V1 o VFint
 val ansNI = EXACT o V1next o V2 o VFint
 val ansB = EXACT o V1 o VFbool
+val ansNB = EXACT o V1next o V2 o VFbool
 
 infixr 9 `
 fun a ` b = a b
@@ -92,29 +93,36 @@ j("quickselect",		"datatype list = Empty | Cons of int * list in " ^
 									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
 						"in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))), next{2})", ansNI 4),
 j("prefixtree",
-	"   datatype string = EmptyS | ConsS of bool * string in " ^
-	"   lettype2 string2 = mu unit + bool * 0 in " ^
+	"   datatype letter = A | B | C in " ^ 
+	"   datatype $letter2 = A2 | B2 | C2 in " ^ 
+	"   datatype string = EmptyS | ConsS of letter * string in " ^
+	"   datatype $string2 = EmptyS2 | ConsS2 of letter2 * string2 in " ^
 	"   datatype list = EmptyL | ConsL of string * list in " ^
-	"   letrec partition (l : list) : (bool * list * list) = " ^
+	"   letrec partition (l : list) : (bool * list * list * list) = " ^
 		"   case unroll l of " ^ 
-		"   em => (false,EmptyL,EmptyL) " ^
+		"   em => (false,EmptyL,EmptyL,EmptyL) " ^
 		"   | (s,ss) => " ^
-			"   let (anyEmpty,ts,fs) = partition ss in " ^
+			"   let (anyEmpty,a,b,c) = partition ss in " ^
 			"   case unroll s of " ^
-			"     em => (true,ts,fs) " ^
-			"   | (c,cs) => if c then (anyEmpty, ConsL(cs,ts), fs) else (anyEmpty, ts, ConsL(cs,fs)) " ^ 
+			"     em => (true,a,b,c) " ^
+			"   | (z,zs) => " ^ 
+				"   case unroll z of A => (anyEmpty,ConsL(zs,a),b,c) | B => (anyEmpty,a,ConsL(zs,b),c) | C => (anyEmpty,a,b,ConsL(zs,c))" ^ 
 	"   in " ^
 	"   letrec exists ((l,s) : list * $string2) : $bool = " ^
-		"   let (anyEmpty, ts, fs) = partition l in " ^
-		"   next { " ^
-			"   case unroll prev{s} of " ^
-			"     em => prev{if anyEmpty then next{true} else next{false}} " ^
-			"   | (c,cs) => " ^
-				"   if c  " ^
-				"   then prev{exists (ts,next{cs})}  " ^
-				"   else prev{exists (fs,next{cs})} " ^ 
-		"   } " ^
-	"   in 4", SAME)
+		"   case unroll l of em => next{false} | notempty => " ^ 
+			"   let (anyEmpty, a, b, c) = partition l in " ^
+			"   next { " ^
+				"   case unroll prev{s} of " ^
+				"     em => prev{if anyEmpty then next{true} else next{false}} " ^
+				"   | (z,zs) => " ^
+					"   case unroll z of  " ^
+					"     A => prev{exists (a,next{zs})}  " ^
+					"   | B => prev{exists (b,next{zs})} " ^ 
+					"   | C => prev{exists (c,next{zs})} " ^ 
+			"   } in " ^
+	"   exists( " ^ 
+		"   let c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)), " ^ 
+		"   next{let c = prev{ConsS2} in c(prev{A2},c(prev{B2},c(prev{C2},prev{EmptyS2})))})", ansNB true)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))

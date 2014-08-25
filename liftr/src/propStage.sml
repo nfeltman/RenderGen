@@ -27,7 +27,7 @@ fun elabLetRec (f,t1,t2,b,e) =
 	
 exception StagePropException
 	
-fun elabDataType stage (ty,cts,e) = 
+fun elabDataType (stage,ty,cts,e) = 
 	let
 		fun nameToZero (Tstandard t) = Tstandard (mapType nameToZero t)
 		  | nameToZero (Tfut t) = Tfut (nameToZero t)
@@ -43,16 +43,17 @@ fun elabDataType stage (ty,cts,e) =
 		  | process [] = ([],[])
 		val (ntpsList,types) = process cts
 		val openSumType = Tstandard (TFsum (map nameToZero types))
-		fun buildInjector tyOpt prefixes suffixes = 
-			case tyOpt of
-			  SOME ty => Elam (ty,(Pvar "x",Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Evar "x")))))
-			| NONE => Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Etuple [])))
+		fun buildInjector tyOpt prefixes suffixes =
+				case tyOpt of
+				  SOME ty => Elam (ty,(Pvar "x",Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Evar "x")))))
+				| NONE => Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Etuple [])))
+		fun stageWrap x = case stage of ThisStage => x | NextStage => Enext x
 	in
 		Eletty(
 			stage, 
 			ty, 
 			Tstandard (TFrec openSumType), 
-			List.foldr (fn ((n,t,p,s),rest) => Elet (buildInjector t p s, (Pvar n,rest))) e ntpsList
+			List.foldr (fn ((n,t,p,s),rest) => Elet (stageWrap(buildInjector t p s), (Pvar n,rest))) e ntpsList
 		)
 	end
 
@@ -70,20 +71,20 @@ and propTy2 D (Tstandard t) = T2 (mapType (propTy2 D) t)
 
 and prop1r D G (Estandard exp) = 
 		E1 (replaceVars (prop1r D) G Variable.newvar (mapExpr id (propTy1 D) exp))
-  | prop1r (D1,D2) G (Eletty (StageOne,x,t,e)) = prop1r (extendContext D1 x (propTy1 (D1,D2) t), D2) G e
-  | prop1r (D1,D2) G (Eletty (StageTwo,x,t,e)) = prop1r (D1, extendContext D2 x (propTy2 (D1,D2) t)) G e
+  | prop1r (D1,D2) G (Eletty (ThisStage,x,t,e)) = prop1r (extendContext D1 x (propTy1 (D1,D2) t), D2) G e
+  | prop1r (D1,D2) G (Eletty (NextStage,x,t,e)) = prop1r (D1, extendContext D2 x (propTy2 (D1,D2) t)) G e
   | prop1r D G (Eletr args) = prop1r D G (elabLetRec args)
-  | prop1r D G (Eletdata args) = prop1r D G (elabDataType StageOne args)
+  | prop1r D G (Eletdata args) = prop1r D G (elabDataType args)
   | prop1r _ _ (Eprev _) = raise StagePropException
   | prop1r D G (Enext e) = E1next (prop2r D G e)
   | prop1r D G (Ehold e) = E1hold (prop1r D G e)
 
 and prop2r D G (Estandard exp) = 
 		E2 (replaceVars (prop2r D) G Variable.newvar (mapExpr id (propTy2 D) exp))
-  | prop2r (D1,D2) G (Eletty (StageOne,x,t,e)) = prop2r (extendContext D1 x (propTy1 (D1,D2) t), D2) G e
-  | prop2r (D1,D2) G (Eletty (StageTwo,x,t,e)) = prop2r (D1, extendContext D2 x (propTy2 (D1,D2) t)) G e
+  | prop2r (D1,D2) G (Eletty (ThisStage,x,t,e)) = prop2r (D1, extendContext D2 x (propTy2 (D1,D2) t)) G e
+  | prop2r (D1,D2) G (Eletty (NextStage,x,t,e)) = raise StagePropException
   | prop2r D G (Eletr args) = prop2r D G (elabLetRec args)
-  | prop2r D G (Eletdata args) = prop2r D G (elabDataType StageTwo args)
+  | prop2r D G (Eletdata args) = prop2r D G (elabDataType args)
   | prop2r D G (Eprev e) = E2prev (prop1r D G e)
   | prop2r _ _ (Enext _) = raise StagePropException
   | prop2r _ _ (Ehold _) = raise StagePropException

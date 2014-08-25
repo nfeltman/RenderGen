@@ -22,7 +22,7 @@ open LangCommon
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
-	  MU | MOD | DEQ | LETT1 | LETT2 | LETDT
+	  MU | MOD | DEQ | LETTY | LETDT
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
@@ -79,9 +79,10 @@ open LangCommon
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
 		  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
 		  | LETR ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
-		  | LETT1 ID EQ TY IN EXP										(Eletty (StageOne,ID,TY,EXP))
-		  | LETT2 ID EQ TY IN EXP										(Eletty (StageTwo,ID,TY,EXP))
-		  | LETDT ID EQ DTARML IN EXP									(Eletdata (ID1,DTARML,EXP))
+		  | LETTY ID EQ TY IN EXP										(Eletty (ThisStage,ID,TY,EXP))
+		  | LETTY DOLLAR ID EQ TY IN EXP								(Eletty (NextStage,ID,TY,EXP))
+		  | LETDT ID EQ DTARML IN EXP									(Eletdata (ThisStage,ID,DTARML,EXP))
+		  | LETDT DOLLAR ID EQ DTARML IN EXP							(Eletdata (NextStage,ID,DTARML,EXP))
 
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)

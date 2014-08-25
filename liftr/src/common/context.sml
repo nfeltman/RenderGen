@@ -2,7 +2,7 @@
 structure Contexts = 
 struct
 
-exception UnboundVar
+exception UnboundVar of string
 exception WrongStage of Variable.variable
 
 type ('a,'b) context = ('a * 'b) list
@@ -10,7 +10,7 @@ type ('a,'b) context = ('a * 'b) list
 val empty = []
 
 fun extendContext g v t = (v,t) :: g
-fun lookup [] v = raise (UnboundVar)
+fun lookup [] v = raise (UnboundVar "")
   | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
   
 
