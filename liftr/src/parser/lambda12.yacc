@@ -25,7 +25,7 @@ open LangCommon
 	  MU | MOD | DEQ | LETT1 | LETT2 | LETDT
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
-	  DTARML of (string * ty) list |
+	  DTARML of (string * ty option) list | DTARM of string * ty option |
 	  MATCH of patt * expr | MATCHL of (patt * expr) list |
 	  BINOP of Prims.binops | 
 	  TY of ty | ATY of ty | BTY of ty | CTY of ty | 
@@ -86,8 +86,10 @@ open LangCommon
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)
 
-   DTARML : ID OF TY					([(ID,TY)])
-		  | ID OF TY BAR DTARML			((ID,TY)::DTARML)
+   DTARML : DTARM						([DTARM])
+		  | DTARM BAR DTARML			(DTARM::DTARML)
+	DTARM : ID OF TY					((ID, SOME TY))
+		  | ID							((ID, NONE))
 		  
    MATCHL : MATCH						([MATCH])
 		  | MATCH BAR MATCHL			(MATCH :: MATCHL)

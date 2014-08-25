@@ -18,7 +18,7 @@ datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Eprev of expr
 				| Ehold of expr
 				| Eletty of stage * string * ty * expr
-				| Eletdata of string * (string * ty) list * expr
+				| Eletdata of string * (string * ty option) list * expr
 				| Eletr of string * ty * ty * (patt * expr) * expr
 
 				

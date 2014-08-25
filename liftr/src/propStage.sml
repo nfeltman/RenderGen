@@ -32,17 +32,21 @@ fun elabDataType stage (ty,cts,e) =
 		fun nameToZero (Tstandard t) = Tstandard (mapType nameToZero t)
 		  | nameToZero (Tfut t) = Tfut (nameToZero t)
 		  | nameToZero (Tref s) = if s = ty then Tstandard (TFvar 0) else Tref s
-		fun process ((c,t)::cts) =
+		fun process ((c,tyOpt)::cts) =
 			let
+				val t = getOpt (tyOpt, Tprod [])
 				val (ntpsList,types) = process cts
 				val adjustedPrefixes = map (fn (n,ty,p,s) => (n,ty,t::p,s)) ntpsList
 			in
-				((c,t,[],types)::adjustedPrefixes,t::types)
+				((c,tyOpt,[],types)::adjustedPrefixes,t::types)
 			end
 		  | process [] = ([],[])
 		val (ntpsList,types) = process cts
 		val openSumType = Tstandard (TFsum (map nameToZero types))
-		fun buildInjector ty prefixes suffixes = Elam (ty,(Pvar "x",Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Evar "x")))))
+		fun buildInjector tyOpt prefixes suffixes = 
+			case tyOpt of
+			  SOME ty => Elam (ty,(Pvar "x",Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Evar "x")))))
+			| NONE => Eroll(openSumType,Estandard (Finj (prefixes, suffixes, Etuple [])))
 	in
 		Eletty(
 			stage, 

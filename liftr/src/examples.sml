@@ -70,16 +70,16 @@ k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int 
 						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"cons (5, cons (3, empty))",SAME),
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
-j("sumlist",			"datatype list = Empty of unit | Cons of int * list in " ^
+j("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
-						"sum (Cons (5, Cons (3, Empty ())))",ansI 8),
+						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
 (*j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
 						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE), *)
 j("fastexp",			"letrec exp ((b,e) : $int*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
 						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243) ,
-j("quickselect",		"datatype list = Empty of unit | Cons of int * list in " ^
+j("quickselect",		"datatype list = Empty | Cons of int * list in " ^
 						"letrec partition ((p,l) : int*list) : (int*list*list) = "^
-							"case unroll l of em => (0,Empty (), Empty ()) | (h,t) => "^
+							"case unroll l of em => (0,Empty, Empty) | (h,t) => "^
 								"let (s,left,right) = partition (p,t) in "^
 								"if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right)) in " ^
 						"letrec qs ((l,i) : list * $int) : $int = "^
@@ -90,14 +90,14 @@ j("quickselect",		"datatype list = Empty of unit | Cons of int * list in " ^
 									"if prev{i} < n then prev{qs (left,i)} " ^
 									"else if prev{i} == n then prev{hold h} " ^
 									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
-						"in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty ())))))), next{2})", ansNI 4),
+						"in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))), next{2})", ansNI 4),
 j("prefixtree",
-	"   datatype string = EmptyS of unit | ConsS of bool * string in " ^
+	"   datatype string = EmptyS | ConsS of bool * string in " ^
 	"   lettype2 string2 = mu unit + bool * 0 in " ^
-	"   datatype list = EmptyL of unit | ConsL of string * list in " ^
+	"   datatype list = EmptyL | ConsL of string * list in " ^
 	"   letrec partition (l : list) : (bool * list * list) = " ^
 		"   case unroll l of " ^ 
-		"   em => (false,EmptyL (),EmptyL ()) " ^
+		"   em => (false,EmptyL,EmptyL) " ^
 		"   | (s,ss) => " ^
 			"   let (anyEmpty,ts,fs) = partition ss in " ^
 			"   case unroll s of " ^
