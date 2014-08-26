@@ -1,0 +1,127 @@
+\documentclass[preprint]{sigplanconf}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+%\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{mathpartir}
+\usepackage{mathabx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{cprotect}
+
+\usepackage{cleveref}
+\AtBeginDocument{\renewcommand\ref\cref}
+\crefname{figure}{Figure}{Figures}
+\crefname{theorem}{Theorem}{Theorems}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\input {macros}
+
+\begin{document}
+
+\lstset{language=ML,
+        columns=fullflexible,
+        basicstyle=\ttfamily,
+        tabsize=4,
+        escapeinside={"*}{*"},
+        literate={|->}{{\ $\mapsto$\ }}1
+                 {xhat}{{$\hat{\texttt{x}}$}}1
+                 {yhat}{{$\hat{\texttt{y}}$}}1
+                 {zhat}{{$\hat{\texttt{z}}$}}1
+                 {murec}{{$\mu$}}1
+                 {alpha}{{$\alpha$}}1
+                 {beta}{{$\beta$}}1
+                 {$}{{$\fut$}}1}
+
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+
+\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country} 
+\copyrightyear{20yy} 
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm} 
+\doi{nnnnnnn.nnnnnnn}
+
+% Uncomment one of the following two, if you are not going for the 
+% traditional copyright transfer agreement.
+
+%\exclusivelicense                % ACM gets exclusive license to publish, 
+                                  % you retain copyright
+
+%\permissiontopublish             % ACM gets nonexclusive license to publish
+                                  % (paid open-access papers, 
+                                  % short abstracts)
+
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{Stage-Splitting a Modal Language}
+
+\authorinfo{Nicolas Feltman \and Carlo Angiuli \and Umut Acar \and Kayvon Fatahalian}
+           {Carnegie Mellon University}
+           {\{nfeltman,cangiuli,umut,kayvonf\}@cs.cmu.edu}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\category{CR-number}{subcategory}{third-level}
+
+% general terms are not compulsory anymore, 
+% you may leave them out
+\terms
+term1, term2
+
+\keywords
+keyword1, keyword2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+This document is a tech report on current research into a program transformation
+technique which we call {\em splitting}.  This report has three parts, with
+a section dedicated to each,
+\begin{itemize}
+\item \Cref{sec:semantics} describes a language, called \lang, which unambiguously specifies the inputs to 
+our splitting transformation.  It includes both a type system, which is unimaginatively based on previous work, 
+and a semantics, which is more novel.
+\item \Cref{sec:splitting} describes the splitting transformation itself.  This takes programs, specified in \lang, and converts them to terms in a standard unstaged language.  This section also describes the more formal definition of the correctness for this process.
+\item \Cref{sec:examples} gives examples of how this splitting transformation can be used
+to derive data structures, and discusses the effectiveness and limitations of this technique.
+\end{itemize}
+
+\input{semantics}
+\input{splitting}
+\input{algoexamples}
+
+%\appendix
+%\section{Appendix Title}
+%This is the text of the appendix, if you need one.
+
+%\acks
+%Acknowledgments, if needed.
+
+% We recommend abbrvnat bibliography style.
+
+\bibliography{paper}
+\bibliographystyle{abbrvnat}
+
+\end{document}

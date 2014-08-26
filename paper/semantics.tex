@@ -93,7 +93,7 @@ stage \bbtwo\ ones (such as the recurive call to {\tt fexp} above), this strateg
 Thus, our dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
 subexpressions before any of its stage \bbtwo\ subexpressions. This results in a
 stage \bbtwo\ term with no stage \bbone\ content; we say this is a term in a
-monostaged%
+monostaged
 \footnote{In general, \lang could have more than two stages, in which case the
 expression would be in a language with one fewer stage.}
 language called \langTwo. Then, we perform the remainder of the evaluation with 
@@ -393,56 +393,56 @@ of call-by-value evaluation of $e$.
 %derivationally equivalent to standard call-by-value evaluation.
 \end{remark}
 
-\subsection{Metatheory}
-
-Recall that residuals live in \langTwo; we will indicate typing judgments in
-\langTwo\ with $\vdash_\bbtwo$.
-
+%\subsection{Metatheory}
+%
+%Recall that residuals live in \langTwo; we will indicate typing judgments in
+%\langTwo\ with $\vdash_\bbtwo$.
+%
+%%\begin{definition}
+%%Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
+%%contains only stage-2 variables.
+%%\end{definition}
+%
 %\begin{definition}
-%Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
-%contains only stage-2 variables.
+%An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
+%\begin{enumerate}
+%\item $\xi = \cdot$; or
+%\item $\xi = \xi',x:B\mapsto e$ where
+%$\Gamma\vdash\xi'\wf$ and
+%$\typeslangTwo[\Gamma,\dom{\xi'}] e B$
+%%$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
+%%$\Gamma,\dom{\xi'}\vdash e \res$.
+%\end{enumerate}
 %\end{definition}
-
-\begin{definition}
-An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
-\begin{enumerate}
-\item $\xi = \cdot$; or
-\item $\xi = \xi',x:B\mapsto e$ where
-$\Gamma\vdash\xi'\wf$ and
-$\typeslangTwo[\Gamma,\dom{\xi'}] e B$
-%$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
-%$\Gamma,\dom{\xi'}\vdash e \res$.
-\end{enumerate}
-\end{definition}
-
-\begin{theorem}
-If $\typeswor e A$ then $\Gamma\wf$ and $A\istypewor$.
-\end{theorem}
-
-\begin{theorem}
-If $\diaonesub$ and $\typesone e A$ then
-\begin{enumerate}
-\item $\Gamma\vdash\xi\wf$;
-\item $\Gamma,\dom\xi\vdash \colone{v}{A}$; and
-\item $\Gamma,\dom\xi\vdash v\pval$.
-\end{enumerate}
-\end{theorem}
-
-\begin{theorem}
-If $\diatwosub$ and $\typestwo e A$ then
-\begin{enumerate}
-\item $\typeslangTwo q A$; and
-\item $\Gamma\vdash_\bbtwo q\val$.
-\end{enumerate}
-\end{theorem}
-
-\begin{theorem}\label{thm:reify-type}
-If $\Gamma\vdash\xi\wf$ and
-$\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
-then 
-$\reify{\xi}{\hat y}{q}$ and
-$\typeslangTwo q A$.
-\end{theorem}
+%
+%\begin{theorem}
+%If $\typeswor e A$ then $\Gamma\wf$ and $A\istypewor$.
+%\end{theorem}
+%
+%\begin{theorem}
+%If $\diaonesub$ and $\typesone e A$ then
+%\begin{enumerate}
+%\item $\Gamma\vdash\xi\wf$;
+%\item $\Gamma,\dom\xi\vdash \colone{v}{A}$; and
+%\item $\Gamma,\dom\xi\vdash v\pval$.
+%\end{enumerate}
+%\end{theorem}
+%
+%\begin{theorem}
+%If $\diatwosub$ and $\typestwo e A$ then
+%\begin{enumerate}
+%\item $\typeslangTwo q A$; and
+%\item $\Gamma\vdash_\bbtwo q\val$.
+%\end{enumerate}
+%\end{theorem}
+%
+%\begin{theorem}\label{thm:reify-type}
+%If $\Gamma\vdash\xi\wf$ and
+%$\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
+%then 
+%$\reify{\xi}{\hat y}{q}$ and
+%$\typeslangTwo q A$.
+%\end{theorem}
 
 \TODO
 Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one

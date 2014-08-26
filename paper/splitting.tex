@@ -1,5 +1,6 @@
 
 \section{Splitting Algorithm}
+\label{sec:splitting}
 
 The basic idea is that we want to take a term which contains interleaved stage \bbone\ and stage \bbtwo\ code
 and split it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.
@@ -254,9 +255,3 @@ to the staged dynamic semantics.
 %\end{theorem}
 
 \input{figures/splitting-misc}
-
-\section{Examples for Staged Pipelines}
-
-Give the gist of one-to-one pipeline example (like client/server).
-Then talk about a one-to-many pipeline.
-Then talk about a many-to-one pipeline like spark.  It clear how to target something like this for known base types on the boundary, and for product types.  But sums on the boundary are hard!  We leave many-to-one as future-work.
