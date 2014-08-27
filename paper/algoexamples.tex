@@ -3,12 +3,15 @@
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
 
-\TODO put the \verb|fix|es in this code explicitly?
+In this section, I show a few example of how splitting can be used to derive
+standard data structures a relatively simple multistage code.
+
+\subsection{Fast Exponent}
 
 Fast exponent example.  
 
 \begin{lstlisting} 
-let fexp (b : $int, e : int) : $int =
+fun fexp (b : $int, e : int) : $int =
 	if e == 0 then
 		next{1}
 	else if (e mod 2) == 0 then
@@ -20,58 +23,92 @@ let fexp (b : $int, e : int) : $int =
 splits into
 
 \begin{lstlisting} 
-let fexp (b, e) =
-	((), roll (
-		if e == 0 then
-			inL ()
-		else 
-			inR (
-				if (e mod 2) == 0 then
-					inL (#2 (fexp (b,e/2)))
-				else
-					inR (#2 (fexp (b,e-1)))
-			)
-	))
+fun fexp (b, e) =
+  ((), roll (
+    if e == 0 then inL ()
+    else
+      inR (
+        if (e mod 2) == 0
+        then inL (#2 (fexp (b,e/2)))
+        else InR (#2 (fexp (b,e-1)))
+      )
+  ))
 \end{lstlisting}
 
 and
 
 \begin{lstlisting} 
-let fexp ((b, e), p) =
+fun fexp ((b, e), p) =
 	case unroll p of
-	  () => 1
-	| d  =>
+	  inL () => 1
+	| inR d =>
 		case d of
-		  r => let x = fexp ((b,()),r) in x*x
-		| r => b * fexp ((b,()),r)
+		  inL r => let x = fexp ((b,()),r) in x*x
+		| inR r => b * fexp ((b,()),r)
 \end{lstlisting}
 
-Quickselect example.
+\subsection{Quickselect}
 
 \begin{lstlisting} 
-let qs (l : "*$\mathtt{\mu \alpha. }$*"() + "*$\mathtt{int*\alpha}$*", i: $int) = 
-	case unroll l of
-	  () => next {0}
-	| (h,t) => 
-		let (left,right,n) = partition h t in
-		next{
-			let n = hold{n} in
-			case compare prev{i} n of
-			  () (*LT*) => prev {qs left i}
-			| () (*EQ*) => hold {h}
-			| () (*GT*) => 
-				prev {qs right next{prev{i}-n-1}}
-		}	
+datatype list = Empty | Cons of int * list
+fun partition ((p,l) : int*list) : (int*list*list) =
+  case unroll l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) =>
+      let (s,left,right) = partition (p,t) in
+      if h<p 
+      then (s+1,Cons(h,left),right)
+      else (s,left,Cons(h,right))
+fun qs (l : list, i: $int) = 
+  case l of
+    Empty => next {0}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        let n = hold{n} in
+          case compare prev{i} n of
+            LT => prev {qs left i}
+          | EQ => hold {h}
+          | GT => prev {qs right next{prev{i}-n-1}}
+      }	
 \end{lstlisting}
 
-Things to try: an interpreter which, partially evaluated, does cps or something.
+\subsection{Trie}
 
-For each of these examples, talk about what partial evaluation would do and why that might be bad.
+\begin{lstlisting} 
+datatype letter = A | B | C
+datatype string = EmptyS | ConsS of letter * string
+datatype list = EmptyL | ConsL of string * list
+fun partition (l : list) : (bool * list * list * list) =
+  case l of
+    EmptyL => (false,EmptyL,EmptyL,EmptyL)
+  | ConsL (s,ss) =>
+      let (anyEmpty,a,b,c) = partition ss in
+      case unroll s of
+        EmptyS => (true,a,b,c)
+      | ConsS (z,zs) =>
+          case z of 
+            A => (anyEmpty, ConsL(zs,a), b, c) 
+          | B => (anyEmpty, a, ConsL(zs,b), c) 
+          | C => (anyEmpty, a, b, ConsL(zs, c))
+fun exists ((l,s) : list * $string) : $bool =
+  case l of 
+    EmptyL => next{false} 
+  | ConsL _ => 
+    let (anyEmpty, a, b, c) = partition l in
+    next {
+      case prev{s} of
+        EmptyS => prev{
+          if anyEmpty then next{true} else next{false}
+          }
+      | ConsS (z,zs) =>
+          case unroll z of
+            A => prev{exists (a,next{zs})}
+          | B => prev{exists (b,next{zs})} 
+          | C => prev{exists (c,next{zs})}
+    }
+\end{lstlisting}
 
-
-[Meta-ML eases off on this restriction but does not (I think?) eliminate it.]
-
-[What's going on with names and necessity?]
-
-[Our work bears a lot of similarity to ML5, which also uses a modal type system.  The difference is that we target stages systems (each stage talks to the next), whereas they target distributed ones (all stages talk to all others). The type systems reflect this directly in the world accessibility relation.  There might be some analogue of stage-splitting in the ML5 work, but I have not yet isolated it (might be buried in CPS conversion).]
+\subsection {Partial Evaluation vs. Splitting}
+asdffsa
 

@@ -2,7 +2,7 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-The basic idea is that we want to take a term which contains interleaved stage \bbone\ and stage \bbtwo\ code
+The basic idea is that we want to take a \lang\ term which contains interleaved stage \bbone\ and stage \bbtwo\ code
 and split it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.
 To facilitate communication between the stages, there is a data structure passed between the stages, 
 which is an output of the stage \bbone\ term and and input to the stage \bbtwo\ term.
@@ -11,8 +11,7 @@ As with the dynamics, the form of the splitting statement depends on the externa
 We consider splitting for stage \bbtwo\ terms first, as it has a simpler form.  
 For example, take \verb|hold{1+2} < 5|.
 We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
-which are called the {\em precomputation} and {\em residual}
-\footnote{We also used the term {\em residual} for the result of partial evaluation.
+which are called the {\em precomputation} and {\em residual}\footnote{We also used the term {\em residual} for the result of partial evaluation.
 Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual}
 and {\em evaluation-residual}.}, respectively.  
 
@@ -41,6 +40,28 @@ In general, if a multi-stage program $P$ splits into stage-\bbone\ part $P_1$ an
 \end{enumerate}
 
 This is straight-forward, given a careful definition of equivalence.
+
+
+\subsection{Value Splitting}
+
+Before getting into the formal presentation, 
+we first consider the problem of splitting stage-\bbone\ partial values.
+This serves as a didactic stepping-stone to full term-splitting, 
+and it is a necessary component of the correctness theorem.
+
+The rules for value splitting are given in \cref{fig:valSplit}.  It consists of a single judgment, $v \vsplito [v_1,v_2]$,
+which sends a partial value $v$ to two single-stage values $v_1$ and $v_2$. 
+Those respectively represent the stage-\bbone\ and stage-\bbtwo\ content of the original value.  
+At base types, value splitting assigns all content to stage \bbone, and puts in a nullary tuple for stage two,
+in accordance with the precept that base types have only trivial content at stage \bbtwo.
+Splitting essentially distributes into values at product, sum, and recursive types.
+Functions split into two other functions.  Since the body of a function is an open term, this rule must rely on 
+general term splitting, which is covered momentarily.
+
+Lastly, we consider value splitting at the $\fut$ type.  The only partial value with this type
+is a $\next$ block containing a reference into the future environment.  This splits into a 
+nullary tuple and the same variable, again aligning with the precept that $\fut$ types contain trivial stage-\bbone\
+content.
 
 \subsection {Formal Setup}
 
@@ -76,7 +97,7 @@ Notice in the stage \bbtwo\ rules for {\tt if}s, {\tt case}s, and functions, the
 This is the manifestation of the speculation behavior from the semantics.
 
 \subsection {Stage \bbone\ Divergence}
-Consider the case of stage \bbone\ {\tt if} and {\tt case} expressions.
+Consider the splitting rules for stage-\bbone\ {\tt if} and {\tt case} expressions.
 In both cases we have enough information at stage \bbone\ to know what branch to take, so there's no need to speculate.
 Instead, we evaluate the stage \bbone\ portion of only the active branch, and then inject precomputation into a sum type.
 Then in the residual, we case on that sum and resume the stage \bbtwo\ portion of the correct branch.
@@ -89,19 +110,12 @@ one in the immediate result which handles all the stage \bbone\ content of the o
 and one in the residual which handles all of the stage \bbtwo\ content.
 Note that stage \bbone\ $\lambda$-expressions themselves have only a trivial precomputation.
 
-
-Thus the boundary type appears as output of the first stage and input of the second stage.
-This makes it hard to type the output, because the boundary types are not represented in the original function type.
-
-\subsection {Boundary Type Worst Case}
-
-\TODO add the example which is the worst case for figuring out boundary types
+%\subsection {Boundary Type Worst Case}
+%
+%\TODO add the example which is the worst case for figuring out boundary types
+%
 
 \input{figures/splitting-term}
-
-\subsection{Value Splitting, Etc}
-
-...
 
 \subsection{Metatheory}
 

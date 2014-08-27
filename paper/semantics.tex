@@ -324,7 +324,10 @@ At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does
 nothing but recursively speculate into every subexpression.  Once speculation
 finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which
 produces a future context and (by canonical forms) a $\next$-wrapped variable
-($\next\{\hat y\}$).  The context is then reified (using the $\reifysym$
+($\next\{\hat y\}$)\footnote{
+Importantly, speculation will search into both branches of a stage-\bbtwo\ {\tt if}
+statement to evaluate the contained stage-\bbone\ code.  Thus the name.
+}.  The context is then reified (using the $\reifysym$
 judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of
 its $\next$---at the bottom.
 
