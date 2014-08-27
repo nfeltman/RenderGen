@@ -25,12 +25,12 @@ splits into
 \begin{lstlisting} 
 fun fexp (b, e) =
   ((), roll (
-    if e == 0 then inL ()
+    if e == 0 then inj1 ()
     else
-      inR (
+      inj2 (
         if (e mod 2) == 0
-        then inL (#2 (fexp (b,e/2)))
-        else InR (#2 (fexp (b,e-1)))
+        then inj1 (#2 (fexp (b,e/2)))
+        else inj2 (#2 (fexp (b,e-1)))
       )
   ))
 \end{lstlisting}
@@ -40,11 +40,11 @@ and
 \begin{lstlisting} 
 fun fexp ((b, e), p) =
 	case unroll p of
-	  inL () => 1
-	| inR d =>
+	  inj1 () => 1
+	| inj2 d =>
 		case d of
-		  inL r => let x = fexp ((b,()),r) in x*x
-		| inR r => b * fexp ((b,()),r)
+		  inj1 r => let x = fexp ((b,()),r) in x*x
+		| inj2 r => b * fexp ((b,()),r)
 \end{lstlisting}
 
 \subsection{Quickselect}
@@ -72,6 +72,56 @@ fun qs (l : list, i: $int) =
           | GT => prev {qs right next{prev{i}-n-1}}
       }	
 \end{lstlisting}
+
+splits into
+
+\begin{lstlisting} 
+datatype _ = Empty | Cons of _
+fun partition (p,l) =
+  case unroll l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) =>
+      let (s,left,right) = partition (p,t) in
+      if h<p 
+      then (s+1,Cons(h,left),right)
+      else (s,left,Cons(h,right))
+fun qs (l, i) = roll((), 
+  case l of
+    Empty => inj1 ()
+  | Cons (h,t) => 
+      inj2 (
+        let (left,right,n) = partition h t in
+        (n, #2 (qs left i), h, #2 (qs right i))
+      )
+  )
+\end{lstlisting}
+
+and 
+
+\begin{lstlisting} 
+datatype _ = Empty | Cons of _
+fun qs ((l, i), p) = 
+  case unroll p of
+    inj1 () => 0
+  | inj2 (n,p1,h,p2) => 
+      next{
+        let n = hold{n} in
+          case compare prev{i} n of
+            LT => prev {qs left i}
+          | EQ => hold {h}
+          | GT => prev {qs right next{prev{i}-n-1}}
+      }	
+\end{lstlisting}
+
+There are a few things to note:
+\begin{itemize}
+\item Outputs are untyped.  Rather than elaborate out the datatypes, I keep them in and just null out the types.
+\item I made a huge simplification here.  The partition function doesn't have any real stage two computation,
+but that won't stop the current algorithm from keeping track of all the recursive calls and retracing all of its
+steps in stage-\bbtwo.
+\end{itemize}
+
+
 
 \subsection{Trie}
 
@@ -109,6 +159,10 @@ fun exists ((l,s) : list * $string) : $bool =
     }
 \end{lstlisting}
 
-\subsection {Partial Evaluation vs. Splitting}
-asdffsa
+splits into
 
+(coming...)
+
+\subsection {Partial Evaluation vs. Splitting}
+
+Lets consider how partial evaluation (essentially our semantics) and splitting compare for these examples.
