@@ -6,10 +6,13 @@
 In this section, I show a few example of how splitting can be used to derive
 standard data structures a relatively simple multistage code.
 
+Pay attention to how partial evaluation (essentially our semantics) and splitting compare for these examples.
+The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
+essentially embed that datastructure in the residual. 
+
 \subsection{Fast Exponent}
 
-Fast exponent example.  
-
+Here is a staged version of fast-exponent.
 \begin{lstlisting} 
 fun fexp (b : $int, e : int) : $int =
 	if e == 0 then
@@ -19,9 +22,7 @@ fun fexp (b : $int, e : int) : $int =
 	else
 		next{prev{b} * prev{fexp (b,e-1)}}		
 \end{lstlisting}
-
-splits into
-
+It splits into
 \begin{lstlisting} 
 fun fexp (b, e) =
   ((), roll (
@@ -34,9 +35,7 @@ fun fexp (b, e) =
       )
   ))
 \end{lstlisting}
-
 and
-
 \begin{lstlisting} 
 fun fexp ((b, e), p) =
 	case unroll p of
@@ -47,8 +46,22 @@ fun fexp ((b, e), p) =
 		| inj2 r => b * fexp ((b,()),r)
 \end{lstlisting}
 
+Although split programs are not typed, we'll recognize the intermediate data structure 
+above as being as isomorphic to the recursive datatype definitions:
+\begin{lstlisting} 
+datatype binaryList = Empty 
+                      | NotEmpty of neList
+withtype neList = Zero of binaryList 
+                  | One of binaryList
+\end{lstlisting}
+Which is all to say that the split code precomputes a binary representation of the exponent.
+
+Splitting this code produces interesting results, but partial evaluation is probably more effective,
+given that exponents are often not that large.
+
 \subsection{Quickselect}
 
+Here we have a staged version of quickselect.
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition ((p,l) : int*list) : (int*list*list) =
@@ -72,9 +85,7 @@ fun qs (l : list, i: $int) =
           | GT => prev {qs right next{prev{i}-n-1}}
       }	
 \end{lstlisting}
-
-splits into
-
+It splits into
 \begin{lstlisting} 
 datatype _ = Empty | Cons of _
 fun partition (p,l) =
@@ -95,9 +106,7 @@ fun qs (l, i) = roll((),
       )
   )
 \end{lstlisting}
-
 and 
-
 \begin{lstlisting} 
 datatype _ = Empty | Cons of _
 fun qs ((l, i), p) = 
@@ -112,7 +121,6 @@ fun qs ((l, i), p) =
           | GT => prev {qs right next{prev{i}-n-1}}
       }	
 \end{lstlisting}
-
 There are a few things to note:
 \begin{itemize}
 \item Outputs are untyped.  Rather than elaborate out the datatypes, I keep them in and just null out the types.
@@ -120,8 +128,6 @@ There are a few things to note:
 but that won't stop the current algorithm from keeping track of all the recursive calls and retracing all of its
 steps in stage-\bbtwo.
 \end{itemize}
-
-
 
 \subsection{Trie}
 
@@ -163,6 +169,3 @@ splits into
 
 (coming...)
 
-\subsection {Partial Evaluation vs. Splitting}
-
-Lets consider how partial evaluation (essentially our semantics) and splitting compare for these examples.
