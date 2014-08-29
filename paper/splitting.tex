@@ -2,12 +2,51 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-The stage splitting operation takes as input a \lang\ term which contains interleaved stage \bbone\ and stage \bbtwo\ code
-and splits it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.  
-To facilitate communication between the stages, there is a data structure passed between the stages, 
-which is an output of the stage \bbone\ term and and input to the stage \bbtwo\ term.
+Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
+Despite this similarity in purpose, the form of stage-splitting is rather different. 
+Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
+where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
+and $f_2$ uses that data structure and the stage-\bbtwo\ input to produce the final output.  
+More precisely, a stage splitter is any $s$ such that
+\[
+	\forall f. \exists f_1,f_2. 
+	\left[
+		\begin{array}{l}
+		s(f) = (f_1,f_2) \text{ and } \\
+		\forall x,y.\llbracket f \rrbracket(x,y)=\llbracket f_2 \rrbracket(\llbracket f_1 \rrbracket(x),y)
+		\end{array}
+	\right]
+\]
+with the same $\llbracket \cdot \rrbracket$ notation as before.
+Importantly, the stage splitting operation does not depend on the stage-\bbone\ input, unlike partial evaluation.
 
-As with the dynamics, the form of the splitting statement depends on the external stage of the term.
+As with the dynamics, our stage-splitting algorithm for expressions in \lang\ take 
+the form of two mutually-dependent judgments, $\splitonesym$ and $\splittwosym$. 
+Before diving into the full generality, we consider splitting for a simple fragment of the full language: partial values.
+
+\subsection{Partial Value Splitting}
+
+Before getting into the formal presentation, 
+we first consider the problem of splitting stage-\bbone\ partial values.
+This serves as a didactic stepping-stone to full term-splitting, 
+and it is a necessary component of the correctness theorem.
+
+The rules for partial value splitting are given in \cref{fig:valSplit}.  It consists of a single judgment, $v \vsplito [v_1,v_2]$,
+which sends a partial value $v$ to two single-stage values $v_1$ and $v_2$. 
+Those respectively represent the stage-\bbone\ and stage-\bbtwo\ content of the original partial value.  
+At base types, partial value splitting assigns all content to stage \bbone, and puts in a nullary tuple for stage two,
+in accordance with the precept that base types have only trivial content at stage \bbtwo.
+Splitting acts distributively at product, sum, and recursive types.
+Functions split into two other functions.  Since the body of a function is an open term, this rule must rely on 
+general term splitting, which is covered momentarily.
+
+Lastly, we consider value splitting at the $\fut$ type.  The only partial value with this type
+is a $\next$ block containing a reference into the future environment.  This splits into a 
+nullary tuple and the same variable, again aligning with the precept that $\fut$ types contain trivial stage-\bbone\
+content.
+
+\subsection{Full Expression Splitting}
+
 We consider splitting of stage \bbtwo\ terms first, as it has a simpler form.  
 For example, consider \verb|hold{1+2} < 5|.
 We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
@@ -40,28 +79,6 @@ In general, if a multi-stage program $P$ splits into stage-\bbone\ part $P_1$ an
 \end{enumerate}
 
 This is straight-forward, given a careful definition of equivalence.
-
-
-\subsection{Value Splitting}
-
-Before getting into the formal presentation, 
-we first consider the problem of splitting stage-\bbone\ partial values.
-This serves as a didactic stepping-stone to full term-splitting, 
-and it is a necessary component of the correctness theorem.
-
-The rules for partial value splitting are given in \cref{fig:valSplit}.  It consists of a single judgment, $v \vsplito [v_1,v_2]$,
-which sends a partial value $v$ to two single-stage values $v_1$ and $v_2$. 
-Those respectively represent the stage-\bbone\ and stage-\bbtwo\ content of the original partial value.  
-At base types, partial value splitting assigns all content to stage \bbone, and puts in a nullary tuple for stage two,
-in accordance with the precept that base types have only trivial content at stage \bbtwo.
-Splitting acts distributively at product, sum, and recursive types.
-Functions split into two other functions.  Since the body of a function is an open term, this rule must rely on 
-general term splitting, which is covered momentarily.
-
-Lastly, we consider value splitting at the $\fut$ type.  The only partial value with this type
-is a $\next$ block containing a reference into the future environment.  This splits into a 
-nullary tuple and the same variable, again aligning with the precept that $\fut$ types contain trivial stage-\bbone\
-content.
 
 \subsection {Formal Setup}
 
