@@ -78,34 +78,38 @@
 
 \maketitle
 
-\begin{abstract}
-\input{abstract}
-\end{abstract}
+%\begin{abstract}
+%\input{abstract}
+%\end{abstract}
 
-\category{CR-number}{subcategory}{third-level}
+%\category{CR-number}{subcategory}{third-level}
 
 % general terms are not compulsory anymore, 
 % you may leave them out
-\terms
-term1, term2
+%\terms
+%term1, term2
 
-\keywords
-keyword1, keyword2
+%\keywords
+%keyword1, keyword2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
 
-This document is a tech report on current research into a program transformation
-technique which we call {\em splitting}.  This report has three parts, with
-a section dedicated to each,
+This document is a tech report on ongoing research into a program transformation
+technique which we call {\em splitting}.  The splitting operation statically transforms a program written in a modal language into multiple unstaged (monostage) terms.
+
+The idea of splitting has previously been explored as an optimization technique that improves performance in situations where multi-variate functions are invoked many times, with some inputs being invariant across invocations and others being dynamic (varying across invocations). Prior examples of splitting simple languages include the ``data specialization" work of Knoblock and Ruff\,\cite{knoblock96}, as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}.  In this document we define the splitting transformation for the two-stage language \lang, a typed lambda calculus featuring products, sums, and isorecursive types. 
+
+
 \begin{itemize}
-\item \Cref{sec:semantics} describes a language, called \lang, which unambiguously specifies the inputs to 
-our splitting transformation.  It includes both a type system, which is unimaginatively based on previous work, 
-and a semantics, which is more novel.
-\item \Cref{sec:splitting} describes the splitting transformation itself.  This takes programs, specified in \lang, and converts them to terms in a standard unstaged language.  This section also describes the more formal definition of the correctness for this process.
-\item \Cref{sec:examples} gives examples of how this splitting transformation can be used
-to derive data structures, and discusses the effectiveness and limitations of this technique.
+\item \Cref{sec:semantics} describes \lang which unambiguously specifies the inputs to 
+our splitting transformation.  The type system of \lang\ is drawn from prior work, but its semantics are uniquely defined in anticipation of splitting.
+
+\item \Cref{sec:splitting} describes the splitting transformation on \lang.  As stated above, splitting accepts terms in \lang\ as input, and converts them to terms in a standard unstaged language.  This section also formally defines the correctness for the splitting transformation.
+
+\item \Cref{sec:examples} gives several examples of how splitting terms in \lang\ can be used
+to derive data structures that are communicated between the two unstaged terms, and discusses the effectiveness and limitations of this technique.  Unlike prior work, where the data communicated between the resultant unstaged terms was a basic tuple of values, splitting \lang\ terms can generate non-trivial intermediate structures, such as trees.
 \end{itemize}
 
 \input{semantics}
@@ -121,7 +125,7 @@ to derive data structures, and discusses the effectiveness and limitations of th
 
 % We recommend abbrvnat bibliography style.
 
-\bibliography{paper}
+\bibliography{techreport}
 \bibliographystyle{abbrvnat}
 
 \end{document}
