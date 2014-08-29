@@ -3,10 +3,9 @@
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
 
-In this section, I show a few example of how splitting can be used to derive
-standard data structures a relatively simple multistage code.
-
-Pay attention to how partial evaluation (essentially our semantics) and splitting compare for these examples.
+We have observed that stage splitting can be used to transform \lang\ programs into two step algorithms where the precomputation generates a data-structure, and the residual uses the recomputed structure to accelerate repeated computation.   Three examples of this behavior follow: the fast exponent example from Section~\ref{sec:stagedsemantics}, a derivation of the quickselect algorithm, and the use of splitting to generate a structure resembling a trie.
+ 
+We urge the reader to pay attention to how partial evaluation (essentially \lang's dynamic semantics) and execution of the outputs of stage splitting compare for these examples.
 The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
 essentially embed that datastructure in the residual. 
 

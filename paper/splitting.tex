@@ -2,14 +2,14 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-The basic idea is that we want to take a \lang\ term which contains interleaved stage \bbone\ and stage \bbtwo\ code
-and split it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.
+The stage splitting operation takes as input a \lang\ term which contains interleaved stage \bbone\ and stage \bbtwo\ code
+and splits it into two separate terms: one with all of the stage \bbone\ code and one with all the stage \bbtwo\ code.  
 To facilitate communication between the stages, there is a data structure passed between the stages, 
 which is an output of the stage \bbone\ term and and input to the stage \bbtwo\ term.
 
 As with the dynamics, the form of the splitting statement depends on the external stage of the term.
-We consider splitting for stage \bbtwo\ terms first, as it has a simpler form.  
-For example, take \verb|hold{1+2} < 5|.
+We consider splitting of stage \bbtwo\ terms first, as it has a simpler form.  
+For example, consider \verb|hold{1+2} < 5|.
 We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
 which are called the {\em precomputation} and {\em residual}\footnote{We also used the term {\em residual} for the result of partial evaluation.
 Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual}

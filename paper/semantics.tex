@@ -24,7 +24,7 @@ opaquely by stage-\bbone\ code, as they cannot be evaluated until stage \bbtwo.
 While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbone\ types,
 there is no way to embed a stage-\bbone\ type within a stage-\bbtwo\ type.
 The $\next$ constructor embeds stage-\bbtwo\ expressions into stage \bbone,
-while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  These are the
+while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  $\next$ and $\prev$ are the
 only ways in \lang\ to alter the stage of a term; we surround their arguments
 with braces in \lang\ syntax to clearly indicate stage boundaries within a
 program.
@@ -49,6 +49,7 @@ It is possible to implement $\pause$ from other \lang\ features, but
 we provide it as a core primitive to simplify our examples. 
 
 \subsection{Staged Evaluation}
+\label{sec:stagedsemantics}
 
 As a simple example of expressing staged programs in \lang, consider the following fast exponentiation algorithm, which 
 calculates $b^p$ in $\log p$ time:
@@ -76,7 +77,7 @@ let fexp (b : $int, e : int) : $int =
 \end{lstlisting}
 
 Although the code for {\tt fexp} appears very similar to the unstaged mathematical
-definition above, it is in fact a staged program: the {\tt if} predicates and exponent
+definition above, it is in fact a staged program. The function receives a stage-\bbone\ exponent {\tt e} and a stage-\bbtwo\ base {\tt b} and returns stage-\bbtwo\ result. The {\tt if} predicates and exponent
 decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
 %\needsfix{Essentially, the type system is sufficient to prove the observation that all of
 %the decomposition of the exponent can be done at the stage \bbone\ without
@@ -302,6 +303,10 @@ above,
 are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|63|.
 \end{itemize}
+
+% would like some kind of intro here that anticipates all the complexity.
+% The dynamics of \lang\ consists of three types of judgements: $\redonesym$ (stage-\bbone reduction), $\redtwosym$ (speculation), and $\reifysym$ (reification).
+
 The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future
 environment} $\xi$ and a partial value $v$.  The future environment is a mapping
 from fresh stage \bbtwo\ variables (which may appear inside $\next$ blocks in
