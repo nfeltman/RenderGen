@@ -49,12 +49,12 @@ we first consider the problem of splitting stage-\bbone\ partial values.
 This serves as a didactic stepping-stone to full term-splitting, 
 and it is a necessary component of the correctness theorem.
 
-The rules for value splitting are given in \cref{fig:valSplit}.  It consists of a single judgment, $v \vsplito [v_1,v_2]$,
+The rules for partial value splitting are given in \cref{fig:valSplit}.  It consists of a single judgment, $v \vsplito [v_1,v_2]$,
 which sends a partial value $v$ to two single-stage values $v_1$ and $v_2$. 
-Those respectively represent the stage-\bbone\ and stage-\bbtwo\ content of the original value.  
-At base types, value splitting assigns all content to stage \bbone, and puts in a nullary tuple for stage two,
+Those respectively represent the stage-\bbone\ and stage-\bbtwo\ content of the original partial value.  
+At base types, partial value splitting assigns all content to stage \bbone, and puts in a nullary tuple for stage two,
 in accordance with the precept that base types have only trivial content at stage \bbtwo.
-Splitting essentially distributes into values at product, sum, and recursive types.
+Splitting acts distributively at product, sum, and recursive types.
 Functions split into two other functions.  Since the body of a function is an open term, this rule must rely on 
 general term splitting, which is covered momentarily.
 

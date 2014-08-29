@@ -7,8 +7,11 @@
 In this section, we describe \lang, a simple two-stage language
 for which we define and analyze stage splitting.
 
-%The grammar and type system for \lang\ is given in
-%\ref{fig:grammar,fig:statics}.
+\lang\ is largely based off of a language defined in \cite{davies96} 
+which was used as a model for partial evaluation.  
+Our version, despite a slightly different semantics, can be used for the same purpose.
+The details of the partial evaluation view are shown in \cref{sec:partialeval}.
+
 The language \lang\ is essentially two copies of a typed lambda calculus with
 products, sums, and isorecursive types.%
 \footnote{It is possible for different stages to have different sets of
@@ -360,14 +363,22 @@ But moreover, because a reified residual will always be evaluated whether or not
 our semantics terminates strictly less often than that of \cite{davies96}.
 
 \subsection {A Partial Evaluation System}
+\label{sec:partialeval}
 
 We now consider how to use this formal system to encode inputs to partial evaluation and stage-splitting systems.
-Recall that in partial evaluation systems, we have a function $f$ for which some input is labeled {\em static} and 
+Recall that in partial evaluation systems, we have a multivariate function $f$ for which some input is labeled {\em static} and 
 some labeled {\em dynamic}.  Once the static input is provided, we can partially evaluate the function to produce
-a residual that depends on only the dynamic input.
+a residual that depends on only the dynamic input.  Equationally, a partial evaluator is any $p$ such that
+\[
+	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
+\]
+where $\llbracket \cdot \rrbracket$ translates the text of a function to it's mathematical interpretation (a la \cite{jones96}).
+Here, $x$ is the static input, $y$ is the dynamic input, and $f_x$ is residual, also called ``f specialized to x."
+The hope of partial evaluation is that $f_x$ is cheaper to execute than $f$, meaning that we can save work if we must evaluate it many times.
 
 By identifying static with stage \bbone\ and dynamic with stage \bbtwo, 
-we can encode this sort of system with a function type of the form $A\to\fut(B\to C)$.
+our dynamics can serve as a partial evaluator.   
+Specifically, we encode $f$ as a \lang\ expression with a function type of the form $A\to\fut(B\to C)$
 \cprotect\footnote{We can rewrite \texttt{fexp} in this form, or simply apply
 the following higher-order function which makes the adjustment:
 \begin{lstlisting} 
@@ -377,7 +388,7 @@ let adjust (f : $int * int -> $int) =
       fn (b : int) => 
         prev{f (next {b}, p)}
     }
-\end{lstlisting}}
+\end{lstlisting}}.
 %
 Here $A$ represents the static input, $B$ represents the dynamic input, and $C$ represents the output.
 
