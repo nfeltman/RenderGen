@@ -97,14 +97,12 @@
 \section{Introduction}
 
 This document is a tech report on ongoing research into a program transformation
-technique which we call {\em stage splitting}.  The stage splitting operation statically transforms a program written in a modal language into multiple unstaged (monostage) terms.
+technique which we call {\em stage splitting}, which statically transforms a program written in a multi-stage (modal) language into multiple unstaged (monostage) terms.
 
 The idea of splitting has previously been explored as an optimization technique that improves performance in situations where multi-variate functions are invoked many times, with some inputs being invariant across invocations and others being dynamic (varying across invocations). Prior examples of splitting include the ``data specialization" work of Knoblock and Ruff\,\cite{knoblock96} as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}. In this document we define the splitting transformation for the two-stage language \lang, a typed lambda calculus featuring products, sums, and isorecursive types. 
 
-
 \begin{itemize}
-\item \Cref{sec:semantics} describes \lang which unambiguously specifies the inputs to 
-our splitting transformation.  The type system of \lang\ is drawn from prior work, but its semantics are uniquely defined in anticipation of splitting.
+\item \Cref{sec:semantics} describes \lang\ which serves to unambiguously specify the input to splitting.  The type system of \lang\ is drawn from prior work, but its semantics are uniquely defined in anticipation of splitting.
 
 \item \Cref{sec:splitting} describes the splitting transformation on \lang.  As stated above, splitting accepts terms in \lang\ as input, and converts them to terms in a standard unstaged language.  This section also formally defines the correctness for the splitting transformation.
 

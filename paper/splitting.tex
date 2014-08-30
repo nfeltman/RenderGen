@@ -3,7 +3,8 @@
 \label{sec:splitting}
 
 Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
-Despite this similarity in purpose, the form of stage-splitting is rather different. 
+However, where partial evaluation requires the value of some inputs to be known, stage splitting is a static transformation performed
+before any arguments are available.
 Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
 where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
 and $f_2$ uses that data structure and the stage-\bbtwo\ input to produce the final output.  
