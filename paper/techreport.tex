@@ -96,19 +96,23 @@
 
 \section{Introduction}
 
-This document is a tech report on ongoing research into a program transformation
-technique which we call {\em stage splitting}, which statically transforms a program written in a multi-stage (modal) language into multiple unstaged (monostage) terms.
-
-The idea of splitting has previously been explored as an optimization technique that improves performance in situations where multi-variate functions are invoked many times, with some inputs being invariant across invocations and others being dynamic (varying across invocations). Prior examples of splitting include the ``data specialization" work of Knoblock and Ruff\,\cite{knoblock96} as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}. In this document we define the splitting transformation for the two-stage language \lang, a typed lambda calculus featuring products, sums, and isorecursive types. 
-
+It is a common observation that some computations can be performed efficiently by using {\em staging}, wherein the execution of a program is split over two or more discrete points in time ({\em i.e.} stages).  This most often arises when we want to evaluate a multivariate function several times, with some inputs dynamic (varying across invocations) and some static (constant across invocations).  Examples include,
 \begin{itemize}
-\item \Cref{sec:semantics} describes \lang\ which serves to unambiguously specify the input to splitting.  The type system of \lang\ is drawn from prior work, but its semantics are uniquely defined in anticipation of splitting.
-
-\item \Cref{sec:splitting} describes the splitting transformation on \lang.  As stated above, splitting accepts terms in \lang\ as input, and converts them to terms in a standard unstaged language.  This section also formally defines the correctness for the splitting transformation.
-
-\item \Cref{sec:examples} gives several examples of how splitting terms in \lang\ can be used
-to derive data structures that are communicated between the two unstaged terms, and discusses the effectiveness and limitations of this technique.  Unlike prior work, where the data communicated between the resultant unstaged terms was a basic tuple of values, splitting \lang\ terms can generate non-trivial intermediate structures, such as trees.
+\item Computing $b^e$, where $b$ varies and $e$ is constant.
+\item Finding the $i$th largest element in a list, where the list is constant and $i$ varies.
+\item Computing the shading of a surfacing in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over  pixel blocks.  
 \end{itemize}
+
+With these goals in mind, our initial concern is how to express multistage programs. To this end, we have slightly modified prior work to create \lang, a typed multi-stage lambda calculus featuring products, sums, and isorecursive types. An important property of \lang\ is that the staging of a well-typed program is apparent without resorting to any variable analysis, contra standard binding time analysis.  
+
+Once we have appropriately written {\em multi-stage} programs, we then must execute them in a way that respects the staging.  In this paper, we explore two techniques for this: {\em partial evaluation} and {\em stage-splitting}.  
+
+The main idea of the former technique is to evaluate all of the constant portions of the program and embed the partial results into a {\em residual} program that depends only on the varying inputs.  This is an old and well-explored idea, though the typical setup of partial evaluation implies a more powerful binding time analysis than is necessary for our language.  
+
+The main idea of the latter technique is to statically compile the multi-stage program into several smaller programs, one per stage, and then to execute those in a standard way.  This has previously been explored as an optimization technique for languages with fewer features or a more constrained staging model than \lang. Prior examples include the ``data specialization" work of Knoblock and Ruff\,\cite{knoblock96} as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}. 
+
+\Cref{sec:semantics} describes the grammar and type system of \lang, as well as a reference semantics which is essentially a partial evaluator. \Cref{sec:splitting} describes a stage-splitting transformation for \lang\ and proves its equivalence to the reference semantics.
+Finally, \Cref{sec:examples} gives several examples of how stage-splitting terms in \lang\ can be used to derive classic data structures, and discusses the effectiveness and limitations of this technique.  Notably, these examples make use of the stage-splitting features not available in prior work.
 
 \input{semantics}
 \input{splitting}
