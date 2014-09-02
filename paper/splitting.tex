@@ -19,9 +19,11 @@ More precisely, a stage splitter is any $s$ such that
 	\right]
 \]
 with the same $\llbracket \cdot \rrbracket$ notation as before.
-Importantly, the stage splitting operation does not depend on the stage-\bbone\ input, unlike partial evaluation.
+Notice that $x$ here is bound underneath the existential $f_1$ and $f_2$,
+meaning that the stage splitting operation does not depend on the stage-\bbone\ input.
+This stands in contrast to the definition of partial evaluation, where $f_x$ does depend on $x$.
 
-As with the dynamics, our stage-splitting algorithm for expressions in \lang\ take 
+As with the dynamics, our stage-splitting algorithm for expressions in \lang\ takes 
 the form of two mutually-dependent judgments, $\splitonesym$ and $\splittwosym$. 
 Before diving into the full generality, we consider splitting for a simple fragment of the full language: partial values.
 After that, we define splitting for full expressions, discuss some notable properties of the algorithm, and then prove correctness.
@@ -35,8 +37,10 @@ and we will see later that it is a necessary component of the correctness theore
 The basic goal of partial value splitting is to take a partial value $v$ and create from it two single stage values $v_1$ and $v_2$,
 where $v_1$ contains only the information from $v$ that is relevant to the first stage, 
 and $v_2$ contains only the information from $v$ that is relevant to the second stage.
-There are many reasonable ways to do this, 
-and we simply chose one that preserves as much structure as possible from $v$.
+We call this action {\em masking}.
+
+There are many reasonable ways to achieve this goal, 
+and we choose one that preserves as much structure as possible from $v$.
 Formally, partial value splitting comprises a single judgment, $v \vsplito [v_1,v_2]$, the rules for which are given in \cref{fig:valSplit}.
 It essentially acts distributively at product, sum, and recursive types, 
 doing little more than recuring into subvalues and duplicating the structure to both results.
@@ -48,40 +52,37 @@ Since the body of a function is an open term, the partial value splitting rule f
 The most we can say here is a function splits into two other functions, 
 whose bodies correspond to the stage \bbone\ and stage \bbtwo\ components of the original function's body.
 
-\subsection{Full Expression Splitting}
+\subsection{ Expression Splitting}
 
-We consider splitting of stage \bbtwo\ terms first, as it has a simpler form.  
-For example, consider \verb|hold{1+2} < 5|.
-We can split this into two separate terms, \verb|1+2| and \verb|fn l => l < 5|, 
-which are called the {\em precomputation} and {\em residual}\footnote{We also used the term {\em residual} for the result of partial evaluation.
-Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual}
-and {\em evaluation-residual}.}, respectively.  
+We now consider the problem of splitting expressions in \lang, starting with stage \bbtwo\ terms.  
+The goal here is to end up with two new terms: one that has all of the stage \bbone\ content of the original, and one with all of the stage \bbtwo\ content. 
+These are respectively called the {\em precomputation} and {\em residual}.
+\footnote{We also used the term {\em residual} for the result of partial evaluation.
+Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual} and {\em evaluation-residual}.}
 
-The form of splitting for stage \bbone\ terms is more complicated.
+For example, consider $e=``\verb|hold{1+2} < hold{3+4}-5|"$.
+We can split this into two terms, $p=``\verb|(1+2,3+4)|"$ and $r=``\verb|fn (L1,L2) => L1 < L2-5|"$, 
+with the as yet imprecise property that $r$ applied to $p$ yields the same final value as $e$.
+In general, all we're doing here is finding the contained nuggets of stage \bbone\ code and pulling them into a big tuple,
+an action we call {\em lifting}.
+
+Note that lifting and masking are different, despite both being within the purview of splitting.
+They particularly differ in how the resulting stage \bbone\ parts are used.
+The $v_1$ of partial value splitting is essentially the stage \bbone\ content of {\em result} of computation, 
+and it's accessible to whatever surrounding piece of code refers to the value being split.
+In contrast, the $p$ of stage \bbtwo\ expression splitting is only meant to support the stage \bbtwo\ part,
+and is not accessible externally.
+
+The distinction between lifting and masking is important because stage \bbone\ expression splitting does both.
 To see why, consider the term \verb|(next{hold{1+2} < 5},3*4)|.
-As before, the comparison operation is part of stage \bbtwo, 
-and the addition operation is a stage \bbone\ precomputation, the result of which will eventually become input to the residual.
-The multiplication operation, however, is neither part of the residual nor a precomputation to support it.
-Instead it is the {\em immediate result} of stage \bbone, 
-because it is available to the stage \bbone\ context around our original term.
-For example:
-\begin{lstlisting}
-let x = (next{hold{1+2} < 5},3*4) in
-next{ if prev{#1 x} then 7 else hold {#2 x} }
-\end{lstlisting}
-To support this, stage \bbone\ splitting produces two outputs: the {\em combined result} and the residual,
-where the combined result reduces to a tuple containing the immediate result and the precomputation.
+The stage \bbone\ result of masking is \verb|((),3*4)|, 
+and the precomputation (i.e. the stage \bbone\ result of lifting) is \verb|(1+2)|.
+To get the total stage \bbone\ result of splitting, we just take the tuple of those two parts: \verb|(((),3*4),1+2)|.  
+This is called the {\em combined result} for stage \bbone.
+\footnote{In this example, the combined result is a 2-tuple, but more generally it only must be a term which reduces to a 2-tuple.}
 
-We must also develop a notion of what it means for splitting to be correct.  
-Our general approach is to say that the dynamic semantics from \ref{sec:semantics} and splitting method are equivalent in some way.  
-In general, if a multi-stage program $P$ splits into stage-\bbone\ part $P_1$ and stage-\bbtwo\ part $P_2$, then
-\begin{enumerate}
-\item Partial evaluation of $P$ will terminate if and only if evaluation of $P_1$ terminates, and if so then
-\item the immediate results of each method will be equivalent, and
-\item the evaluation-residual and the splitting-residual ($P_2$ bound under the precomputation) are equivalent.
-\end{enumerate}
-
-This is straight-forward, given a careful definition of equivalence.
+The residual is likewise the combination of the stage \bbtwo\ results of lifting and masking.
+In this case, it is ``\verb|fn L => (L<5,())|".
 
 \subsection {Formal Setup}
 
@@ -110,19 +111,22 @@ The rules of stage \bbtwo\ splitting are given in \ref{fig:termSplitTwo}.
 Every rule works by bundling the precomputations of the constituent parts, and then unbundling them with a pattern.
 The rules of stage \bbone\ splitting are given in \ref{fig:termSplitOne}.  
 
+\subsection {Properties}
 
-\subsection {Speculation}
+We'll now call out a few properties to notice in the splitting rules.
+
+\subsubsection {Speculation}
 
 Notice in the stage \bbtwo\ rules for {\tt if}s, {\tt case}s, and functions, the precomputation is lifted out from within branches.
 This is the manifestation of the speculation behavior from the semantics.
 
-\subsection {Stage \bbone\ Divergence}
+\subsubsection {Stage \bbone\ Divergence}
 Consider the splitting rules for stage-\bbone\ {\tt if} and {\tt case} expressions.
 In both cases we have enough information at stage \bbone\ to know what branch to take, so there's no need to speculate.
 Instead, we evaluate the stage \bbone\ portion of only the active branch, and then inject precomputation into a sum type.
 Then in the residual, we case on that sum and resume the stage \bbtwo\ portion of the correct branch.
 
-\subsection {Stage \bbone\ Functions}
+\subsubsection {Stage \bbone\ Functions}
 
 The trick when splitting stage \bbone\ functions is that the contents themselves may be multi-stage.
 We handle this by splitting them into two functions:
@@ -137,11 +141,13 @@ Note that stage \bbone\ $\lambda$-expressions themselves have only a trivial pre
 
 \input{figures/splitting-term}
 
-\subsection{Metatheory}
+\subsection{Correctness of Splitting}
 
-We start with two mutually dependent definitions of equivalence.  
+We can now develop an notion of what it means for splitting to be correct.  
+Our general approach is to say that the dynamic semantics from \ref{sec:semantics} and splitting method are equivalent in some way.  
+Thus, we start with two mutually dependent definitions of equivalence.  
 Both relate evaluation-residuals on the left with splitting residuals on the right,
-but $\equiv$ operates on terms, whereas $\sim$ on values.
+but $\equiv$ equates closed expressions, whereas $\sim$ equates values.
 
 \begin{definition}
 For evaluation-residual $q$ and splitting-residual $r$, define $q \equiv r : A$ to mean that 
@@ -166,8 +172,6 @@ We give the following end-to-end correctness lemmas for open terms.
 It's a bit of a mess currently, but the $\Gamma$ is supposed to be all of the stage \bbone\ bindings, 
 whereas $\Gamma'$ is the stage \bbtwo\ bindings.
 Substitution splitting works just like value splitting, which is why they use the same symbol.
-
-The jury is still out on how to make these strong enough to prove that the partitioning between stages is correct.
 
 \begin{lemma}
 If $\typesone e A$ then
