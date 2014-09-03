@@ -3,7 +3,7 @@
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
 
-We have observed that stage splitting can be used to transform \lang\ programs into two step algorithms where the precomputation generates a data-structure, and the residual uses the recomputed structure to accelerate repeated computation.   Three examples of this behavior follow: the fast exponent example from Section~\ref{sec:stagedsemantics}, a derivation of the quickselect algorithm, and the use of splitting to generate a structure resembling a trie.
+We have observed that stage splitting can be used to transform \lang\ programs into two step algorithms where the precomputation generates a data-structure, and the residual uses the precomputed structure to accelerate repeated computation.  Three examples of this behavior follow: the fast exponent example from Section~\ref{sec:stagedsemantics}, a derivation of the quickselect algorithm, and the use of splitting to generate a structure resembling a trie.
  
 We urge the reader to pay attention to how partial evaluation (essentially \lang's dynamic semantics) and execution of the outputs of stage splitting compare for these examples.
 The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
@@ -11,7 +11,7 @@ essentially embed that datastructure in the residual.
 
 \subsection{Fast Exponent}
 
-Here is a staged version of fast-exponent.
+Here is a staged version of the fast-exponent example from before.
 \begin{lstlisting} 
 fun fexp (b : $int, e : int) : $int =
 	if e == 0 then
@@ -54,9 +54,10 @@ withtype neList = Zero of binaryList
                   | One of binaryList
 \end{lstlisting}
 Which is all to say that the split code precomputes a binary representation of the exponent.
+Since integers are usually stored in a binary format anyways, this isn't practically useful,
+but it's still an interesting exposition of the technique.
 
-Splitting this code produces interesting results, but partial evaluation is probably more effective,
-given that exponents are often not that large.
+Partially evaluating the code here might actually be useful, since 
 
 \subsection{Quickselect}
 
