@@ -107,18 +107,14 @@ fun qs (l, i) = roll((),
 \end{lstlisting}
 and 
 \begin{lstlisting} 
-datatype _ = Empty | Cons of _
 fun qs ((l, i), p) = 
   case unroll p of
     inj1 () => 0
   | inj2 (n,p1,h,p2) => 
-      next{
-        let n = hold{n} in
-          case compare prev{i} n of
-            LT => prev {qs left i}
-          | EQ => hold {h}
-          | GT => prev {qs right next{prev{i}-n-1}}
-      }	
+      case compare prev{i} n of
+        LT => qs () i
+      | EQ => h
+      | GT => qs () (i-n-1)
 \end{lstlisting}
 There are a few things to note:
 \begin{itemize}
@@ -157,7 +153,7 @@ fun exists ((l,s) : list * $string) : $bool =
           if anyEmpty then next{true} else next{false}
           }
       | ConsS (z,zs) =>
-          case unroll z of
+          case z of
             A => prev{exists (a,next{zs})}
           | B => prev{exists (b,next{zs})} 
           | C => prev{exists (c,next{zs})}
@@ -166,5 +162,50 @@ fun exists ((l,s) : list * $string) : $bool =
 
 splits into
 
-(coming...)
+\begin{lstlisting} 
+datatype _ = EmptyS | ConsS of _
+datatype _ = EmptyL | ConsL of _
+fun partition l =
+  case l of
+    EmptyL => (false,EmptyL,EmptyL,EmptyL)
+  | ConsL (s,ss) =>
+      let (anyEmpty,a,b,c) = partition ss in
+      case unroll s of
+        EmptyS => (true,a,b,c)
+      | ConsS (z,zs) =>
+          case z of 
+            A => (anyEmpty, ConsL(zs,a), b, c) 
+          | B => (anyEmpty, a, ConsL(zs,b), c) 
+          | C => (anyEmpty, a, b, ConsL(zs, c))
+fun exists (l,s) = roll ((), 
+  case l of 
+    EmptyL => inj1 ()
+  | ConsL _ => 
+    let (anyEmpty, a, b, c) = partition l in
+    inj2 (
+    	if anyEmpty then inj1 () else inj2 (), 
+    	#2 (exists (a,())), 
+    	#2 (exists (b,())), 
+    	#2 (exists (c,()))
+    )
+  )
+\end{lstlisting}
+and 
+\begin{lstlisting} 
+datatype _ = EmptyS | ConsS of _
+fun exists ((l,s), p) =
+  case unroll p of 
+    inj1 () => false
+  | inj2 (anyEmpty,p_a,p_b,p_c) => 
+      case s of
+        EmptyS => 
+          case anyEmpty of 
+            inj1 () => true 
+          | inj2 () => false
+      | ConsS (z,zs) =>
+          case z of
+            A => exists (((),zs),p_a)
+          | B => exists (((),zs),p_b)
+          | C => exists (((),zs),p_c)
+\end{lstlisting}
 
