@@ -376,7 +376,7 @@ a residual that depends on only the dynamic input.  Equationally, a partial eval
 	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
 \]
 where $\llbracket \cdot \rrbracket$ translates the text of a function to it's mathematical interpretation (a la \cite{jones96}).
-Here, $x$ is the static input, $y$ is the dynamic input, and $f_x$ is residual, also called ``f specialized to x."
+Here, $x$ is the static input, $y$ is the dynamic input, and $f_x$ is the residual, also called ``f specialized to x."
 
 % KAYVONF: good statement, but hold out for now
 %The hope of partial evaluation is that $f_x$ is cheaper to execute than $f$, meaning that we can save work if we must %evaluate it many times.

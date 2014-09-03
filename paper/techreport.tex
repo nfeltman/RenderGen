@@ -100,7 +100,7 @@ It is a common observation that some computations can be performed efficiently b
 \begin{itemize}
 \item Computing $b^e$, where $b$ varies and $e$ is constant.
 \item Finding the $i$th largest element in a list, where the list is constant and $i$ varies.
-\item Computing the shading of a surfacing in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over  pixel blocks.  
+\item Computing the shading of a surface in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over  pixel blocks.  
 \end{itemize}
 
 With these goals in mind, our initial concern is how to express multistage programs. To this end, we have modified prior work to create \lang, a typed multi-stage lambda calculus featuring products, sums, and isorecursive types. An important property of \lang\ is that the staging of a well-typed program is apparent without resorting to any variable analysis, contra standard binding time analysis.  

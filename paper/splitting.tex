@@ -44,7 +44,7 @@ and we choose one that preserves as much structure as possible from $v$.
 Formally, partial value splitting comprises a single judgment, $v \vsplito [v_1,v_2]$, the rules for which are given in \cref{fig:valSplit}.
 It essentially acts distributively at product, sum, and recursive types, 
 doing little more than recuring into subvalues and duplicating the structure to both results.
-At base types, partial value splitting assign all content ({\em i.e.} the integer or boolean) to stage \bbone, and uses a nullary tuple placeholder for stage \bbtwo.
+At base types, partial value splitting assigns all content ({\em i.e.} the integer or boolean) to stage \bbone, and uses a nullary tuple placeholder for stage \bbtwo.
 Conversely at $\fut$ types, splitting assigns all content ({\em i.e.} the environment reference) to stage \bbtwo, and uses a nullary tuple for stage \bbone.
 
 Functions are inherently more complicated. 
