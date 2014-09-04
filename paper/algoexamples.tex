@@ -57,11 +57,17 @@ Which is all to say that the split code precomputes a binary representation of t
 Since integers are usually stored in a binary format anyways, this isn't practically useful,
 but it's still an interesting exposition of the technique.
 
-Partially evaluating the code here might actually be useful, since 
+Partially evaluating the code here might actually be useful, since the residual wouldn't have branches,
+and exponents tend to be small enough that the code size would be reasonable.
 
 \subsection{Quickselect}
 
-Here we have a staged version of quickselect.
+Here we have a staged version of the quickselect algorithm.
+Standard quickselect finds the $i$th largest number in a list by recursively partitioning the list by its 
+first element and picking the side which contains the $i$th largest element.
+In this case, we've staged quickselect by saying that the list is stage \bbone\ and $i$ is stage \bbtwo.
+Note that the partition function operates entirely in stage \bbone.
+
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition ((p,l) : int*list) : (int*list*list) =
@@ -85,7 +91,7 @@ fun qs (l : list, i: $int) =
           | GT => prev {qs right next{prev{i}-n-1}}
       }	
 \end{lstlisting}
-It splits into
+Running our stage splitting algorithm on this code produces something like:
 \begin{lstlisting} 
 datatype _ = Empty | Cons of _
 fun partition (p,l) =
@@ -117,15 +123,39 @@ fun qs ((l, i), p) =
       | EQ => h
       | GT => qs () (i-n-1)
 \end{lstlisting}
-There are a few things to note:
+In English, these functions just recursively build and then search a binary tree,
+which stores a set element and subtree size at every branch.
+
+Note that we've made a few simplifications in rendering this output:
 \begin{itemize}
-\item Outputs are untyped.  Rather than elaborate out the datatypes, I keep them in and just null out the types.
-\item I made a huge simplification here.  The partition function doesn't have any real stage two computation,
-but that won't stop the current algorithm from keeping track of all the recursive calls and retracing all of its
-steps in stage-\bbtwo.
+\item Outputs are untyped.  Rather than elaborate out the datatypes, we keep them in and just null out the types.
+\item The partition function doesn't have any real stage two computation,
+but that won't stop the current algorithm from keeping track of all the recursive calls in partition 
+and then retracing all of its steps in stage-\bbtwo, only to produce a unit value at the end.  
+That's massively inefficient, and we elided it here.
 \end{itemize}
 
+Modulo the points I just made, splitting does a good job here.  
+Partial evaluation creates a giant tree of if statements proportional to the size of the list,
+whereas splitting just creates the tree out of values, and then interprets it in the residual.
+For large input lists (which is typical), this saves a lot on memory.
+
 \subsection{Trie}
+
+Our last example is one which generates a trie intermediate data structure.
+
+The problem is determining whether a keyword (from an alphabet with three letters) occurs in a set.
+We solve this by partitioning the initial set into three subsets,
+one which contains all the words that start with A,
+one which contains all the words that start with B, and likewise one for C.
+When partitioning, we also throw away the first letter, since we know it's uniform for the whole subset.
+Also while doing this partitioning, we also keep track of whether the empty word occurred at all.
+We then look at the keyword.  If it's empty, we return whether the empty word was in the set.
+Otherwise, we look at the first letter, pick the appropriate subset, 
+and recursive search for the rest of our keyword in that.
+
+We stage this algorithm by saying that the word set comes at stage \bbone
+and the keyword comes at stage \bbtwo.
 
 \begin{lstlisting} 
 datatype letter = A | B | C
@@ -160,8 +190,7 @@ fun exists ((l,s) : list * $string) : $bool =
           | C => prev{exists (c,next{zs})}
     }
 \end{lstlisting}
-
-splits into
+Running the splitting algorithm on this produces:
 
 \begin{lstlisting} 
 datatype _ = EmptyS | ConsS of _
@@ -210,3 +239,54 @@ fun exists ((l,s), p) =
           | C => exists (((),zs),p_c)
 \end{lstlisting}
 
+As promised, this split version creates a trie in stage \bbone, and consumes it in stage \bbtwo.
+Note that we made the same simplification in the partition function here as in the quickselect example.
+As far as how stage splitting compares to partial evaluation, it's again the same story as above:
+partial evaluation embeds the whole trie into the residual as an if nest, 
+whereas quickselect efficiently represents the trie as a value.
+
+\subsection{Analysis}
+
+For practical purposes there are three primary differences between stage splitting and partial evaluation.
+
+Firstly, partial evaluation embeds the intermediate data structure into the code of the residual, whereas
+stage-splitting more efficiently realizes the data structure as a value.  This saves, potentially massively, on memory.
+
+Secondly, partial evaluation will eliminate first-stage branches it knows it doesn't need to take,
+whereas stage-splitting will keep them around.  
+To see exactly where this phenomenon happens, compare the evaluation and splitting rules for stage \bbone\ if-statements.
+This is generally a win for partial evaluation.
+
+Finally, stage-splitting can be performed without knowing the first-stage value,
+which can be the difference between compile-time and run-time.
+Since running a partial evaluator might be prohibitively expensive at run-time, this is a large win for stage-splitting.
+
+\section{Conclusions and Future Work}
+
+In this section, I'll discuss how appropriate \lang\ and stage-splitting are for stated application and others.  
+This section is intended to be more frank.
+
+\subsection{Feasibility of Staging for Algorithm Derivation}
+
+The big question from our previous section is whether its feasible to write algorithms using staging.  
+
+After some practice, I can say that the staging and typing rules of \lang are fairly natural, 
+and writing correct programs is not mind-bendingly difficult, even when speculation is involved.
+Sure, you have to have some knowledge of what sort of data structure you're going for,
+but all programming requires forethought.
+
+Once the program is written, the benefits are obvious.
+Using \lang\ and splitting cuts code size by roughly half,
+and it's certainly way easier to reason about and prove correctness when the intermediate data structure is implicit.
+
+I'm more troubled by scope.  
+Pretty much every good example I have, including the quickselect and trie, fits into the model of turning
+divide-and-conquer search into a tree build-and-search algorithm.  
+Every deviation from that formula ends up failing.
+Mind you, it's possible that there's some class of algorithms that we're missing entirely, 
+and maybe there's just one more feature that would get us there,
+but I'm having trouble seeing what that is.
+
+\subsection {Applications to DSLs}
+
+This leaves us to think of some other applications.  Fortunately, I have a few in mind.
