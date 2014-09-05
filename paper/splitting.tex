@@ -7,7 +7,7 @@ However, where partial evaluation requires the value of some inputs to be known,
 before any arguments are available.
 Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
 where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
-and $f_2$ uses that data structure and the stage-\bbtwo\ input to produce the final output.  
+and $f_2$ consumes that data structure and the stage-\bbtwo\ input to produce the final output.  
 More precisely, a stage splitter is any $s$ such that
 \[
 	\forall f. \exists f_1,f_2. 
@@ -24,7 +24,8 @@ meaning that the stage splitting operation does not depend on the stage-\bbone\ 
 This stands in contrast to the definition of partial evaluation, where $f_x$ does depend on $x$.
 
 As with the dynamics, our stage-splitting algorithm for expressions in \lang\ takes 
-the form of two mutually-dependent judgments, $\splitonesym$ and $\splittwosym$. 
+the form of two mutually-dependent judgments, $\splitonesym$ and $\splittwosym$, 
+which respectively split terms that type $@ \bbone$ and $@ \bbtwo$. 
 Before diving into the full generality, we consider splitting for a simple fragment of the full language: partial values.
 After that, we define splitting for full expressions, discuss some notable properties of the algorithm, and then prove correctness.
 
@@ -34,9 +35,12 @@ We now consider the problem of splitting stage-\bbone\ partial values.
 This serves as a simple didactic stepping-stone to the full formulation, 
 and we will see later that it is a necessary component of the correctness theorem.
 
-The basic goal of partial value splitting is to take a partial value $v$ and create from it two single stage values $v_1$ and $v_2$,
-where $v_1$ contains only the information from $v$ that is relevant to the first stage, 
-and $v_2$ contains only the information from $v$ that is relevant to the second stage.
+Recall that, along with a future environment, partial values are the output of the partial evaluation of stage \bbone\ terms.
+In addition to base types, tuples, and injections, partial values may also contain references into the future environment.
+In this way, partial values express not only stage \bbone\ content, but stage \bbtwo\ content as well.
+The goal of partial value splitting is to take a partial value $v$ and create from it two single stage values $v_1$ and $v_2$,
+where $v_1$ contains only the information from $v$ that is relevant to first stage code inspecting this value, 
+and $v_2$ contains only the information from $v$ that is likewise relevant to second stage code.
 We call this action {\em masking}.
 
 There are many reasonable ways to achieve this goal, 
@@ -80,9 +84,8 @@ and the precomputation (i.e. the stage \bbone\ result of lifting) is \verb|(1+2)
 To get the total stage \bbone\ result of splitting, we just take the tuple of those two parts: \verb|(((),3*4),1+2)|.  
 This is called the {\em combined result} for stage \bbone.
 \footnote{In this example, the combined result is a 2-tuple, but more generally it only must be a term which reduces to a 2-tuple.}
-
-The residual is likewise the combination of the stage \bbtwo\ results of lifting and masking.
-In this case, it is ``\verb|fn L => (L<5,())|".
+The splitting residual is likewise the combination of the stage \bbtwo\ results of lifting and masking.
+For our example, it is ``\verb|fn L => (L<5,())|".
 
 \subsection {Formal Setup}
 
@@ -169,8 +172,8 @@ Essentially, we can read these as saying that two terms are equivalent if they e
 where "same" for functions means that those functions always evaluate to the same thing given equivalent inputs.
 
 We give the following end-to-end correctness lemmas for open terms. 
-It's a bit of a mess currently, but the $\Gamma$ is supposed to be all of the stage \bbone\ bindings, 
-whereas $\Gamma'$ is the stage \bbtwo\ bindings.
+In some of the theorems, we sort the usually heterogeneous context into $\Gamma$ and $\Gamma'$, 
+which respectively hold all of the stage \bbone\ and stage \bbtwo\ variable bindings.
 Substitution splitting works just like value splitting, which is why they use the same symbol.
 
 \begin{lemma}
