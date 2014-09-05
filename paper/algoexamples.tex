@@ -289,4 +289,29 @@ but I'm having trouble seeing what that is.
 
 \subsection {Applications to DSLs}
 
-This leaves us to think of some other applications.  Fortunately, I have a few in mind.
+This leaves us to think of some other applications.  
+For the most part, this means finding situations that \lang\ can model, and then hoping that splitting means something.
+So far, the best applications I've found are domain specific languages which deploy to multi-processor systems,
+where splitting becomes part of the compilation process.
+
+One example of this is shading languages,
+where we identify our stages with those of the graphics pipeline.
+This would require generalizing our staging model from two stages to any finite DAG.
+In such a case, splitting turns an ubershader into one shader per stage.
+The closest work to this would be Spark (\cite{Foley:2011}), which does essentially this
+but for an input language with fewer features (notably, no first-class functions), 
+and a simpler staging model that rules out behavior like speculation.
+Interestingly enough, Spark's restrictions are sufficient to guarantee a well-formed merging operator 
+(usually some sort of sampling).
+This means that instead of always running stage \bbone\ once, and reusing the result for many invocations of stage \bbtwo,
+we could run stage \bbone\ many times, merge the result, and then run stage \bbtwo\ off of that.
+
+We may be able to target stenciling languages such as Liszt.  
+Essentially, the stencil itself is identified with the stage graph, 
+and so stencil locality is enforced by the type system.
+It's not immediately clear what stage splitting maps to here, but my bet is it has something to do with phases.
+
+The last option is functional reactive programming.
+I've seen some applications of a type system like that of \lang\ to FRP (cite in a bit),
+and they use partial evaluation as a semantics.
+I have a hunch that stage splitting could be better.
