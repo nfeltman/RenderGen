@@ -144,18 +144,18 @@ For large input lists (which is typical), this saves a lot on memory.
 
 Our last example is one which generates a trie intermediate data structure.
 
-The problem is determining whether a keyword (from an alphabet with three letters) occurs in a set.
+The problem is determining whether a query string (from the alphabet $\{A, B,C\}$) occurs in a given set.
 We solve this by partitioning the initial set into three subsets,
-one which contains all the words that start with A,
-one which contains all the words that start with B, and likewise one for C.
+one which contains all the words that start with $A$,
+one which contains all the words that start with $B$, and one likewise for $C$.
 When partitioning, we also throw away the first letter, since we know it's uniform for the whole subset.
 Also while doing this partitioning, we also keep track of whether the empty word occurred at all.
-We then look at the keyword.  If it's empty, we return whether the empty word was in the set.
+We then look at the query string.  If it's empty, we return whether the empty word was in the set.
 Otherwise, we look at the first letter, pick the appropriate subset, 
-and recursive search for the rest of our keyword in that.
+and recursively search for the rest of our query string in that.
 
 We stage this algorithm by saying that the word set comes at stage \bbone\
-and the keyword comes at stage \bbtwo.
+and the query string comes at stage \bbtwo.
 
 \begin{lstlisting} 
 datatype letter = A | B | C
@@ -272,27 +272,29 @@ The big question from our previous section is whether its feasible to write algo
 
 After some practice, I can say that the staging and typing rules of \lang are fairly natural, 
 and writing correct programs is not mind-bendingly difficult, even when speculation is involved.
-Sure, you have to have some knowledge of what sort of data structure you're going for,
+Certainly, the programmer will have to have some knowledge of what sort of data structure she's going for,
 but all programming requires forethought.
 
-Once the program is written, the benefits are obvious.
+And once the program is written, the benefits are obvious.
 Using \lang\ and splitting cuts code size by roughly half,
 and it's certainly way easier to reason about and prove correctness when the intermediate data structure is implicit.
 
-I'm more troubled by scope.  
-Pretty much every good example I have, including the quickselect and trie, fits into the model of turning
-divide-and-conquer search into a tree build-and-search algorithm.  
-Every deviation from that formula ends up failing.
-Mind you, it's possible that there's some class of algorithms that we're missing entirely, 
-and maybe there's just one more feature that would get us there,
-but I'm having trouble seeing what that is.
+If there is a limiting factor, it would be scope.  
+The only practical examples that we've been able to conjure, including the quickselect and trie, 
+all fit into the model of turning divide-and-conquer search into a tree build-and-search algorithm.  
+It's a good start, but we've been largely unable to go beyond that formula.
+
+In particular, we definitely can't derive any data structures like auto-balancing trees, 
+because that would require explicit access to the structure, which we don't have.
+Hopefully, there are some classes of algorithms that we just haven't thought of, so we're open to suggestions.
 
 \subsection {Applications to DSLs}
 
-This leaves us to think of some other applications.  
-For the most part, this means finding situations that \lang\ can model, and then hoping that splitting means something.
-So far, the best applications I've found are domain specific languages which deploy to multi-processor systems,
-where splitting becomes part of the compilation process.
+There are also many potential applications to domain specific languages which deploy to multi-processor systems, 
+though this line of research is largely at the conjectural stage.
+For the most part, my method is finding situations that \lang\ can model, and then hoping that splitting means something in context.
+
+\subsubsection{Spark}
 
 One example of this is shading languages,
 where we identify our stages with those of the graphics pipeline.
@@ -301,15 +303,29 @@ In such a case, splitting turns an ubershader into one shader per stage.
 The closest work to this would be Spark (\cite{Foley:2011}), which does essentially this
 but for an input language with fewer features (notably, no first-class functions), 
 and a simpler staging model that rules out behavior like speculation.
-Interestingly enough, Spark's restrictions are sufficient to guarantee a well-formed merging operator 
-(usually some sort of sampling).
-This means that instead of always running stage \bbone\ once, and reusing the result for many invocations of stage \bbtwo,
-we could run stage \bbone\ many times, merge the result, and then run stage \bbtwo\ off of that.
+
+Interestingly enough, Spark's staging restrictions are sufficient to ensure 
+that the precomputation is always a base value or tuple, and never an injection 
+(which we allow via stage \bbone\ {\tt if}/{\tt case}).
+This means that Spark can guarantee a defined merging operator for all precomputations, 
+which it then leverages to combine the results from multiple stage-\bbone\ invocations to a single stage-\bbtwo\ invocation
+(and in generality, many-to-many).
+Lacking such a well-defined operator, we're stuck only modeling a one-to-many stage invocation pattern.
+
+Spark uses this strength to do resampling (for instance, a color @vertex is merged into color @fragment), 
+whering the merging operator is some sort of interpolation.  
+If we wanted that behavior, then we'd either have to restrict the input language
+or find a way to generalize interpolation to sum types.
+
+\subsubsection{Liszt}
 
 We may be able to target stenciling languages such as Liszt.  
 Essentially, the stencil itself is identified with the stage graph, 
 and so stencil locality is enforced by the type system.
 It's not immediately clear what stage splitting maps to here, but my bet is it has something to do with phases.
+
+
+\subsubsection{Functional Reactive Programming}
 
 The last option is functional reactive programming.
 I've seen some applications of a type system like that of \lang\ to FRP (cite in a bit),

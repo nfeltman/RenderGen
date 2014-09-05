@@ -67,8 +67,7 @@ calculates $b^p$ in $\log p$ time:
 
 % Ignoring for the moment how to define recursive functions in \lang,
 \noindent
-The stage-\bbone\ term below defines the function {\tt fexp} that implements the fast exponentiation algorithm:%
-%\footnote{We render $\fut$ as {\tt \$} in code examples.}
+The stage-\bbone\ term below defines the function {\tt fexp} that implements the fast exponentiation algorithm:
 
 \begin{lstlisting} 
 let fexp (b : $int, e : int) : $int =
@@ -163,7 +162,7 @@ let y = 1+2 in y * y * 7
 \end{lstlisting}
 
 Achieving this behavior mechanically requires us to resolve a contradiction:
-we must substitute for \texttt{x} in stage \bbone, but we cannot evaluate inside the $\next$ block bound to it. 
+we must substitute for \texttt{x} in stage \bbone, but we cannot evaluate inside the $\next$ block within the tuple. 
 Our solution is to replace the contents of the $\next$ with a new stage-\bbtwo\ variable and create an explicit substitution (shown with a $\mapsto$) binding that stage-\bbtwo\ variable to the $\next$'s old contents.  
 This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
@@ -185,7 +184,7 @@ prev {
   }
 }
 \end{lstlisting}
-To evaluate the remaining $\next$, we must first partially evaluate the body by finding all of the contained stage-\bbone~terms and reducing them. 
+To evaluate the outermost $\next$, we must first partially evaluate within its body by finding all of the contained stage-\bbone~terms and reducing them. 
 As a rule, these will reduce to $\next$ expressions, which the $\prev$ eliminates, leaving the variable in place:
 \begin{lstlisting} 
 prev {
@@ -317,31 +316,43 @@ example above, the term evaluates to \verb|63|.
 The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future
 environment} $\xi$ and a partial value $v$.  The future environment is a mapping
 from fresh stage \bbtwo\ variables (which may appear inside $\next$ blocks in
-$v$) to residuals---in our example, we represented this environment with
-explicit substitutions. For all of the normal features of \lang
+$v$) to residuals---in our example above, we represented this environment with
+explicit substitutions. For all of the normal features of \lang\ 
 (\ref{fig:diaSemanticsCore}), first stage evaluation has the same behavior and
-effect on values as standard evaluation, and the final future environment is
+effect on (partial) values as does standard evaluation, and the final future environment is
 gotten by merging the future environments of the subterms.
 
 When the \bbone\ judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it
 searches into the block's stage \bbtwo\ content to find any contained stage
-\bbone\ subexpressions and evaluate them in place.  We call this search process
-\emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes
+\bbone\ subexpressions and evaluate them in place.  This search process, called
+\emph{speculation}, is implemented by the $\redtwosym$ judgment, which takes
 a stage \bbtwo\ term to a residual.  Once the contents of the $\next$ block are
-speculated into a residual ($q$), we then return a fresh variable wrapped in a
+speculated into a residual ($q$), the output of $\redonesym$ is a fresh variable wrapped in a
 $\next$ block ($\next~\hat y$), along with a future environment which maps that
-variable to our residual ($\hat y \mapsto q$).
+variable to the residual ($\hat y \mapsto q$).
 
 At all of the normal features (\ref{fig:diaSemanticsSpec}), speculation does
 nothing but recursively speculate into every subexpression.  Once speculation
-finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which
+finds a $\prev$ block, it resumes stage \bbone\ evaluation of the contents, which
 produces a future context and (by canonical forms) a $\next$-wrapped variable
-($\next\{\hat y\}$)\footnote{
-Importantly, speculation will search into both branches of a stage-\bbtwo\ {\tt if}
-statement to evaluate all contained stage-\bbone\ code.  Thus the name.
-}.  The context is then reified (using the $\reifysym$
-judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of
-its $\next$---at the bottom.
+($\next\{\hat y\}$).  The context is then reified (using the $\reifysym$
+judgment) into a series of let bindings with $\mathtt{\hat y}$, stripped of
+its $\next$, at the bottom.
+
+Within speculation lies a subtle---if perhaps unintuitive---feature.  
+Observe that speculation will traverse into both branches of a stage-\bbtwo\ {\tt if} or {\tt case} 
+statement in its search for stage-\bbone\ code. 
+Thus the evaluation of that stage one code will occur {\em regardless of the eventual value of the predicate},
+and so a term like 
+\begin{lstlisting} 
+next{
+  if true 
+  then hold{1+2} 
+  else prev{spin() (* loops forever *)}
+}
+\end{lstlisting}
+will fail to evaluate at stage \bbone.
+This behavior is why the judgment is named ``speculation."
 
 The context ($\Gamma$) keeps track of stage \bbtwo\ variables in the input term. 
 These both appear in the original program at stage \bbtwo\ and are inserted by the semantics.
@@ -358,8 +369,8 @@ If we change the $\next$ and $\prev$ rules to
 \infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
 \infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
 \end{mathpar}
-and treat $\next~q$ as a partial value, where $q$ is a residual,
-then we get precisely the semantics from \cite{davies96}. This essentially bypasses the
+and treat $\next~q$ as a partial value for any residual $q$,
+then our semantics becomes rule-for-rule isomorphic to that from \cite{davies96}. This essentially bypasses the
 environment bookkeeping in $\redonesym$, by inlining residuals instead of
 hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
@@ -369,7 +380,7 @@ From this it's clear that the semantics of \cite{davies96} and ours always produ
 \label{sec:partialeval}
 
 The dynamics described in the previous section provide a formal description of partial evaluation.
-Recall that in partial evaluation systems, we have a multivariate function $f$ for which some input is labeled {\em static} and 
+Recall that in partial evaluation systems, we start with a multivariate function $f$ for which some input is labeled {\em static} and 
 some labeled {\em dynamic}.  Once the static input is provided, partial evaluation of $f$ produces
 a residual that depends on only the dynamic input.  Equationally, a partial evaluator is any $p$ such that
 \[

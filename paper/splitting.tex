@@ -56,7 +56,7 @@ Since the body of a function is an open term, the partial value splitting rule f
 The most we can say here is a function splits into two other functions, 
 whose bodies correspond to the stage \bbone\ and stage \bbtwo\ components of the original function's body.
 
-\subsection{ Expression Splitting}
+\subsection{Expression Splitting}
 
 We now consider the problem of splitting expressions in \lang, starting with stage \bbtwo\ terms.  
 The goal here is to end up with two new terms: one that has all of the stage \bbone\ content of the original, and one with all of the stage \bbtwo\ content. 
@@ -89,7 +89,8 @@ For our example, it is ``\verb|fn L => (L<5,())|".
 
 \subsection {Formal Setup}
 
-The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$.
+The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$,
+which are in rule-for-rule correspondence with the typing rules $@\bbone$ and $@\bbtwo$.
 For both, the input is a term in \lang, and the output is two terms in \langmono, an
 unstaged language.  The grammar for \langmono\ is given in \ref{fig:monoGrammar}.  It has no
 staging features (we say that implicitly it has only one stage), and it is untyped.  
@@ -117,6 +118,16 @@ The rules of stage \bbone\ splitting are given in \ref{fig:termSplitOne}.
 \subsection {Properties}
 
 We'll now call out a few properties to notice in the splitting rules.
+
+\subsubsection {Expression Splitting at Values}
+
+Note that general expression splitting always produces an effectively trivial precomputation when applied to partial values,
+where effectively trivial means that the precomputation is either a unit value, or a tuple or injection of an effectively trivial values.
+
+Partial value splitting is more than just a restriction of general expression splitting 
+precisely because it observes this property it at the structural level, doing away with the precomputation entirely.
+This makes sense intuitively, since a precomputation would imply that there is some computation left to do, 
+which is antithetical to the notion of values.
 
 \subsubsection {Speculation}
 
@@ -172,7 +183,9 @@ Essentially, we can read these as saying that two terms are equivalent if they e
 where "same" for functions means that those functions always evaluate to the same thing given equivalent inputs.
 
 We give the following end-to-end correctness lemmas for open terms. 
-In some of the theorems, we sort the usually heterogeneous context into $\Gamma$ and $\Gamma'$, 
+Those readers not interested in the gritty details are advised to skip ahead to the theorems for closed terms, which give the important gist.
+
+In some of the lemmas, we sort the usually heterogeneous context into $\Gamma$ and $\Gamma'$, 
 which respectively hold all of the stage \bbone\ and stage \bbtwo\ variable bindings.
 Substitution splitting works just like value splitting, which is why they use the same symbol.
 
