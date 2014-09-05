@@ -323,7 +323,7 @@ explicit substitutions. For all of the normal features of \lang
 effect on values as standard evaluation, and the final future environment is
 gotten by merging the future environments of the subterms.
 
-When this judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it
+When the \bbone\ judgment encounters a $\next$ block (\ref{fig:diaSemanticsNP}), it
 searches into the block's stage \bbtwo\ content to find any contained stage
 \bbone\ subexpressions and evaluate them in place.  We call this search process
 \emph{speculation}. It is implemented by the $\redtwosym$ judgment, which takes
@@ -338,7 +338,7 @@ finds a $\prev$ block, we resume stage \bbone\ evaluation of the contents, which
 produces a future context and (by canonical forms) a $\next$-wrapped variable
 ($\next\{\hat y\}$)\footnote{
 Importantly, speculation will search into both branches of a stage-\bbtwo\ {\tt if}
-statement to evaluate the contained stage-\bbone\ code.  Thus the name.
+statement to evaluate all contained stage-\bbone\ code.  Thus the name.
 }.  The context is then reified (using the $\reifysym$
 judgment) into a series of let bindings, with $\mathtt{\hat y}$---stripped of
 its $\next$---at the bottom.
@@ -363,8 +363,7 @@ then we get precisely the semantics from \cite{davies96}. This essentially bypas
 environment bookkeeping in $\redonesym$, by inlining residuals instead of
 hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
-But moreover, because a reified residual will always be evaluated whether or not its result is consumed, 
-our semantics terminates strictly less often than that of \cite{davies96}.
+{\em Because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
 
 \subsection {A Partial Evaluation System}
 \label{sec:partialeval}

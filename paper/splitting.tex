@@ -4,7 +4,7 @@
 
 Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
 However, where partial evaluation requires the value of some inputs to be known, stage splitting is a static transformation performed
-before any arguments are available.
+before {\em any arguments} are available.
 Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
 where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
 and $f_2$ consumes that data structure and the stage-\bbtwo\ input to produce the final output.  
@@ -38,7 +38,7 @@ and we will see later that it is a necessary component of the correctness theore
 Recall that, along with a future environment, partial values are the output of the partial evaluation of stage \bbone\ terms.
 In addition to base types, tuples, and injections, partial values may also contain references into the future environment.
 In this way, partial values express not only stage \bbone\ content, but stage \bbtwo\ content as well.
-The goal of partial value splitting is to take a partial value $v$ and create from it two single stage values $v_1$ and $v_2$,
+The goal of partial value splitting is to take a partial value $v$ and from it create two single stage values $v_1$ and $v_2$,
 where $v_1$ contains only the information from $v$ that is relevant to first stage code inspecting this value, 
 and $v_2$ contains only the information from $v$ that is likewise relevant to second stage code.
 We call this action {\em masking}.

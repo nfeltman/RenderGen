@@ -66,7 +66,7 @@ Here we have a staged version of the quickselect algorithm.
 Standard quickselect finds the $i$th largest number in a list by recursively partitioning the list by its 
 first element and picking the side which contains the $i$th largest element.
 In this case, we've staged quickselect by saying that the list is stage \bbone\ and $i$ is stage \bbtwo.
-Note that the partition function operates entirely in stage \bbone.
+Note that the helper function {\tt partition} operates entirely in stage \bbone.
 
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
@@ -154,7 +154,7 @@ We then look at the keyword.  If it's empty, we return whether the empty word wa
 Otherwise, we look at the first letter, pick the appropriate subset, 
 and recursive search for the rest of our keyword in that.
 
-We stage this algorithm by saying that the word set comes at stage \bbone
+We stage this algorithm by saying that the word set comes at stage \bbone\
 and the keyword comes at stage \bbtwo.
 
 \begin{lstlisting} 
@@ -240,7 +240,7 @@ fun exists ((l,s), p) =
 \end{lstlisting}
 
 As promised, this split version creates a trie in stage \bbone, and consumes it in stage \bbtwo.
-Note that we made the same simplification in the partition function here as in the quickselect example.
+Note that we made the same simplification in the {\tt partition} function here as in the quickselect example.
 As far as how stage splitting compares to partial evaluation, it's again the same story as above:
 partial evaluation embeds the whole trie into the residual as an if nest, 
 whereas quickselect efficiently represents the trie as a value.
