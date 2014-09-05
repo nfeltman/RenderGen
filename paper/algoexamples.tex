@@ -21,9 +21,12 @@ fun fexp (b : $int, e : int) : $int =
 	else
 		next{prev{b} * prev{fexp (b,e-1)}}		
 \end{lstlisting}
-It splits into
+
+\noindent
+{\tt fexp} splits into the following two functions:
+
 \begin{lstlisting} 
-fun fexp (b, e) =
+fun fexp_1 (b, e) =
   ((), roll (
     if e == 0 then inj1 ()
     else
@@ -33,10 +36,8 @@ fun fexp (b, e) =
         else inj2 (#2 (fexp (b,e-1)))
       )
   ))
-\end{lstlisting}
-and
-\begin{lstlisting} 
-fun fexp ((b, e), p) =
+
+fun fexp_2 ((b, e), p) =
 	case unroll p of
 	  inj1 () => 1
 	| inj2 d =>
@@ -62,14 +63,15 @@ and exponents tend to be small enough that the code size would be reasonable.
 
 \subsection{Quickselect}
 
-Here we have a staged version of the quickselect algorithm.
-Standard quickselect finds the $i$th largest number in a list by recursively partitioning the list by its 
+The function {\tt qs} in the code below is a staged version of the quickselect algorithm.
+Standard quickselect finds the $i$th largest number in a list (l) by recursively partitioning the list by its 
 first element and picking the side which contains the $i$th largest element.
 In this case, we've staged quickselect by saying that the list is stage \bbone\ and $i$ is stage \bbtwo.
 Note that the helper function {\tt partition} operates entirely in stage \bbone.
 
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
+/* helper function */
 fun partition ((p,l) : int*list) : (int*list*list) =
   case unroll l of 
     Empty => (0,Empty, Empty) 
@@ -78,6 +80,7 @@ fun partition ((p,l) : int*list) : (int*list*list) =
       if h<p 
       then (s+1,Cons(h,left),right)
       else (s,left,Cons(h,right))
+
 fun qs (l : list, i: $int) = 
   case l of
     Empty => next {0}
@@ -91,7 +94,10 @@ fun qs (l : list, i: $int) =
           | GT => prev {qs right next{prev{i}-n-1}}
       }	
 \end{lstlisting}
-Running our stage splitting algorithm on this code produces something like:
+
+\noindent
+Running stage splitting on this code produces:
+
 \begin{lstlisting} 
 datatype _ = Empty | Cons of _
 fun partition (p,l) =
@@ -102,7 +108,8 @@ fun partition (p,l) =
       if h<p 
       then (s+1,Cons(h,left),right)
       else (s,left,Cons(h,right))
-fun qs (l, i) = roll((), 
+
+fun qs_1 (l, i) = roll((), 
   case l of
     Empty => inj1 ()
   | Cons (h,t) => 
@@ -111,10 +118,8 @@ fun qs (l, i) = roll((),
         (n, #2 (qs left i), h, #2 (qs right i))
       )
   )
-\end{lstlisting}
-and 
-\begin{lstlisting} 
-fun qs ((l, i), p) = 
+
+fun qs_2 ((l, i), p) = 
   case unroll p of
     inj1 () => 0
   | inj2 (n,p1,h,p2) => 
@@ -123,16 +128,17 @@ fun qs ((l, i), p) =
       | EQ => h
       | GT => qs () (i-n-1)
 \end{lstlisting}
-In English, these functions just recursively build and then search a binary tree,
+
+These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
 which stores a set element and subtree size at every branch.
 
-Note that we've made a few simplifications in rendering this output:
+Note that we've made a few simplifications in rendering output of splitting in this example:
 \begin{itemize}
 \item Outputs are untyped.  Rather than elaborate out the datatypes, we keep them in and just null out the types.
-\item The partition function doesn't have any real stage two computation,
-but that won't stop the current algorithm from keeping track of all the recursive calls in partition 
-and then retracing all of its steps in stage-\bbtwo, only to produce a unit value at the end.  
-That's massively inefficient, and we elided it here.
+\item The {\tt partition} function doesn't have any real stage two computation,
+but that won't stop the splitting algorithm (as defined in \ref{sec:splitting}) from keeping track of all recursive calls in partition 
+and then retracing all its steps in stage-\bbtwo (only to produce a unit value at the end).  
+This is inefficient, and we elided it here under the assumption the future implementations of splitting would include this optimization.
 \end{itemize}
 
 Modulo the points I just made, splitting does a good job here.  
@@ -144,10 +150,10 @@ For large input lists (which is typical), this saves a lot on memory.
 
 Our last example is one which generates a trie intermediate data structure.
 
-The problem is determining whether a query string (from the alphabet $\{A, B,C\}$) occurs in a given set.
-We solve this by partitioning the initial set into three subsets,
-one which contains all the words that start with $A$,
-one which contains all the words that start with $B$, and one likewise for $C$.
+The function {\tt exists} below determines whether a query string (s) occurs in a given set of strings (from the alphabet $\{A, B,C\}$).
+It solves this problem by partitioning the provided set of strings into three subsets,
+one which contains all words that start with $A$,
+one which contains all words that start with $B$, and one for $C$.
 When partitioning, we also throw away the first letter, since we know it's uniform for the whole subset.
 Also while doing this partitioning, we also keep track of whether the empty word occurred at all.
 We then look at the query string.  If it's empty, we return whether the empty word was in the set.
@@ -161,6 +167,7 @@ and the query string comes at stage \bbtwo.
 datatype letter = A | B | C
 datatype string = EmptyS | ConsS of letter * string
 datatype list = EmptyL | ConsL of string * list
+/* helper function */
 fun partition (l : list) : (bool * list * list * list) =
   case l of
     EmptyL => (false,EmptyL,EmptyL,EmptyL)
@@ -190,7 +197,9 @@ fun exists ((l,s) : list * $string) : $bool =
           | C => prev{exists (c,next{zs})}
     }
 \end{lstlisting}
-Running the splitting algorithm on this produces:
+
+\noindent
+Running the splitting algorithm on this code produces:
 
 \begin{lstlisting} 
 datatype _ = EmptyS | ConsS of _
@@ -207,7 +216,7 @@ fun partition l =
             A => (anyEmpty, ConsL(zs,a), b, c) 
           | B => (anyEmpty, a, ConsL(zs,b), c) 
           | C => (anyEmpty, a, b, ConsL(zs, c))
-fun exists (l,s) = roll ((), 
+fun exists_1 (l,s) = roll ((), 
   case l of 
     EmptyL => inj1 ()
   | ConsL _ => 
@@ -219,11 +228,9 @@ fun exists (l,s) = roll ((),
     	#2 (exists (c,()))
     )
   )
-\end{lstlisting}
-and 
-\begin{lstlisting} 
+
 datatype _ = EmptyS | ConsS of _
-fun exists ((l,s), p) =
+fun exists_2 ((l,s), p) =
   case unroll p of 
     inj1 () => false
   | inj2 (anyEmpty,p_a,p_b,p_c) => 
@@ -243,7 +250,7 @@ As promised, this split version creates a trie in stage \bbone, and consumes it 
 Note that we made the same simplification in the {\tt partition} function here as in the quickselect example.
 As far as how stage splitting compares to partial evaluation, it's again the same story as above:
 partial evaluation embeds the whole trie into the residual as an if nest, 
-whereas quickselect efficiently represents the trie as a value.
+whereas splitting efficiently represents the trie as a value.
 
 \subsection{Analysis}
 
@@ -261,10 +268,9 @@ Finally, stage-splitting can be performed without knowing the first-stage value,
 which can be the difference between compile-time and run-time.
 Since running a partial evaluator might be prohibitively expensive at run-time, this is a large win for stage-splitting.
 
-\section{Conclusions and Future Work}
+\section{Discussion}
 
-In this section, I'll discuss how appropriate \lang\ and stage-splitting are for stated application and others.  
-This section is intended to be more frank.
+In this section, I'll discuss the appropriateness of \lang\ (and the stage-splitting transformation) for the stated application of algorithm derivation, and I will also speculate on potential other applications. This section is intended to be more frank.
 
 \subsection{Feasibility of Staging for Algorithm Derivation}
 
@@ -275,46 +281,45 @@ and writing correct programs is not mind-bendingly difficult, even when speculat
 Certainly, the programmer will have to have some knowledge of what sort of data structure she's going for,
 but all programming requires forethought.
 
-And once the program is written, the benefits are obvious.
-Using \lang\ and splitting cuts code size by roughly half,
-and it's certainly way easier to reason about and prove correctness when the intermediate data structure is implicit.
+Once the program is written, the benefits are obvious.
+Using \lang\ and generating two mono-stage functions using splitting cuts code size by roughly half,
+and it's certainly easier to reason about and prove algorithm correctness when the intermediate data structure is implicit.
 
-If there is a limiting factor, it would be scope.  
-The only practical examples that we've been able to conjure, including the quickselect and trie, 
+One major limiting factor is application scope.  
+The only practical examples that we've been able to conjure, including quickselect and trie generation, 
 all fit into the model of turning divide-and-conquer search into a tree build-and-search algorithm.  
-It's a good start, but we've been largely unable to go beyond that formula.
-
-In particular, we definitely can't derive any data structures like auto-balancing trees, 
-because that would require explicit access to the structure, which we don't have.
+It's a good start, but we've been largely unable to find applicability beyond code of this structure.
+In particular, we definitely can not derive data structures like auto-balancing trees, 
+because that would require explicit access to the structure, which we don't have (the structure is implicit in the \lang\ code).
 Hopefully, there are some classes of algorithms that we just haven't thought of, so we're open to suggestions.
 
 \subsection {Applications to DSLs}
 
-There are also many potential applications to domain specific languages which deploy to multi-processor systems, 
-though this line of research is largely at the conjectural stage.
-For the most part, my method is finding situations that \lang\ can model, and then hoping that splitting means something in context.
+They may be potential applications to domain specific languages which deploy to multi-processor systems, 
+though this is largely conjecture.
+In general it is interesting to consider situations that can be modeled by \lang\, and then determine if splitting is a meaningful operation in that context.
 
-\subsubsection{Spark}
+\subsubsection{Shading Languages: e.g., Spark}
 
-One example of this is shading languages,
-where we identify our stages with those of the graphics pipeline.
-This would require generalizing our staging model from two stages to any finite DAG.
-In such a case, splitting turns an ubershader into one shader per stage.
-The closest work to this would be Spark (\cite{Foley:2011}), which does essentially this
-but for an input language with fewer features (notably, no first-class functions), 
+Shading languages are one example, 
+where \lang\ stages could be put in correspondence with those of the graphics pipeline.
+Of course, this would require generalizing \lang's simple two-stage model to finite DAGs of stages.
+In such a case, splitting turns a "pipeline program" (using Foley's term) into a one-shader-per-stage output that is required by current graphics systems.
+The closest work to this would be Spark (\cite{Foley:2011}), which performs essentially this
+operation, but for an input language with fewer features (notably, no first-class functions), 
 and a simpler staging model that rules out behavior like speculation.
 
-Interestingly enough, Spark's staging restrictions are sufficient to ensure 
+Interestingly, Spark's staging restrictions are sufficient to ensure 
 that the precomputation is always a base value or tuple, and never an injection 
 (which we allow via stage \bbone\ {\tt if}/{\tt case}).
-This means that Spark can guarantee a defined merging operator for all precomputations, 
-which it then leverages to combine the results from multiple stage-\bbone\ invocations to a single stage-\bbtwo\ invocation
-(and in generality, many-to-many).
-Lacking such a well-defined operator, we're stuck only modeling a one-to-many stage invocation pattern.
+The result is that Spark can guarantee a well-defined merging operator for all precomputations, 
+which it leverages to combine the results from {\em multiple stage-\bbone\ invocations} to a single stage-\bbtwo\ invocation
+(and in generality, many-to-many communication between invocations).
+Lacking such a well-defined operator, \lang\ can only model a one-to-many stage invocation pattern.
 
-Spark uses this strength to do resampling (for instance, a color @vertex is merged into color @fragment), 
-whering the merging operator is some sort of interpolation.  
-If we wanted that behavior, then we'd either have to restrict the input language
+Spark uses this capabilty to support resampling of values between stages (for instance, a color @vertex is merged into color @fragment), 
+where the merging operator is interpolation of multiple \bbone\ values.  
+To get similar behavior in \lang, we'd either need to restrict the input language
 or find a way to generalize interpolation to sum types.
 
 \subsubsection{Liszt}
@@ -322,12 +327,12 @@ or find a way to generalize interpolation to sum types.
 We may be able to target stenciling languages such as Liszt.  
 Essentially, the stencil itself is identified with the stage graph, 
 and so stencil locality is enforced by the type system.
-It's not immediately clear what stage splitting maps to here, but my bet is it has something to do with phases.
+It is not immediately clear what stage splitting maps to in this context, but my bet is that it has something to do with phases.
 
 
 \subsubsection{Functional Reactive Programming}
 
-The last option is functional reactive programming.
-I've seen some applications of a type system like that of \lang\ to FRP (cite in a bit),
+Last, I've seen some applications of a type system like that of \lang\ to functional reactive programming (FRP) (cite in a bit),
 and they use partial evaluation as a semantics.
 I have a hunch that stage splitting could be better.
+
