@@ -422,12 +422,12 @@ That this sequence of evaluations is in fact staged follows from our
 characterizations of partial values, residuals, and values, that $\redonesym$
 outputs a partial value, and that $\reifysym$ outputs an expression in \langTwo.
 
-\begin{remark}
-For any $\colone{e}{A}$ containing no $\next$ subexpressions, $\redonesym$ will
-always compute an empty environment, and a partial value identical to the result
-of call-by-value evaluation of $e$.
-%derivationally equivalent to standard call-by-value evaluation.
-\end{remark}
+%\begin{remark}
+%For any $\colone{e}{A}$ containing no $\next$ subexpressions, $\redonesym$ will
+%always compute an empty environment, and a partial value identical to the result
+%of call-by-value evaluation of $e$.
+%%derivationally equivalent to standard call-by-value evaluation.
+%\end{remark}
 
 %\subsection{Metatheory}
 %
@@ -480,10 +480,10 @@ of call-by-value evaluation of $e$.
 %$\typeslangTwo q A$.
 %\end{theorem}
 
-\TODO
-Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one
-integer term is guaranteed not to depend on the table, although one might be
-produced. One may either discard the table, or evaluate everything in the table
-(and terminating with the partial value iff everything in the table terminates).
+%\TODO
+%Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one
+%integer term is guaranteed not to depend on the table, although one might be
+%produced. One may either discard the table, or evaluate everything in the table
+%(and terminating with the partial value iff everything in the table terminates).
 
 
