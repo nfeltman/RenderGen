@@ -26,24 +26,24 @@ fun fexp (b : $int, e : int) : $int =
 {\tt fexp} splits into the following two functions:
 
 \begin{lstlisting} 
-fun fexp_1 (b, e) =
+fun fexp1 (b, e) =
   ((), roll (
     if e == 0 then inj1 ()
     else
       inj2 (
         if (e mod 2) == 0
-        then inj1 (#2 (fexp (b,e/2)))
-        else inj2 (#2 (fexp (b,e-1)))
+        then inj1 (#2 (fexp1 (b,e/2)))
+        else inj2 (#2 (fexp1 (b,e-1)))
       )
   ))
 
-fun fexp_2 ((b, e), p) =
+fun fexp2 ((b, e), p) =
 	case unroll p of
 	  inj1 () => 1
 	| inj2 d =>
 		case d of
-		  inj1 r => let x = fexp ((b,()),r) in x*x
-		| inj2 r => b * fexp ((b,()),r)
+		  inj1 r => let x = fexp2 ((b,()),r) in x*x
+		| inj2 r => b * fexp2 ((b,()),r)
 \end{lstlisting}
 
 Although split programs are not typed, we'll recognize the intermediate data structure 
@@ -109,24 +109,24 @@ fun partition (p,l) =
       then (s+1,Cons(h,left),right)
       else (s,left,Cons(h,right))
 
-fun qs_1 (l, i) = roll((), 
+fun qs1 (l, i) = roll((), 
   case l of
     Empty => inj1 ()
   | Cons (h,t) => 
       inj2 (
         let (left,right,n) = partition h t in
-        (n, #2 (qs left i), h, #2 (qs right i))
+        (n, #2 (qs1 left i), h, #2 (qs1 right i))
       )
   )
 
-fun qs_2 ((l, i), p) = 
+fun qs2 ((l, i), p) = 
   case unroll p of
     inj1 () => 0
   | inj2 (n,p1,h,p2) => 
       case compare prev{i} n of
-        LT => qs () i
+        LT => qs2 () i
       | EQ => h
-      | GT => qs () (i-n-1)
+      | GT => qs2 () (i-n-1)
 \end{lstlisting}
 
 These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
@@ -216,21 +216,21 @@ fun partition l =
             A => (anyEmpty, ConsL(zs,a), b, c) 
           | B => (anyEmpty, a, ConsL(zs,b), c) 
           | C => (anyEmpty, a, b, ConsL(zs, c))
-fun exists_1 (l,s) = roll ((), 
+fun exists1 (l,s) = roll ((), 
   case l of 
     EmptyL => inj1 ()
   | ConsL _ => 
     let (anyEmpty, a, b, c) = partition l in
     inj2 (
     	if anyEmpty then inj1 () else inj2 (), 
-    	#2 (exists (a,())), 
-    	#2 (exists (b,())), 
-    	#2 (exists (c,()))
+    	#2 (exists1 (a,())), 
+    	#2 (exists1 (b,())), 
+    	#2 (exists1 (c,()))
     )
   )
 
 datatype _ = EmptyS | ConsS of _
-fun exists_2 ((l,s), p) =
+fun exists2 ((l,s), p) =
   case unroll p of 
     inj1 () => false
   | inj2 (anyEmpty,p_a,p_b,p_c) => 
@@ -241,9 +241,9 @@ fun exists_2 ((l,s), p) =
           | inj2 () => false
       | ConsS (z,zs) =>
           case z of
-            A => exists (((),zs),p_a)
-          | B => exists (((),zs),p_b)
-          | C => exists (((),zs),p_c)
+            A => exists2 (((),zs),p_a)
+          | B => exists2 (((),zs),p_b)
+          | C => exists2 (((),zs),p_c)
 \end{lstlisting}
 
 As promised, this split version creates a trie in stage \bbone, and consumes it in stage \bbtwo.
@@ -282,7 +282,7 @@ Certainly, the programmer will have to have some knowledge of what sort of data 
 but all programming requires forethought.
 
 Once the program is written, the benefits are obvious.
-Using \lang\ and generating two mono-stage functions using splitting cuts code size by roughly half,
+Using \lang\ and generating two mono-stage functions using splitting cuts code size by roughly half (over writting the split code directly),
 and it's certainly easier to reason about and prove algorithm correctness when the intermediate data structure is implicit.
 
 One major limiting factor is application scope.  
@@ -322,17 +322,10 @@ where the merging operator is interpolation of multiple \bbone\ values.
 To get similar behavior in \lang, we'd either need to restrict the input language
 or find a way to generalize interpolation to sum types.
 
-\subsubsection{Liszt}
-
-We may be able to target stenciling languages such as Liszt.  
-Essentially, the stencil itself is identified with the stage graph, 
-and so stencil locality is enforced by the type system.
-It is not immediately clear what stage splitting maps to in this context, but my bet is that it has something to do with phases.
-
-
 \subsubsection{Functional Reactive Programming}
 
-Last, I've seen some applications of a type system like that of \lang\ to functional reactive programming (FRP) (cite in a bit),
-and they use partial evaluation as a semantics.
-I have a hunch that stage splitting could be better.
-
+Last, I've seen some applications of a type system like that of \lang\ to functional reactive programming (\cite{cave14}).
+They use partial evaluation as a semantics,
+and I have a hunch that stage splitting could be better.
+This would require closing that gap between their type system and ours, which would require generalization to
+an infinite chain of stages.
