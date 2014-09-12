@@ -111,18 +111,22 @@ res-lam		: res (lam _ M)
 				<- {x : term} res x -> res (M x).
 res-app		: res (app E1 E2)
 				<- res E2
-				<- res E1. 
+				<- res E1.
+res-let		: res (let E M)
+				<- res E
+				<- {x:term} res x -> res (M x).
 				 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
-context-entry : term -> type. %name pval Dce.
+context-entry : term -> type. %name context-entry Dce.
 pval-ztup	: pval ztup.
 pval-tup	: pval (tup E1 E2)
 				<- pval E2
 				<- pval E1.
 pval-lam	: pval (lam _ _).
 pval-next	: pval (next E)
-				<- context-entry E.
+				<- context-entry E
+				<- res E.
 
 %% CPV WELL-FORMED
 cpv-wf : cpval -> type.
@@ -130,10 +134,10 @@ cpv-wf-e : cpv-wf (empty E)
 			<- pval E. 
 cpv-wf-l : cpv-wf (layer Q E)
 			<- res Q
-			<- {x:term}{_: context-entry x} cpv-wf (E x).
+			<- {x:term}{_ : res x}{_: context-entry x} cpv-wf (E x).
 
 %% STANDARD ROF PRESERVATION BLOCK
-%block rof-block : some {T : ty} block {x:term}{_ : of x T wor2}{_ : context-entry x}.
+%block rof-block : some {T : ty} block {x:term}{_ : of x T wor2}{_ : res x}{_ : context-entry x}.
 
 %% OUTPUT FACTORING PRESERVATION tup
 rof-tup-pres : rof-tup C1 C2 C -> cpv-of C1 T1 -> cpv-wf C1 -> cpv-of C2 T2 -> cpv-wf C2 -> cpv-of C (prod T1 T2) -> cpv-wf C -> type.
@@ -146,14 +150,14 @@ rof-tup-pres : rof-tup C1 C2 C -> cpv-of C1 T1 -> cpv-wf C1 -> cpv-of C2 T2 -> c
 		Dof1 Dval1
 		(of-layer DofC DofQ) (cpv-wf-l DwfC Dres) 
 		(of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
-	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
-		rof-tup-pres (Drof x) Dof1 Dval1 (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-tup-pres (Drof x) Dof1 Dval1 (DofC x dof) (DwfC x dres dce) (DofC' x dof) (DwfC' x dres dce).
 - : rof-tup-pres (rof-tup-l Drof) 
 		(of-layer DofC DofQ) (cpv-wf-l DwfC Dres) 
 		Dof2 Dval2
 		(of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
-	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
-		rof-tup-pres (Drof x) (DofC x dof) (DwfC x dce) Dof2 Dval2 (DofC' x dof) (DwfC' x dce).
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-tup-pres (Drof x) (DofC x dof) (DwfC x dres dce) Dof2 Dval2 (DofC' x dof) (DwfC' x dres dce).
 %worlds (rof-block) (rof-tup-pres _ _ _ _ _ _ _).
 %total (Drof) (rof-tup-pres Drof _ _ _ _ _ _).
 
@@ -162,8 +166,8 @@ rof-pi1-pres : rof-pi1 C1 C2 -> cpv-of C1 (prod T _) -> cpv-wf C1 -> cpv-of C2 T
 %mode rof-pi1-pres +Drof +Dof1 +Dwf1 -Dof2 -Dwf2.
 - : rof-pi1-pres rof-pi1-e (of-empty (of-tup Dof _)) (cpv-wf-e (pval-tup Dval _)) (of-empty Dof) (cpv-wf-e Dval).  
 - : rof-pi1-pres (rof-pi1-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC Dres) (of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
-	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
-		rof-pi1-pres (Drof x) (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-pi1-pres (Drof x) (DofC x dof) (DwfC x dres dce) (DofC' x dof) (DwfC' x dres dce).
 %worlds (rof-block) (rof-pi1-pres _ _ _ _ _).
 %total (Drof) (rof-pi1-pres Drof _ _ _ _).
 
@@ -172,10 +176,20 @@ rof-pi2-pres : rof-pi2 C1 C2 -> cpv-of C1 (prod _ T) -> cpv-wf C1 -> cpv-of C2 T
 %mode rof-pi2-pres +Drof +Dof1 +Dwf1 -Dof2 -Dwf2.
 - : rof-pi2-pres rof-pi2-e (of-empty (of-tup _ Dof)) (cpv-wf-e (pval-tup _ Dval)) (of-empty Dof) (cpv-wf-e Dval).  
 - : rof-pi2-pres (rof-pi2-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC Dres) (of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
-	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
-		rof-pi2-pres (Drof x) (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-pi2-pres (Drof x) (DofC x dof) (DwfC x dres dce) (DofC' x dof) (DwfC' x dres dce).
 %worlds (rof-block) (rof-pi2-pres _ _ _ _ _).
 %total (Drof) (rof-pi2-pres Drof _ _ _ _).
+
+%% OUTPUT FACTORING PRESERVATION prev
+rof-prev-pres : rof-prev C Q -> cpv-of C (fut T) -> cpv-wf C -> of Q T wor2 -> res Q -> type.
+%mode rof-prev-pres +Drof +Dof1 +Dwf -Dof2 -Dres.
+- : rof-prev-pres rof-prev-e (of-empty (of-next Dof)) (cpv-wf-e (pval-next Dres _)) Dof Dres.  
+- : rof-prev-pres (rof-prev-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC DresQ) (of-let DofM DofQ) (res-let DresM DresQ)
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-prev-pres (Drof x) (DofC x dof) (DwfC x dres dce) (DofM x dof) (DresM x dres).
+%worlds (rof-block) (rof-prev-pres _ _ _ _ _).
+%total (Drof) (rof-prev-pres Drof _ _ _ _).
 
 %% PRESERVATION AND EVALUATION
 presRed : red E C -> of E A wor1 -> cpv-wf C -> cpv-of C A -> type.
@@ -213,7 +227,7 @@ presSpc : spc E Q -> of E A wor2 -> res  Q -> of Q A wor2 -> type.
         <- presRed DredM (DofM V2 DofV2) DvalV3 DofV3.
 }%
 - : presRed (red-next Dred) (of-next DofE) 
-		(cpv-wf-l ([x] [dx] cpv-wf-e (pval-next dx)) Dres) 
+		(cpv-wf-l ([x] [dres] [dx] cpv-wf-e (pval-next dres dx)) Dres) 
 		(of-layer ([x] [dx] of-empty (of-next dx)) DofQ)    
 	<- presSpc Dred DofE Dres DofQ.
 	
@@ -230,11 +244,12 @@ presSpc : spc E Q -> of E A wor2 -> res  Q -> of Q A wor2 -> type.
 		(of-lam Dwf (DofM : {x: term} of x A wor2 -> of (M x) B wor2)) 
 		(res-lam DresN)
 		(of-lam Dwf DofN)
-		<- {x : term} {DresX : res x} {Dofx : of x A wor2} {Dspc : spc x x}
-			{_ : presSpc Dspc Dofx DresX Dofx}
+	<- {x : term} {DresX : res x} {Dofx : of x A wor2} {Dspc : spc x x}
+		{_ : presSpc Dspc Dofx DresX Dofx}
 			presSpc (DspcM x Dspc) (DofM x Dofx) (DresN x DresX) (DofN x Dofx).
 - : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
     <- presSpc Dspc1 DofE1 DresV1 DofV1
     <- presSpc Dspc2 DofE2 DresV2 DofV2.
-%%- : presSpc (spc-prev Dred) (of-prev DofE) Dres DofV
-%%    <- presRed Dred DofE (pval-next Dres) (of-next DofV).
+- : presSpc (spc-prev Drof Dred) (of-prev DofE) Dres DofQ
+    <- presRed Dred DofE Dwf DofC
+    <- rof-prev-pres Drof DofC Dwf DofQ Dres.
