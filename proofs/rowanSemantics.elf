@@ -78,15 +78,14 @@ presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
 
 - : presRed red-ztup of-ztup pval-ztup of-ztup.
 - : presRed (red-tup Dred1 Dred2) (of-tup DofE1 DofE2) (pval-tup Dval1 Dval2) (of-tup DofV1 DofV2)
-	<- presRed Dred1 DofE1 Dval1 DofV1
-	<- presRed Dred2 DofE2 Dval2 DofV2.
+		<- presRed Dred1 DofE1 Dval1 DofV1
+		<- presRed Dred2 DofE2 Dval2 DofV2.
 - : presRed (red-pi1 Dred) (of-pi1 DofE) Dval DofV
 		<- presRed Dred DofE (pval-tup Dval _) (of-tup DofV _).
 - : presRed (red-pi2 Dred) (of-pi2 DofE) Dval DofV
 		<- presRed Dred DofE (pval-tup _ Dval) (of-tup _ DofV).
 - : presRed red-lam Dof pval-lam Dof.
-- : presRed 
-			(red-app 
+- : presRed (red-app 
 				(DredM : red (M V2) V3) 
 				(DredE1 : red E1 (lam A M)) 
 				(DredE2 : red E2 V2)) 
@@ -97,27 +96,33 @@ presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
 			DofV3
         <- presRed DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B) wor1)						%% \A.M : A'->B
         <- presRed DredE2 DofE2 _ (DofV2' : of V2 A' wor1)										%% V2 : A'
-        <- lam-annot DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B wor1)) DofV2		%% \A.M : A->B; V2 : A
+        <- lam-annot1 DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B wor1)) DofV2		%% \A.M : A->B; V2 : A
         <- presRed DredM (DofM V2 DofV2) DvalV3 DofV3.
 - : presRed (red-next Dred) (of-next DofE) (pval-next Dres) (of-next DofV)    
-	<- presSpc Dred DofE Dres DofV.
+		<- presSpc Dred DofE Dres DofV.
         
 - : presSpc spc-ztup of-ztup res-ztup of-ztup.
 - : presSpc (spc-tup Dspc1 Dspc2) (of-tup DofE1 DofE2) (res-tup Dres1 Dres2) (of-tup DofV1 DofV2)
-	<- presSpc Dspc1 DofE1 Dres1 DofV1
-	<- presSpc Dspc2 DofE2 Dres2 DofV2.
+		<- presSpc Dspc1 DofE1 Dres1 DofV1
+		<- presSpc Dspc2 DofE2 Dres2 DofV2.
 - : presSpc (spc-pi1 Dspc) (of-pi1 DofE) (res-pi1 Dres) (of-pi1 DofV)
 		<- presSpc Dspc DofE Dres DofV.
 - : presSpc (spc-pi2 Dspc) (of-pi2 DofE) (res-pi2 Dres) (of-pi2 DofV)
 		<- presSpc Dspc DofE Dres DofV.
 - : presSpc 
 		(spc-lam (DspcM : {x : term} spc x x -> spc (M x) (N x))) 
-		(of-lam (DofM : {x: term} of x A wor2 -> of (M x) B wor2) _) 
-		(res-lam ([x:term] [_ : res x] Dres)) 
-		(of-lam DofV)
-		<- {x : term} {Dofx : of x A wor2} {Dspc : spc x x} presSpc (DspcM x Dspc) (DofM x Dofx) Dres DofV.
+		(of-lam Dwf (DofM : {x: term} of x A wor2 -> of (M x) B wor2)) 
+		(res-lam DresN)
+		(of-lam Dwf DofN)
+		<- {x : term} {DresX : res x} {Dofx : of x A wor2} {Dspc : spc x x}
+			{_ : presSpc Dspc Dofx DresX Dofx}
+			presSpc (DspcM x Dspc) (DofM x Dofx) (DresN x DresX) (DofN x Dofx).
 - : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
-    <- presSpc Dspc1 DofE1 DresV1 DofV1
-    <- presSpc Dspc2 DofE2 DresV2 DofV2.
+	    <- presSpc Dspc1 DofE1 DresV1 DofV1
+	    <- presSpc Dspc2 DofE2 DresV2 DofV2.
 - : presSpc (spc-prev Dred) (of-prev DofE) Dres DofV
-    <- presRed Dred DofE (pval-next Dres) (of-next DofV).
+    	<- presRed Dred DofE (pval-next Dres) (of-next DofV).
+    	
+%block var-pres : some {A : ty} block {x:term} {Dres : res x} {Dof : of x A wor2} {Dspc : spc x x} {_ : presSpc Dspc Dof Dres Dof}.
+%worlds (var-pres) (presRed _ _ _ _) (presSpc _ _ _ _).
+%total (Dred Dspc) (presRed Dred _ _ _) (presSpc Dspc _ _ _).

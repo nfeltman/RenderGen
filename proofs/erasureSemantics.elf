@@ -14,6 +14,9 @@ red-app  : red (app E1 E2) V
 			<- red E2 V2
 			<- red E1 (lam A ([x] M x))
 			<- red (M V2) V.
+red-let  : red (let E1 ([x] E2 x)) V2
+			<- red E1 V1
+			<- red (E2 V1) V2.
 red-next  : red (next E) (next V)
 			<- red E V.
 red-prev  : red (prev E) V
@@ -55,6 +58,17 @@ pres : red E V -> of E A W -> pval V -> of V A W -> type.
         <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)										%% V2 : A'
         <- lam-annot DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B W)) DofV2		%% \A.M : A->B; V2 : A
         <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
+- : pres 
+			(red-let 
+				(Dred2 : red (E2 V1) V2) 
+				(Dred1 : red E1 V1)) 
+			(of-let 
+				(DofE2 : {x:term} of x A W -> of (E2 x) B W)
+				(DofE1 : of E1 A W)) 
+				Dval 
+				DofV2
+		<- pres Dred1 DofE1 _ DofV1
+		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
 - : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
         <- pres Dred DofE DvalV DofV.
 - : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
