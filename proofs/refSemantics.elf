@@ -12,65 +12,72 @@ of-layer : cpv-of (layer Q E) T2
 			<- of Q T1 wor2
 			<- {x:term} {_:of x T1 wor2} cpv-of (E x) T2. 
 
-%% REIFICATION
-reify : cpval -> term -> type.
-%mode reify +C -E.
-
 %% REDUCTION AND SPECULATION JUDGMENTS
 red : term -> cpval -> type. %name red Dred.
 spc : term -> term -> type. %name spc Dspc.
 %mode red +E -V.
 %mode spc +E -V.
 
-%% REDUCTION simple cases: ztup / lam / next
-red-ztup : red ztup (empty ztup).
-red-lam  : red (lam A M) (empty (lam A M)).
-red-next : red (next E) (layer Q ([x:term] empty(next x)))
-			<- spc E Q.
-
 %% REDUCTION OUTPUT FACTORER pi1
 rof-pi1 : cpval -> cpval -> type.
 %mode rof-pi1 +C1 -C2.
 rof-pi1-e : rof-pi1 (empty (tup V _)) (empty V).
 rof-pi1-l : rof-pi1 (layer Q C) (layer Q C')
-			<- {x:term} rof-pi1 (C x) (C' x).
-red-pi1  : red (pi1 E) C'
-			<- red E C
-			<- rof-pi1 C C'.
+			<- {x:term} rof-pi1 (C x) (C' x). 
+			
 %% REDUCTION OUTPUT FACTORER pi2
 rof-pi2 : cpval -> cpval -> type.
 %mode rof-pi2 +C1 -C2.
 rof-pi2-e : rof-pi2 (empty (tup _ V)) (empty V).
 rof-pi2-l : rof-pi2 (layer Q C) (layer Q C')
 			<- {x:term} rof-pi2 (C x) (C' x).
-red-pi2  : red (pi2 E) C'
-			<- red E C
-			<- rof-pi2 C C'.
+			
 %% REDUCTION OUTPUT FACTORER tup
 rof-tup : cpval -> cpval -> cpval -> type.
 %mode rof-tup +C1 +C2 -C3.
 rof-tup-ee : rof-tup (empty V1) (empty V2) (empty (tup V1 V2)).
-rof-tup-ef : rof-tup (empty V1) (layer Q C) (layer Q C')
+rof-tup-el : rof-tup (empty V1) (layer Q C) (layer Q C')
 			<- {x:term} rof-tup (empty V1) (C x) (C' x).
-rof-tup-f  : rof-tup (layer Q C1) C2 (layer Q C')
+rof-tup-l  : rof-tup (layer Q C1) C2 (layer Q C')
 			<- {x:term} rof-tup (C1 x) C2 (C' x).
+			
+%% REDUCTION OUTPUT FACTORER app
+rof-app : cpval -> cpval -> cpval -> type.
+%mode rof-app +C1 +C2 -C3.
+rof-app-ee : rof-app (empty (lam _ ([x] M x))) (empty V2) C
+			<- red (M V2) C.
+rof-app-ef : rof-app (empty V1) (layer Q C) (layer Q C')
+			<- {x:term} rof-app (empty V1) (C x) (C' x).
+rof-app-f  : rof-app (layer Q C1) C2 (layer Q C')
+			<- {x:term} rof-app (C1 x) C2 (C' x).
+
+%% REDUCTION OUTPUT FACTORER prev
+rof-prev : cpval -> term -> type.
+%mode rof-prev +C1 -C2.
+rof-prev-e : rof-prev (empty (next Y)) Y.
+rof-prev-l : rof-prev (layer Q1 C) (let Q1 Q2)
+			<- {x:term} rof-prev (C x) (Q2 x).
+
+
+%% REDUCTION
+red-ztup : red ztup (empty ztup).
+red-pi1  : red (pi1 E) C'
+			<- red E C
+			<- rof-pi1 C C'.
+red-pi2  : red (pi2 E) C'
+			<- red E C
+			<- rof-pi2 C C'.
 red-tup  : red (tup E1 E2) C'
 			<- red E2 C2
 			<- red E1 C1
 			<- rof-tup C1 C2 C'.
-%% REDUCTION OUTPUT FACTORER app
-rof-app : cpval -> cpval -> cpval -> type.
-%mode rof-app +C1 +C2 -C3.
-rof-app-ee : rof-tup (empty (lam _ ([x] M x))) (empty V2) C
-			<- red (M V2) C.
-rof-app-ef : rof-tup (empty V1) (layer Q C) (layer Q C')
-			<- {x:term} rof-app (empty V1) (C x) (C' x).
-rof-app-f  : rof-tup (layer Q C1) C2 (layer Q C')
-			<- {x:term} rof-app (C1 x) C2 (C' x).
+red-lam  : red (lam A M) (empty (lam A M)).
 red-app  : red (app E1 E2) C
         <- red E2 V2
         <- red E1 V1
         <- rof-app V1 V2 C.
+red-next : red (next E) (layer Q ([x:term] empty(next x)))
+			<- spc E Q.
 
 %% SPECULATION
 spc-ztup : spc ztup ztup.
@@ -82,13 +89,13 @@ spc-pi1  : spc (pi1 E) (pi1 Q)
 spc-pi2  : spc (pi2 E) (pi2 Q)
 			<- spc E Q.
 spc-lam  : spc (lam A M) (lam A N)
-			<- ({x : term} {x' : term} spc x x' -> spc (M x) (N x')).
+			<- ({x : term} spc x x -> spc (M x) (N x)).
 spc-app  : spc (app E1 E2) (app Q1 Q2)
 	        <- spc E2 Q2
 	        <- spc E1 Q1.
 spc-prev  : spc (prev E) Q
 	        <- red E V
-	        <- reify V Q.
+	        <- rof-prev V Q.
 
 %% RESIDUAL JUDGMENT
 res : term -> type. %name res Dres.
@@ -119,27 +126,77 @@ pval-next	: pval (next E)
 
 %% CPV WELL-FORMED
 cpv-wf : cpval -> type.
-cpv-wf-empty : cpv-wf (empty E) 
+cpv-wf-e : cpv-wf (empty E) 
 			<- pval E. 
-cpv-wf-layer : cpv-wf (layer Q E)
+cpv-wf-l : cpv-wf (layer Q E)
 			<- res Q
 			<- {x:term}{_: context-entry x} cpv-wf (E x).
+
+%% STANDARD ROF PRESERVATION BLOCK
+%block rof-block : some {T : ty} block {x:term}{_ : of x T wor2}{_ : context-entry x}.
+
+%% OUTPUT FACTORING PRESERVATION tup
+rof-tup-pres : rof-tup C1 C2 C -> cpv-of C1 T1 -> cpv-wf C1 -> cpv-of C2 T2 -> cpv-wf C2 -> cpv-of C (prod T1 T2) -> cpv-wf C -> type.
+%mode rof-tup-pres +Drof +Dof1 +Dwf1 +Dof2 +Dwf2 -Dof -Dwf.
+- : rof-tup-pres rof-tup-ee 
+		(of-empty Dof1) (cpv-wf-e Dval1) 
+		(of-empty Dof2) (cpv-wf-e Dval2) 
+		(of-empty (of-tup Dof1 Dof2)) (cpv-wf-e (pval-tup Dval1 Dval2)).
+- : rof-tup-pres (rof-tup-el Drof)
+		Dof1 Dval1
+		(of-layer DofC DofQ) (cpv-wf-l DwfC Dres) 
+		(of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
+	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
+		rof-tup-pres (Drof x) Dof1 Dval1 (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+- : rof-tup-pres (rof-tup-l Drof) 
+		(of-layer DofC DofQ) (cpv-wf-l DwfC Dres) 
+		Dof2 Dval2
+		(of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
+	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
+		rof-tup-pres (Drof x) (DofC x dof) (DwfC x dce) Dof2 Dval2 (DofC' x dof) (DwfC' x dce).
+%worlds (rof-block) (rof-tup-pres _ _ _ _ _ _ _).
+%total (Drof) (rof-tup-pres Drof _ _ _ _ _ _).
+
+%% OUTPUT FACTORING PRESERVATION pi1
+rof-pi1-pres : rof-pi1 C1 C2 -> cpv-of C1 (prod T _) -> cpv-wf C1 -> cpv-of C2 T -> cpv-wf C2 -> type.
+%mode rof-pi1-pres +Drof +Dof1 +Dwf1 -Dof2 -Dwf2.
+- : rof-pi1-pres rof-pi1-e (of-empty (of-tup Dof _)) (cpv-wf-e (pval-tup Dval _)) (of-empty Dof) (cpv-wf-e Dval).  
+- : rof-pi1-pres (rof-pi1-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC Dres) (of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
+	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
+		rof-pi1-pres (Drof x) (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+%worlds (rof-block) (rof-pi1-pres _ _ _ _ _).
+%total (Drof) (rof-pi1-pres Drof _ _ _ _).
+
+%% OUTPUT FACTORING PRESERVATION pi2
+rof-pi2-pres : rof-pi2 C1 C2 -> cpv-of C1 (prod _ T) -> cpv-wf C1 -> cpv-of C2 T -> cpv-wf C2 -> type.
+%mode rof-pi2-pres +Drof +Dof1 +Dwf1 -Dof2 -Dwf2.
+- : rof-pi2-pres rof-pi2-e (of-empty (of-tup _ Dof)) (cpv-wf-e (pval-tup _ Dval)) (of-empty Dof) (cpv-wf-e Dval).  
+- : rof-pi2-pres (rof-pi2-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC Dres) (of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
+	<- {x:term}{dof : of x T wor2}{dce : context-entry x} 
+		rof-pi2-pres (Drof x) (DofC x dof) (DwfC x dce) (DofC' x dof) (DwfC' x dce).
+%worlds (rof-block) (rof-pi2-pres _ _ _ _ _).
+%total (Drof) (rof-pi2-pres Drof _ _ _ _).
+
 %% PRESERVATION AND EVALUATION
 presRed : red E C -> of E A wor1 -> cpv-wf C -> cpv-of C A -> type.
 presSpc : spc E Q -> of E A wor2 -> res  Q -> of Q A wor2 -> type.
 %mode presRed +R +T1 -V -T2.
 %mode presSpc +R +T1 -V -T2.
 
+
+- : presRed red-ztup of-ztup (cpv-wf-e pval-ztup) (of-empty of-ztup).
+- : presRed (red-tup Drof Dred1 Dred2) (of-tup DofE1 DofE2) Dwf DofC
+	<- presRed Dred1 DofE1 Dwf1 DofC1
+	<- presRed Dred2 DofE2 Dwf2 DofC2
+	<- rof-tup-pres Drof DofC1 Dwf1 DofC2 Dwf2 DofC Dwf.
+- : presRed (red-pi1 Drof Dred) (of-pi1 DofE) Dwf' DofC'
+	<- presRed Dred DofE Dwf DofC 
+	<- rof-pi1-pres Drof DofC Dwf DofC' Dwf'.
+- : presRed (red-pi2 Drof Dred) (of-pi2 DofE) Dwf' DofC'
+	<- presRed Dred DofE Dwf DofC 
+	<- rof-pi2-pres Drof DofC Dwf DofC' Dwf'.
+- : presRed red-lam Dof (cpv-wf-e pval-lam) (of-empty Dof).
 %{
-- : presRed red-ztup of-ztup pval-ztup of-ztup.
-- : presRed (red-tup Dred1 Dred2) (of-tup DofE1 DofE2) (pval-tup Dval1 Dval2) (of-tup DofV1 DofV2)
-	<- presRed Dred1 DofE1 Dval1 DofV1
-	<- presRed Dred2 DofE2 Dval2 DofV2.
-- : presRed (red-pi1 Dred) (of-pi1 DofE) Dval DofV
-		<- presRed Dred DofE (pval-tup Dval _) (of-tup DofV _).
-- : presRed (red-pi2 Dred) (of-pi2 DofE) Dval DofV
-		<- presRed Dred DofE (pval-tup _ Dval) (of-tup _ DofV).
-- : presRed red-lam Dof pval-lam Dof.
 - : presRed 
 			(red-app 
 				(DredM : red (M V2) V3) 
@@ -154,9 +211,12 @@ presSpc : spc E Q -> of E A wor2 -> res  Q -> of Q A wor2 -> type.
         <- presRed DredE2 DofE2 _ (DofV2' : of V2 A' wor1)										%% V2 : A'
         <- lam-annot DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B wor1)) DofV2		%% \A.M : A->B; V2 : A
         <- presRed DredM (DofM V2 DofV2) DvalV3 DofV3.
-- : presRed (red-next Dred) (of-next DofE) (pval-next Dres) (of-next DofV)    
-	<- presSpc Dred DofE Dres DofV.
 }%
+- : presRed (red-next Dred) (of-next DofE) 
+		(cpv-wf-l ([x] [dx] cpv-wf-e (pval-next dx)) Dres) 
+		(of-layer ([x] [dx] of-empty (of-next dx)) DofQ)    
+	<- presSpc Dred DofE Dres DofQ.
+	
 - : presSpc spc-ztup of-ztup res-ztup of-ztup.
 - : presSpc (spc-tup Dspc1 Dspc2) (of-tup DofE1 DofE2) (res-tup Dres1 Dres2) (of-tup DofV1 DofV2)
 	<- presSpc Dspc1 DofE1 Dres1 DofV1
@@ -165,9 +225,14 @@ presSpc : spc E Q -> of E A wor2 -> res  Q -> of Q A wor2 -> type.
 	<- presSpc Dspc DofE Dres DofV.
 - : presSpc (spc-pi2 Dspc) (of-pi2 DofE) (res-pi2 Dres) (of-pi2 DofV)
 	<- presSpc Dspc DofE Dres DofV.
-%%- : presSpc (spc-lam M) (of-lam DofM _) Dres DofV
-%%	<- {x : term} {Dofx : of x A wor2} {x' : term} {Dspc : spc x x'} 
-%%	presSpc (M x x' Dspc) (DofM Dofx) Dres DofV.
+- : presSpc 
+		(spc-lam (DspcM : {x : term} spc x x -> spc (M x) (N x))) 
+		(of-lam Dwf (DofM : {x: term} of x A wor2 -> of (M x) B wor2)) 
+		(res-lam DresN)
+		(of-lam Dwf DofN)
+		<- {x : term} {DresX : res x} {Dofx : of x A wor2} {Dspc : spc x x}
+			{_ : presSpc Dspc Dofx DresX Dofx}
+			presSpc (DspcM x Dspc) (DofM x Dofx) (DresN x DresX) (DofN x Dofx).
 - : presSpc (spc-app Dspc1 Dspc2) (of-app DofE1 DofE2) (res-app DresV1 DresV2) (of-app DofV1 DofV2)
     <- presSpc Dspc1 DofE1 DresV1 DofV1
     <- presSpc Dspc2 DofE2 DresV2 DofV2.
