@@ -127,24 +127,16 @@ idty-inj-arr :
 of-resp : of M A W -> idty A B -> of M B W -> type.
 %mode of-resp +D1 +D2 -D3.
 - : of-resp Dof idty/refl Dof.
-%worlds () (of-resp _ _ _).
+%block ofs-block : some {A : ty} {W : wor} block {x : term} {_ : of x A W}.
+%worlds (ofs-block) (of-resp _ _ _).
 %total {} (of-resp _ _ _).
-
-%% TYPING RESPECTS IDENTITY AT 1
-of-resp1 : of M A W -> idty A B -> of M B W -> type.
-%mode of-resp1 +D1 +D2 -D3.
-- : of-resp1 Dof idty/refl Dof.
-%block vars-at-2 : some {A : ty} block {x : term} {_ : of x A wor2}.
-%worlds (vars-at-2) (of-resp1 _ _ _).
-%total {} (of-resp1 _ _ _).
-
 
 %% LAMBDA VALUE INVERSION LEMMA
 lam-inverts : of (lam A1 _) (arr A2 _) W -> idty A2 A1 -> type.
 - : lam-inverts (of-lam _ _) idty/refl.
 %mode lam-inverts +O -I.
-%worlds () (lam-inverts _ _).
-%total D (lam-inverts D _).
+%worlds (ofs-block) (lam-inverts _ _).
+%total {} (lam-inverts _ _).
 
 %% LAMBDA ANNOTATION CONSISTENCY
 lam-annot : of (lam A1 M) (arr A2 B) W -> of V A2 W -> of (lam A1 M) (arr A1 B) W -> of V A1 W -> type. 
@@ -157,29 +149,8 @@ lam-annot : of (lam A1 M) (arr A2 B) W -> of V A2 W -> of (lam A1 M) (arr A1 B) 
     <- of-resp DofLam' DidtyArr DofLam													%% \A1.M : A1->B
     <- of-resp DofV' DidtyA (DofV : of V A1 W).											%% V : A1
 %mode lam-annot +O1 +O2 -O3 -O4.
-%worlds () (lam-annot _ _ _ _).
-%total D (lam-annot D _ _ _).
-
-%% LAMBDA VALUE INVERSION LEMMA AT 1
-lam-inverts1 : of (lam A1 _) (arr A2 _) wor1 -> idty A2 A1 -> type.
-- : lam-inverts1 (of-lam _ _) idty/refl.
-%mode lam-inverts1 +O -I.
-%worlds (vars-at-2) (lam-inverts1 _ _).
-%total D (lam-inverts1 D _).
-
-%% LAMBDA ANNOTATION CONSISTENCY AT 1
-lam-annot1 : of (lam A1 M) (arr A2 B) wor1 -> of V A2 wor1 -> of (lam A1 M) (arr A1 B) wor1 -> of V A1 wor1 -> type. 
-- : lam-annot1 
-		(DofLam' : of (lam A1 M) (arr A2 B) wor1)										%% \A1.M : A2->B
-		(DofV' : of V A2 wor1) 															%% V : A2
-		DofLam DofV 
-    <- lam-inverts1 DofLam' (DidtyA : idty A2 A1)										%% A1 = A2
-    <- idty-cong-arr DidtyA idty/refl (DidtyArr : idty (arr A2 B) (arr A1 B))			%% A2->B = A1->B
-    <- of-resp1 DofLam' DidtyArr DofLam													%% \A1.M : A1->B
-    <- of-resp1 DofV' DidtyA (DofV : of V A1 wor1).										%% V : A1
-%mode lam-annot1 +O1 +O2 -O3 -O4.
-%worlds (vars-at-2) (lam-annot1 _ _ _ _).
-%total D (lam-annot1 D _ _ _).
+%worlds (ofs-block) (lam-annot _ _ _ _).
+%total {} (lam-annot _ _ _ _).
 
 %{
 %% UNIQUENESS OF TYPING
