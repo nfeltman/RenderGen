@@ -82,6 +82,14 @@ rof-app-e : rof-app (empty (lam _ ([x] M x))) C C'
 rof-app-l  : rof-app (layer Q C1) C2 (layer Q C')
 			<- {x:term} rof-app (C1 x) C2 (C' x).
 
+%% REDUCTION OUTPUT FACTORER letn
+rof-letn : cpval -> (term -> term) -> cpval -> type.
+%mode rof-letn +C1 +M -C2.
+rof-letn-e : rof-letn (empty (next V)) M C
+			<- red (M V) C.
+rof-letn-l : rof-letn (layer Q C) M (layer Q C')
+			<- {x:term} rof-letn (C x) M (C' x).
+
 %% REDUCTION OUTPUT FACTORER prev
 rof-prev : cpval -> term -> type.
 %mode rof-prev +C1 -C2.
@@ -112,6 +120,9 @@ red-let  : red (let E M) C2
 			<- rof-let C1 M C2.
 red-next : red (next E) (layer Q ([x:term] empty(next x)))
 			<- spc E Q.
+red-letn : red (letn E M) C2
+			<- red E C1
+			<- rof-letn C1 M C2.
 
 %% SPECULATION
 spc-ztup : spc ztup ztup.
@@ -255,6 +266,15 @@ rof-app-pres : rof-app C1 C2 C -> cpv-of C1 (arr T1 T2) -> cpv-wf C1 -> cpv-of C
 		(of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
 	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
 		rof-app-pres (Drof x) (DofC x dof) (DwfC x dres dce) Dof2 Dval2 (DofC' x dof) (DwfC' x dres dce).
+		
+%% OUTPUT FACTORING PRESERVATION letn
+rof-letn-pres : rof-letn C M C' -> cpv-of C (fut T) -> cpv-wf C -> ({x:term} of x T wor2 -> of (M x) T' wor1) -> cpv-of C' T' -> cpv-wf C' -> type.
+%mode rof-letn-pres +Drof +Dof1 +Dwf1 +DofM -Dwf2 -Dof2.
+- : rof-letn-pres (rof-letn-e Dred) (of-empty (of-next Dof)) _ ([x:term][dof: of x T wor2] DofM x dof : of (M x) T' wor1) DofC' DwfC'
+	<- presRed Dred (DofM V Dof) DwfC' DofC'.
+- : rof-letn-pres (rof-letn-l Drof) (of-layer DofC DofQ) (cpv-wf-l DwfC Dres) DofM (of-layer DofC' DofQ) (cpv-wf-l DwfC' Dres)
+	<- {x:term}{dof : of x T wor2}{dres : res x}{dce : context-entry x} 
+		rof-letn-pres (Drof x) (DofC x dof) (DwfC x dres dce) DofM (DofC' x dof) (DwfC' x dres dce).
 
 %% PRESERVATION FOR REDUCTION
 - : presRed red-ztup of-ztup (cpv-wf-e pval-ztup) (of-empty of-ztup).
@@ -280,6 +300,9 @@ rof-app-pres : rof-app C1 C2 C -> cpv-of C1 (arr T1 T2) -> cpv-wf C1 -> cpv-of C
 		(cpv-wf-l ([x] [dres] [dx] cpv-wf-e (pval-next dres dx)) Dres) 
 		(of-layer ([x] [dx] of-empty (of-next dx)) DofQ)    
 	<- presSpc Dred DofE Dres DofQ.
+- : presRed (red-letn Drof DredE) (of-letn DofM DofE) DwfC2 DofC2
+	<- presRed DredE DofE DwfC1 DofC1
+	<- rof-letn-pres Drof DofC1 DwfC1 DofM DofC2 DwfC2.
 
 %% PRESERVATION FOR SPECULATION
 - : presSpc spc-ztup of-ztup res-ztup of-ztup.
@@ -312,5 +335,15 @@ rof-app-pres : rof-app C1 C2 C -> cpv-of C1 (arr T1 T2) -> cpv-wf C1 -> cpv-of C
     <- presRed Dred DofE Dwf DofC
     <- rof-prev-pres Drof DofC Dwf DofQ Dres.
     
-%worlds (spc-block | rof-block) (presRed _ _ _ _) (presSpc _ _ _ _) (rof-let-pres _ _ _ _ _ _) (rof-app-pres _ _ _ _ _ _ _).
-%total (Dred Dspc Drof1 Drof2) (presRed Dred _ _ _) (presSpc Dspc _ _ _) (rof-let-pres Drof1 _ _ _ _ _) (rof-app-pres Drof2 _ _ _ _ _ _).
+%worlds (spc-block | rof-block) 
+	(presRed _ _ _ _) 
+	(presSpc _ _ _ _) 
+	(rof-let-pres _ _ _ _ _ _) 
+	(rof-app-pres _ _ _ _ _ _ _) 
+	(rof-letn-pres _ _ _ _ _ _).
+%total (Dred Dspc Drof1 Drof2 Drof3) 
+	(presRed Dred _ _ _) 
+	(presSpc Dspc _ _ _) 
+	(rof-let-pres Drof1 _ _ _ _ _) 
+	(rof-app-pres Drof2 _ _ _ _ _ _) 
+	(rof-letn-pres Drof3 _ _ _ _ _).

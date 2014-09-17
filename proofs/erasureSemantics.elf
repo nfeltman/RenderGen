@@ -17,9 +17,12 @@ red-app  : red (app E1 E2) V
 red-let  : red (let E1 ([x] E2 x)) V2
 			<- red E1 V1
 			<- red (E2 V1) V2.
-red-next  : red (next E) (next V)
+red-next : red (next E) (next V)
 			<- red E V.
-red-prev  : red (prev E) V
+red-letn : red (letn E M) V2
+			<- red E (next V1)
+			<- red (M V1) V2.
+red-prev : red (prev E) V
 			<- red E (next V).
 
 %% VALUE JUDGMENT
@@ -71,6 +74,9 @@ pres : red E V -> of E A W -> pval V -> of V A W -> type.
 		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
 - : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
         <- pres Dred DofE DvalV DofV.
+- : pres (red-letn Dred2 Dred1) (of-letn DofE2 DofE1) Dval DofV2
+		<- pres Dred1 DofE1 _ (of-next DofV1)
+		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
 - : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
 		<- pres Dred DofE (pval-next DvalV) (of-next DofV).
         

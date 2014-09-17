@@ -22,6 +22,9 @@ red-let  : red (let E M) V2
 			<- red (M V1) V2.
 red-next : red (next E) (next V)
         	<- spc E V.
+red-letn : red (letn E M) V2
+			<- red E (next V1)
+			<- red (M V1) V2.
         
 spc-ztup : spc ztup ztup.
 spc-tup  : spc (tup E1 E2) (tup V1 V2)
@@ -112,6 +115,9 @@ presSpc : spc E V -> of E A wor2 -> res  V -> of V A wor2 -> type.
 		<- presRed DredM (DofM V DofV1) Dval DofV.
 - : presRed (red-next Dred) (of-next DofE) (pval-next Dres) (of-next DofV)    
 		<- presSpc Dred DofE Dres DofV.
+- : presRed (red-letn Dred2 Dred1) (of-letn DofE2 DofE1) Dval DofV2
+		<- presRed Dred1 DofE1 _ (of-next DofV1)
+		<- presRed Dred2 (DofE2 V1 DofV1) Dval DofV2.
         
 - : presSpc spc-ztup of-ztup res-ztup of-ztup.
 - : presSpc (spc-tup Dspc1 Dspc2) (of-tup DofE1 DofE2) (res-tup Dres1 Dres2) (of-tup DofV1 DofV2)
