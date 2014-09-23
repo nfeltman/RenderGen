@@ -1,0 +1,31 @@
+
+
+datatype exp = Arg | Int of int | Sum of exp * exp
+
+(* direct evaluation *)
+fun eval (a : int) (e : exp) : int = 
+	case e of 
+	  Arg => a
+	| Int i => i
+	| Sum (e1, e2) => (eval a e1) + (eval a e2)
+	
+(* staged direct evaluation *)
+fun eval (a : $int) (e : exp) : $int = 
+	case e of 
+	  Arg => a
+	| Int i => next{hold {i}}
+	| Sum (e1, e2) => next {prev{eval a e1} + prev{eval a e2}}
+	
+(* continuation style evaluation *)
+fun eval (a : int) (e : exp) (k : int -> 'a) : 'a = 
+	case e of 
+	  Arg => k a
+	| Int i => k i
+	| Sum (e1, e2) => eval a e1 (fn v1 => eval a e2 (fn v2 => k (v1 + v2)))
+	
+(* staged version of continuation style *)
+fun eval (a : $int) (e : exp) (k : $int -> $'a) : $'a = 
+	case e of 
+	  Arg => k a
+	| Int i => k next{hold{i}}
+	| Sum (e1, e2) => eval a e1 (fn v1 => eval a e2 (fn v2 => k next{prev{v1} + prev{v2}}))
