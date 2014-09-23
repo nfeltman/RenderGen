@@ -103,13 +103,24 @@ It is a common observation that some computations can be performed efficiently b
 \item Computing the shading of a surface in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over  pixel blocks.  
 \end{itemize}
 
-With these goals in mind, our initial concern is how to express multistage programs. To this end, we have modified prior work (\cite{davies96}) to create \lang, a typed multi-stage lambda calculus featuring products, sums, and isorecursive types. An important property of \lang\ is that the staging of a well-typed program is apparent without resorting to any variable analysis, contra standard binding time analysis.  
+With these goals in mind, our initial concern is how to express multistage programs. To this end, we have created \lang, a typed multi-stage lambda calculus featuring products, sums, and isorecursive types. An important property of \lang\ is that the staging of a well-typed program is apparent without resorting to any variable analysis, contra standard binding time analysis.  
 
 Once we have appropriately written {\em multi-stage} programs, we then must execute them in a way that respects the staging.  In this paper, we explore two techniques for this: {\em partial evaluation} and {\em stage-splitting}.  
 
 The main idea of the former technique is to evaluate all of the constant portions of the program and embed the partial results into a {\em residual} program that depends only on the varying inputs.  This is an old and well-explored idea, though the typical setup of partial evaluation implies a more powerful binding time analysis than is necessary for our language.
 
 The main idea of the latter technique is to statically compile the multi-stage program into several smaller programs, one per stage, and then to execute those in a standard way once inputs are available.  This has previously been explored as an optimization technique for languages with fewer features (notably, no functions) or a more constrained staging model than \lang. Prior examples include the ``data specialization" work of Knoblock and Ruff\,\cite{knoblock96} as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}.  Unlike partial evaluation, stage splitting is purely a static program transformation and is not dependent on the input data.
+
+\TODO motivate this example
+\begin{lstlisting} 
+let fexp (b : int, p : int) : int =
+	if p == 0 then
+		1
+	else if (p mod 2) == 0 then
+		let x = fexp(b,p/2) in x*x
+	else
+		b * fexp(b,p-1)	
+\end{lstlisting}
 
 \Cref{sec:semantics} describes the grammar and type system of \lang, as well as a reference semantics which is essentially a partial evaluator that respects staging. \Cref{sec:splitting} describes a stage-splitting transformation for \lang\ and proves its equivalence to the reference semantics.
 Finally, \Cref{sec:examples} gives several examples of how stage-splitting terms in \lang\ can be used to derive classic data structures, and discusses the effectiveness and limitations of this technique.  Notably, these examples make use of the stage-splitting features not available in prior work.

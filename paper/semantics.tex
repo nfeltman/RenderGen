@@ -27,14 +27,17 @@ stage-\bbtwo\ expressions of type $A$. Terms of type $\fut A$ are treated
 opaquely by stage-\bbone\ code, as (by the requirements of staging) they cannot be evaluated until stage \bbtwo.
 While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbone\ types,
 there is no way to embed a stage-\bbone\ type within a stage-\bbtwo\ type.
+That is, there is a one-way dependence between stages at the term level.
+
+Alternatively, the stages are mutually dependent at the term level.
 The $\next$ constructor embeds stage-\bbtwo\ expressions into stage \bbone,
 while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  $\next$ and $\prev$ are the
 only ways in \lang\ to alter the stage of a term; we surround their arguments
 with braces in \lang\ syntax to clearly indicate stage boundaries within a
 program.
 
-The grammar and type system for \lang\ is given in
-\ref{fig:grammar,fig:statics}. (Typing judgments and context variables are annotated with stages.)
+The grammar and type system for \lang\ is given in \ref{fig:grammar,fig:statics}. 
+Typing judgments and context variables are annotated with stages after an $@$ symbol.
 Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
 of a term or type.
 %We formulated our typing judgments in the style of \cite{davies96}, where the
@@ -47,52 +50,37 @@ of a term or type.
 Specifically, given an argument with type $A$ at stage \bbtwo, $\next$ forms a $\fut A$ at stage \bbone.  
 %That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
 Stage \bbtwo\ expressions can obtain the original stage \bbtwo\ argument via the $\prev$ construct.  
-Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality\,\cite{cave14}.
+Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality,\cite{cave14}.
 The $\pause$ construct serves to wrap stage \bbone\ integers for use in stage \bbtwo.  
 It is possible to implement $\pause$ from other \lang\ features, but
 we provide it as a core primitive to simplify our examples. 
 
-\subsection{Staged Evaluation}
-\label{sec:stagedsemantics}
-
-As a simple example of expressing staged programs in \lang, consider the following fast exponentiation algorithm, which 
-calculates $b^p$ in $\log p$ time:
-\[
-	\mathit{fexp}(b,p) = \left \{ \begin{array}{ll} 
-		1 &  p = 0 \\ 
-		\mathit{fexp}(b,p/2)^2 & p \text{ even} \\ 
-		b \cdot \mathit{fexp}(b,p-1) & p \text{ odd} \end{array}
-	\right .
-\]
-
-% Ignoring for the moment how to define recursive functions in \lang,
-\noindent
-The stage-\bbone\ term below defines the function {\tt fexp} that implements the fast exponentiation algorithm:
-
+Recall the fast exponent function from above.
+We present a valid staging of it here:
 \begin{lstlisting} 
-let fexp (b : $int, e : int) : $int =
-	if e == 0 then
+let fexp (b : $int, p : int) : $int =
+	if p == 0 then
 		next{1}
-	else if (e mod 2) == 0 then
+	else if (p mod 2) == 0 then
 		next{let x = prev{fexp(b,p/2)} in x*x}
 	else
 		next{prev{b} * prev{fexp(b,p-1)}}		
 \end{lstlisting}
 
-Although the code for {\tt fexp} appears very similar to the unstaged mathematical
-definition above, it is in fact a staged program. The function receives a stage-\bbone\ exponent {\tt e} and a stage-\bbtwo\ base {\tt b} and returns a stage-\bbtwo\ result. The {\tt if} predicates and exponent
-decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
-%\needsfix{Essentially, the type system is sufficient to prove the observation that all of
-%the decomposition of the exponent can be done at the stage \bbone\ without
-%requiring disruption of the elegant functional structure of the code.}
-%
-% NOTE(kayvonf): removing the following comments about binding time analysis from the text for now to improve clarity.  They will certainly be addressed in some prior section in the paper.
-%
-%We note that our work does not consider the problem of {\em binding time analysis}---transforming an unstaged program into a staged \lang\ program by inserting appropriate $\next$, $\prev$, and $\pause$ constructs. We assume that binding time analysis is performed manually by a programmer (as done above) or via automatic analysis of unstaged code to arrive at a valid \lang\ program used as input for subsequent splitting.
-%
-A key attribute of this example is that stage-\bbone\ and stage-\bbtwo\ expressions are nested. Ordinary term evaluation eliminates outermost redexes first, 
-however in the case that stage \bbone\ expressions are contained inside
-stage \bbtwo\ ones (such as the recurive call to {\tt fexp} above), this strategy conflicts with the precept of staged execution: that all stage-\bbone\ code be evaluated before the evaluation of stage-\bbtwo\ code. 
+\TODO explain why we staged this the way we did
+
+The function receives a stage-\bbone\ exponent {\tt e} and a stage-\bbtwo\ base {\tt b} and returns a stage-\bbtwo\ result. 
+The {\tt if} predicates and exponent decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
+
+\subsection{Staged Evaluation}
+\label{sec:stagedsemantics}
+
+A key attribute of the fexp example is that stage-\bbone\ and stage-\bbtwo\ expressions are nested. 
+Ordinary term evaluation eliminates outermost redexes first, 
+however in the case that stage \bbone\ expressions are contained inside stage \bbtwo\ ones 
+(such as the recurive call to {\tt fexp} above), 
+this strategy conflicts with the precept of staged execution: 
+that all stage-\bbone\ code be evaluated before the evaluation of stage-\bbtwo\ code. 
 
 Thus, our dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
 subexpressions before any of its stage \bbtwo\ subexpressions. This results in a
@@ -109,56 +97,58 @@ judgment are not shown, but they are standard).
 To gain intuition about the challenges of implementing this staged dynamic
 semantics, consider the following example:
 \begin{lstlisting}
-#2 (next {1+2}, 3+4)
+#2 (next {fib 20}, 2+3)
 \end{lstlisting}
 This is a stage-\bbone\ expression of type $\rmint$; the pair inside it is a
-stage-\bbone\ expression of type $(\fut\rmint)\times\rmint$. A conventional
-call-by-value evaluation strategy demands that we evaluate both components of
+stage-\bbone\ expression of type $(\fut\rmint)\times\rmint$. 
+In this example, ${\tt fib} : \rmint \to \rmint$ is a stage-\bbtwo\ reference to the Fibonacci function.
+A conventional call-by-value evaluation strategy demands that we evaluate both components of
 the pair to values before we project from the pair. The problem is that
-while \verb|next {1+2}| is not a value (in the sense that additional
-stage-\bbtwo\ computation steps are necessary to produce the result \verb|3|), evaluating the contents of \verb|next| cannot occur as part of stage-\bbone\ evaluation.
-Intuitively, the solution is to designate \verb|next {1+2}| as a value \emph{in
+while \verb|next {fib 20}| is not a value (in the sense that additional
+stage-\bbtwo\ computation steps are necessary to produce the result \verb|6765|), 
+evaluating the contents of \verb|next| cannot occur as part of stage-\bbone\ evaluation.
+Intuitively, the solution is to designate \verb|next {fib 20}| as a value \emph{in
 stage \bbone}, even though it requires additional evaluation in stage \bbtwo.
 Therefore, we evaluate the pair to
 \begin{lstlisting}
-#2 (next {1+2}, 7)
+#2 (next {fib 20}, 5)
 \end{lstlisting}
-then obtain \verb|7| as the result of projection.
+then obtain \verb|5| as the result of projection.
 
 Now consider a more complex example where 
 stage-\bbone\ evaluation must substitute such a incompletely-evaluated
 expression. The following stage-\bbtwo\ term has type $\rmint$:
 \begin{lstlisting} 
 prev{
-  let x = (next {1+2}, 3+4) in
+  let x = (next {fib 20}, 3+4) in
   next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
 }
 \end{lstlisting}
 Again, stage-\bbone\ evaluation will not fully reduce this term, because the answer
-depends on the value of \verb|1+2|, which is not reduced to \verb|3| until
+depends on the value of \verb|fib 20|, which is not reduced to \verb|3| until
 stage \bbtwo.
 
-If we simply treat \verb|(next {1+2}, 7)| as a value during stage~\bbone, and
+If we simply treat \verb|(next {fib 20}, 7)| as a value during stage~\bbone, and
 substitute it for the three occurrences of \verb|x| in the body of the
 \verb|let| expression, the result of stage \bbone\ computation is
 \begin{lstlisting} 
 prev{
-  next{ prev{next {1+2}} * prev{next {1+2}} * 7 }
+  next{ 
+    prev{next {fib 20}} * prev{next {fib 20}} * 7 
+  }
 }
 \end{lstlisting}
 Finally, the $\prev$s eliminate the $\next$s to yield the final residual:
 \begin{lstlisting} 
-(1+2) * (1+2) * 7
+(fib 20) * (fib 20) * 7
 \end{lstlisting}
-Stage-\bbtwo\ evaluation of this expression will compute \verb|1+2| twice. Of
-course, this is not particularly expensive, but in general, the duplicated
-computation could be anything, even a recursive call to the function! To avoid duplicating
-computations, we take a different approach.  Instead of
+Note how stage-\bbtwo\ evaluation of this expression will compute \verb|fib 20| twice.  
+To avoid duplicating computations, we take a different approach.  Instead of
 duplicating the contents of the $\next$ expression in the tuple, we bind the contained stage-\bbtwo\ expression to
 a variable (here, $\mathtt{y}$) and duplicate only a reference to that variable.
 This produces:
 \begin{lstlisting} 
-let y = 1+2 in y * y * 7
+let y = fib 20 in y * y * 7
 \end{lstlisting}
 
 Achieving this behavior mechanically requires us to resolve a contradiction:
@@ -167,7 +157,7 @@ Our solution is to replace the contents of the $\next$ with a new stage-\bbtwo\ 
 This substitution then floats up to the top of the containing $\prev$ block:
 \begin{lstlisting} 
 prev {
-[yhat|->1+2]
+[yhat|->fib 20]
   let x = (next{yhat}, 7) in
   next{prev{#1 x} * prev{#1 x} *  hold{#2 x}}
 }
@@ -176,7 +166,7 @@ As a convention, we render the new variable with a %stylish and fashionable
 hat.  We're now free to perform the stage-\bbone~substitution for {\tt x} without duplicating stage-\bbtwo\ work.
 \begin{lstlisting} 
 prev {
-[y|->1+2]
+[yhat|->fib 20]
   next{
     prev{#1 (next {yhat}, 7)} * 
     prev{#1 (next {yhat}, 7)} *
@@ -188,21 +178,21 @@ To evaluate the outermost $\next$, we must first partially evaluate within its b
 As a rule, these will reduce to $\next$ expressions, which the $\prev$ eliminates, leaving the variable in place:
 \begin{lstlisting} 
 prev {
-[yhat|->1+2]
+[yhat|->fib 20]
     next{ yhat * yhat * 7 }
 }
 \end{lstlisting}
 Once again, we lift the contents of the $\next$ into a substitution:
 \begin{lstlisting} 
 prev {
-[yhat|->1+2]
+[yhat|->fib 20]
 [zhat|->yhat*yhat*7]
     next{ zhat }
 }
 \end{lstlisting}
 Finally, when evaluating the outer $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
-let yhat = 1+2 in
+let yhat = fib 20 in
 let zhat = yhat * yhat * 7 in z
 \end{lstlisting}
 
@@ -212,84 +202,6 @@ Thus we have evaluated all of the stage \bbone\ expressions of this program with
 \label{ssec:dynamics}
 
 \input {figures/dynamics}
-
-%{{{ stuff nico commented out
-%Previous work (\cite{davies96}) focuses on the correspondence between the type system and existing temporal logics, whereas we care more about operational behavior and cost.  In this section, we'll consider a few proposals for our language before settling on one we like.  All of the proposals are call-by-value, differing primarily in how they handle values of $\fut$ type.
-
-%\subsection{The Erasure Semantics}
-%
-%We first consider the {\em erasure semantics}, so called because it corresponds to what one would get by interpreting \lamStaged as a single-stage language, ignoring all of the $\next$ and $\prev$ terms.  This gives us two judgments, $\erasone$ and $\erastwo$, corresponding to {\em multistage evaluation} at \bbone and at \bbtwo.  We call these judgments  ``multistage'' because they cause work to happen at both stages.
-%
-%Both judgments behave normally at non-staged features.  We cover their behavior at staged features below:
-%
-%\begin{mathpar}
-%\infer {\next~e \erasone \next~v} {e \erastwo v} \and
-%\infer {\prev~e \erastwo \next~v} {e \erasone v} \and
-%\infer {\pause~e \erasone \next~i} {e \erasone i}
-%\end{mathpar}
-%
-%Essentially, we immediately evaluate under the $\next$, yielding a value for $\fut$ types. The $\prev$ terms remove this wrapper.  As expected, $\pause$ also gives us a way to inject into the wrapper at integers.
-%
-%The erasure semantics has some undesirable properties.  By intention, it interleaves the execution of stage-\bbone~and stage-\bbtwo~code, so the evaluation can't really be said to be staged (i.e. stage-\bbone~work is done before stage-\bbtwo~work).  Moreover, the erasure semantics cannot be equivalent to any semantics which does have this property!  To see why, consider the following code, which types to int at \bbtwo:
-%
-%\begin{lstlisting} 
-%if 5*4*3*2 > 111 then
-%	hold{2+4}
-%else
-%	prev{ loopForever () (* does not terminate *) }
-%\end{lstlisting}
-%
-%Under the erasure semantics (using $\erastwo$), this code takes the top branch and evaluates to 6.  But in order know that the {\tt loopForever} function need not be called, the predicate had to be evaluated prior.  But the predicate is stage-\bbtwo, whereas {\tt loopForever} is stage-\bbone.  To borrow terminology from \cite{cave14}, this violates causality.  In order to avoid this problem, a valid semantics must {\em speculate} down the branches of any stage-\bbtwo~if or case statement (or similarly into the body of a stage-\bbtwo function) to find and evaluate all of the stage-\bbone~code.  Both of the other semantics we will consider have this property.
-%
-%The benefit of the erasure semantics is that it's very natural, and has a familiar cost model.  It also {\em obviously} produces the ``correct'' answer, so we can use the erasure semantics as a reference to prove the reasonableness of any other semantics.
-%
-%\subsection{Meta Semantics}
-%
-%A different semantics was provided in \cite{davies96}.  We briefly review a two-stage version of that semantics here.
-%
-%In the erasure semantics, $\next v$ is a value only if $v$ is fully reduced.  But in the meta semantics, $\next e$ is a value only if $e$ has no $\prev$ terms; $v$ is allowed to have unreduced stage-2 computation. 
-%
-%...
-%
-%The Davies semantics is comprised of two mutually recursive judgments: $\daviesz$ and $\davieso$.  For some $\colone e A$, the $\daviesz$ judgment evaluates only the first-stage parts of $e$, leaving unevaluated second-stage code within $\next$s.  (... This essentially gives us partial evaluation, and we're left to just evaluate the residual normally to get multi-stage evaluation...) 
-%
-%The benefit of the meta semantics is that it gives us a very explicit notion of partial evaluation.  This also, by construction, means that the meta semantics does all of the first stage-work {\em before} the second stage work begins. 
-%
-%The $\next$-by-name behavior of the meta semantics of course means that it happily duplicates second-stage code, which could increase the cost.  This makes reasoning about second-stage cost rather difficult.
-%
-%\begin{lstlisting} 
-%let x = next {4+5} in
-%next{prev{x} * prev{x}}
-%\end{lstlisting}
-%
-%\subsection{Our Semantics}
-%
-%We desire a semantics that meets the following goals:
-%
-%\begin{enumerate}
-%\item Modulo termination, it should be equivalent to the erasure semantics.
-%\item All of the first stage work should be completed before second stage work.  Ideally, it should just have a notion of partial evaluation, like the meta semantics.
-%\item Should be $\next$-by-value, rather than $\next$-by-name, like the erasure semantics.  
-%\end{enumerate}
-%
-%We meet all of these goals.
-%}}}
-%{{{ stuff carlo commented out
-%Abstractly, we can think of our evaluation as proceeding in the standard way for
-%stage-1 code. When the evaluator encounters a $\next \{e\}$ expression, it
-%places $e$ off to the side in a context and replaces the whole expression with a
-%reference to the context entry.  These references are then passed around as
-%stage-1 values for $\fut$ types.  But what if $e$ contains $\prev$ expressions?
-%To ensure that all stage-1 code is evaluated before any stage-2 code, we must
-%evaluate all of the 1-code contained in $e$ before inserting it into the table.
-%This entails searching $e$ for all contained $\prev$s and evaluating them in
-%place.  
-
-%The evaluation judgment operates on stage-1 code, whereas the
-%speculation operates on stage-2 code.  Since $\next$ and $\prev$ are the
-%crossover points between 1-code and 2-code, they are correspondingly the only
-%places where the evaluation and speculation judgments depend on the other. 
-%}}}
 
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
@@ -375,6 +287,21 @@ environment bookkeeping in $\redonesym$, by inlining residuals instead of
 hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
 {\em Because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
+
+Returning to our {\tt fexp} example, we can speculate on the stage \bbtwo\ term
+$\verb|fn b => prev{fexp(next{b},10)}|$
+to get the residual
+\begin{lstlisting} 
+fn b : int =>
+  let x0 =
+    (let x1 = 
+      let x2 = 1 * b
+      in x2 * x2
+    in x1 * x1) * b
+  in x0 * x0
+\end{lstlisting}
+
+Note how the recursion causes duplicate code in the residual.
 
 \subsection {A Partial Evaluation System}
 \label{sec:partialeval}
