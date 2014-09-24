@@ -1,36 +1,109 @@
 \section {The \lang\ Language}
 
-We now describe \lang, a simple two-stage language
-for which we will later define and analyze a stage splitter.
-
-For this purpose, we use {\em fast exponent} as a running example.
-It calculates $b^p$ in $O(\log p)$ time.  
-Using a standard unstaged ML-like syntax, it is
+\begin{figure*}
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
-fun fexp (b : int, p : int) : int = 
-	if p == 0 then
-		1
-	else if (p mod 2) == 0 then
-		let x = fexp(b,p/2) in x*x
-	else
-		b * fexp(b,p-1)	
-\end{lstlisting}
+datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) 
+  : (int*list*list) =
+  case unroll l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) =>
+      let (s,left,right) = partition (p,t) in
+      if h<p 
+      then (s+1,Cons(h,left),right)
+      else (s,left,Cons(h,right))
 
+fun qs (l : list, i : int) : int = 
+  case l of
+    Empty => next {0}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+        case compare i n of
+          LT => qs left i
+        | EQ => h
+        | GT => qs right (i-n-1)
+\end{lstlisting}
+\caption{Unstaged Code}
+\end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+datatype list = Empty | Cons of int * list
+
+fun partition (p : int, l : list) = ...
+fun qs (l : list, i: $int) : $int = 
+  case l of
+    Empty => next {0}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        let n = hold{n} in
+          case compare prev{i} n of
+            LT => prev {qs left i}
+          | EQ => hold {h}
+          | GT => prev {qs right next{prev{i}-n-1}}
+      }	
+\end{lstlisting}
+\caption{Staged Code}
+\end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+	
+datatype tree = Branch of int * int * tree * tree
+                | Leaf
+
+fun qs1 (l : list) : tree =
+  case l of
+    Empty => Leaf
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      Branch (n, h, qs1 left i, qs1 right i)
+
+fun qs2 (p : tree, i : int) : int = 
+  case unroll p of
+    Leaf => 0
+  | Branch (n,h,p1,p2) => 
+      case compare i n of
+        LT => qs2 (p1,i)
+      | EQ => h
+      | GT => qs2 (p2,i-n-1)
+\end{lstlisting}
+\caption{Split Code}
+\end{subfigure}
+\caption{Caption place holder}
+\end{figure*}
+
+Consider the quickselect algorithm in [the figure],
+which finds the $i$th largest element of a list.
+It operates by inspecting the head of the list, 
+partitioning the rest of the list by the head,
+comparing the size of the partition to the desired index,
+and the recursively selecting on the correct sublist.
+If the index was outside valid bounds, 0 is returned.
+[runtime]
+
+It has been observed that [dependency...].
+
+We can then leverage this dependency to split quickselect into two other functions [one precomputes all splits... build tree... other consumes].
+[We've shown this in figure...]
+[we like it as two functions because... multiple calls... efficient]
+
+The goal of our work is to do this transformation automatically.
+[first we need a language to ... unambiguously and clearly specify staging]
+[ideally that language looks similar to the original term]
+[The type system for this language should be enough to prove that splitting will work out.]
+
+[to this end, we present \lang]
 The main idea of \lang\ is that terms defined in it are 
-split across two {\em stages}, called \bbone\ and \bbtwo,
-such that information can flow from the stage \bbone\ portions of the term to the stage \bbtwo\ portions,
-but never from \bbtwo\ to \bbone.
-Our starting point for this is a typed lambda calculus with products, sums, and isorecursive types.
-Here is the fast exponent example in staged form:
-\begin{lstlisting} 
-let fexp (b : $int, p : int) : $int =
-	if p == 0 then
-		next{1}
-	else if (p mod 2) == 0 then
-		next{let x = prev{fexp(b,p/2)} in x*x}
-	else
-		next{prev{b} * prev{fexp(b,p-1)}}		
-\end{lstlisting}
+split across two {\em stages}, called \bbone\ and \bbtwo.
+If part of the term is in \bbone, then it will end up in the precomputation, else it will end up in the residual.
+[information can flow from the stage \bbone\ portions of the term to the stage \bbtwo\ portions,
+but never from \bbtwo\ to \bbone.  this property is required if we want to be able to split the term]
+
+[Check out the example, now staged all fancy.]
+
 This staged version contains three new constructs: 
 $\next$ and $\prev$ at the term level, and $\fut$ at the type level.
 We can read $\next$ and $\prev$ as indications to 
@@ -40,33 +113,7 @@ Thus, ${\tt fexp} : \fut\rmint \times \rmint \to \fut\rmint$
 can be read as a function that takes a base at stage \bbtwo\ and a power at stage \bbone, 
 and returns the exponent at stage \bbtwo.
 
-With this in mind, observe that the exponent decomposition and recursive calls in ${\tt fexp}$ 
-all occur in stage \bbone, whereas squaring and multiplication by the base occur at stage \bbtwo.
-
-This paper investigates a transformation called stage-splitting, 
-wherein a single multi-stage program is split into multiple single-stage programs.
-For ${\tt fexp}$, this is:
-
-\begin{lstlisting} 
-fun fexp1 (b, e) =
-  ((), roll (
-    if e == 0 then inj1 ()
-    else
-      inj2 (
-        if (e mod 2) == 0
-        then inj1 (#2 (fexp1 (b,e/2)))
-        else inj2 (#2 (fexp1 (b,e-1)))
-      )
-  ))
-
-fun fexp2 ((b, e), p) =
-	case unroll p of
-	  inj1 () => 1
-	| inj2 d =>
-		case d of
-		  inj1 r => let x = fexp2 ((b,()),r) in x*x
-		| inj2 r => b * fexp2 ((b,()),r)
-\end{lstlisting}
+[$\fut$ acts in a sanitary way]
 
 \section{Statics and Dynamics}
 \label{sec:semantics}
