@@ -108,18 +108,31 @@ Within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo
 but never from \bbtwo\ to \bbone.  
 Indeed this is a necessary property if we want to be able to split the term.
 
-[Check out the example, now staged all fancy.]
+See [figure part (b)] for a staged version of quickselect.
+This example contains all four of the special constructs of \lang: 
+$\fut$ at the type level, and $\next$, $\prev$, and $\pause$ at the term level.
+Notice that but for these new constructs, the staged version of quickselect is virtually identical to the unstaged version.
 
-This staged version contains three new constructs: 
-$\next$ and $\prev$ at the term level, and $\fut$ at the type level.
-We can read $\next$ and $\prev$ as indications to 
-execute the code in the following block at stage \bbtwo\ and \bbone, respectively.
 The type constructor $\fut$ is a way for us to talk at stage \bbone\ about things that will not be available until stage \bbtwo.
-Thus, ${\tt fexp} : \fut\rmint \times \rmint \to \fut\rmint$ 
-can be read as a function that takes a base at stage \bbtwo\ and a power at stage \bbone, 
-and returns the exponent at stage \bbtwo.
+In our example, the type signature ${\tt qs} : {\tt list} \times \fut \rmint \to \fut\rmint$ 
+indicates that ${\tt qs}$ is a function that takes a list ($l$) at stage \bbone\ and an integer ($k$) at stage \bbtwo, 
+and returns an int at stage \bbtwo\ (the $k$th largest element of $l$).
+Note that ${\tt qs}$ is itself bound at stage \bbone.
 
-[$\fut$ acts in a sanitary way]
+At the term level, $\pause$ is conceptually the simplest.
+It allows us to take an integer computed at stage one, and keep it around until stage \bbtwo.
+
+The staging of a term is achieved via a nesting of alternating $\next$ and $\prev$ blocks.  
+As $\next$, $\prev$, and $\pause$ are the only ways in \lang\ to alter the stage of a term,
+we surround their arguments with braces in \lang\ syntax.
+Specifically, $\next$ embeds a stage \bbtwo\ block within a stage \bbone\ environment,
+whereas $\prev$ operates vice versa.
+To ensure that information never flows backward in time, 
+the output of a $\next$ block is always a $\fut$,
+and the only construct that can eliminate $\fut$s is $\prev$.
+This means that any values created at stage \bbtwo\ are always handled in a sanitary way while being passed around in stage \bbone.
+
+[still get to WHY we staged like this, and talk about binding time analysis]
 
 \section{Statics and Dynamics}
 \label{sec:semantics}
