@@ -1,6 +1,7 @@
 \section {The \lang\ Language}
 
 \begin{figure*}
+\label{fig:quickselect}
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
@@ -20,17 +21,17 @@ fun qs (l : list, i : int) : int =
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
         case compare i n of
-          LT => qs left i
+          LT => qs (left, i)
         | EQ => h
-        | GT => qs right (i-n-1)
+        | GT => qs (right, i-n-1)
 \end{lstlisting}
 \caption{Unstaged Code}
 \end{subfigure}
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
-
 fun partition (p : int, l : list) = ...
+
 fun qs (l : list, i: $int) : $int = 
   case l of
     Empty => next {0}
@@ -39,9 +40,9 @@ fun qs (l : list, i: $int) : $int =
       next{
         let n = hold{n} in
           case compare prev{i} n of
-            LT => prev {qs left i}
+            LT => prev {qs (left i)}
           | EQ => hold {h}
-          | GT => prev {qs right next{prev{i}-n-1}}
+          | GT => prev {qs (right, next{prev{i}-n-1)}}
       }	
 \end{lstlisting}
 \caption{Staged Code}
@@ -75,32 +76,37 @@ fun qs2 (p : tree, i : int) : int =
 \caption{Caption place holder}
 \end{figure*}
 
-Consider the quickselect algorithm in [the figure],
+Consider the quickselect algorithm in [figure part (a)],
 which finds the $i$th largest element of a list.
 It operates by inspecting the head of the list, 
 partitioning the rest of the list by the head,
 comparing the size of the partition to the desired index,
 and the recursively selecting on the correct sublist.
 If the index was outside valid bounds, 0 is returned.
-[runtime]
+Assuming that the list is randomly sorted, 
+quickselect will take expected $O(n)$ time, where $n$ is the size of the list.
 
-It has been observed that [dependency...].
+Observe that within quickselect the partitioning of the list does not depend on $i$, 
+even through the recursive boundary.\footnote{There is a control-dependence on $i$, but we can ignore that for now.}
+We can leverage this dependency pattern to split quickselect into two other functions:
+one which precomputes all of the partitions of the input list to build a tree,
+and another which consumes this tree to perform an accelerated index lookup.
+This split version of quickselect is shown in [figure part (c)].
+One advantage of this form is that the tree can be built once per list
+and then used to accelerate many lookups.
 
-We can then leverage this dependency to split quickselect into two other functions [one precomputes all splits... build tree... other consumes].
-[We've shown this in figure...]
-[we like it as two functions because... multiple calls... efficient]
+The goal of our work is to automate this splitting transformation.
+Our first step is to define a language which clearly and unambiguously specifies how its terms should be split.
+Ideally, only minimal refactoring should be required to write terms within this language,
+and from there, the type system should be enough to prove that splitting can be carried out.
 
-The goal of our work is to do this transformation automatically.
-[first we need a language to ... unambiguously and clearly specify staging]
-[ideally that language looks similar to the original term]
-[The type system for this language should be enough to prove that splitting will work out.]
-
-[to this end, we present \lang]
-The main idea of \lang\ is that terms defined in it are 
-split across two {\em stages}, called \bbone\ and \bbtwo.
-If part of the term is in \bbone, then it will end up in the precomputation, else it will end up in the residual.
-[information can flow from the stage \bbone\ portions of the term to the stage \bbtwo\ portions,
-but never from \bbtwo\ to \bbone.  this property is required if we want to be able to split the term]
+To this end, we present \lang.
+The main idea of \lang\ is that all parts of terms defined in it can be identified with one of two {\em stages}, namely \bbone\ or \bbtwo.
+Those parts of the \lang\ term in \bbone\ will end up in the precomputation, 
+and those parts in \bbtwo\ will end up in the residual.
+Within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
+but never from \bbtwo\ to \bbone.  
+Indeed this is a necessary property if we want to be able to split the term.
 
 [Check out the example, now staged all fancy.]
 
