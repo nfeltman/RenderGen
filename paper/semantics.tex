@@ -34,7 +34,7 @@ fun partition (p : int, l : list) = ...
 
 fun qs (l : list, i: $int) : $int = 
   case l of
-    Empty => next {0}
+    1`Empty` => next {2`0`}
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
       next{
