@@ -1,5 +1,5 @@
-\section {The \lang\ Language}
-
+\section {Staged Programming in \lang}
+\label{sec:staging}
 \begin{figure*}
 \label{fig:quickselect}
 \begin{minipage}{0.5\textwidth}
@@ -15,15 +15,15 @@ fun partition (p : int, l : list)
       then (s+1,Cons(h,left),right)
       else (s,left,Cons(h,right))
 
-fun qs (l : list, i : int) : int = 
+fun qs (l : list, k : int) : int = 
   case l of
-    Empty => next {0}
+    Empty => 0
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
-        case compare i n of
-          LT => qs (left, i)
+        case compare k n of
+          LT => qs (left, k)
         | EQ => h
-        | GT => qs (right, i-n-1)
+        | GT => qs (right, k-n-1)
 \end{lstlisting}
 \caption{Unstaged Code}
 \end{minipage}
@@ -32,17 +32,17 @@ fun qs (l : list, i : int) : int =
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
 
-fun qs (l : list, i: $int) : $int = 
+fun qs (l : list, k : $int) : $int = 
   case l of
     1`Empty` => next {2`0`}
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
       next{
         let n = hold{n} in
-          case compare prev{i} n of
-            LT => prev {qs (left i)}
+          case compare prev{k} n of
+            LT => prev {qs (left k)}
           | EQ => hold {h}
-          | GT => prev {qs (right, next{prev{i}-n-1)}}
+          | GT => prev {qs (right, next{prev{k}-n-1)}}
       }	
 \end{lstlisting}
 \caption{Staged Code}
@@ -60,37 +60,37 @@ fun qs1 (l : list) : tree =
     Empty => Leaf
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
-      Branch (n, h, qs1 left i, qs1 right i)
+      Branch (n, h, qs1 left, qs1 right)
 
-fun qs2 (p : tree, i : int) : int = 
+fun qs2 (p : tree, k : int) : int = 
   case unroll p of
     Leaf => 0
   | Branch (n,h,p1,p2) => 
-      case compare i n of
-        LT => qs2 (p1,i)
+      case compare k n of
+        LT => qs2 (p1,k)
       | EQ => h
-      | GT => qs2 (p2,i-n-1)
+      | GT => qs2 (p2,k-n-1)
 \end{lstlisting}
 \caption{Split Code}
 \end{minipage}
 \caption{Caption place holder}
 \end{figure*}
 
-Consider the quickselect algorithm in [figure part (a)],
-which finds the $i$th largest element of a list.
+For an example of an algorithm amenable to staging techniques,
+consider the quickselect algorithm in [figure part (a)],
+which finds the $k$th largest element of a list.
 It operates by inspecting the head of the list, 
 partitioning the rest of the list by the head,
 comparing the size of the partition to the desired index,
 and the recursively selecting on the correct sublist.
-If the index was outside valid bounds, 0 is returned.
 Assuming that the list is randomly sorted, 
 quickselect will take expected $O(n)$ time, where $n$ is the size of the list.
 
-Observe that within quickselect the partitioning of the list does not depend on $i$, 
-even through the recursive boundary.\footnote{There is a control-dependence on $i$, but we can ignore that for now.}
+Importantly, quickselect has property that the partitioning of the list does not depend on $k$, 
+even through the recursive boundary.\footnote{There is a control-dependence on $k$, but we can ignore that for now.}
 We can leverage this dependency pattern to split quickselect into two other functions:
-one which precomputes all of the partitions of the input list to build a tree,
-and another which consumes this tree to perform an accelerated index lookup.
+one which precomputes all of the partitions of the input list to build a binary search tree,
+and another which uses this tree to perform an accelerated index lookup.
 This split version of quickselect is shown in [figure part (c)].
 One advantage of this form is that the tree can be built once per list
 and then used to accelerate many lookups.
@@ -98,54 +98,76 @@ and then used to accelerate many lookups.
 The goal of our work is to automate this splitting transformation.
 Our first step is to define a language which clearly and unambiguously specifies how its terms should be split.
 Ideally, only minimal refactoring should be required to write terms within this language,
-and from there, the type system should be enough to prove that splitting can be carried out.
+and from there, the type system should be enough to prove that a valid splitting exists.
 
 To this end, we present \lang.
 The main idea of \lang\ is that all parts of terms defined in it can be identified with one of two {\em stages}, namely \bbone\ or \bbtwo.
-Those parts of the \lang\ term in \bbone\ will end up in the precomputation, 
+Intuitively, the stage of a term expresses \emph{when} to evaluate it---all stage-\bbone\
+subexpressions are evaluated before stage-\bbtwo\ ones.
+Correspondingly, after splitting those parts of the \lang\ term in \bbone\ will end up in the precomputation, 
 and those parts in \bbtwo\ will end up in the residual.
 Within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
 but never from \bbtwo\ to \bbone.  
 Indeed this is a necessary property if we want to be able to split the term.
 
-See [figure part (b)] for a staged version of quickselect.
-This example contains all four of the special constructs of \lang: 
-$\fut$ at the type level, and $\next$, $\prev$, and $\pause$ at the term level.
-Notice that but for these new constructs, the staged version of quickselect is virtually identical to the unstaged version.
+[Figure part (b)] shows a staged implementation of quickselect in \lang.
+As before, the inputs to the function are the list to select from and the index to select,
+but now the latter is represented with the type $\fut\rmint$ rather than $\rmint$.
+The difference here is that an $\rmint$ is an integer available at the current stage (stage \bbone), 
+whereas a $\fut\rmint$ is an integer available only at the next stage (stage \bbtwo).
+Naturally the output type, representing the $k$th largest element of the list,
+is also $\fut\rmint$, since it cannot be known until the next stage.
 
-The type constructor $\fut$ is a way for us to talk at stage \bbone\ about things that will not be available until stage \bbtwo.
-In our example, the type signature ${\tt qs} : {\tt list} \times \fut \rmint \to \fut\rmint$ 
-indicates that ${\tt qs}$ is a function that takes a list ($l$) at stage \bbone\ and an integer ($k$) at stage \bbtwo, 
-and returns an int at stage \bbtwo\ (the $k$th largest element of $l$).
-Note that ${\tt qs}$ is itself bound at stage \bbone.
+Each construct in the body of quickselect is now associated with a stage via an interleaving of $\next$ and $\prev$ blocks.  
+Specifically, $\next$ occurs in a stage \bbone\ context and indicates that the contents of its block are stage \bbtwo, 
+whereas $\prev$ occurs in a stage \bbtwo\ context and indicates that the contents of its block is stage \bbone.
+(We adapt the convention convention that the top-level context is stage \bbone.)
+The output type of a $\next$ block is the $\fut$'d version of the type of its stage \bbtwo\ contents.  
+For example, \verb|next{0}| from above has the type $\fut\rmint$.
+Correspondingly, $\prev$ requires that its stage \bbone\ contents have a $\fut$ type, and it eliminates the wrapper.
+For example, \verb|prev{k}| from above has type $\rmint$ at stage \bbtwo, since $k$ is bound to a $\fut\rmint$ at stage \bbone.
+These type restrictions essentially enforce that ``later stage content" is always treated hygienically at stage \bbone,
+which is necessary to admit a properly staged implementation.
 
-At the term level, $\pause$ is conceptually the simplest.
-It allows us to take an integer computed at stage one, and keep it around until stage \bbtwo.
+The code also contains two $\pause$ blocks.  
+This construct has same stage signature as $\prev$,
+but instead of ``unwrapping" $\fut$ types it simply promotes integers from stage \bbone\ to stage \bbtwo.
+\footnote{It will turn out that $\pause$ is implementable---though it takes some effort---from our other language features.
+We instead provide it as a primitive to shorten examples.  
+Furthermore, it would be wise to extend $\pause$ to other base types, if we had them, and to products and sums thereof.
+This is related to the notion of {\em mobility} in \cite{murphy05} and {\em stability} in \cite{krishnaswami13}.}
 
-The staging of a term is achieved via a nesting of alternating $\next$ and $\prev$ blocks.  
-As $\next$, $\prev$, and $\pause$ are the only ways in \lang\ to alter the stage of a term,
-we surround their arguments with braces in \lang\ syntax.
-Specifically, $\next$ embeds a stage \bbtwo\ block within a stage \bbone\ environment,
-whereas $\prev$ operates vice versa.
-To ensure that information never flows backward in time, 
-the output of a $\next$ block is always a $\fut$,
-and the only construct that can eliminate $\fut$s is $\prev$.
-This means that any values created at stage \bbtwo\ are always handled in a sanitary way while being passed around in stage \bbone.
+But for the $\fut$, $\next$, $\prev$, and $\pause$ constructs, 
+the staged version of quickselect is virtually identical to the unstaged version.
+The constructs that were added were placed in order to maximize the work done at stage \bbone\ while still conforming to the type signature.
+It would have also been valid to simply move the whole input list unchanged into stage \bbtwo\ at the very beginning, 
+but that would not be particularly interesting since it would result in an effectively trivial split 
+that's just the identity at stage \bbone\ and plus quickselect at stage \bbtwo.
+There has been the extensive research into the question of how to automatically add staging annotations to unstaged code.
+This process is known as {\em binding time analysis}, and we do not consider it here.
+Instead, we assume that all input programs are properly staged according to some programmer's intent.
 
-[still get to WHY we staged like this, and talk about binding time analysis]
-
-\section{Statics and Dynamics}
+\section{\lang\ Statics and Dynamics}
 \label{sec:semantics}
 
 \input {figures/grammars}
 \input {figures/statics}
-%
+
+As stated in \cref{sec:staging}, we operate on a language called \lang,
+which is a typed two-stage lambda calculus featuring products, sums, and isorecursive types.
+
+\subsection{Statics}
+The grammar and type system of \lang\ are given in \ref{fig:grammar,fig:statics}. 
+They are a simple adaptation of those of \cite{davies96}, 
+restricted to two stages\footnote{This restriction is not a big deal...} and extended with general sums and recursion.
+
+Typing judgments and context variables are annotated with stages after an $@$ symbol.
+Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
+of a term or type.
+
 \footnote{It is possible for different stages to have different sets of
 features, but for simplicity we do not consider this.}
-Every valid expression has both a type and a stage, either \bbone~or \bbtwo,
-expressing in which copy of the language the term resides. Intuitively, the
-stage of a term expresses \emph{when} to evaluate it---all stage-\bbone\
-subexpressions are evaluated before stage-\bbtwo\ ones.
+Every valid expression has both a type and a stage, either \bbone~or \bbtwo. 
 
 The stage-\bbone\ type $\fut A$ contains encapsulated
 stage-\bbtwo\ expressions of type $A$. Terms of type $\fut A$ are treated
@@ -161,10 +183,6 @@ only ways in \lang\ to alter the stage of a term; we surround their arguments
 with braces in \lang\ syntax to clearly indicate stage boundaries within a
 program.
 
-The grammar and type system for \lang\ is given in \ref{fig:grammar,fig:statics}. 
-Typing judgments and context variables are annotated with stages after an $@$ symbol.
-Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
-of a term or type.
 %We formulated our typing judgments in the style of \cite{davies96}, where the
 %whole judgment is annotated with a stage.  
 %The grammar and type system for \lang\ is given in
@@ -197,10 +215,10 @@ let fexp (b : $int, p : int) : $int =
 The function receives a stage-\bbone\ exponent {\tt e} and a stage-\bbtwo\ base {\tt b} and returns a stage-\bbtwo\ result. 
 The {\tt if} predicates and exponent decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
 
-\subsection{Staged Evaluation}
+\subsection{Dynamics}
 \label{sec:stagedsemantics}
 
-A key attribute of the fexp example is that stage-\bbone\ and stage-\bbtwo\ expressions are nested. 
+A key attribute of the quickselect example is that stage-\bbone\ and stage-\bbtwo\ expressions are nested. 
 Ordinary term evaluation eliminates outermost redexes first, 
 however in the case that stage \bbone\ expressions are contained inside stage \bbtwo\ ones 
 (such as the recurive call to {\tt fexp} above), 
@@ -210,10 +228,7 @@ that all stage-\bbone\ code be evaluated before the evaluation of stage-\bbtwo\ 
 Thus, our dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
 subexpressions before any of its stage \bbtwo\ subexpressions. This results in a
 stage \bbtwo\ term with no stage \bbone\ content; we say this is a term in a
-monostaged
-\footnote{In general, \lang could have more than two stages, in which case the
-expression would be in a language with one fewer stage.}
-language called \langTwo. Then, we perform the remainder of the evaluation with 
+monostaged language called \langTwo. Then, we perform the remainder of the evaluation with 
 $\tworedsym$, an ordinary dynamic semantics for \langTwo\ (the rules for this
 judgment are not shown, but they are standard).
 
