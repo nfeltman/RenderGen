@@ -2,7 +2,7 @@
 
 \begin{figure*}
 \label{fig:quickselect}
-\begin{subfigure}{0.5\textwidth}
+\begin{minipage}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) 
@@ -26,8 +26,8 @@ fun qs (l : list, i : int) : int =
         | GT => qs (right, i-n-1)
 \end{lstlisting}
 \caption{Unstaged Code}
-\end{subfigure}
-\begin{subfigure}{0.5\textwidth}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
@@ -46,8 +46,8 @@ fun qs (l : list, i: $int) : $int =
       }	
 \end{lstlisting}
 \caption{Staged Code}
-\end{subfigure}
-\begin{subfigure}{0.5\textwidth}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
@@ -72,7 +72,7 @@ fun qs2 (p : tree, i : int) : int =
       | GT => qs2 (p2,i-n-1)
 \end{lstlisting}
 \caption{Split Code}
-\end{subfigure}
+\end{minipage}
 \caption{Caption place holder}
 \end{figure*}
 
