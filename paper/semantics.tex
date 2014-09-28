@@ -1,4 +1,4 @@
-\section {Staged Programming in \lang}
+\section {Example: Staged Quickselect in \lang}
 \label{sec:staging}
 
 \begin{figure*}
@@ -90,17 +90,17 @@ and another which uses this tree to perform an accelerated lookup of the $k$-th 
 One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
 and then used to accelerate many future lookups for any value of $k$.
 
-This paper defines how to statically perform splitting transformations, like the one described above, on programs written in a simple staged language we call \lang.  \lang clearly and unambiguously specifies how its terms should be split
+This paper defines how to statically perform splitting transformations, like the one described above, on programs written in a simple staged language we call \lang.  \lang unambiguously specifies how its terms should be split
 % and features a type system that ensures valid splittings exist.
 % only minimal refactoring should be required to write terms within this language,
 %and from there, the type system should be enough to prove that a valid splitting exists.
-by identifying each term with one of two {\em stages}, namely \bbone\ or \bbtwo.
+by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
 Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate it---all stage-\bbone\
 subexpressions are evaluated before stage-\bbtwo\ ones.  After splitting, those parts of the \lang\ term in stage \bbone\ will end up in the precomputation, 
 and those parts in stage \bbtwo\ will end up in the residual.
-Within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
-but never from \bbtwo\ to \bbone.  
-Indeed this is a necessary property if we want to be able to split the term.
+Typing rules for \lang ensure a valid splitting exists.  That is, 
+within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
+but never from \bbtwo\ to \bbone.
 
 Figure 2b shows a staged implementation of quickselect in \lang.
 As before, the function accepts as input the list to select from and a value of $k$,
@@ -145,8 +145,8 @@ Instead, we assume that all input programs are properly staged according to some
 \input {figures/grammars}
 \input {figures/statics}
 
-As stated in \cref{sec:staging}, in this paper we describe splitting in the context of \lang,
-a typed two-stage lambda calculus featuring products, sums, and isorecursive types.
+As stated in \cref{sec:staging}, we use \lang,
+a typed two-stage lambda calculus featuring products, sums, and isorecursive types, as language to define and analyze the splitting transform.
 The grammar (\cref{fig:grammar}) and type system of \lang\ are an adaptation of those of \cite{davies96}, 
 restricted to two stages and extended with general sums and recursion\footnote{This restriction to two stages is made primarily for 
 simplicity of presentation.  All of these techniques could feasibly be extended to more
@@ -187,7 +187,7 @@ monostaged language called \langTwo. Then, we perform the remainder of the evalu
 $\tworedsym$, an ordinary dynamic semantics for \langTwo\ (the rules for this
 judgment are not shown, but they are standard).
 
-\subsection{Non-Duplicating First-Stage Evaluation}
+\subsubsection{Non-Duplicating First-Stage Evaluation}
 
 To gain intuition about the challenges of implementing this staged dynamic
 semantics, consider the following example:
@@ -293,7 +293,7 @@ let zhat = yhat * yhat * 7 in z
 
 Thus we have evaluated all of the stage \bbone\ expressions of this program without duplicating the contents of $\next$ blocks.
 
-\subsection{Dynamics}
+\subsubsection{Dynamics}
 \label{ssec:dynamics}
 
 \input {figures/dynamics}
@@ -398,7 +398,7 @@ fn b : int =>
 
 Note how the recursion causes duplicate code in the residual.
 
-\subsection {A Partial Evaluation System}
+\subsubsection {A Partial Evaluation System}
 \label{sec:partialeval}
 
 The dynamics described in the previous section provide a formal description of partial evaluation.
