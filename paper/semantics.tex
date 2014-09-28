@@ -155,65 +155,29 @@ Instead, we assume that all input programs are properly staged according to some
 
 As stated in \cref{sec:staging}, we operate on a language called \lang,
 which is a typed two-stage lambda calculus featuring products, sums, and isorecursive types.
+The grammar of \lang\ can be found in \cref{fig:grammar}.
 
 \subsection{Statics}
-The grammar and type system of \lang\ are given in \ref{fig:grammar,fig:statics}. 
-They are a simple adaptation of those of \cite{davies96}, 
-restricted to two stages\footnote{This restriction is not a big deal...} and extended with general sums and recursion.
+The grammar and type system of \lang\ are a simple adaptation of those of \cite{davies96}, 
+restricted to two stages\footnote{This restriction to two stages is made primarily for 
+simplicity of presentation.  All of these techniques could feasibly be extended to more
+complicated stage systems.} and extended with general sums and recursion.
 
-Typing judgments and context variables are annotated with stages after an $@$ symbol.
-Only $\fut$ and its introductory and eliminatory forms $\next$ and $\prev$ affect the stage
-of a term or type.
+As explained before, the $\fut$ constructor is a way to encapsulate a stage \bbtwo\ type at stage \bbone.  
+But because of the two-stage assumption, $\fut$ has no meaning when used at stage \bbtwo.
+This restriction is managed by the type validity judgment, whose rules are given in \cref{fig:validTypes}. 
+In short, $\Delta \vdash A \istypewor$ means that type $A$ is valid at world $w$ under the assumptions in $\Delta$.
+This context is only augmented by recursive types.
 
-\footnote{It is possible for different stages to have different sets of
-features, but for simplicity we do not consider this.}
-Every valid expression has both a type and a stage, either \bbone~or \bbtwo. 
-
-The stage-\bbone\ type $\fut A$ contains encapsulated
-stage-\bbtwo\ expressions of type $A$. Terms of type $\fut A$ are treated
-opaquely by stage-\bbone\ code, as (by the requirements of staging) they cannot be evaluated until stage \bbtwo.
-While $\fut$ allows us to embed stage-\bbtwo\ types within stage-\bbone\ types,
-there is no way to embed a stage-\bbone\ type within a stage-\bbtwo\ type.
-That is, there is a one-way dependence between stages at the term level.
-
-Alternatively, the stages are mutually dependent at the term level.
-The $\next$ constructor embeds stage-\bbtwo\ expressions into stage \bbone,
-while $\prev$ embeds stage-\bbone\ expressions into stage \bbtwo.  $\next$ and $\prev$ are the
-only ways in \lang\ to alter the stage of a term; we surround their arguments
-with braces in \lang\ syntax to clearly indicate stage boundaries within a
-program.
-
-%We formulated our typing judgments in the style of \cite{davies96}, where the
-%whole judgment is annotated with a stage.  
-%The grammar and type system for \lang\ is given in
-%\ref{fig:grammar,fig:statics}.
-% We annotate typing judgments and context variables with stages;
-%This is made manifest as rules which are entirely abstract over stage.
-%In addition to determining the stage, $\next$ and $\prev$ are the introduction and elimination forms for $\fut$ types.
-Specifically, given an argument with type $A$ at stage \bbtwo, $\next$ forms a $\fut A$ at stage \bbone.  
-%That is, it forms the promise of a future $A$ out of a construction for an $A$ at the next timestep.
-Stage \bbtwo\ expressions can obtain the original stage \bbtwo\ argument via the $\prev$ construct.  
-Since $\prev$ operates at stage \bbtwo, this ensures no violation of causality,\cite{cave14}.
-The $\pause$ construct serves to wrap stage \bbone\ integers for use in stage \bbtwo.  
-It is possible to implement $\pause$ from other \lang\ features, but
-we provide it as a core primitive to simplify our examples. 
-
-Recall the fast exponent function from above.
-We present a valid staging of it here:
-\begin{lstlisting} 
-let fexp (b : $int, p : int) : $int =
-	if p == 0 then
-		next{1}
-	else if (p mod 2) == 0 then
-		next{let x = prev{fexp(b,p/2)} in x*x}
-	else
-		next{prev{b} * prev{fexp(b,p-1)}}		
-\end{lstlisting}
-
-\TODO explain why we staged this the way we did
-
-The function receives a stage-\bbone\ exponent {\tt e} and a stage-\bbtwo\ base {\tt b} and returns a stage-\bbtwo\ result. 
-The {\tt if} predicates and exponent decomposition are all stage-\bbone\ terms, since they occur within $\prev$ blocks.
+The typing judgment, like type validity, is annotated with a stage.
+Thus we can read $\typeswor x A$ as saying that term $x$ has type $A$ at world $w$ under the context $\Gamma$.
+The typing rules are given in \cref{fig:statics}.
+The staging features ($\next$, $\prev$, and $\pause$) behave as described in the previous section,
+and all other features behavior in the standard way and are essentially agnostic to stage. 
+Variables in the context are annotated with the stage at which they were introduced 
+and can only be used at the same stage.
+As one would expect, the typing judgment only produces well-formed types 
+(by induction on the derivation of the typing judgment).
 
 \subsection{Dynamics}
 \label{sec:stagedsemantics}
