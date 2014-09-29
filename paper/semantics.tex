@@ -85,8 +85,7 @@ It does so by partitioning the input list into sublists containing elements less
 then recursing on the sublist containing the desired element.
 
 Importantly, one property of quickselect is that the partitioning of the list, even across recursive calls, depends only on the values of list elements, not on the value of $k$ 
-\footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  This independence allows the quickselect algorithm to be split into two functions:
-one which precomputes all partitions of the input list (to construct a binary search tree---see \texttt{qSelect1} in Figure~2c),
+\footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  Therefore, if quickselect was to be evaluated many times on the same list, this independence admits a familiar optimization where the algorithm is split into two functions: one which precomputes all partitions of the input list (to construct a binary search tree---see \texttt{qSelect1} in Figure~2c),
 and another which uses this tree to perform an accelerated lookup of the $k$-th element (essentially performing binary search of a sorted list---see \texttt{qs2}).
 One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
 and then used to accelerate many future lookups for any value of $k$.
