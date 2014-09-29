@@ -16,15 +16,15 @@ fun partition (p : int, l : list)
       then (s+1,Cons(h,left),right)
       else (s,left,Cons(h,right))
 
-fun qs (l : list, k : int) : int = 
+fun qSelect (l : list, k : int) : int = 
   case l of
     Empty => 0
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
         case compare k n of
-          LT => qs (left, k)
+          LT => qSelect (left, k)
         | EQ => h
-        | GT => qs (right, k-n-1)
+        | GT => qSelect (right, k-n-1)
 \end{lstlisting}
 \caption{Unstaged implementation of quickselect.}
 \end{minipage}
@@ -33,7 +33,7 @@ fun qs (l : list, k : int) : int =
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
 
-fun qs (l : list, k : $int) : $int = 
+fun qsStaged (l : list, k : $int) : $int = 
   case l of
     1`Empty` => next {2`0`}
   | Cons (h,t) => 
@@ -41,9 +41,10 @@ fun qs (l : list, k : $int) : $int =
       next{
         let n = hold{n} in
           case compare prev{k} n of
-            LT => prev {qs (left k)}
+            LT => prev {qsStaged (left k)}
           | EQ => hold {h}
-          | GT => prev {qs (right, next{prev{k}-n-1)}}
+          | GT => prev {qsStaged (right, 
+                             next{prev{k}-n-1)}}
       }	
 \end{lstlisting}
 \caption{Staged implementation of quickselect in \lang.}
@@ -56,21 +57,21 @@ fun partition (p : int, l : list) = ...
 datatype tree = Branch of int * int * tree * tree
                 | Leaf
 
-fun qs1 (l : list) : tree =
+fun qSelect1 (l : list) : tree =
   case l of
     Empty => Leaf
   | Cons (h,t) => 
       let (left,right,n) = partition h t in
-      Branch (n, h, qs1 left, qs1 right)
+      Branch (n, h, qSelect1 left, qSelect1 right)
 
-fun qs2 (p : tree, k : int) : int = 
+fun qSelect2 (p : tree, k : int) : int = 
   case unroll p of
     Leaf => 0
   | Branch (n,h,p1,p2) => 
       case compare k n of
-        LT => qs2 (p1,k)
+        LT => qSelect2 (p1,k)
       | EQ => h
-      | GT => qs2 (p2,k-n-1)
+      | GT => qSelect2 (p2,k-n-1)
 \end{lstlisting}
 \caption{Split (two-phase) implementation of quickselect.}
 \end{minipage}
@@ -85,7 +86,7 @@ then recursing on the sublist containing the desired element.
 
 Importantly, one property of quickselect is that the partitioning of the list, even across recursive calls, depends only on the values of list elements, not on the value of $k$ 
 \footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  This independence allows the quickselect algorithm to be split into two functions:
-one which precomputes all partitions of the input list (to construct a binary search tree---see \texttt{qs1} in Figure~2c),
+one which precomputes all partitions of the input list (to construct a binary search tree---see \texttt{qSelect1} in Figure~2c),
 and another which uses this tree to perform an accelerated lookup of the $k$-th element (essentially performing binary search of a sorted list---see \texttt{qs2}).
 One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
 and then used to accelerate many future lookups for any value of $k$.
@@ -96,8 +97,10 @@ This paper defines how to statically perform splitting transformations, like the
 %and from there, the type system should be enough to prove that a valid splitting exists.
 by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
 Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate it---all stage-\bbone\
-subexpressions are evaluated before stage-\bbtwo\ ones.  After splitting, those parts of the \lang\ term in stage \bbone\ will end up in the precomputation, 
-and those parts in stage \bbtwo\ will end up in the residual.
+subexpressions are evaluated before stage-\bbtwo\ ones.  
+After splitting, those parts of the \lang\ term that were identified with stage \bbone\ 
+will end up in the stage \bbone\ function ({\tt qSelect1}), 
+and those parts identified with stage \bbtwo\ will end up in the stage \bbtwo\ function ({\tt qSelect2}).
 Typing rules for \lang ensure a valid splitting exists.  That is, 
 within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
 but never from \bbtwo\ to \bbone.
@@ -293,10 +296,14 @@ let zhat = yhat * yhat * 7 in z
 
 Thus we have evaluated all of the stage \bbone\ expressions of this program without duplicating the contents of $\next$ blocks.
 
-\subsubsection{Dynamics}
+\subsubsection{Evaluation and Speculation}
 \label{ssec:dynamics}
 
 \input {figures/dynamics}
+
+The goal of the dynamics is to perform the above style of first-stage evaluation automatically.
+It comprises judgments: $\redonesym$ (evaluation),
+$\redtwosym$ (speculation), and $\reifysym$ (reification of substitutions into let bindings).
 
 The algorithm described above creates three different kinds of expressions which
 cannot be evaluated further at a particular stage:
@@ -317,8 +324,6 @@ are the results of a computation after both stages have been completed. In the
 example above, the term evaluates to \verb|63|.
 \end{itemize}
 
-% would like some kind of intro here that anticipates all the complexity.
-% The dynamics of \lang\ consists of three types of judgements: $\redonesym$ (stage-\bbone reduction), $\redtwosym$ (speculation), and $\reifysym$ (reification).
 
 The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future
 environment} $\xi$ and a partial value $v$.  The future environment is a mapping
@@ -398,7 +403,7 @@ fn b : int =>
 
 Note how the recursion causes duplicate code in the residual.
 
-\subsubsection {A Partial Evaluation System}
+\subsubsection {Top-Level Evaluation}
 \label{sec:partialeval}
 
 The dynamics described in the previous section provide a formal description of partial evaluation.
