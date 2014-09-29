@@ -13,6 +13,7 @@
 \usepackage{url}
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
 \usepackage{cprotect}
+\usepackage{subcaption}
 
 \usepackage{cleveref}
 \AtBeginDocument{\renewcommand\ref\cref}
@@ -83,23 +84,23 @@
 
 % general terms are not compulsory anymore, 
 % you may leave them out
-\terms
-term1, term2
+%\terms
+%term1, term2
 
-\keywords
-keyword1, keyword2
+%\keywords
+%keyword1, keyword2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \input{intro}
 
-input{example}
+\input{example}
 \input{semantics}
 
-\vfill\eject\pagebreak
+%\vfill\eject\pagebreak
 \input{splitting}
 \input{algoexamples}
-\input{relatedwork}
+%\input{relatedwork}
 
 %\appendix
 %\section{Appendix Title}
