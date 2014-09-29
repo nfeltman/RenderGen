@@ -165,7 +165,7 @@ let zhat = yhat * yhat * 7 in z
 \end{lstlisting}
 
 This concludes stage \bbone\ evaluation of the program---we have reduced all
-\bbone\ redexes, resulting in a monostaged term in \langTwo. Stage \bbtwo\
+stage \bbone\ redexes, resulting in a monostaged term in \langTwo. Stage \bbtwo\
 evaluation, $\tworedsym$, then reduces this to a numeral.
 
 \subsubsection{Evaluation and Speculation}
@@ -178,8 +178,8 @@ described above, using three judgments: $\redonesym$ (evaluation), $\redtwosym$
 (speculation), and $\reifysym$ (reification of substitutions into let
 bindings).
 
-The algorithm described above creates three different kinds of expressions which
-cannot be evaluated further at a particular stage:
+The algorithm described above creates two different kinds of expressions which
+cannot be evaluated further at stage \bbone:
 \begin{itemize}
 \item Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully
 evaluated, but which may contain stage-\bbtwo\ variables wrapped in $\next$
