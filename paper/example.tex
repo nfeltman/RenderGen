@@ -80,13 +80,18 @@ fun qSelect2 (p : tree, k : int) : int =
 
 As an example of an algorithm amenable to staging techniques,
 consider the implementation of quickselect shown in Figure~2a.
-Quickselect is an $O(n)$ (expected time) algorithm for finding the $k$-th largest element in a randomly ordered length-$n$ list.
-It does so by partitioning the input list into sublists containing elements less than and greater than the head element, 
+Quickselect is an algorithm for finding the $k$-th largest element in a list.
+It works by partitioning the input list into sublists containing elements less than and greater than the head element, 
 then recurring on the sublist containing the desired element.
 
-Importantly, one property of quickselect is that the partitioning of the list, even through its recursive calls, depends only on the values of list elements, not on the value of $k$ 
+One notable property of quickselect is that the partitioning of the list, even through its recursive calls, depends only on the values of list elements, not on the value of $k$ 
 \footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  Therefore, if quickselect was to be evaluated many times on the same list, this independence admits a familiar optimization where the algorithm is split into two functions: one which precomputes \emph{all partitions} of the input list needed for any value of $k$ (resulting in a binary search tree---see \texttt{qSelect1} in Figure~2c),
 and another which, given $k$, uses the tree to perform accelerated lookup of the $k$-th element (essentially performing binary search of a sorted list---see \texttt{qSelect2}).
+
+The benefits are substantial: for a randomly ordered list of length $n$, 
+the original \texttt{qSelect} takes expected $O(n)$ time per lookup, 
+whereas \texttt{qSelect2} takes $O(\log n)$ time.
+Since \texttt{qSelect1} does not depend on $k$, its $O(n\log n)$ cost can be amortized over many lookups.
 %One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
 %and then used to accelerate many future lookups for any value of $k$.
 
