@@ -10,12 +10,9 @@ Its statics are adapted from the linear temporal logic given by \cite{davies96},
 restricted to two stages and extended with general sums and recursion.%
 \footnote{This restriction to two stages is made primarily for simplicity of
 presentation. All of these techniques could feasibly be extended to more
-complicated stage systems.}
-%The grammar (\cref{fig:grammar}) and type system of \lang\ are an adaptation of those of 
-%, as language to define and analyze the splitting transform.
-
-%The following subsections provide a brief overview of the type system for \lang,
-%and highlight important differences in its semantics from this prior work.
+complicated stage systems.} 
+Although \cite{davies96} was mostly interested in describing partial evaluation,
+the system is equally apt as an input to splitting.
 
 \subsection{Statics}
 
@@ -51,10 +48,11 @@ this case, if we use an ordinary evaluation strategy reducing outermost redexes
 first, we would no longer have staged evaluation, as stage~\bbtwo\ code would
 be evaluated before stage~\bbone\ code. 
 
-Thus, our dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
+Thus, the dynamic semantics for \lang\ evaluates all of a term's stage \bbone\
 subexpressions before any of its stage~\bbtwo\ subexpressions. This results in
-a stage \bbtwo\ term with no stage~\bbone\ content; we say this is a term in a
-monostaged language called \langTwo. Then, at stage~\bbtwo, we complete
+a stage \bbtwo\ term with no stage~\bbone\ content, 
+which can be described as a term in a monostaged language called \langTwo. 
+Then, at stage~\bbtwo, we complete
 evaluating this term with a standard dynamic semantics, $\tworedsym$. (The
 rules for this judgment are not shown, but they are standard.)
 
@@ -109,8 +107,11 @@ Finally, the $\prev$s and $\next$s cancel to yield the residual:
 \begin{lstlisting} 
 (f 20) * (f 20) * 7
 \end{lstlisting}
-But now stage \bbtwo\ must compute the expensive function call \verb|f 20|
-twice! To avoid this duplication, instead of treating \verb|next {f 20}| as a
+But now stage \bbtwo\ must compute the expensive function call \verb|f 20| twice! 
+There are some systems, typically called {\em metaprogramming}, 
+where this duplication would be considered intended behavior.
+For our applications, we find the duplication undesirable and avoid it.
+Accordingly, instead of treating \verb|next {f 20}| as a
 value and substituting it into the body of the \verb|let|, we instead bind
 \verb|f 20| to a stage~\bbtwo\ variable $\mathtt{\hat y}$, and substitute that
 variable.
@@ -173,12 +174,12 @@ evaluation, $\tworedsym$, then reduces this to a numeral.
 
 \input{figures/dynamics}
 
-Our dynamics for \lang\ implements the stage \bbone\ evaluation algorithm
+The dynamics for \lang\ implements the stage \bbone\ evaluation algorithm
 described above, using three judgments: $\redonesym$ (evaluation), $\redtwosym$
 (speculation), and $\reifysym$ (reification of substitutions into let
 bindings).
 
-The algorithm described above creates two different kinds of expressions which
+\lang\ creates two different kinds of expressions which
 cannot be evaluated further at stage \bbone:
 \begin{itemize}
 \item Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully
@@ -235,6 +236,9 @@ next{
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
 This behavior is why the judgment is named ``speculation."
+Although it may seem undesirable, this speculative behavior is a deliberate feature.
+Indeed it is critical to the quickselect example, 
+wherein all three branches of the $n$-$k$ comparison are evaluated at stage~\bbone.
 
 The context ($\Gamma$) keeps track of stage \bbtwo\ variables in the input term. 
 These both appear in the original program at stage \bbtwo\ and are inserted by the semantics.
@@ -245,6 +249,8 @@ As an optimization, we can include the special-case rule,
 \end{mathpar}
 to avoid one-for-one variable bindings in the residual.
 We used this implicitly in the example in the previous section.
+
+\TODO [below here will get moved to related work]
 
 If we change the $\next$ and $\prev$ rules to 
 \begin{mathpar}
