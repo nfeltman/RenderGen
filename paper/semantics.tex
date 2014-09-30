@@ -151,14 +151,14 @@ prev {
   }
 }
 \end{lstlisting}
-We then speculate and reduce the projections to get:
+We then speculate to reduce the projections and cancel the $\next$s and $\prev$s, giving:
 \begin{lstlisting} 
 prev {
 [yhat|->f 20]
     next{ yhat * yhat * 7 }
 }
 \end{lstlisting}
-Once again, we lift the contents of the $\next$ into a substitution:
+Once again, we lift the results of speculation into a substitution:
 \begin{lstlisting} 
 prev {
 [yhat|->f 20]
@@ -166,10 +166,10 @@ prev {
     next{ zhat }
 }
 \end{lstlisting}
-Finally, when evaluating the outer $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
+Finally, when canceling the last $\next$ and $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
 let yhat = f 20 in
-let zhat = yhat * yhat * 7 in z
+let zhat = yhat * yhat * 7 in zhat
 \end{lstlisting}
 
 This concludes stage \bbone\ evaluation of the program---we have reduced all
