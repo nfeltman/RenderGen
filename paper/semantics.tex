@@ -56,16 +56,16 @@ Then, at stage~\bbtwo, we complete
 evaluating this term with a standard dynamic semantics, $\tworedsym$. (The
 rules for this judgment are not shown, but they are standard.)
 
-\subsubsection{Non-Duplicating Stage~\bbone\ Evaluation}
+\subsubsection{Stage~\bbone\ Evaluation}
 
 To gain intuition about the challenges of implementing this staged dynamic
 semantics, consider the program:
 \begin{lstlisting}
-#2 (next {f 20}, 2+3)
+1`#2 (next {`2`f 20`1`}, 2+3)`
 \end{lstlisting}
-This is a stage~\bbone\ expression of type $\rmint$; the pair inside it is a
-stage~\bbone\ expression of type $(\fut\rmint)\times\rmint$; and ${\tt f} :
-\rmint \to \rmint$ is an expensive stage~\bbtwo\ function which we would like
+This is a stage~\bbone\ expression of type $\rmint~@~\bbone$; the pair inside it is a
+stage~\bbone\ expression of type $(\fut\rmint)\times\rmint~@~\bbone$; and ${\tt f} :
+\rmint \to \rmint~@~\bbtwo$ is an expensive stage~\bbtwo\ function which we would like
 to avoid evaluating. A conventional call-by-value semantics would fully
 evaluate both components of the pair before projecting the second component.
 The problem is that, while \verb|next {f 20}| is not a value (in the sense that
@@ -77,18 +77,18 @@ Intuitively, the solution is to designate \verb|next {f 20}| as a value
 \emph{in stage \bbone}, even though it requires additional evaluation in stage
 \bbtwo. Therefore, the pair evaluates to
 \begin{lstlisting}
-(next {f 20}, 5)
+1`(next {`2`f 20`1`}, 5)`
 \end{lstlisting}
 and the projection, in turn, immediately evaluates to \verb|5|.
 
 Now consider a more complex example where stage~\bbone\ evaluation must
-substitute such a incompletely-evaluated expression. The following
+substitute such an incompletely-evaluated expression. The following
 stage-\bbtwo\ term has type $\rmint$:
 \begin{lstlisting} 
-prev{
-  let x = (next {f 20}, 3+4) in
-  next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
-}
+2`prev{`
+  1`let x = (next {`2`f 20`1`}, 3+4) in
+  next{` 2`prev{`1`#1 x`2`} * prev{`1`#1 x`2`} * hold{`1`#2 x`2`}` 1`}`
+2`}`
 \end{lstlisting}
 As with the simpler example, this term does not fully reduce at stage~\bbone, 
 because it depends on the value of \verb|f 20|, which is not reduced until stage \bbtwo.
@@ -97,25 +97,26 @@ Again treating \verb|(next {f 20}, 7)| as a value during stage~\bbone, we
 substitute it for the three occurrences of \verb|x| in the body of the
 \verb|let| expression, yielding
 \begin{lstlisting} 
-prev{
-  next{ prev{#1 (next {f 20}, 7)} 
-      * prev{#1 (next {f 20}, 7)} 
-      * hold{#2 (next {f 20}, 7)} }
-}
+2`prev{`
+  1`next{` 2`prev{`1`#1 (next {`2`f 20`1`}, 7)`2`} 
+      * prev{`1`#1 (next {`2`f 20`1`}, 7)`2`} 
+      * hold{`1`#2 (next {`2`f 20`1`}, 7)`2`} `1`}`2`
+}`
 \end{lstlisting}
-To then evaluate the large $\next$, we must first search it for stage~\bbone\ subterms to reduce in place.
+The outermost $\next$ here is not yet a value, because there remains stage~\bbone\ work to do in its body.
+So to proceed, the semantics must first search the body of the $\next$ for stage~\bbone\ subterms and reduce them in place.
 This search process is called {\em speculation}.
 In our example this means reducing all three projections to give,
 \begin{lstlisting} 
 prev{
   next{ 
-    prev{next {f 20}} * prev{next {f 20}} * 7 
+    prev{next {2`f 20`}} 2`*` prev{next {2`f 20`}} 2`* 7` 
   }
 }
 \end{lstlisting}
 Since all stage~\bbone\ subterms are reduced, the $\prev$s and $\next$s cancel to yield the final residual:
 \begin{lstlisting} 
-(f 20) * (f 20) * 7
+2`(f 20) * (f 20) * 7`
 \end{lstlisting}
 But now stage \bbtwo\ must compute the expensive function call \verb|f 20| twice! 
 There are some systems, typically called {\em metaprogramming}, 
@@ -132,9 +133,9 @@ fresh variable $\mathtt{\hat y}$. This substitution is placed at the top of the
 containing $\prev$ block:
 \begin{lstlisting} 
 prev {
-[yhat|->f 20]
-  let x = (next{yhat}, 7) in
-  next{prev{#1 x} * prev{#1 x} *  hold{#2 x}}
+[2`yhat`|->2`f 20`]
+  1`let x = (`next{2`yhat`}1`, 7) in`
+  next{prev{1`#1 x`} 2`*` prev{1`#1 x`} 2`*`  hold{1`#2 x`}}
 }
 \end{lstlisting}
 %As a convention, we render the new variable with a %stylish and fashionable
@@ -143,33 +144,33 @@ We proceed with stage~\bbone\ evaluation, which now duplicates the variable
 $\mathtt{\hat y}$ rather than the expression \verb|f 20|.
 \begin{lstlisting} 
 prev {
-[yhat|->f 20]
+[2`yhat`|->2`f 20`]
   next{
-    prev{#1 (next {yhat}, 7)} * 
-    prev{#1 (next {yhat}, 7)} *
-    hold{#2 (next {yhat}, 7)}
+    prev{1`#1 (`next {2`yhat`}1`, 7)`} 2`*` 
+    prev{1`#1 (`next {2`yhat`}1`, 7)`} 2`*`
+    hold{1`#2 (`next {2`yhat`}1`, 7)`}
   }
 }
 \end{lstlisting}
 We then speculate to reduce the projections and cancel the $\next$s and $\prev$s, giving:
 \begin{lstlisting} 
 prev {
-[yhat|->f 20]
-    next{ yhat * yhat * 7 }
+[2`yhat`|->2`f 20`]
+    next{ 2`yhat * yhat * 7` }
 }
 \end{lstlisting}
 Once again, we lift the results of speculation into a substitution:
 \begin{lstlisting} 
 prev {
-[yhat|->f 20]
-[zhat|->yhat * yhat * 7]
-    next{ zhat }
+[2`yhat`|->2`f 20`]
+[2`zhat`|->2`yhat * yhat * 7`]
+    next{ 2`zhat` }
 }
 \end{lstlisting}
-Finally, when canceling the last $\next$ and $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
+Finally, when canceling the last $\next$ and $\prev$, the semantics {\em reifies} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
-let yhat = f 20 in
-let zhat = yhat * yhat * 7 in zhat
+2`let yhat = f 20 in
+let zhat = yhat * yhat * 7 in zhat`
 \end{lstlisting}
 
 This concludes stage \bbone\ evaluation of the program---we have reduced all
@@ -182,28 +183,40 @@ evaluation, $\tworedsym$, then reduces this to a numeral.
 \input{figures/dynamics}
 
 The dynamics for \lang\ implements the stage \bbone\ evaluation algorithm
-described above, using three judgments: $\redonesym$ (evaluation), $\redtwosym$
-(speculation), and $\reifysym$ (reification of substitutions into let
-bindings).
-
-\lang\ creates two different kinds of expressions which
-cannot be evaluated further at stage \bbone:
+described above using three judgments: $\redonesym$ (evaluation), $\redtwosym$
+(speculation), and the auxiliary $\reifysym$ (reification). 
+Along with these are three judgments identifying forms of values:
+$\pvalsym$ (partial values), $\ressym$ (residuals), 
+and the auxiliary $\fcon$ (future context).
+The interrelation of these judgments can be summarized as follows:
 \begin{itemize}
-\item Partial values ($\pvalsym$s) are stage \bbone\ terms that have been fully
-evaluated, but which may contain stage-\bbtwo\ variables wrapped in $\next$
-blocks.  In the example above, 
-\verb|(|$\next \{\mathtt{\hat y}\}$\verb|,7)|.
-
-\item Residuals ($\ressym$es) are \langTwo\ terms---stage \bbtwo\ terms whose
-stage \bbone\ subexpressions have all been fully evaluated. In the example
-above,
-\verb|(1+2)| and \verb|(let z = y*y*7 in z)|.
-
-%\item Values ($\valsym$s) are \langTwo\ terms which are fully evaluated; these
-%are the results of a computation after both stages have been completed. In the
-%example above, the term evaluates to \verb|63|.
+\item Evaluation sends a stage~\bbone\ term to a partial value.
+Because of the non-duplicating behavior, this sometimes produces explicit substitutions,
+which are aggregated into a single {\em future context} that is also the output of evaluation.
+\item Speculation sends a stage~\bbtwo\ term to a residual.
+\item Reification sends a residual and a future context to another residual.  
+\item Evaluation depends on speculation where stage~\bbone\ encapsulates stage~\bbtwo: $\next$. 
+\item Speculation depends on evaluation where stage~\bbtwo\ encapsulates stage~\bbone: $\prev$ and $\pause$.
+Reification is also used at these sites to handle the future context produced by evaluation.
 \end{itemize}
 
+Partial values are stage \bbone\ terms that have been fully
+evaluated, but which may contain stage-\bbtwo\ variables wrapped in $\next$
+blocks.  In the example above, 
+\begin{lstlisting} 
+1`(next {`2`yhat`1`},7)`
+\end{lstlisting}
+is a partial value.
+Residuals ($\ressym$es) are \langTwo\ terms---stage \bbtwo\ terms whose
+stage \bbone\ subexpressions have all been fully evaluated. In the example
+above,
+\begin{lstlisting} 
+2`let zhat = yhat*yhat*7 in zhat`
+\end{lstlisting}
+is a residual,
+These classifications are similar in that they both indicate that stage \bbone\ reduction is finished.
+They are different in that ``partial value" is a classification of stage~\bbone\ terms,
+while ``residual" is a classification of stage-\bbtwo\ terms.
 
 The $\redonesym$ judgment takes an stage \bbone\ term\footnote{
 The input to $\redonesym$ may be open on stage \bbtwo\ variables,
@@ -217,15 +230,13 @@ residuals. For non-staging features of \lang\ (\ref{fig:diaSemanticsCore}),
 $\redonesym$ is essentially standard call-by-value evaluation, and gathers the
 subterms' future environments into a single one.
 
-At $\next~e$, in contrast, $\redonesym$ must search through $e$ for any stage
-\bbone\ subexpressions, and evaluate them.  (See \ref{fig:diaSemanticsNP}.)
-This search process, called \emph{speculation}, is implemented by the
-$\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual. 
-
+At $\next~e$, in contrast, $\redonesym$ must speculate into $e$ for stage~\bbone\ 
+subexpressions to evaluate.  (See \ref{fig:diaSemanticsNP}.)
+This is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual. 
 For the most part (\ref{fig:diaSemanticsSpec}), speculation simply recurs into
 all subexpressions; at $\prev$, however, it resumes $\redonesym$ evaluation,
 which produces a future context $\xi$ and (by canonical forms) an expression
-$\next\{\hat y\}$. We then reify $\xi$ using $\reifysym$ into a series of let
+$\next\{\hat y\}$. $\xi$ is then reified using $\reifysym$ into a series of let
 bindings enclosing $\mathtt{\hat y}$.
 
 Once speculation reduces $e$ to a residual $q$, the output of $\redonesym$ is a
@@ -239,9 +250,9 @@ Thus the evaluation of that stage~\bbone\ code will occur {\em regardless of the
 and so a term like 
 \begin{lstlisting} 
 next{
-  if true 
-  then hold{1+2} 
-  else prev{spin() (* loops forever *)}
+  2`if true 
+  then `hold{1`3+4`} 
+  2`else` prev{1`spin() (* loops forever *)`}
 }
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
