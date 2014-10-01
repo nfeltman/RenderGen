@@ -77,7 +77,7 @@ Intuitively, the solution is to designate \verb|next {f 20}| as a value
 \emph{in stage \bbone}, even though it requires additional evaluation in stage
 \bbtwo. Therefore, the pair evaluates to
 \begin{lstlisting}
-#2 (next {f 20}, 5)
+(next {f 20}, 5)
 \end{lstlisting}
 and the projection, in turn, immediately evaluates to \verb|5|.
 
@@ -90,12 +90,22 @@ prev{
   next{ prev{#1 x} * prev{#1 x} * hold{#2 x} }
 }
 \end{lstlisting}
-Again, this term does not fully reduce at stage~\bbone, because it depends on
-the value of \verb|f 20|, which is not reduced until stage \bbtwo.
+As with the simpler example, this term does not fully reduce at stage~\bbone, 
+because it depends on the value of \verb|f 20|, which is not reduced until stage \bbtwo.
 
-If we simply treat \verb|(next {f 20}, 7)| as a value during stage~\bbone, and
+Again treating \verb|(next {f 20}, 7)| as a value during stage~\bbone, we
 substitute it for the three occurrences of \verb|x| in the body of the
-\verb|let| expression, the stage \bbone\ result would be
+\verb|let| expression, yielding
+\begin{lstlisting} 
+prev{
+  next{ prev{#1 (next {f 20}, 7)} 
+      * prev{#1 (next {f 20}, 7)} 
+      * hold{#2 (next {f 20}, 7)} }
+}
+\end{lstlisting}
+To then evaluate the large $\next$, we must first search it for stage~\bbone\ subterms to reduce in place.
+This search process is called {\em speculation}.
+In our example this means reducing all three projections to give,
 \begin{lstlisting} 
 prev{
   next{ 
@@ -103,7 +113,7 @@ prev{
   }
 }
 \end{lstlisting}
-Finally, the $\prev$s and $\next$s cancel to yield the residual:
+Since all stage~\bbone\ subterms are reduced, the $\prev$s and $\next$s cancel to yield the final residual:
 \begin{lstlisting} 
 (f 20) * (f 20) * 7
 \end{lstlisting}
@@ -111,10 +121,10 @@ But now stage \bbtwo\ must compute the expensive function call \verb|f 20| twice
 There are some systems, typically called {\em metaprogramming}, 
 where this duplication would be considered intended behavior.
 For our applications, we find the duplication undesirable and avoid it.
-Accordingly, instead of treating \verb|next {f 20}| as a
-value and substituting it into the body of the \verb|let|, we instead bind
-\verb|f 20| to a stage~\bbtwo\ variable $\mathtt{\hat y}$, and substitute that
-variable.
+
+To get this behavior, we do not treat \verb|next {f 20}| as a value to be substituted, 
+but instead bind \verb|f 20| to a fresh stage~\bbtwo\ variable $\mathtt{\hat y}$
+and then substitute that variable.
 
 More precisely, when evaluating the \verb|next|, we construct an explicit
 substitution $\mathtt{[\hat y\mapsto f~20]}$ binding its old contents to the
@@ -141,17 +151,14 @@ prev {
   }
 }
 \end{lstlisting}
-To evaluate the large $\next$, we must first \emph{speculate} inside of it, to
-evaluate all the stage~\bbone\ terms contained within $\prev$s. These
-necessarily reduce to $\next$ expressions which cancel the $\prev$s, resulting
-in:
+We then speculate to reduce the projections and cancel the $\next$s and $\prev$s, giving:
 \begin{lstlisting} 
 prev {
 [yhat|->f 20]
     next{ yhat * yhat * 7 }
 }
 \end{lstlisting}
-Once again, we lift the contents of the $\next$ into a substitution:
+Once again, we lift the results of speculation into a substitution:
 \begin{lstlisting} 
 prev {
 [yhat|->f 20]
@@ -159,10 +166,10 @@ prev {
     next{ zhat }
 }
 \end{lstlisting}
-Finally, when evaluating the outer $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
+Finally, when canceling the last $\next$ and $\prev$, we must {\em reify} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
 let yhat = f 20 in
-let zhat = yhat * yhat * 7 in z
+let zhat = yhat * yhat * 7 in zhat
 \end{lstlisting}
 
 This concludes stage \bbone\ evaluation of the program---we have reduced all
@@ -198,14 +205,17 @@ above,
 \end{itemize}
 
 
-The $\redonesym$ judgment takes an open stage \bbone\ term to a {\em future
-environment} $\xi$ and a partial value $v$.  The future environment implements
+The $\redonesym$ judgment takes an stage \bbone\ term\footnote{
+The input to $\redonesym$ may be open on stage \bbtwo\ variables,
+but the type system ensures that those must occur under a $\next$.
+Consequently $\redonesym$ will never directly encounter a variable.
+} to a {\em future environment} $\xi$ and a partial value $v$.  
+The future environment implements
 the explicit substitutions in our example---it maps fresh stage \bbtwo\
 variables (which may appear inside $\next$ blocks in $v$) to
 residuals. For non-staging features of \lang\ (\ref{fig:diaSemanticsCore}),
 $\redonesym$ is essentially standard call-by-value evaluation, and gathers the
 subterms' future environments into a single one.
-
 
 At $\next~e$, in contrast, $\redonesym$ must search through $e$ for any stage
 \bbone\ subexpressions, and evaluate them.  (See \ref{fig:diaSemanticsNP}.)
@@ -239,6 +249,8 @@ This behavior is why the judgment is named ``speculation."
 Although it may seem undesirable, this speculative behavior is a deliberate feature.
 Indeed it is critical to the quickselect example, 
 wherein all three branches of the $n$-$k$ comparison are evaluated at stage~\bbone.
+As always, it is the programmer's responsibility to ensure that her staging annotations 
+do not cause a program to loop forever.  
 
 The context ($\Gamma$) keeps track of stage \bbtwo\ variables in the input term. 
 These both appear in the original program at stage \bbtwo\ and are inserted by the semantics.
@@ -248,21 +260,6 @@ As an optimization, we can include the special-case rule,
 \inferdiaone [hat] {\red {\next~\hat y}{\cdot,\next~\hat y}}{\cdot}
 \end{mathpar}
 to avoid one-for-one variable bindings in the residual.
-We used this implicitly in the example in the previous section.
-
-\TODO [below here will get moved to related work]
-
-If we change the $\next$ and $\prev$ rules to 
-\begin{mathpar}
-\infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
-\infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
-\end{mathpar}
-and treat $\next~q$ as a partial value for any residual $q$,
-then our semantics becomes rule-for-rule isomorphic to that from \cite{davies96}. This essentially bypasses the
-environment bookkeeping in $\redonesym$, by inlining residuals instead of
-hoisting them in \verb|let|-bindings.
-From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
-{\em Because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
 
 \subsubsection {Top-Level Evaluation}
 \label{sec:partialeval}
