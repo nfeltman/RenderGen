@@ -2,8 +2,7 @@
 \label{sec:staging}
 
 \begin{figure*}
-\label{fig:quickselect}
-\begin{minipage}{0.5\textwidth}
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) 
@@ -27,8 +26,9 @@ fun qSelect (l : list, k : int) : int =
         | GT => qSelect (right, k-n-1)
 \end{lstlisting}
 \caption{Unstaged implementation of quickselect.}
-\end{minipage}
-\begin{minipage}{0.5\textwidth}
+\label{fig:quickselect}
+\end{subfigure}%
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
@@ -48,8 +48,9 @@ fun qsStaged (l : list, k : $int) : $int =
       }	
 \end{lstlisting}
 \caption{Staged implementation of quickselect in \lang.}
-\end{minipage}
-\begin{minipage}{0.5\textwidth}
+\label{fig:qsstaged}
+\end{subfigure}
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting}
 datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...
@@ -74,18 +75,19 @@ fun qSelect2 (p : tree, k : int) : int =
       | GT => qSelect2 (p2,k-n-1)
 \end{lstlisting}
 \caption{Split (two-phase) implementation of quickselect.}
-\end{minipage}
+\label{fig:qssplit}
+\end{subfigure}
 \caption{Caption place holder}
 \end{figure*}
 
 As an example of an algorithm amenable to staging techniques,
-consider the implementation of quickselect shown in Figure~2a.
+consider the implementation of quickselect shown in \ref{fig:quickselect}.
 Quickselect is an $O(n)$ (expected time) algorithm for finding the $k$-th largest element in a randomly ordered length-$n$ list.
 It does so by partitioning the input list into sublists containing elements less than and greater than the head element, 
 then recurring on the sublist containing the desired element.
 
 Importantly, one property of quickselect is that the partitioning of the list, even through its recursive calls, depends only on the values of list elements, not on the value of $k$ 
-\footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  Therefore, if quickselect was to be evaluated many times on the same list, this independence admits a familiar optimization where the algorithm is split into two functions: one which precomputes \emph{all partitions} of the input list needed for any value of $k$ (resulting in a binary search tree---see \texttt{qSelect1} in Figure~2c),
+\footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  Therefore, if quickselect was to be evaluated many times on the same list, this independence admits a familiar optimization where the algorithm is split into two functions: one which precomputes \emph{all partitions} of the input list needed for any value of $k$ (resulting in a binary search tree---see \texttt{qSelect1} in \ref{fig:qssplit}),
 and another which, given $k$, uses the tree to perform accelerated lookup of the $k$-th element (essentially performing binary search of a sorted list---see \texttt{qSelect2}).
 %One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
 %and then used to accelerate many future lookups for any value of $k$.
@@ -104,7 +106,7 @@ Typing rules for \lang\ ensure a valid splitting exists.  That is,
 within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
 but never from \bbtwo\ to \bbone.
 
-Figure 2b shows a staged implementation of quickselect in \lang.
+\ref{fig:qsstaged} shows a staged implementation of quickselect in \lang.
 As before, the function accepts as input the list to select from and a value of $k$,
 but now the latter is represented with the type $\fut\rmint$ rather than $\rmint$.
 The difference here is that an $\rmint$ is an integer available at the current stage (stage \bbone), 
@@ -132,7 +134,7 @@ Furthermore, it would be wise to extend $\pause$ to other base types, if we had 
 This is related to the notion of {\em mobility} in \cite{murphy05} and {\em stability} in \cite{krishnaswami13}.}
 
 But for the $\fut$, $\next$, $\prev$, and $\pause$ constructs, 
-the staged version of quickselect in Figure~2b is virtually identical to the unstaged version in Figure~2a.
+the staged version of quickselect in \ref{fig:qsstaged} is virtually identical to the unstaged version in \ref{fig:quickselect}.
 The constructs that were added were placed in order to maximize the work done at stage~\bbone\ while still conforming to the type signature.
 It would have also been valid to simply move the whole input list unchanged into stage~\bbtwo\ at the very beginning, 
 but that would not be particularly interesting since it would result in an effectively trivial split 

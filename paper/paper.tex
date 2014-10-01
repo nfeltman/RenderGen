@@ -23,6 +23,8 @@
 \crefname{figure}{Figure}{Figures}
 \crefname{theorem}{Theorem}{Theorems}
 
+\captionsetup[subfigure]{subrefformat=simple,labelformat=simple}
+\renewcommand\thesubfigure{(\alph{subfigure})}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
