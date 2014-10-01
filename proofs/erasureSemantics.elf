@@ -1,29 +1,32 @@
-%% REDUCTION JUDGMENT
-red : term -> term -> type. %name red Dred.
-%mode red +E -V.
-red-ztup : red ztup ztup.
-red-tup  : red (tup E1 E2) (tup V1 V2)
-			<- red E2 V2
-			<- red E1 V1.
-red-pi1  : red (pi1 E) V
-			<- red E (tup V _).
-red-pi2  : red (pi2 E) V
-			<- red E (tup _ V).
-red-lam  : red (lam A M) (lam A M).
-red-app  : red (app E1 E2) V
-			<- red E2 V2
-			<- red E1 (lam A ([x] M x))
-			<- red (M V2) V.
-red-let  : red (let E1 ([x] E2 x)) V2
-			<- red E1 V1
-			<- red (E2 V1) V2.
-red-next : red (next E) (next V)
-			<- red E V.
-red-letn : red (letn E M) V2
-			<- red E (next V1)
-			<- red (M V1) V2.
-red-prev : red (prev E) V
-			<- red E (next V).
+%% eredUCTION JUDGMENT
+ered : term -> term -> type. %name ered Dred.
+%mode ered +E -V.
+ered-ztup : ered ztup ztup.
+ered-tup  : ered (tup E1 E2) (tup V1 V2)
+			<- ered E2 V2
+			<- ered E1 V1.
+ered-pi1  : ered (pi1 E) V
+			<- ered E (tup V _).
+ered-pi2  : ered (pi2 E) V
+			<- ered E (tup _ V).
+ered-lam  : ered (lam A M) (lam A M).
+ered-app  : ered (app E1 E2) V
+			<- ered E2 V2
+			<- ered E1 (lam A ([x] M x))
+			<- ered (M V2) V.
+ered-let  : ered (let E M) V2
+			<- ered E V1
+			<- ered (M V1) V2.
+ered-lett  : ered (lett E M) V3
+			<- ered E (tup V1 V2)
+			<- ered (M V1 V2) V3.
+ered-next : ered (next E) (next V)
+			<- ered E V.
+ered-letn : ered (letn E M) V2
+			<- ered E (next V1)
+			<- ered (M V1) V2.
+ered-prev : ered (prev E) V
+			<- ered E (next V).
 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
@@ -36,22 +39,22 @@ pval-next	: pval (next E)
 				<- pval E.
 
 %% PRESERVATION AND EVALUATION
-pres : red E V -> of E A W -> pval V -> of V A W -> type.
+pres : ered E V -> of E A W -> pval V -> of V A W -> type.
 %mode pres +D1 +D2 -D3 -D4.
-- : pres red-ztup of-ztup pval-ztup of-ztup.
-- : pres (red-tup Dred1 Dred2) (of-tup DofE1 DofE2) (pval-tup Dval1 Dval2) (of-tup DofV1 DofV2)
+- : pres ered-ztup of-ztup pval-ztup of-ztup.
+- : pres (ered-tup Dred1 Dred2) (of-tup DofE1 DofE2) (pval-tup Dval1 Dval2) (of-tup DofV1 DofV2)
 		<- pres Dred1 DofE1 Dval1 DofV1
 		<- pres Dred2 DofE2 Dval2 DofV2.
-- : pres (red-pi1 Dred) (of-pi1 DofE) Dval DofV
+- : pres (ered-pi1 Dred) (of-pi1 DofE) Dval DofV
 		<- pres Dred DofE (pval-tup Dval _) (of-tup DofV _).
-- : pres (red-pi2 Dred) (of-pi2 DofE) Dval DofV
+- : pres (ered-pi2 Dred) (of-pi2 DofE) Dval DofV
 		<- pres Dred DofE (pval-tup _ Dval) (of-tup _ DofV).
-- : pres red-lam (of-lam DofM Dwf) pval-lam (of-lam DofM Dwf).        
+- : pres ered-lam (of-lam DofM Dwf) pval-lam (of-lam DofM Dwf).        
 - : pres 
-			(red-app 
-				(DredM : red (M V2) V3) 
-				(DredE1 : red E1 (lam A M)) 
-				(DredE2 : red E2 V2)) 
+			(ered-app 
+				(DredM : ered (M V2) V3) 
+				(DredE1 : ered E1 (lam A M)) 
+				(DredE2 : ered E2 V2)) 
 			(of-app 
 				(DofE1 : of E1 (arr A' B) W)
 				(DofE2 : of E2 A' W)) 
@@ -61,23 +64,17 @@ pres : red E V -> of E A W -> pval V -> of V A W -> type.
         <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)										%% V2 : A'
         <- lam-annot DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B W)) DofV2		%% \A.M : A->B; V2 : A
         <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
-- : pres 
-			(red-let 
-				(Dred2 : red (E2 V1) V2) 
-				(Dred1 : red E1 V1)) 
-			(of-let 
-				(DofE2 : {x:term} of x A W -> of (E2 x) B W)
-				(DofE1 : of E1 A W)) 
-				Dval 
-				DofV2
+- : pres 	(ered-let Dred2 Dred1) 
+			(of-let (DofE2 : {x:term} of x A W -> of (E2 x) B W) DofE1) 
+			Dval DofV2
 		<- pres Dred1 DofE1 _ DofV1
 		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
-- : pres (red-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
+- : pres (ered-next Dred) (of-next DofE) (pval-next DvalV) (of-next DofV) 
         <- pres Dred DofE DvalV DofV.
-- : pres (red-letn Dred2 Dred1) (of-letn DofE2 DofE1) Dval DofV2
+- : pres (ered-letn Dred2 Dred1) (of-letn DofE2 DofE1) Dval DofV2
 		<- pres Dred1 DofE1 _ (of-next DofV1)
 		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
-- : pres (red-prev Dred) (of-prev DofE) DvalV DofV 
+- : pres (ered-prev Dred) (of-prev DofE) DvalV DofV 
 		<- pres Dred DofE (pval-next DvalV) (of-next DofV).
         
 %worlds () (pres _ _ _ _).

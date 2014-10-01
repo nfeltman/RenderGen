@@ -21,6 +21,7 @@ pi2 : term -> term.
 lam   : ty -> (term -> term) -> term.
 app   : term -> term -> term.
 let   : term -> (term -> term) -> term.
+lett  : term -> (term -> term -> term) -> term.
 next  : term -> term.
 letn  : term -> (term -> term) -> term.
 prev  : term -> term.
