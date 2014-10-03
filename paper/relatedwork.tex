@@ -3,6 +3,7 @@
 
 \section{Related Work}
 
+
 \subsection{Davies}
 
 \cite{davies96} explored the connection between linear temporal logic and its corresponding type system (which is nearly identical to that for \lang), 
@@ -20,6 +21,42 @@ environment bookkeeping in $\redonesym$, by inlining residuals instead of
 hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
 {\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
+
+\subsection{Multi-stage (meta) programming}
+{\bf Umut: jotting down notes for now.}
+
+Multi-stage, a.k.a., meta programming or staged programming, gives the
+programmer linguistic facilities consisting of language constructs
+(usually also a type system, including a dynamic semantics) for
+expressing programs where inputs may come in stages.  Earlier work on
+staged programming was motivated by understanding the effects of
+binding-time analysis that partial evaluation relied on and allowing
+control over staging so that the programmer can control the
+termination and efficiency characteristics of staged programs.
+Several different approaches to staged programming has been proposed.
+
+
+Davies ...  
+
+Taha's approach is similar to Davies, but extends Davies's approach
+with ``cross-stage persistency'' which allows a variable to be used in
+any later stage and a ``run'' construct that allows evaluating an
+expression.  Our language constructs therefore are also close to
+staged programming such as proposed by Taha.  In fact our static
+semantics is essentially identical to Taha's.  Though, as Davies, we
+don't include ``run'' in the language.  The dynamic semantics of
+staged languages... COMPLETE
+
+
+The key difference between our work and Taha's and similar work on
+staging is our splitting algorithm that can translate the staged code
+to a different code that can run significantly (sometimes
+asymptotically) faster. COMPARE DYNAMIC SEMANTICS
+
+ Unlike the evaluati
+
+
+
 
 \subsection{Specialization}
 
