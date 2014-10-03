@@ -16,8 +16,8 @@ struct
 
 open LangCommon
 
-fun parseString s = 
-    let val inStream =  TextIO.openString s;
+fun parseStream s = 
+    let val inStream = s;
         val grab : int -> string = fn 
             n => if TextIO.endOfStream inStream 
                  then ""
@@ -39,6 +39,9 @@ fun parseString s =
     in 
 		tree
     end
+	
+fun parseString s = parseStream (TextIO.openString s)
+fun parseFile s = parseStream (TextIO.openIn s)
 
 
 end 

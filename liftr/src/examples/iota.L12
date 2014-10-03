@@ -1,0 +1,19 @@
+datatype binop  = Plus | Minus in
+datatype iota	= Arg
+				| Int of int 
+				| Binop of binop * iota * iota
+				| If of iota * iota * iota
+in 
+letfun evalBinop ((op, i1, i2) : binop * int * int) = 
+	case unroll op of
+	  plus => i1 + i2
+	| minus => i1 - i2
+in
+letrec eval ((e,a) : iota * int) : int = 
+	case unroll e of
+	  arg => a
+	| i => i
+	| (op, e1, e2) => evalBinop(op, eval (e1,a), eval (e2,a))
+	| (e1, e2, e3) => if eval (e1,a) > 0 then eval (e2,a) else eval (e3,a)
+in
+5

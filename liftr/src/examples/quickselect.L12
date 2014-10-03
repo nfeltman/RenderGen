@@ -1,0 +1,15 @@
+datatype list = Empty | Cons of int * list in 
+letrec partition ((p,l) : int*list) : (int*list*list) = 
+	case unroll l of em => (0,Empty, Empty) | (h,t) => 
+		let (s,left,right) = partition (p,t) in 
+		if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right)) in 
+letrec qs ((l,i) : list * $int) : $int = 
+	case unroll l of 
+	  em => next {0} 
+	| (h,t) => let (n,left,right) = partition (h,t) in 
+		next { 
+			let n = prev {hold n} in 
+			if prev{i} < n then prev{qs (left,i)} 
+			else if prev{i} == n then prev{hold h} 
+			else prev{qs (right,next{(prev{i}-n)-1})}} 
+in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))), next{2})

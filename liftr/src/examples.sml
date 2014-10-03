@@ -8,6 +8,7 @@ open LangCommon
 open ErasureSemantics
 structure Comp = ValueComparison
 
+datatype progSource = Literal | FileName
 datatype testLevel = NONE | SAME | EXACT of value1
 val ansI = EXACT o V1 o VFint
 val ansNI = EXACT o V1next o V2 o VFint
@@ -19,8 +20,11 @@ fun a ` b = a b
 
 val _ = Variable.reset ()
 
-fun j test = [test]
-fun k (name,prog,t) = [(name^"-first",prog,t), (name^"-second","next{"^prog^"}", case t of EXACT v => EXACT (V1next (holdGeneral v)) | _ => t)]
+fun i (name,filename,t) = [(name,FileName,filename,t)]
+fun j (name,prog,t) = [(name,Literal,prog,t)]
+fun k (name,prog,t) = [
+		(name^"-first",Literal,prog,t), 
+		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (V1next (holdGeneral v)) | _ => t)]
 val programs = [
 k("fourPlusSix", 		"4 + 6",ansI 10),
 k("twoTimesThree", 		"2 * 3",ansI 6),
@@ -74,60 +78,16 @@ k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1)
 j("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
-(*j("renderer",			"fn ((tile,light),(pixel,tex)) : ((int*int)*((int*int)->int))*(($((int*int)->int))*($(int*int))) => "^
-						"next{prev{hold(light tile)} * (prev{pixel} prev{tex})}",NONE), *)
-j("fastexp",			"letrec exp ((b,e) : $int*int) : $int = if e == 0 then next{1} else if (e mod 2) == 0 then "^
-						"next{let x = prev{exp (b,e/2)} in x*x} else next{prev{b} * prev{exp (b,e-1)}} in exp (next{3},5)",ansNI 243) ,
-j("quickselect",		"datatype list = Empty | Cons of int * list in " ^
-						"letrec partition ((p,l) : int*list) : (int*list*list) = "^
-							"case unroll l of em => (0,Empty, Empty) | (h,t) => "^
-								"let (s,left,right) = partition (p,t) in "^
-								"if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right)) in " ^
-						"letrec qs ((l,i) : list * $int) : $int = "^
-							"case unroll l of "^
-							  "em => next {0} "^
-							"| (h,t) => let (n,left,right) = partition (h,t) in "^
-								"next { let n = prev {hold n} in "^
-									"if prev{i} < n then prev{qs (left,i)} " ^
-									"else if prev{i} == n then prev{hold h} " ^
-									"else prev{qs (right,next{(prev{i}-n)-1})}} " ^
-						"in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))), next{2})", ansNI 4),
-j("prefixtree",
-	"   datatype letter = A | B | C in " ^ 
-	"   datatype $letter2 = A2 | B2 | C2 in " ^ 
-	"   datatype string = EmptyS | ConsS of letter * string in " ^
-	"   datatype $string2 = EmptyS2 | ConsS2 of letter2 * string2 in " ^
-	"   datatype list = EmptyL | ConsL of string * list in " ^
-	"   letrec partition (l : list) : (bool * list * list * list) = " ^
-		"   case unroll l of " ^ 
-		"   em => (false,EmptyL,EmptyL,EmptyL) " ^
-		"   | (s,ss) => " ^
-			"   let (anyEmpty,a,b,c) = partition ss in " ^
-			"   case unroll s of " ^
-			"     em => (true,a,b,c) " ^
-			"   | (z,zs) => " ^ 
-				"   case unroll z of A => (anyEmpty,ConsL(zs,a),b,c) | B => (anyEmpty,a,ConsL(zs,b),c) | C => (anyEmpty,a,b,ConsL(zs,c))" ^ 
-	"   in " ^
-	"   letrec exists ((l,s) : list * $string2) : $bool = " ^
-		"   case unroll l of em => next{false} | notempty => " ^ 
-			"   let (anyEmpty, a, b, c) = partition l in " ^
-			"   next { " ^
-				"   case unroll prev{s} of " ^
-				"     em => prev{if anyEmpty then next{true} else next{false}} " ^
-				"   | (z,zs) => " ^
-					"   case unroll z of  " ^
-					"     A => prev{exists (a,next{zs})}  " ^
-					"   | B => prev{exists (b,next{zs})} " ^ 
-					"   | C => prev{exists (c,next{zs})} " ^ 
-			"   } in " ^
-	"   exists( " ^ 
-		"   let c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)), " ^ 
-		"   next{let c = prev{ConsS2} in c(prev{A2},c(prev{B2},c(prev{C2},prev{EmptyS2})))})", ansNB true)
+i("fastexp",			"fastexp",ansNI 243) ,
+i("quickselect",		"quickselect", ansNI 4),
+i("prefixtree",			"prefixtree", ansNB true),
+i("iota",				"iota", ansI 5),
+i("iotaStaged",			"iotaStaged", ansI 5)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
 				
-fun testProgram verbose name p t = 
+fun testProgram verbose name programType p t = 
 	let
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
@@ -139,7 +99,10 @@ fun testProgram verbose name p t =
 		val _ = (emit "Starting test: "; emit (pad name 24); emit " ...")
 		
 		(* Parsing *)
-		val parsed = L12Parser.parseString p
+		val parsed = 
+			case programType of 
+			  Literal => L12Parser.parseString p
+			| FileName => L12Parser.parseFile ("examples/"^p^".L12")
 		
 		(* Stage Propegating *)
 		val propegated = PropStage.prop1 parsed
@@ -213,7 +176,7 @@ fun testProgram verbose name p t =
 	end
 
 
-fun runtests v = List.app (fn (name,prog,t) => testProgram v name prog t) (List.concat programs)
+fun runtests v = List.app (fn (name,progType,prog,t) => testProgram v name progType prog t) (List.concat programs)
 
 (* 
 val compiled = CM.make "sources.cm"; if compiled then Examples.runtests 1 else ();
