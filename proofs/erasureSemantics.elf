@@ -1,4 +1,4 @@
-%% eredUCTION JUDGMENT
+%% REDUCTION JUDGMENT
 ered : term -> term -> type. %name ered Dred.
 %mode ered +E -V.
 ered-ztup : ered ztup ztup.
@@ -79,3 +79,30 @@ pres : ered E V -> of E A W -> pval V -> of V A W -> type.
         
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
+
+%% REDUCTION IS IDEMPOTENT
+idem : ered E V -> ered V V -> type.
+%mode idem +Dred1 -Dred2.
+- : idem ered-ztup ered-ztup.
+- : idem (ered-tup Dred1 Dred2) (ered-tup Dself1 Dself2)
+	<- idem Dred1 Dself1
+	<- idem Dred2 Dself2.
+- : idem (ered-pi1 Dred) Dself
+	<- idem Dred (ered-tup Dself _).
+- : idem (ered-pi2 Dred) Dself
+	<- idem Dred (ered-tup _ Dself).
+- : idem ered-lam ered-lam.
+- : idem (ered-app DredM _ _) Dself
+	<- idem DredM Dself.
+- : idem (ered-let DredM _) Dself
+	<- idem DredM Dself.
+- : idem (ered-lett DredM _) Dself
+	<- idem DredM Dself.
+- : idem (ered-next Dred) (ered-next Dself)
+	<- idem Dred Dself.
+- : idem (ered-letn DredM _) Dself
+	<- idem DredM Dself.
+- : idem (ered-prev Dred) Dself
+	<- idem Dred (ered-next Dself).
+%worlds () (idem _ _).
+%total Dred (idem Dred _).
