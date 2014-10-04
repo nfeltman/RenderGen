@@ -1,0 +1,22 @@
+\newcounter{remark}[section]
+\newcommand{\myremark}[3]{
+\refstepcounter{remark}
+%{\small \bf {#2}.~\theremark}
+%% \[
+%% \left\{
+%% \sf 
+%% \parbox{0.8\columnwidth}
+%% {
+%% {\bf {#1}'s remark~\theremark:} 
+%% {#3}
+%% }
+%% \right.
+%% \]
+%\paragraph{\bf $[$ \tiny{#2}.{\theremark}.}{\textbf{\tiny{#3}}$]$}
+~\\
+{\bf $[$ \scriptsize{#1}.{\theremark}:}{\textbf{\scriptsize{#3}}$]$}
+\\
+}
+
+\newcommand{\uremark}[1]{\myremark{Umut}{U}{#1}}
+\newcommand{\ur}[1]{\uremark{#1}}
