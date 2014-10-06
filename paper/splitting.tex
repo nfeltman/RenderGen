@@ -1,6 +1,10 @@
 
 \section{Splitting Algorithm}
 \label{sec:splitting}
+\ur{First para should probably be somewhere else concerning problem
+  definition and relationship to PE.  Based on this definition, it
+  might be good and correct to argue that this is more or less an
+  orthogonal problem.}
 
 Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
 However, where partial evaluation requires the value of some inputs to be known, stage splitting is a static transformation performed
@@ -31,6 +35,9 @@ After that, we define splitting for full expressions, discuss some notable prope
 
 \subsection{Partial Value Splitting}
 
+\ur{Reduce commentary.  Two sentences connected with an ``and.'' Split
+  sentences.}
+
 We now consider the problem of splitting stage-\bbone\ partial values.
 This serves as a simple didactic stepping-stone to the full formulation, 
 and we will see later that it is a necessary component of the correctness theorem.
@@ -43,33 +50,51 @@ where $v_1$ contains only the information from $v$ that is relevant to first sta
 and $v_2$ contains only the information from $v$ that is likewise relevant to second stage code.
 We call this action {\em masking}.
 
-There are many reasonable ways to achieve this goal, 
-and we choose one that preserves as much structure as possible from $v$.
-Formally, partial value splitting comprises a single judgment, $v \vsplito [v_1,v_2]$, the rules for which are given in \cref{fig:valSplit}.
-It essentially acts distributively at product, sum, and recursive types, 
-doing little more than recuring into subvalues and duplicating the structure to both results.
-At base types, partial value splitting assigns all content ({\em i.e.} the integer or boolean) to stage \bbone, and uses a nullary tuple placeholder for stage \bbtwo.
-Conversely at $\fut$ types, splitting assigns all content ({\em i.e.} the environment reference) to stage \bbtwo, and uses a nullary tuple for stage \bbone.
+\ur{Next sentence is unnecessary commentary. It also sounds of
+  questinoable accuracy, not clear to me that there are many ways to
+  do this.}  There are many reasonable ways to achieve this goal, and
+we choose one that preserves as much structure as possible from $v$.
+Formally, partial value splitting comprises a single judgment, $v
+\vsplito [v_1,v_2]$, the rules for which are given in
+\cref{fig:valSplit}.  It essentially acts distributively at product,
+sum, and recursive types, doing little more than recuring into
+subvalues and duplicating the structure to both results.  At base
+types, partial value splitting assigns all content ({\em i.e.} the
+integer or boolean) to stage \bbone, and uses a nullary tuple
+placeholder for stage \bbtwo.  Conversely at $\fut$ types, splitting
+assigns all content ({\em i.e.} the environment reference) to stage
+\bbtwo, and uses a nullary tuple for stage \bbone.
 
-Functions are inherently more complicated. 
-Since the body of a function is an open term, the partial value splitting rule for functions must rely on general expression splitting, which is covered momentarily.
-The most we can say here is a function splits into two other functions, 
-whose bodies correspond to the stage \bbone\ and stage \bbtwo\ components of the original function's body.
+\ur{The case for ``fold'' seems missing in partial value splitting rules.}
+
+\ur{Drop, ``the most we can say.''  Be direct and explain.}
+Functions are inherently more complicated.  Since the body of a
+function is an open term, the partial value splitting rule for
+functions must rely on general expression splitting, which is covered
+momentarily.  The most we can say here is a function splits into two
+other functions, whose bodies correspond to the stage \bbone\ and
+stage \bbtwo\ components of the original function's body.
 
 \subsection{Expression Splitting}
 
 We now consider the problem of splitting expressions in \lang, starting with stage \bbtwo\ terms.  
 The goal here is to end up with two new terms: one that has all of the stage \bbone\ content of the original, and one with all of the stage \bbtwo\ content. 
 These are respectively called the {\em precomputation} and {\em residual}.
-\footnote{We also used the term {\em residual} for the result of partial evaluation.
-Where necessary, we will distinguish between these concepts by using the terms {\em splitting-residual} and {\em evaluation-residual}.}
+\footnote{We also used the term {\em residual} for the result of
+  partial evaluation.  Where necessary, we will distinguish between
+  these concepts by using the terms {\em splitting-residual} and {\em
+    evaluation-residual}.}  \ur{The reuse of residual is bothersome,
+  we should use different terminology, 1-value and 2-value perhaps.}
 
+\ur{We need a ``next'' I believe.  All our examples should start at
+  stage-1 for consistency.}
 For example, consider $e=``\verb|hold{1+2} < hold{3+4}-5|"$.
 We can split this into two terms, $p=``\verb|(1+2,3+4)|"$ and $r=``\verb|fn (L1,L2) => L1 < L2-5|"$, 
 with the as yet imprecise property that $r$ applied to $p$ yields the same final value as $e$.
 In general, all we're doing here is finding the contained nuggets of stage \bbone\ code and pulling them into a big tuple,
 an action we call {\em lifting}.
 
+\ur{I have no idea what the next paragraph is trying to say.}
 Note that lifting and masking are different, despite both being within the purview of splitting.
 They particularly differ in how the resulting stage \bbone\ parts are used.
 The $v_1$ of partial value splitting is essentially the stage \bbone\ content of {\em result} of computation, 
@@ -89,6 +114,7 @@ For our example, it is ``\verb|fn L => (L<5,())|".
 
 \subsection {Formal Setup}
 
+\ur{``for both'' below is ambiguous.}
 The splitting algorithm comprises two judgments, $\splitonesym$ and $\splittwosym$,
 which are in rule-for-rule correspondence with the typing rules $@\bbone$ and $@\bbtwo$.
 For both, the input is a term in \lang, and the output is two terms in \langmono, an
@@ -97,12 +123,22 @@ staging features (we say that implicitly it has only one stage), and it is untyp
 Modulo these differences, \langmono\ has all of the same features as \lang, 
 although this is a matter of taste
 \footnote{Since \langmono\ is untyped, we could encode everything with just functions.}.
+\ur{Drop commentary about taste and such.  Explain that we could have
+  used lambda calculus as target but this is more direct.}  
 
+\ur{Drop ``specifically''.}
 Specifically, the $\splitonesym$ judgment sends a stage \bbone\ term ($e$) to a combined term ($c$) and residual ($l.r$),
 while $\splittwosym$ sends a stage \bbtwo\ term ($e$) to a precomputation ($p$) and a residual ($l.r$).
 For concision, we represent residuals as a term open on a single variable, rather than as functions.
-For both judgments, we use a context ($\Gamma$) to keep track of the open variables of $e$.
+For both judgments, we use a context ($\Gamma$) to keep track of the
+open variables of $e$.
+\ur{Case (pl./si.) mismatch in ``we represent ...'' sentence above.}
 
+\ur{Reformat rules to make them fit into the paper.}
+
+
+\ur{Explain the rules.  This is the most important part of the
+  paper. Work needed here.}
 The rules\footnote{The rules are written using patterns, including the open variable of the residual.} 
 for splitting $\next$, $\prev$, and $\pause$ are given in \ref{fig:termSplitOne}.
 The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,

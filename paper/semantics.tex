@@ -200,6 +200,10 @@ which are aggregated into a single {\em future context} that is also the output 
 Reification is also used at these sites to handle the future context produced by evaluation.
 \end{itemize}
 
+
+\ur{Partial values and residuals should be ``definitons'', i.e.,
+  use italics here.}
+
 Partial values are stage \bbone\ terms that have been fully
 evaluated, but which may contain stage-\bbtwo\ variables wrapped in $\next$
 blocks.  In the example above, 
@@ -214,9 +218,22 @@ above,
 2`let zhat = yhat*yhat*7 in zhat`
 \end{lstlisting}
 is a residual,
+\ur{Comma above! ``classification'' sounds odd to me.  just say they
+  ``are stage-1 terms.''}
+
+
+
 These classifications are similar in that they both indicate that stage \bbone\ reduction is finished.
 They are different in that ``partial value" is a classification of stage~\bbone\ terms,
 while ``residual" is a classification of stage-\bbtwo\ terms.
+
+\ur{I would recommend using ``1-value'' and ``2-value'' instead of
+  partial values and residuals.  The former are more accurate, more
+  direct, more succinct, and does not lead to confusions with other
+  residuals.}
+
+\ur{Many incorrectly hyphenated ``partial values'' in this text.}
+
 
 The $\redonesym$ judgment takes an stage \bbone\ term\footnote{
 The input to $\redonesym$ may be open on stage \bbtwo\ variables,
@@ -230,6 +247,7 @@ residuals. For non-staging features of \lang\ (\ref{fig:diaSemanticsCore}),
 $\redonesym$ is essentially standard call-by-value evaluation, and gathers the
 subterms' future environments into a single one.
 
+\ur{drop ``must''.}
 At $\next~e$, in contrast, $\redonesym$ must speculate into $e$ for stage~\bbone\ 
 subexpressions to evaluate.  (See \ref{fig:diaSemanticsNP}.)
 This is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual. 
@@ -239,6 +257,7 @@ which produces a future context $\xi$ and (by canonical forms) an expression
 $\next\{\hat y\}$. $\xi$ is then reified using $\reifysym$ into a series of let
 bindings enclosing $\mathtt{\hat y}$.
 
+\ur{This is really a continuation of the previous paragraph.}
 Once speculation reduces $e$ to a residual $q$, the output of $\redonesym$ is a
 fresh variable wrapped in a $\next$ block ($\next~\hat y$), along with a future
 environment which maps that variable to the residual ($\hat y \mapsto q$).
@@ -256,6 +275,8 @@ next{
 }
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
+\ur{This might be standard in the PE literature.  If that is the case
+  there is no need to elaborate as much.}
 This behavior is why the judgment is named ``speculation."
 Although it may seem undesirable, this speculative behavior is a deliberate feature.
 Indeed it is critical to the quickselect example, 
@@ -274,6 +295,10 @@ to avoid one-for-one variable bindings in the residual.
 
 \subsubsection {Top-Level Evaluation}
 \label{sec:partialeval}
+
+\ur{The following several paragraphs should probably be somewhere
+  else, further ahead, or further back when we discuss the
+  relationship with PE.}
 
 These dynamics allow us to define a partial evaluator.
 Recall that partial evaluators operate on multivariate functions $f$, whose
