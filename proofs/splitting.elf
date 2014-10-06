@@ -68,13 +68,16 @@ cpvsplit : cpval -> term -> cpval -> type.
 %mode cpvsplit +V -V1 -V2.
 
 %% EQUIVALENCE
+eqt : term -> term -> type.
+
 eqv : term -> term -> type.
 eqv-ztup : eqv ztup ztup.
 eqv-tup  : eqv (tup U1 V1) (tup U2 V2)
 		<- eqv U1 U2
 		<- eqv V1 V2.
 eqv-lam  : eqv (lam _ M1) (lam _ M2)
-		<- {x : term} ered (M1 x) V1 -> ered (M2 x) V2 -> eqv V1 V2.
+		<- ({x : term} {y : term}
+        ered x x -> ered y y -> eqv x y -> eqt (M1 x) (M2 y)).
 
 %% END-TO-END SPLITTING CORRECTNESS
 eesc2 : split2 E P R -> spc E Q -> ered P U -> ered Q V -> ered (R U) V -> type. %% probably not right
@@ -95,7 +98,7 @@ eesc2 : split2 E P R -> spc E Q -> ered P U -> ered Q V -> ered (R U) V -> type.
 	<- eesc2 Dspl Dspc DredP DredQ DredR.
 - : eesc2 (split2-lam DsplM) (spc-lam DspcM) DredP DredQ
 	<- {x : term} {dsplX : split2 x ztup ([_] x)} {dspcX : spc x x} {DredX : red x V} 
-		eesc2 (Dspl x dsplX) (DspcM x dspcX) DredP 
+		eesc2 (Dspl x dsplX) (DspcM x dspcX) DredP .
 
 %{
 ztup  : term.

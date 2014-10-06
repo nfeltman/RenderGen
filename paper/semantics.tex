@@ -29,10 +29,13 @@ typing judgment only produces valid types.
 %(by induction on the derivation of the typing judgment).
 % under the assumptions in $\Delta$. This context is only augmented by recursive types.
 
-Except for the staging features $\next$, $\prev$, and $\pause$, the language
-features are essentially agnostic to stage. Variables in the context are
-annotated with the stage at which they were introduced and can only be used at
-the same stage.
+Except for the staging features $\next$, $\prev$, and $\pause$, the ordinary
+language features (i.e., the introductory and eliminatory forms for product,
+sum, and function types) preserve the stage of their subterms, and work at both
+stages \bbone\ and \bbtwo. Thus, if we were to remove the staging features,
+\lang\ would simply consist of two non-interacting copies of a standard lambda
+calculus. Variables in the context are annotated with the stage at which they
+were introduced and can only be used at the same stage.
 
 Note that there is no way to eliminate a term of type $\fut A$ into a stage
 \bbone\ term---the only elimination form is $\prev$, which results in a stage
@@ -188,44 +191,39 @@ described above using three judgments: $\redonesym$ (evaluation), $\redtwosym$
 Along with these are three judgments identifying forms of values:
 $\pvalsym$ (partial values), $\ressym$ (residuals), 
 and the auxiliary $\fcon$ (future context).
-The interrelation of these judgments can be summarized as follows:
+These judgments are related as follows:
 \begin{itemize}
 \item Evaluation sends a stage~\bbone\ term to a partial value.
-Because of the non-duplicating behavior, this sometimes produces explicit substitutions,
-which are aggregated into a single {\em future context} that is also the output of evaluation.
+In order to avoid duplicating subterms, evaluation collects explicit
+substitutions into a single {\em future context} that is also the output of
+evaluation.
 \item Speculation sends a stage~\bbtwo\ term to a residual.
 \item Reification sends a residual and a future context to another residual.  
-\item Evaluation depends on speculation where stage~\bbone\ encapsulates stage~\bbtwo: $\next$. 
-\item Speculation depends on evaluation where stage~\bbtwo\ encapsulates stage~\bbone: $\prev$ and $\pause$.
-Reification is also used at these sites to handle the future context produced by evaluation.
+\item Evaluation depends on speculation for $\next$ terms, which have
+stage~\bbtwo\ subterms.
+\item Speculation depends on evaluation for $\prev$ and $\pause$, which have
+stage~\bbone\ subterms. The future context produced by evaluation is also
+reified here.
 \end{itemize}
 
-
-\ur{Partial values and residuals should be ``definitons'', i.e.,
-  use italics here.}
-
-Partial values are stage \bbone\ terms that have been fully
-evaluated, but which may contain stage-\bbtwo\ variables wrapped in $\next$
+\emph{Partial values} are stage~\bbone\ terms that have been fully
+evaluated, but which may contain stage~\bbtwo\ variables wrapped in $\next$
 blocks.  In the example above, 
 \begin{lstlisting} 
 1`(next {`2`yhat`1`},7)`
 \end{lstlisting}
 is a partial value.
-Residuals ($\ressym$es) are \langTwo\ terms---stage \bbtwo\ terms whose
+\emph{Residuals} ($\ressym$es) are \langTwo\ terms---stage \bbtwo\ terms whose
 stage \bbone\ subexpressions have all been fully evaluated. In the example
 above,
 \begin{lstlisting} 
 2`let zhat = yhat*yhat*7 in zhat`
 \end{lstlisting}
-is a residual,
-\ur{Comma above! ``classification'' sounds odd to me.  just say they
-  ``are stage-1 terms.''}
+is a residual.
 
-
-
-These classifications are similar in that they both indicate that stage \bbone\ reduction is finished.
-They are different in that ``partial value" is a classification of stage~\bbone\ terms,
-while ``residual" is a classification of stage-\bbtwo\ terms.
+Note that partial values and residuals are both terms for which stage \bbone\
+computation has completed; however, partial values are stage~\bbone\ terms,
+while residuals are stage~\bbtwo\ terms.
 
 \ur{I would recommend using ``1-value'' and ``2-value'' instead of
   partial values and residuals.  The former are more accurate, more
@@ -233,7 +231,6 @@ while ``residual" is a classification of stage-\bbtwo\ terms.
   residuals.}
 
 \ur{Many incorrectly hyphenated ``partial values'' in this text.}
-
 
 The $\redonesym$ judgment takes an stage \bbone\ term\footnote{
 The input to $\redonesym$ may be open on stage \bbtwo\ variables,
@@ -247,8 +244,7 @@ residuals. For non-staging features of \lang\ (\ref{fig:diaSemanticsCore}),
 $\redonesym$ is essentially standard call-by-value evaluation, and gathers the
 subterms' future environments into a single one.
 
-\ur{drop ``must''.}
-At $\next~e$, in contrast, $\redonesym$ must speculate into $e$ for stage~\bbone\ 
+At $\next~e$, in contrast, $\redonesym$ speculates into $e$ for stage~\bbone\ 
 subexpressions to evaluate.  (See \ref{fig:diaSemanticsNP}.)
 This is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual. 
 For the most part (\ref{fig:diaSemanticsSpec}), speculation simply recurs into
@@ -256,8 +252,6 @@ all subexpressions; at $\prev$, however, it resumes $\redonesym$ evaluation,
 which produces a future context $\xi$ and (by canonical forms) an expression
 $\next\{\hat y\}$. $\xi$ is then reified using $\reifysym$ into a series of let
 bindings enclosing $\mathtt{\hat y}$.
-
-\ur{This is really a continuation of the previous paragraph.}
 Once speculation reduces $e$ to a residual $q$, the output of $\redonesym$ is a
 fresh variable wrapped in a $\next$ block ($\next~\hat y$), along with a future
 environment which maps that variable to the residual ($\hat y \mapsto q$).
@@ -275,8 +269,6 @@ and so a term like
 }`
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
-\ur{This might be standard in the PE literature.  If that is the case
-  there is no need to elaborate as much.}
 This behavior is why the judgment is named ``speculation."
 Although it may seem undesirable, this speculative behavior is a deliberate feature.
 Indeed it is critical to the quickselect example, 
@@ -296,30 +288,13 @@ to avoid one-for-one variable bindings in the residual.
 \subsubsection {Top-Level Evaluation}
 \label{sec:partialeval}
 
-\ur{The following several paragraphs should probably be somewhere
-  else, further ahead, or further back when we discuss the
-  relationship with PE.}
-
-These dynamics allow us to define a partial evaluator.
-Recall that partial evaluators operate on multivariate functions $f$, whose
-inputs are each labeled either {\em static} or {\em dynamic}. Once the static
-inputs are provided, partial evaluation of $f$ produces a residual depending on
-only the dynamic input. Mathematically, a partial evaluator is any $p$ such
-that
-\[
-	\forall f,x. \exists f_x. [p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)]
-\]
-where $\llbracket \cdot \rrbracket$ translates the text of a function to its
-mathematical interpretation (a la \cite{jones96}). Here, $x$ is the static
-input, $y$ is the dynamic input, and $f_x$ is the residual, that is, \emph{$f$
-specialized to $x$}.
-
 % KAYVONF: good statement, but hold out for now
 %The hope of partial evaluation is that $f_x$ is cheaper to execute than $f$, meaning that we can save work if we must %evaluate it many times.
 
-We define a partial evaluator for \lang\ by identifying static with stage
-\bbone\ and dynamic with stage \bbtwo.  Specifically, we encode $f$ as a \lang\
-expression with a function type of the form $A\to\fut(B\to C)$.%
+These dynamics allow us to define a partial evaluator for \lang\ by identifying
+static with stage \bbone\ and dynamic with stage \bbtwo.  Specifically, we
+encode $f$ as a \lang\ expression with a function type of the form
+$A\to\fut(B\to C)$.%
 %\cprotect\footnote{We can rewrite \texttt{fexp} in this form, or simply apply
 %the following higher-order function which makes the adjustment:
 %\begin{lstlisting} 

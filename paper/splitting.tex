@@ -1,31 +1,6 @@
 
 \section{Splitting Algorithm}
 \label{sec:splitting}
-\ur{First para should probably be somewhere else concerning problem
-  definition and relationship to PE.  Based on this definition, it
-  might be good and correct to argue that this is more or less an
-  orthogonal problem.}
-
-Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
-However, where partial evaluation requires the value of some inputs to be known, stage splitting is a static transformation performed
-before {\em any arguments} are available.
-Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
-where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
-and $f_2$ consumes that data structure and the stage-\bbtwo\ input to produce the final output.  
-More precisely, a stage splitter is any $s$ such that
-\[
-	\forall f. \exists f_1,f_2. 
-	\left[
-		\begin{array}{l}
-		s(f) = (f_1,f_2) \text{ and } \\
-		\forall x,y.\llbracket f \rrbracket(x,y)=\llbracket f_2 \rrbracket(\llbracket f_1 \rrbracket(x),y)
-		\end{array}
-	\right]
-\]
-with the same $\llbracket \cdot \rrbracket$ notation as before.
-Notice that $x$ here is bound underneath the existential $f_1$ and $f_2$,
-meaning that the stage splitting operation does not depend on the stage-\bbone\ input.
-This stands in contrast to the definition of partial evaluation, where $f_x$ does depend on $x$.
 
 As with the dynamics, our stage-splitting algorithm for expressions in \lang\ takes 
 the form of two mutually-dependent judgments, $\splitonesym$ and $\splittwosym$, 
@@ -38,7 +13,7 @@ After that, we define splitting for full expressions, discuss some notable prope
 \ur{Reduce commentary.  Two sentences connected with an ``and.'' Split
   sentences.}
 
-We now consider the problem of splitting stage-\bbone\ partial values.
+We now consider the problem of splitting stage~\bbone\ partial values.
 This serves as a simple didactic stepping-stone to the full formulation, 
 and we will see later that it is a necessary component of the correctness theorem.
 
