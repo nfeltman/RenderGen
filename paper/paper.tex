@@ -12,6 +12,7 @@
 \usepackage{enumitem}
 \usepackage{url}
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false,unicode=true]{hyperref}
+\usepackage[usenames,dvipsnames]{color}
 \usepackage{cprotect}
 \usepackage{subcaption}
 \usepackage[T1]{fontenc}
@@ -33,6 +34,10 @@
 
 \input {macros}
 \input{remarks}
+
+\definecolor{stageOneColor}{RGB}{120,30,0}
+\definecolor{stageTwoColor}{RGB}{0,0,127}
+
 \begin{document}
 
 \lstset{%language=ML,
@@ -41,8 +46,8 @@
         basicstyle=\ttfamily,
         tabsize=4,
         escapeinside={"*}{*"},
-        moredelim=*[is][\color{red}]{1`}{`},
-        moredelim=*[is][\color{blue}]{2`}{`},
+        moredelim=*[is][\color{stageOneColor}]{1`}{`},
+        moredelim=*[is][\color{stageTwoColor}]{2`}{`},
         literate={|->}{{\ $\mapsto$\ }}1
                  {xhat}{{$\hat{\texttt{x}}$}}1
                  {yhat}{{$\hat{\texttt{y}}$}}1
