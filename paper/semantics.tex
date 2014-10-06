@@ -108,11 +108,11 @@ So to proceed, the semantics must first search the body of the $\next$ for stage
 This search process is called {\em speculation}.
 In our example this means reducing all three projections to give,
 \begin{lstlisting} 
-prev{
-  next{ 
-    prev{next {2`f 20`}} 2`*` prev{next {2`f 20`}} 2`* 7` 
-  }
-}
+2`prev{`1`
+  next{`2` 
+    prev{`1`next {`2`f 20`1`}`2`} * prev{`1`next {`2`f 20`1`}`2`} * 7 
+  `1`}`2`
+}`
 \end{lstlisting}
 Since all stage~\bbone\ subterms are reduced, the $\prev$s and $\next$s cancel to yield the final residual:
 \begin{lstlisting} 
@@ -132,40 +132,40 @@ substitution $\mathtt{[\hat y\mapsto f~20]}$ binding its old contents to the
 fresh variable $\mathtt{\hat y}$. This substitution is placed at the top of the
 containing $\prev$ block:
 \begin{lstlisting} 
-prev {
-[2`yhat`|->2`f 20`]
-  1`let x = (`next{2`yhat`}1`, 7) in`
-  next{prev{1`#1 x`} 2`*` prev{1`#1 x`} 2`*`  hold{1`#2 x`}}
-}
+2`prev {
+[yhat|->f 20]
+  `1`let x = (next{`2`yhat`1`}, 7) in
+  next{`2`prev{`1`#1 x`2`} * prev{`1`#1 x`2`} * hold{`1`#2 x`2`}`1`}
+}`
 \end{lstlisting}
 %As a convention, we render the new variable with a %stylish and fashionable
 %hat.  
 We proceed with stage~\bbone\ evaluation, which now duplicates the variable
 $\mathtt{\hat y}$ rather than the expression \verb|f 20|.
 \begin{lstlisting} 
-prev {
-[2`yhat`|->2`f 20`]
-  next{
-    prev{1`#1 (`next {2`yhat`}1`, 7)`} 2`*` 
-    prev{1`#1 (`next {2`yhat`}1`, 7)`} 2`*`
-    hold{1`#2 (`next {2`yhat`}1`, 7)`}
-  }
-}
+2`prev {
+[yhat|->f 20]
+  `1`next{`2`
+    prev{`1`#1 (next {`2`yhat`1`}, 7)`2`} * 
+    prev{`1`#1 (next {`2`yhat`1`}, 7)`2`} *
+    hold{`1`#2 (next {`2`yhat`1`}, 7)`2`}
+  `1`}`2`
+}`
 \end{lstlisting}
 We then speculate to reduce the projections and cancel the $\next$s and $\prev$s, giving:
 \begin{lstlisting} 
-prev {
-[2`yhat`|->2`f 20`]
-    next{ 2`yhat * yhat * 7` }
-}
+2`prev {
+[yhat|->f 20]
+    `1`next{`2`yhat * yhat * 7`1`}
+`2`}`
 \end{lstlisting}
 Once again, we lift the results of speculation into a substitution:
 \begin{lstlisting} 
-prev {
-[2`yhat`|->2`f 20`]
-[2`zhat`|->2`yhat * yhat * 7`]
-    next{ 2`zhat` }
-}
+2`prev {
+[yhat|->f 20]
+[zhat|->yhat * yhat * 7]
+    `1`next{`2`zhat`1`}`2`
+}`
 \end{lstlisting}
 Finally, when canceling the last $\next$ and $\prev$, the semantics {\em reifies} the contained substitutions into let statements, yielding
 \begin{lstlisting} 
@@ -249,11 +249,11 @@ statement in its search for stage~\bbone\ code.
 Thus the evaluation of that stage~\bbone\ code will occur {\em regardless of the eventual value of the predicate},
 and so a term like 
 \begin{lstlisting} 
-next{
-  2`if true 
-  then `hold{1`3+4`} 
-  2`else` prev{1`spin() (* loops forever *)`}
-}
+1`next{
+  `2`if true 
+  then hold{`1`3+4`2`} 
+  else prev{`1`spin() (* loops forever *)`2`}`1`
+}`
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
 This behavior is why the judgment is named ``speculation."
