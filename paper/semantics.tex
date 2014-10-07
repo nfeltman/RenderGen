@@ -232,21 +232,25 @@ while residuals are stage~\bbtwo\ terms.
 
 \ur{Many incorrectly hyphenated ``partial values'' in this text.}
 
-The $\redonesym$ judgment takes an stage \bbone\ term\footnote{
-The input to $\redonesym$ may be open on stage \bbtwo\ variables,
-but the type system ensures that those must occur under a $\next$.
-Consequently $\redonesym$ will never directly encounter a variable.
-} to a {\em future environment} $\xi$ and a partial value $v$.  
-The future environment implements
-the explicit substitutions in our example---it maps fresh stage \bbtwo\
-variables (which may appear inside $\next$ blocks in $v$) to
-residuals. For non-staging features of \lang\ (\ref{fig:diaSemanticsCore}),
-$\redonesym$ is essentially standard call-by-value evaluation, and gathers the
-subterms' future environments into a single one.
+The $\redonesym$ judgment, defined in \ref{fig:diaSemantics}, takes an stage
+\bbone\ term%
+\footnote{ The input to $\redonesym$ may be open on stage \bbtwo\ variables, but
+the type system ensures that those must occur under a $\next$. Consequently
+$\redonesym$ will never directly encounter a variable.}
+%
+to a {\em future environment} $\xi$ and a partial value $v$. The future
+environment implements the explicit substitutions in our example---it maps fresh
+stage \bbtwo\ variables (which may appear inside $\next$ blocks in $v$) to
+residuals. For non-staging features of \lang, $\redonesym$ is essentially
+standard call-by-value evaluation, and gathers the subterms' future environments
+into a single one.
+
+\crem{Can we cut \ref{fig:diaSemanticsSpec} from the paper? Perhaps just put a
+few representative rules into \ref{fig:diaSemantics}?}
 
 At $\next~e$, in contrast, $\redonesym$ speculates into $e$ for stage~\bbone\ 
-subexpressions to evaluate.  (See \ref{fig:diaSemanticsNP}.)
-This is implemented by the $\redtwosym$ judgment, which takes a stage \bbtwo\ term to a residual. 
+subexpressions to evaluate.  This is implemented by the $\redtwosym$ judgment,
+which takes a stage \bbtwo\ term to a residual. 
 For the most part (\ref{fig:diaSemanticsSpec}), speculation simply recurs into
 all subexpressions; at $\prev$, however, it resumes $\redonesym$ evaluation,
 which produces a future context $\xi$ and (by canonical forms) an expression

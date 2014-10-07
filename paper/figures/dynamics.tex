@@ -37,20 +37,18 @@
 \inferdiaone [\mu I]   		{\red {\roll~e}{\xi;\roll~v}}									{\sub}												\and
 \inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							\and
 \end{mathpar}
-\caption{\lang~Dynamic Semantics: Core}
-\label{fig:diaSemanticsCore}
-\end{figure*}
-
-\begin{figure*}
+\hrule
 \begin{mathpar}
+\fbox{Staging features}
+\and
 \inferdiaone [\fut I]			{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}								{\diatwo e q}															\and
 \inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}							\and
 \inferdiaspc [hold]			{\red {\pause~e} q}													{\diaone e {\xi; i} & \reify \xi i q}								\and
 \infer							{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
-\caption{\lang~Dynamic Semantics: $\next$ and $\prev$}
-\label{fig:diaSemanticsNP}
+\caption{\lang~Dynamic Semantics}
+\label{fig:diaSemantics}
 \end{figure*}
 
 \begin{figure*}

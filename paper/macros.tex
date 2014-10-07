@@ -150,12 +150,14 @@
 		[NONAME]{
 			\renewcommand \ty \typeswor
 			\renewcommand \col \colwor
-			\infer [\mathrm{#1}] {#2}{#3}}
+			\infer %[\mathrm{#1}] 
+      {#2}{#3}}
 \newcommand {\inferreducewor} [3] 
 		[NONAME]{
 			\renewcommand \red \reducewor
 			\renewcommand \sub \reduceworsub
-			\infer [\mathrm{#1\Downarrow}] {#2}{#3}}
+			\infer [\mathrm{#1\Downarrow}] 
+      {#2}{#3}}
 \newcommand {\inferreducespc} [3] 
 		[NONAME]{
 			\renewcommand \red \specwor
@@ -165,12 +167,14 @@
 		[NONAME]{
 			\renewcommand \red \diaone
 			\renewcommand \sub \diaonesub
-			\infer [\mathrm{#1\Downarrow_\bbone}] {#2}{#3}}
+			\infer %[\mathrm{#1\Downarrow_\bbone}] 
+      {#2}{#3}}
 \newcommand {\inferdiaspc} [3] 
 		[NONAME]{
 			\renewcommand \red \diatwo
 			\renewcommand \sub \diatwosub
-			\infer [\mathrm{#1\Downarrow_\bbtwo}] {#2}{#3}}
+			\infer %[\mathrm{#1\Downarrow_\bbtwo}] 
+      {#2}{#3}}
 \newcommand {\infersplitone}  [3] 
 		[NONAME]{
 			\renewcommand \spl \splitone
