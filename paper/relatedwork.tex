@@ -1,39 +1,18 @@
 
-
-
 \section{Related Work}
 
+\subsection {Staged Computation}
+Partial evaluation is a well-studied technique for specializing programs to some of their input.  
+The usual phrasing of the partial evaluation problem implicitly includes binding time analysis,
+but many presentations start with a stage-annotated representation, as we have done.
+We've shown that our dynamic semantics can be used to perform partial evaluation 
+[need to do more reading to know exactly how it compares].
 
-\subsection{Davies}
-
-\cite{davies96} explored the connection between linear temporal logic and its corresponding type system (which is nearly identical to that for \lang), 
-and showed the equivalence between that type system and existing one for binding time analysis. 
-That work also provided a metaprogramming-style duplicating dynamic semantics, which we purposely avoided.
-That said, the dynamics of \cite{davies96} is otherwise very similar to ours.
-In fact, if we change the $\next$ and $\prev$ rules of ours to 
-\begin{mathpar}
-\infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
-\infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
-\end{mathpar}
-and treat $\next~q$ as a partial value for any residual $q$,
-then our semantics becomes rule-for-rule isomorphic to that from \cite{davies96}. This essentially bypasses the
-environment bookkeeping in $\redonesym$, by inlining residuals instead of
-hoisting them in \verb|let|-bindings.
-From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
-{\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
-
-\subsection{Multi-stage (meta) programming}
-{\bf Umut: jotting down notes for now.}
-
-Multi-stage, a.k.a., meta programming or staged programming, gives the
-programmer linguistic facilities consisting of language constructs
-(usually also a type system, including a dynamic semantics) for
-expressing programs where inputs may come in stages.  Earlier work on
-staged programming was motivated by understanding the effects of
-binding-time analysis that partial evaluation relied on and allowing
-control over staging so that the programmer can control the
-termination and efficiency characteristics of staged programs.
-Several different approaches to staged programming has been proposed.
+One unifying feature of partial evaluation systems is that they operate on code which is closed at the first stage,
+and so they must necessarily unfold recursive calls.
+This potentially explodes the size of a residual, which can be a problem.
+Stage-splitting, in contrast, operates on terms which are open on first stage variables,
+and so this problem is avoided.
 
 
 Davies ...  
@@ -56,18 +35,62 @@ asymptotically) faster. COMPARE DYNAMIC SEMANTICS
  Unlike the evaluati
 
 
+Multi-stage, a.k.a., meta programming or staged programming, gives the
+programmer linguistic facilities consisting of language constructs
+(usually also a type system, including a dynamic semantics) for
+expressing programs where inputs may come in stages.  Earlier work on
+staged programming was motivated by understanding the effects of
+binding-time analysis that partial evaluation relied on and allowing
+control over staging so that the programmer can control the
+termination and efficiency characteristics of staged programs.
+Several different approaches to staged programming has been proposed.
 
+\subsection{Stage Splitting}
 
-\subsection{Specialization}
+Stage-splitting itself has appeared in the literature---under 
+the names {\em pass separation} and {\em data specialization}--- for various simpler input languages.
 
-Our stage-splitting algorithm was first suggested in \cite{jorring86} under the name {\em pass separation}.  They essentially proposed that a function $f$ could be split into two others, $f_1$ and $f_2$, such that $f(x,y)=f_2(f_1(x),y)$.  They did not distinguish binding time analysis from stage splitting, and so pass separation inherits the former's ambiguity.  The main goal of \cite{jorring86} was to motivate pass separation and other staging transformations as a powerful way to think about compilation and optimization.  Accordingly, their approach was entirely informal, with no implementation realized.  Moreover, they predicted that ``the [pass separation] approach will elude full automation for some time."  
+Most often, splitting is considered a compiler optimization (\cite{jorring86},\cite{knoblock96})
+to minimize recomputation.
+In this use case, only the arguments to the program are annotated with stages, 
+and the splitter is left to perform an {\em ad hoc} binding time analysis to determine the 
+internal staging of the program.
+Because this occurs without programmer supervision, the binding time analyzers for these uses are 
+reluctant to place stage \bbone\ code within stage \bbtwo\ conditionals, 
+since that would result in speculative behavior that could increase the overall runtime.
+We don't worry about this since the annotations of \lang\ are assumed to represent the will of a programmer.
 
-Implementations of the stage-splitting algorithm have appeared in the literature exclusively (and coincidentally) in the context of graphics pipelines.  The first of these (\cite{knoblock96}) uses a binding time analysis to separate those parts of graphics shaders that are input-invariant from those which are not, and then uses a stage splitting algorithm to factor that into two shaders, thereby minimizing recomputation.  Their shaders are written in a C-like language with basic arithmetic and if statements.  Although their analysis does not give an explicit account of the type-level behavior of the splitting algorithm, it effectively can synthesize product and sum boundary type.  
+Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  
+But instead of using a binding-time analysis to determine what parts of the program to put in what shader, 
+Spark gives the programmer manual control of term staging using a language that is in spirit similar to \lang. 
 
-\subsection{Graphics Systems}
+We are also not the first to use stage splitting to derive algorithms.
+\cite{malmkjaer89}, expanding on the work of \cite{barzdins88}, defined a stage-splitter
+for a language of tail-recursive first-order equations with explicit staging annotations [double check that],
+and considered applications to string matching.
 
-Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  But instead of using a binding-time analysis, Spark allows the programmer to manually target stages of the graphics pipeline.  Since the modern graphics pipeline is inherently a many-to-one system, this is difficult to reconcile with sum types on the boundary.  Fortunately, Spark has a set of syntactic restrictions that prevent sum boundary types.  Spark does not clearly identify this conflict, but the authors did note that first-stage if statements were difficult to provide meaning to [need quote].
+Our work is distinct from all previous stage splitters in the following ways:
+\begin{itemize}
+\item Our input language, \lang, has a disciplined type theory.
+\item \lang\ has full first-class functions (and by extension, recursion), as well as sum types.
+\item Our stage splitting is proven correct.
+\end{itemize}
 
-[RTSL and SH]
+\subsection{Davies}
 
+\cite{davies96} explored the connection between linear temporal logic and its corresponding type system (which is nearly identical to that for \lang), 
+and showed the equivalence between that type system and existing one for binding time analysis. 
+That work also provided a metaprogramming-style duplicating dynamic semantics, which we purposely avoided.
+That said, the dynamics of \cite{davies96} is otherwise very similar to ours.
+In fact, if we change the $\next$ and $\prev$ rules of ours to 
+\begin{mathpar}
+\infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
+\infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
+\end{mathpar}
+and treat $\next~q$ as a partial value for any residual $q$,
+then our semantics becomes rule-for-rule isomorphic to that from \cite{davies96}. This essentially bypasses the
+environment bookkeeping in $\redonesym$, by inlining residuals instead of
+hoisting them in \verb|let|-bindings.
+From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
+{\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
 
