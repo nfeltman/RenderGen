@@ -14,36 +14,22 @@ This potentially explodes the size of a residual, which can be a problem.
 Stage-splitting, in contrast, operates on terms which are open on first stage variables,
 and so this problem is avoided.
 
-
-Davies ...  
-
-Taha's approach is similar to Davies, but extends Davies's approach
-with ``cross-stage persistency'' which allows a variable to be used in
-any later stage and a ``run'' construct that allows evaluating an
-expression.  Our language constructs therefore are also close to
-staged programming such as proposed by Taha.  In fact our static
-semantics is essentially identical to Taha's.  Though, as Davies, we
-don't include ``run'' in the language.  The dynamic semantics of
-staged languages... COMPLETE
-
-
-The key difference between our work and Taha's and similar work on
-staging is our splitting algorithm that can translate the staged code
-to a different code that can run significantly (sometimes
-asymptotically) faster. COMPARE DYNAMIC SEMANTICS
-
- Unlike the evaluati
-
-
-Multi-stage, a.k.a., meta programming or staged programming, gives the
-programmer linguistic facilities consisting of language constructs
-(usually also a type system, including a dynamic semantics) for
-expressing programs where inputs may come in stages.  Earlier work on
-staged programming was motivated by understanding the effects of
-binding-time analysis that partial evaluation relied on and allowing
-control over staging so that the programmer can control the
-termination and efficiency characteristics of staged programs.
-Several different approaches to staged programming has been proposed.
+There's another staging technique known as {\em metaprogramming} (\cite{taha-thesis-99}, \cite{devito13}, \cite{davies01}).
+The differences between it and partial evaluation can be subtle.
+The core idea of metaprogramming is to interpret stage \bbtwo\ values as {\em code} in some object language
+which stage \bbone\ can manipulate.
+This has three implications:
+\begin{itemize}
+\item Stage annotations are now mandatory, rather than optional.
+\item The $\next$-contents-duplicating semantics is now intended behavior [this needs to be verified].
+This changes the cost of terms from what they would be in \lang's semantics, 
+but that's merely something for the programmer to keep in mind.
+\item In metaprogramming systems, it now makes sense to define an operator, \texttt{run}, 
+which evaluates stage \bbtwo\ code to get an answer back at stage \bbone.
+When you think about it, this is a form a backwards information flow.
+For this reason, the \texttt{run} feature is in direct conflict with stage-splitting,
+which by its definition cannot work for a language that allows backwards control flow.
+\end{itemize}
 
 \subsection{Stage Splitting}
 
