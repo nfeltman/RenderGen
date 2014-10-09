@@ -80,3 +80,16 @@ hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
 {\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
 
+\ur{Umut: I am starting a paragraph on termination.  we might need to expand
+  on this.}
+\paragraph{Termination.}
+
+There are two reasons for non-termination: infinite loops and
+execution of errorneous code.  The splitting algorithm can cause the
+first.  But can it also cause the second? (If all computations really
+depend on stage 1 code, then would it be possible to for example see
+something like 1/0?  i think so but only if there is a meta dependency
+between the data in two stages?)
+
+Termination analysis in partial evaluation: see paper~\cite{AH96,GJ05}.
+
