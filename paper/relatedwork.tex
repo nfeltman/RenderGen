@@ -1,7 +1,6 @@
 
 \section{Related Work}
 
-\subsection {Staged Computation}
 Partial evaluation is a well-studied technique for specializing programs to some of their input.  
 The usual phrasing of the partial evaluation problem implicitly includes binding time analysis,
 but many presentations start with a stage-annotated representation, as we have done.
@@ -9,29 +8,11 @@ We've shown that our dynamic semantics can be used to perform partial evaluation
 [need to do more reading to know exactly how it compares].
 
 One unifying feature of partial evaluation systems is that they operate on code which is closed at the first stage,
-and so they must necessarily unfold recursive calls.
-This potentially explodes the size of a residual, which can be a problem.
-Stage-splitting, in contrast, operates on terms which are open on first stage variables,
-and so this problem is avoided.
+and so they must necessarily unfold recursive calls and wait for all stage \bbone\ input to operate.
+There has been some work to avoid these issues by templating [need citations].
+Stage-splitting, in contrast, goes all the way to operating on terms which are open on first stage variables,
+and so these problems are avoided.
 
-There's another staging technique known as {\em metaprogramming} (\cite{taha-thesis-99}, \cite{devito13}, \cite{davies01}).
-The differences between it and partial evaluation can be subtle.
-The core idea of metaprogramming is to interpret stage \bbtwo\ values as {\em code} in some object language
-which stage \bbone\ can manipulate.
-This has three implications:
-\begin{itemize}
-\item Stage annotations are now mandatory, rather than optional.
-\item The $\next$-contents-duplicating semantics is now intended behavior [this needs to be verified].
-This changes the cost of terms from what they would be in \lang's semantics, 
-but that's merely something for the programmer to keep in mind.
-\item In metaprogramming systems, it now makes sense to define an operator, \texttt{run}, 
-which evaluates stage \bbtwo\ code to get an answer back at stage \bbone.
-When you think about it, this is a form a backwards information flow.
-For this reason, the \texttt{run} feature is in direct conflict with stage-splitting,
-which by its definition cannot work for a language that allows backwards control flow.
-\end{itemize}
-
-\subsection{Stage Splitting}
 
 Stage-splitting itself has appeared in the literature---under 
 the names {\em pass separation} and {\em data specialization}--- for various simpler input languages.
@@ -62,7 +43,20 @@ Our work is distinct from all previous stage splitters in the following ways:
 \item Our stage splitting is proven correct.
 \end{itemize}
 
-\subsection{Davies}
+The goal of {\em metaprogramming} (\cite{taha-thesis-99}, \cite{devito13}, \cite{davies01}) is 
+to use code in a host language to write code in an object language.
+Like partial evaluation and stage-splitting, this can be modeled by a staged language with explicit annotations.
+Instead of identifying stages with points in time, stages are identified with host/object levels of the language,
+and so type safety ensures the proper separation of levels of the language and safety of the constructed object code.
+
+But the differences in goals of metaprogramming do cause a few differences in form.
+For example, it's generally preferred in the metaprogramming context to use 
+a dynamics that duplicates the contents of $\next$ blocks.
+Moreover, in metaprogramming systems it makes sense to define an operator, \texttt{run}, 
+which evaluates stage \bbtwo\ code to get an answer back at stage \bbone.
+This is essentially a form a backwards information flow.
+Thus, the \texttt{run} feature is directly incompatible with a temporal interpretation of stages,
+which stage-splitting requires.
 
 \cite{davies96} explored the connection between linear temporal logic and its corresponding type system (which is nearly identical to that for \lang), 
 and showed the equivalence between that type system and existing one for binding time analysis. 
