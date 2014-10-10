@@ -150,3 +150,49 @@ Is this a problem for us?
 \paragraph{Supercompilation.}
 ~\cite{Turchin86}
 
+
+\paragraph{Intro.}
+
+A predominating theme in the design, implementatation, and
+optimization of algorithm and software is frequency reduction and
+precomputation.  The idea is to reduce the frequency of computations
+by reducing their frequency and ideally by precomputing when possible.
+
+
+The reason for why this theme is as predominant as it is that it is
+naturally common in many actual applications.  For example, we may
+have a collection of names or numbers that we frequently lookup, as
+for example part of a membership test as part of a larger system.  In
+some applications areas such as in graphics (the motivation for our
+work), this is so common that there is a relatively large literature
+on speeding up graphics computations by taking advantage of frequency
+reduction and precomputation.
+
+One way to express frequency of computations is to allow the
+programmer to stage computation explicitly by making explicit the
+stage of each computation and then by moving computations between
+stages to improve efficiency by performing work as early (to save time
+later when performance might be more critical) and  as infrequently
+as possible (to reduce overall time).
+
+
+
+
+
+
+For example, in meta-programming~\cite{}, the programmer can assign a
+program expression a stage (stage 1, 2, 3, ...), which indicates the
+stage at which that expression evaluates.  Combined with the ability
+for earlier stages to construct expressions of later stages,
+meta-programming techniques can be used to construct efficient
+programs that improve efficiency over their non-staged counterparts by
+reducing frequency reduction and precomputation.  For example, the
+programmer can write a program that takes a list of numbers $\ell$ as
+a first stage value and returns a second-stage function that performs
+a fast membership test on that list $\ell$ by inlining all the
+comparisons.  When given a key to lookup in the second stage, the
+membership test function would quickly return the result.
+
+
+
+
