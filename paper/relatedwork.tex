@@ -74,6 +74,40 @@ hoisting them in \verb|let|-bindings.
 From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
 {\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
 
+
+\subsection{Umut's notes}
+
+---- DO NOT DELETE ----
+
+
+Answer the following question for all of the related work:
+
+What happens when we try to write quickselect as a meta program? 
+
+
+\paragraph{Partial Evaluation.}
+Online and offline.  Both approaches have their merits but online
+partial evaluation can be too slow and if stopped lead to an
+inefficient residual.  Offline partial evaluation is faster.  Also,
+full self-application has only been achieved by offline partial
+evaluation.
+
+
+Weaknesses of partial evaluation include~\cite{GJ05}:
+1) speedups linear in the subject programs run time (excuse moi?)
+
+2) good speedups require close knowledge of the program and some
+binding-time improvements.
+
+3) result of specialization can be hard to predict as it can lead to
+slowdown, code explosion, and non-termination at specialization time.
+
+
+\paragraph{Meta programming}
+
+What happens when we try to write quickselect as a meta program? 
+
+
 \ur{Umut: I am starting a paragraph on termination.  we might need to expand
   on this.}
 \paragraph{Termination.}
@@ -85,5 +119,34 @@ depend on stage 1 code, then would it be possible to for example see
 something like 1/0?  i think so but only if there is a meta dependency
 between the data in two stages?)
 
+
+Is in possible for the residual program to not terminate (unexpectedly)? 
+
 Termination analysis in partial evaluation: see paper~\cite{AH96,GJ05}.
+
+Based on Glenstrup and Jones (pp. 1154, 1155), a partial evaluator
+should be complete. That is every computation depending on the static
+input should be reduced to a value (during specialization).
+Unfortunately, completeness is difficult to achieve if we also require
+that the specialization is always terminating.
+
+One problem with their description is that it is not clear which
+termination problem they are talking about termination of the residual
+or the specializer. 
+
+Nontermination during specialization: 
+consider code
+
+double x = doubleplus (x,0) 
+
+doubleplus (u,v) = if u <= 0 then v else doubleplus (u-1,v+2)
+
+this can lead to non-termination if v is considered static.  
+
+Is this a problem for us? 
+
+
+
+\paragraph{Supercompilation.}
+~\cite{Turchin86}
 
