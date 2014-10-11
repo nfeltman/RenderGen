@@ -1,9 +1,17 @@
 
 \section{Related Work}
+There are several distinctive aspect of our work which we wish to compare and contrast.
+Firstly, \lang\ is a simply typed lambda calculus 
+with explicit stage annotations and a non-duplicating semantics.
+Its statics and dynamics enforce no backward information flow,
+which a is necessary property to define a splitting transformation
+that is equivalent to the dynamics.
+Finally, the splitting transformation itself operates on any well-typed open term in \lang.
 
 Partial evaluation is a well-studied technique for specializing programs to some of their input.  
-The usual phrasing of the partial evaluation problem implicitly includes binding time analysis,
-but many presentations start with a stage-annotated representation, as we have done.
+Often, the goal of partial evaluation systems is to go all the way from unstaged code to a specialized version.
+Although this problem definition implicitly includes binding time analysis,
+many presentations factor out that step and start with a stage-annotated representation, as we have done.
 We've shown that our dynamic semantics can be used to perform partial evaluation 
 [need to do more reading to know exactly how it compares].
 
