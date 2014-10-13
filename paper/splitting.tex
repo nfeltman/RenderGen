@@ -109,13 +109,20 @@ when appropriate.
 
 \ur{Reformat rules to make them fit into the paper.}
 
-\ur{Explain the rules.  This is the most important part of the
-  paper. Work needed here.}
-Every $\splittwosym$ rule works by bundling the precomputations of the constituent parts, and
-then unbundling them with a pattern.
-The rules for splitting $\next$, $\prev$, and $\pause$ are given in \ref{fig:termSplitOne}.
+The $\splittwosym$ rules are conceptually simple and almost all very similar.  
+As mentioned before, the only responsibility of $\splittwosym$ is to lift out the precomputation
+from contained stage \bbone\ code into a single expression $p$, 
+leaving a residual $l.r$ to interpret the results of that precomputation.
+Since base types and variables have no stage \bbone\ content, their precomputation is trivial;
+that is, $p$ is a unit value and $l$ is never used in $r$.
+At every other expression except $\prev$, the $\splittwosym$ rule works by bundling 
+the precomputations of the constituent parts, and then unbundling them with a pattern,
+with the residual precisely resembling the original expression.
+
 The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,
-while the rule for $\prev$ projects the combined result of its subexpression to just the precomputation.
+while the rule for $\prev$ projects the combined result of its subexpression to isolate the precomputation.
+It may seem like this $\prev$ rule is throwing information away, but we well show later that the first component 
+of the evaluated form of $c$ in the $\prev$ rule must always be unit.
 The $\pause$ rule treats the entire combined result of its subexpression as a precomputation, 
 and projects out the integer result in the residual.%
 \footnote{The residual of an integer expression is usually trivial, 
