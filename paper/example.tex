@@ -151,3 +151,158 @@ that's just the identity at stage~\bbone\ and plus quickselect at stage~\bbtwo.
 There has been the extensive research into the question of how to automatically add staging annotations to unstaged code.
 This process is known as {\em binding time analysis}, and we do not consider it here.
 Instead, we assume that all input programs are properly staged according to some programmer's intent.
+
+\subsection{Splitting of Quickselect}
+
+Here, we will manually split apart the \texttt{qSelect} function in order to give some intuition about how the operation works.
+
+We start with the basic \texttt{qSelect}:
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        `2`let n = hold{`1`n`2`} in
+        case compare prev{`1`k`2`} n of
+          LT => prev {`1`qsStaged left k`2`}
+        | EQ => hold {`1`h`2`}
+        | GT => prev {`1`qsStaged right 
+                             next{prev{k}-n-1)}`2`}`1`
+      }`
+\end{lstlisting}
+
+Again our goal is to split this into \texttt{qSelect1} and \texttt{qSelect2} such that \texttt{qStaged l i = qSelect2 (qSelect1 l) i}.  
+The first step in this process is to assume this conclusion at the recursive sites:
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        `2`let n = hold{`1`n`2`} in
+        case compare prev{`1`k`2`} n of
+          LT => qSelect2 (`1`qSelect1 left`2`) k
+        | EQ => hold {`1`h`2`}
+        | GT => qSelect2 (`1`qSelect1 right`2`) 
+                                      (k-n-1)`1`
+      }`
+\end{lstlisting}
+
+We then pull the stage \bbone\ portion of each branch of the comparison up into a single tuple.
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        `2`let n = hold{`1`n`2`} in
+        let p = `1`(h,qSelect1 left,qSelect1 right)`2`
+        case compare k n of
+          LT => qSelect2 (pi2 p) k
+        | EQ => pi1 p
+        | GT => qSelect2 (pi3 p) (k-n-1)`1`
+      }`
+\end{lstlisting}
+
+We continue to pull up the precomputation and include more in it:
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let p =
+        let (left,right,n) = partition h t in
+        `1`(n,h,qSelect1 left,qSelect1 right)
+      in`2`
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+This completes the splitting of the cons branch.  
+The empty branch can also be split, though in a trivial way:
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => let p = () in `2`0`1`
+  | Cons (h,t) => 
+      let p =
+        let (left,right,n) = partition h t in
+        `1`(n,h,qSelect1 left,qSelect1 right)
+      in`2`
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+To continue splitting the case statement, we need to us a sum type in the precomputation
+to remind the code what branch its in.
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list) (k : $`2`int`1`) : $`2`int`1` = 
+  let p = 
+    case l of
+      Empty => Top ()
+    | Cons (h,t) =>
+        let (left,right,n) = partition h t in`1`
+        Bot (n,h,qSelect1 left,qSelect1 right)
+  in`2`
+  case p of 
+    Top () => 0
+  | Bot p => 
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+We finish where we start, splitting \texttt{qsStaged} into
+\texttt{qSelect1} and \texttt{qSelect2}.  
+Omitting a few type annotations, that is:
+
+\begin{lstlisting} 
+1`fun qSelect1 (l : list) = 
+    case l of
+      Empty => Top ()
+    | Cons (h,t) =>
+        let (left,right,n) = partition h t in
+        Bot (n,h,qSelect1 left,qSelect1 right)
+`2`
+fun qSelect2 p (k : int) : int = 
+  case p of 
+    Top () => 0
+  | Bot p => 
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
