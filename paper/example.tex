@@ -86,77 +86,9 @@ Quickselect is an algorithm for finding the $k$-th largest element in a list.
 It works by partitioning the input list into sublists containing elements less than and greater than the head element, 
 then recurring on the sublist containing the desired element.
 
-One notable property of quickselect is that the partitioning of the list, even through its recursive calls, depends only on the values of list elements, not on the value of $k$ 
-\footnote{There is a control-dependence on $k$ -- that is $k$ determines what splits are made but not how they are made -- we ignore this for now.}.  Therefore, if quickselect were to be evaluated many times on the same list, this independence admits a familiar optimization where the algorithm is split into two functions: one which precomputes \emph{all partitions} of the input list needed for any value of $k$ (resulting in a binary search tree---see \texttt{qSelect1} in \ref{fig:qssplit}),
-and another which, given $k$, uses the tree to perform accelerated lookup of the $k$-th element (essentially performing binary search of a sorted list---see \texttt{qSelect2}).  
-Equationally, we can represent this relationship as 
-\[
-\mathtt{qSelect(l,k)} \equiv \mathtt{qSelect2(qSelect1(l),k)}
-\]
-
-The benefits of this decomposition are substantial: for a randomly ordered list of length $n$, 
-the original \texttt{qSelect} takes expected $O(n)$ time per lookup, 
-whereas \texttt{qSelect2} takes $O(\log n)$ time.
-Since \texttt{qSelect1} does not depend on $k$, its $O(n\log n)$ cost can be amortized over many lookups.
-%One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
-%and then used to accelerate many future lookups for any value of $k$.
-
-This paper defines how to statically perform splitting transformations, like the one described above, on programs written in a simple staged language we call \lang.  \lang\ unambiguously specifies how its terms should be split
-% and features a type system that ensures valid splittings exist.
-% only minimal refactoring should be required to write terms within this language,
-%and from there, the type system should be enough to prove that a valid splitting exists.
-by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
-Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate it---all stage-\bbone\
-subexpressions are evaluated before stage-\bbtwo\ ones.  
-After splitting, those parts of the \lang\ term that were identified with stage \bbone\ 
-will end up in the stage \bbone\ function ({\tt qSelect1}), 
-and those parts identified with stage \bbtwo\ will end up in the stage \bbtwo\ function ({\tt qSelect2}).
-Typing rules for \lang\ ensure a valid splitting exists.  That is, 
-within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
-but never from \bbtwo\ to \bbone.
-
-\ref{fig:qsstaged} shows a staged implementation of quickselect in \lang.
-As before, the function accepts as input the list to select from and a value of $k$,
-but now the latter is represented with the type $\fut\rmint$ rather than $\rmint$.
-The difference here is that an $\rmint$ is an integer available at the current stage (stage \bbone), 
-whereas a $\fut\rmint$ is an integer available only at the next stage (stage \bbtwo).
-Naturally the output type, representing the $k$th largest element of the list,
-is also $\fut\rmint$, since it is not computed until stage \bbtwo.
-
-Each construct in the body of quickselect is now associated with a stage via an interleaving of $\next$ and $\prev$ blocks.  
-Specifically, $\next$ occurs in a stage \bbone\ context and indicates that the contents of its block are stage \bbtwo, 
-whereas $\prev$ occurs in a stage \bbtwo\ context and indicates that the contents of its block is stage \bbone.
-(We adopt the convention that the top-level context is stage \bbone.)
-The output type of a $\next$ block is the $\fut$'d version of the type of its stage \bbtwo\ contents.  
-For example, \verb|next{0}| from above has the type $\fut\rmint$.
-Correspondingly, $\prev$ requires that its stage \bbone\ contents have a $\fut$ type, and it eliminates the wrapper.
-For example, \verb|prev{k}| from above has type $\rmint$ at stage \bbtwo, since $k$ is bound to a $\fut\rmint$ at stage \bbone.
-These type restrictions essentially enforce that ``later stage content" is always treated hygienically at stage \bbone,
-which is necessary to admit a properly staged implementation.
-
-The code also contains two $\pause$ blocks.  
-This construct has same stage signature as $\prev$,
-but instead of ``unwrapping" $\fut$ types it simply promotes integers from stage~\bbone\ to stage~\bbtwo.
-\footnote{It will turn out that $\pause$ is implementable---though it takes some effort---from our other language features.
-We instead provide it as a primitive to shorten examples.  
-Furthermore, it would be wise to extend $\pause$ to other base types, if we had them, and to products and sums thereof.
-This is related to the notion of {\em mobility} in \cite{murphy05} and {\em stability} in \cite{krishnaswami13}.}
-
-But for the $\fut$, $\next$, $\prev$, and $\pause$ constructs, 
-the staged version of quickselect in \ref{fig:qsstaged} is virtually identical to the unstaged version in \ref{fig:quickselect}.
-The constructs that were added were placed in order to maximize the work done at stage~\bbone\ while still conforming to the type signature.
-It would have also been valid to simply move the whole input list unchanged into stage~\bbtwo\ at the very beginning, 
-but that would not be particularly interesting since it would result in an effectively trivial split 
-that's just the identity at stage~\bbone\ and plus quickselect at stage~\bbtwo.
-There has been the extensive research into the question of how to automatically add staging annotations to unstaged code.
-This process is known as {\em binding time analysis}, and we do not consider it here.
-Instead, we assume that all input programs are properly staged according to some programmer's intent.
-
-\subsection{Splitting of Quickselect}
-
-Here, we will manually split apart the \texttt{qSelect} function in order to give some intuition about how the operation works.
-
-We start with the basic \texttt{qSelect}:
+One notable property of quickselect is that the partitioning of the list, 
+even through its recursive calls, depends only on the values of list elements, and not on the value of $k$.
+To illustrate this, we present colorized version of \texttt{qSelect}:
 
 \begin{lstlisting} 
 1`datatype list = Empty | Cons of int * list
@@ -173,9 +105,35 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | GT => `qSelect 1`right `2`(k-n-1)`
 \end{lstlisting}
 
-Again our goal is to split this into \texttt{qSelect1} and \texttt{qSelect2} such that \texttt{qStaged l i = qSelect2 (qSelect1 l) i}.  
-The first step in this process is to assume this conclusion at the recursive sites:
+Here, the input $k$ and all parts of the computation that depend on it are colored blue,
+whereas all of the parts of the computation that do not depend on $k$ are colored red.
+The \texttt{qSelect} variable itself, due to its status as a function with a mixed-color body, is left black.
 
+To be precise, our coloring strategy respects data dependence, but not control dependence---the 
+first arguments to the recursive calls to \texttt{qSelect} are colored red,
+despite appearing underneath a blue case statement.
+Because of this coloring strategy and the definition of data dependence, 
+information can flow from red code to blue code but not vice versa.
+
+Observe the that helper function \texttt{partition} is colored entirely red.
+This is where much of the work of the quickselect algorithm takes place, and it doesn't even depend on $k$!
+
+This suggests an optimization: we can split \texttt{qSelect} into two functions, 
+one for all of the red code and another for all of the blue code. 
+We'll call them \texttt{qSelect1} and \texttt{qSelect2}.
+Because of the dependence properties stated above, 
+\texttt{qSelect2} will need only depend on the results of \texttt{qSelect1} and the input index $k$,
+whereas \texttt{qSelect1} will only depend on the input list $l$.
+Of course, the meaning of \texttt{qSelect1} appropriately composed with \texttt{qSelect2} should be the same as \texttt{qSelect}, too.
+Equationally, we can represent this relationship as simply 
+\[
+\mathtt{qSelect~l~k} \equiv \mathtt{qSelect2~(qSelect1~l)~k}
+\]
+
+With this goal in mind, we now set about deriving \texttt{qSelect1} and \texttt{qSelect2} from \texttt{qSelect}.
+Because the original function is recursive,
+the first step in this process is to assume this conclusion at the call sites.
+This is performed in place:
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
   case l of
@@ -187,9 +145,7 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | EQ => h
       | GT => qSelect2 (`1`qSelect1 right`2`) (k-n-1)`
 \end{lstlisting}
-
 We then pull the stage \bbone\ portion of each branch of the comparison up into a single tuple.
-
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
   case l of
@@ -202,7 +158,7 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | EQ => pi1 p
       | GT => qSelect2 (pi3 p) (k-n-1)`
 \end{lstlisting}
-
+This last step is necessary, but we can perform it only because we're willing to ignore the control dependence.
 We continue to pull up the precomputation and include more in it:
 
 \begin{lstlisting} 
@@ -280,3 +236,64 @@ fun qSelect2 p (k : int) : int =
       | EQ => pi2 p
       | GT => qSelect2 (pi4 p) (k-n-1)`
 \end{lstlisting}
+
+The final version is shown in figure...
+Note that it's basically a tree algorithm...
+
+The benefits of this decomposition are substantial: for a randomly ordered list of length $n$, 
+the original \texttt{qSelect} takes expected $O(n)$ time per lookup, 
+whereas \texttt{qSelect2} takes $O(\log n)$ time.
+Since \texttt{qSelect1} does not depend on $k$, its $O(n\log n)$ cost can be amortized over many lookups.
+%One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
+%and then used to accelerate many future lookups for any value of $k$.
+
+This paper defines how to statically perform splitting transformations, like the one described above, on programs written in a simple staged language we call \lang.  \lang\ unambiguously specifies how its terms should be split
+% and features a type system that ensures valid splittings exist.
+% only minimal refactoring should be required to write terms within this language,
+%and from there, the type system should be enough to prove that a valid splitting exists.
+by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
+Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate it---all stage-\bbone\
+subexpressions are evaluated before stage-\bbtwo\ ones.  
+After splitting, those parts of the \lang\ term that were identified with stage \bbone\ 
+will end up in the stage \bbone\ function ({\tt qSelect1}), 
+and those parts identified with stage \bbtwo\ will end up in the stage \bbtwo\ function ({\tt qSelect2}).
+Typing rules for \lang\ ensure a valid splitting exists.  That is, 
+within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
+but never from \bbtwo\ to \bbone.
+
+\ref{fig:qsstaged} shows a staged implementation of quickselect in \lang.
+As before, the function accepts as input the list to select from and a value of $k$,
+but now the latter is represented with the type $\fut\rmint$ rather than $\rmint$.
+The difference here is that an $\rmint$ is an integer available at the current stage (stage \bbone), 
+whereas a $\fut\rmint$ is an integer available only at the next stage (stage \bbtwo).
+Naturally the output type, representing the $k$th largest element of the list,
+is also $\fut\rmint$, since it is not computed until stage \bbtwo.
+
+Each construct in the body of quickselect is now associated with a stage via an interleaving of $\next$ and $\prev$ blocks.  
+Specifically, $\next$ occurs in a stage \bbone\ context and indicates that the contents of its block are stage \bbtwo, 
+whereas $\prev$ occurs in a stage \bbtwo\ context and indicates that the contents of its block is stage \bbone.
+(We adopt the convention that the top-level context is stage \bbone.)
+The output type of a $\next$ block is the $\fut$'d version of the type of its stage \bbtwo\ contents.  
+For example, \verb|next{0}| from above has the type $\fut\rmint$.
+Correspondingly, $\prev$ requires that its stage \bbone\ contents have a $\fut$ type, and it eliminates the wrapper.
+For example, \verb|prev{k}| from above has type $\rmint$ at stage \bbtwo, since $k$ is bound to a $\fut\rmint$ at stage \bbone.
+These type restrictions essentially enforce that ``later stage content" is always treated hygienically at stage \bbone,
+which is necessary to admit a properly staged implementation.
+
+The code also contains two $\pause$ blocks.  
+This construct has same stage signature as $\prev$,
+but instead of ``unwrapping" $\fut$ types it simply promotes integers from stage~\bbone\ to stage~\bbtwo.
+\footnote{It will turn out that $\pause$ is implementable---though it takes some effort---from our other language features.
+We instead provide it as a primitive to shorten examples.  
+Furthermore, it would be wise to extend $\pause$ to other base types, if we had them, and to products and sums thereof.
+This is related to the notion of {\em mobility} in \cite{murphy05} and {\em stability} in \cite{krishnaswami13}.}
+
+But for the $\fut$, $\next$, $\prev$, and $\pause$ constructs, 
+the staged version of quickselect in \ref{fig:qsstaged} is virtually identical to the unstaged version in \ref{fig:quickselect}.
+The constructs that were added were placed in order to maximize the work done at stage~\bbone\ while still conforming to the type signature.
+It would have also been valid to simply move the whole input list unchanged into stage~\bbtwo\ at the very beginning, 
+but that would not be particularly interesting since it would result in an effectively trivial split 
+that's just the identity at stage~\bbone\ and plus quickselect at stage~\bbtwo.
+There has been the extensive research into the question of how to automatically add staging annotations to unstaged code.
+This process is known as {\em binding time analysis}, and we do not consider it here.
+Instead, we assume that all input programs are properly staged according to some programmer's intent.
