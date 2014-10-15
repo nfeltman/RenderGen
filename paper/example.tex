@@ -194,7 +194,7 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | GT => qSelect2 (pi4 p) (k-n-1)`
 \end{lstlisting}
 
-To continue splitting the case statement, we need to us a sum type in the precomputation
+To continue splitting the case statement, we need to generate a sum type in the precomputation
 to remind the code what branch its in.
 
 \begin{lstlisting} 
@@ -237,17 +237,23 @@ fun qSelect2 p (k : int) : int =
       | GT => qSelect2 (pi4 p) (k-n-1)`
 \end{lstlisting}
 
-The final version is shown in figure...
-Note that it's basically a tree algorithm...
-
+The final version, cleaned up and given better datatype names, is shown in \ref{fig:qssplit}.
+Observe that \texttt{qSelect1} essentially builds a binary search tree from the input list, 
+and \texttt{qSelect2} searches that tree for the correct index.
 The benefits of this decomposition are substantial: for a randomly ordered list of length $n$, 
 the original \texttt{qSelect} takes expected $O(n)$ time per lookup, 
 whereas \texttt{qSelect2} takes $O(\log n)$ time.
 Since \texttt{qSelect1} does not depend on $k$, its $O(n\log n)$ cost can be amortized over many lookups.
-%One advantage of splitting the algorithm into two phases is that the search tree can be constructed for a list once
-%and then used to accelerate many future lookups for any value of $k$.
 
-This paper defines how to statically perform splitting transformations, like the one described above, on programs written in a simple staged language we call \lang.  \lang\ unambiguously specifies how its terms should be split
+\nr{There's something else I need to say right here before the contribution statement below. 
+I want the reader to be thinking "yeah, this splitting business does seem cool."
+Bonus points if I also have them thinking "but it would be cooler if it were formal."}
+
+This paper formally describes and analyzes the splitting transformation exemplified above.
+(I also want to make it clear that recognizing \lang's appropriateness for this is itself is a contribution.)
+
+We start by defining a simple staged language, called \lang, to express the input to our splitting algorithm.  
+\lang\ unambiguously specifies how its terms should be split
 % and features a type system that ensures valid splittings exist.
 % only minimal refactoring should be required to write terms within this language,
 %and from there, the type system should be enough to prove that a valid splitting exists.
