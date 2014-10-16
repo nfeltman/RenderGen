@@ -14,8 +14,7 @@ val PPvar = S.Pvar
 datatype expr = E of (expr,var,unit) S.exprF
 
 fun Evar x = E ` S.Fvar x
-fun Eint x = E ` S.Fint x
-fun Ebool x = E ` S.Fbool x
+fun Eprim x = E ` S.FprimVal x
 fun Elam x = E ` S.Flam x
 fun Eapp x = E ` S.Fapp x
 fun Etuple x = E ` S.Ftuple x

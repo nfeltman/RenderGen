@@ -27,8 +27,7 @@ fun freshPi () =
 
 fun terminates (E e) = (case e of
 	S.Fvar _ => true
-  | S.Fint _ => true
-  | S.Fbool _ => true
+  | S.FprimVal _ => true
   | S.Flam _ => true
   | S.Fapp _ => false
   | S.Ftuple es => List.all terminates es
@@ -144,8 +143,7 @@ fun stageSplit1 (E1 exp) =
 	in
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
-		| S.Fint i  => NoPrec1 (Eint i,  Eunit)
-		| S.Fbool b => NoPrec1 (Ebool b, Eunit)
+		| S.FprimVal i  => NoPrec1 (Eprim i,  Eunit)
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce1 (split e)
@@ -295,8 +293,7 @@ and stageSplit2 (E2 exp) =
 	in
 		case exp of 
 		  S.Fvar v => NoPrec2 (Evar v)
-		| S.Fint i => NoPrec2 (Eint i)
-		| S.Fbool b => NoPrec2 (Ebool b)
+		| S.FprimVal p => NoPrec2 (Eprim p)
 		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertPattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| S.Ftuple es => mergeList (map split es) Etuple

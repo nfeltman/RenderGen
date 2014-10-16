@@ -6,14 +6,15 @@ open SourceLang
 open Lambda12c
 open LangCommon
 open ErasureSemantics
+open Contexts
 structure Comp = ValueComparison
 
 datatype progSource = Literal | FileName
 datatype testLevel = NONE | SAME | EXACT of value1
-val ansI = EXACT o V1 o VFint
-val ansNI = EXACT o V1next o V2 o VFint
-val ansB = EXACT o V1 o VFbool
-val ansNB = EXACT o V1next o V2 o VFbool
+val ansI = EXACT o V1 o ValuesBase.VFprim o Prims.Vint
+val ansNI = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vint
+val ansB = EXACT o V1 o ValuesBase.VFprim o Prims.Vbool
+val ansNB = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vbool
 
 infixr 9 `
 fun a ` b = a b
@@ -24,7 +25,7 @@ fun i (name,filename,t) = [(name,FileName,filename,t)]
 fun j (name,prog,t) = [(name,Literal,prog,t)]
 fun k (name,prog,t) = [
 		(name^"-first",Literal,prog,t), 
-		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (V1next (holdGeneral v)) | _ => t)]
+		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (holdGeneral v) | _ => t)]
 val programs = [
 k("fourPlusSix", 		"4 + 6",ansI 10),
 k("twoTimesThree", 		"2 * 3",ansI 6),
@@ -141,7 +142,7 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Evaluating Split Part *)
-		val (PSFSemantics.V (VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
+		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
 		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
 		
 		

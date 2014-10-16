@@ -1,44 +1,40 @@
-
-signature TypeProvider = 
-sig
-type t
-val Tint : t
-val Tbool : t
-end
-
 structure Prims = 
 struct
+
+exception PrimTypeError
+exception PrimStuck
+
+datatype primType = Tint | Tbool | Tstr
+datatype primValue = Vint of int | Vbool of bool | Vstr of string
+
+fun assertBool Tbool = ()
+  | assertBool _ = raise PrimTypeError 
+
+fun getValType (Vint _) = Tint
+  | getValType (Vbool _) = Tbool
+  | getValType (Vstr _) = Tstr
 
 datatype binops = Iplus | Iminus | Itimes | Iless | Igreater 
 				| Iequal | Ilesseq | Igreatereq | Imod | Idiv
 				| Band | Bor
-
-functor PrimTyper (P : TypeProvider) = 
-struct
-
-fun getTypes bo = 
+			
+fun getBinopType bo = 
 	case bo of 
-	  Iplus => (P.Tint, P.Tint, P.Tint)
-	| Iminus => (P.Tint, P.Tint, P.Tint)
-	| Imod => (P.Tint, P.Tint, P.Tint)
-	| Itimes => (P.Tint, P.Tint, P.Tint)
-	| Idiv => (P.Tint, P.Tint, P.Tint)
-	| Iless => (P.Tint, P.Tint, P.Tbool)
-	| Igreater => (P.Tint, P.Tint, P.Tbool)
-	| Iequal => (P.Tint, P.Tint, P.Tbool)
-	| Ilesseq => (P.Tint, P.Tint, P.Tbool)
-	| Igreatereq => (P.Tint, P.Tint, P.Tbool)
-	| Band => (P.Tbool, P.Tbool, P.Tbool)
-	| Bor => (P.Tbool, P.Tbool, P.Tbool)
+	  Iplus => (Tint, Tint, Tint)
+	| Iminus => (Tint, Tint, Tint)
+	| Imod => (Tint, Tint, Tint)
+	| Itimes => (Tint, Tint, Tint)
+	| Idiv => (Tint, Tint, Tint)
+	| Iless => (Tint, Tint, Tbool)
+	| Igreater => (Tint, Tint, Tbool)
+	| Iequal => (Tint, Tint, Tbool)
+	| Ilesseq => (Tint, Tint, Tbool)
+	| Igreatereq => (Tint, Tint, Tbool)
+	| Band => (Tbool, Tbool, Tbool)
+	| Bor => (Tbool, Tbool, Tbool)
 
-end
-
-structure PrimEval = 
-struct
-
-datatype primValue = Vint of int | Vbool of bool
-
-exception PrimStuck
+fun unbool (Vbool b) = b
+  | unbool _ = raise PrimStuck
 
 fun evalPrim (primop, Vint j, Vint k) = (
 	case primop of
@@ -59,6 +55,6 @@ fun evalPrim (primop, Vint j, Vint k) = (
 	| Bor => Vbool (j orelse k)
 	| _ => raise PrimStuck)
   | evalPrim _ = raise PrimStuck
+  
 end
 
-end

@@ -3,13 +3,14 @@ structure Lambda12 =
 struct
 
 local
+open LangCommon
 open SourceLang
 in
 
-datatype type1	= T1 of type1 typeF
+datatype type1	= T1 of type1 TypesBase.typeF
 				| T1fut of type2
 
-and type2		= T2 of type2 typeF
+and type2		= T2 of type2 TypesBase.typeF
 
 datatype expr1	= E1 of (expr1,var,type1) exprF
 				| E1next of expr2

@@ -1,15 +1,13 @@
 signature SourceTypes = 
 sig
-	datatype 't typeF	= TFint
-						| TFbool
+	datatype 't typeF	= TFprim of Prims.primType
 						| TFvar of int 
 						| TFrec of 't
 						| TFprod of 't list
 						| TFsum of 't list
 						| TFarr of 't * 't
 
-	val unint  : 't typeF -> unit
-	val unbool : 't typeF -> unit
+	val unprim : 't typeF -> Prims.primType
 	val unrec  : 't typeF -> 't
 	val unprod : 't typeF -> 't list
 	val unarr  : 't typeF -> 't * 't
@@ -18,23 +16,18 @@ sig
 	val teq : ('t -> 't -> bool) -> 't typeF -> 't typeF -> bool
 end
 
-structure TypesBase :> SourceTypes = 
+structure TypesBase  = 
 struct
 	open LangCommon
-	datatype 't typeF	= TFint
-						| TFbool
+	datatype 't typeF	= TFprim of Prims.primType
 						| TFvar of int 
 						| TFrec of 't			(* binds *)
 						| TFprod of 't list
 						| TFsum of 't list
 						| TFarr of 't * 't
 
-	fun unint TFint = ()
-	  | unint _ = raise TypeError
-	fun unbool TFbool = ()
-	  | unbool _ = raise TypeError
-	fun ununit TFint = ()
-	  | ununit _ = raise TypeError
+	fun unprim (TFprim pt) = pt
+	  | unprim _ = raise TypeError
 	fun unrec (TFrec a) = a
 	  | unrec _ = raise TypeError
 	fun unprod (TFprod ab) = ab
@@ -44,16 +37,14 @@ struct
 	fun unsum (TFsum v) = v
 	  | unsum _ = raise TypeError
 	
-	fun mapType _ TFint = TFint
-	  | mapType _ TFbool = TFbool
+	fun mapType _ (TFprim pt) = TFprim pt
 	  | mapType _ (TFvar i) = TFvar i
 	  | mapType f (TFrec t) = TFrec (f t)
 	  | mapType f (TFsum ts) = TFsum (map f ts)
 	  | mapType f (TFprod ts) = TFprod (map f ts)
 	  | mapType f (TFarr (t1,t2)) = TFarr (f t1, f t2)  
 	
-	fun teq _ TFint TFint = true
-	  | teq _ TFbool TFbool = true
+	fun teq _ (TFprim t1) (TFprim t2) = (t1 = t2)
 	  | teq eq (TFvar j) (TFvar k) = (j = k)
 	  | teq eq (TFrec t) (TFrec u) = eq t u
 	  | teq eq (TFprod ts) (TFprod us) = listeq eq ts us

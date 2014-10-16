@@ -2,17 +2,18 @@
 structure SourceLang = 
 struct
 
+local
 open LangCommon
 open Contexts
 open TypesBase
 open ValuesBase
 
+in
 datatype 'r pattern 		= Pvar of 'r
 							| Ptuple of ('r pattern) list
 							
 datatype ('e,'r,'t) exprF	= Fvar of 'r
-							| Fint of int
-							| Fbool of bool
+							| FprimVal of Prims.primValue
 							| Flam of 't * ('r pattern * 'e)
 							| Fapp of 'e * 'e
 							| Ftuple of 'e list
@@ -29,8 +30,7 @@ datatype ('e,'r,'t) exprF	= Fvar of 'r
 fun mapExpr fe ft exp =
 	case exp of
 	  Fvar v => Fvar v
-	| Fint i => Fint i
-	| Fbool b => Fbool b
+	| FprimVal pv => FprimVal pv
 	| Flam (t, (x,e)) => Flam (ft t, (x, fe e))
 	| Fapp (e1,e2) => Fapp (fe e1, fe e2)
 	| Ftuple es => Ftuple (map fe es)
@@ -60,8 +60,7 @@ fun replaceVars recRep G f exp =
 	in
 		case exp of
 		  Fvar v => Fvar (lookup G v)
-		| Fint i => Fint i
-		| Fbool b => Fbool b
+		| FprimVal pv => FprimVal pv
 		| Flam (t, b) => Flam (t, forBranch b)
 		| Fapp (e1,e2) => Fapp (rep e1, rep e2)
 		| Ftuple es => Ftuple (map rep es)
@@ -82,65 +81,57 @@ and forPattList fu g [] [] = g
   | forPattList fu g (x::xs) (t::ts) = forPattern fu (forPattList fu g xs ts) x t
   | forPattList (_,_,ex) _ _ _ = raise ex
 	
-fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst primTypes exp = 
+fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst exp = 
 	let
 		val check = checkrec gamma
 		fun checkbranch (t,(patt,e)) = checkrec (forPattern (extendC, unprod o Tunwrap,TypeError) gamma patt t) e
 		fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
-		fun binSame eq (a,b) (c,d,e) = if (eq a c) andalso (eq b d) then e else raise TypeError
+		fun binSame (a,b) (c,d,e) = if (a = c) andalso (b = d) then e else raise TypeError
 		fun selfSubst t = subst 0 (Twrap (TFrec t)) t
 		fun assertAllSame [] = raise TypeError
 		  | assertAllSame (t::[]) = t
 		  | assertAllSame (t::ts) = assertSame teq (t,assertAllSame ts)
+		val checkOpArg = unprim o Tunwrap o check
 	in
 		case exp of 
 		  Fvar v => lookupC gamma v
 		| Flam (t,b) => Twrap (TFarr (t, checkbranch (t,b)))
 		| Fapp (e1,e2) => checkFun teq (unarr (Tunwrap (check e1)), check e2)
-		| Fint _ => Twrap TFint
-		| Fbool _ => Twrap TFbool
+		| FprimVal pv => Twrap (TFprim (Prims.getValType pv))
 		| Ftuple es => Twrap (TFprod (map check es))
 		| Fpi (i, e) => List.nth(unprod (Tunwrap (check e)), i)
 		| Finj (ts, us, e) => Twrap (TFsum (ts @ (check e :: us)))
 		| Fcase (e1,bs) => assertAllSame (zip checkbranch (unsum (Tunwrap (check e1))) bs TypeError) 
-		| Fif (e1,e2,e3) => (TypesBase.unbool (Tunwrap (check e1)); assertSame teq (check e2, check e3))
+		| Fif (e1,e2,e3) => (Prims.assertBool (TypesBase.unprim (Tunwrap (check e1))); assertSame teq (check e2, check e3))
 		| Flet (e,b) => checkbranch (check e, b)
 		| Ferror t => t
 		| Froll (t, e) => if teq (selfSubst t) (check e) then Twrap (TFrec t) else raise TypeError
 		| Funroll e => selfSubst (unrec (Tunwrap (check e)))
-		| Fbinop (bo, e1, e2) => binSame teq (check e1, check e2) (primTypes bo)
+		| Fbinop (bo, e1, e2) => Twrap (TFprim (binSame (checkOpArg e1, checkOpArg e2) (Prims.getBinopType bo)))
 	end
-  
-	
-fun convertPrim (VFint i) = Prims.PrimEval.Vint i
-  | convertPrim (VFbool b) = Prims.PrimEval.Vbool b
-  | convertPrim _ = raise Stuck
-fun unconvertPrim (Prims.PrimEval.Vint i) = VFint i
-  | unconvertPrim (Prims.PrimEval.Vbool b) = VFbool b
 
 fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
 	let
 		val eval = evalRec env
 		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, untuple o Vunwrap, Stuck) env patt value) e
 		fun evalBranch v b = evalBranchE v (env,b)
-		val convertP = convertPrim o Vunwrap
 	in
 		case exp of 
 		  Fvar v => lookupC env v
 		| Flam (t, b) => Vwrap (VFlam (env,b))
 		| Fapp (e1, e2) => evalBranchE (eval e2) (unlam (Vunwrap (eval e1)))
-		| Fint i => Vwrap (VFint i)
-		| Fbool b => Vwrap (VFbool b)
+		| FprimVal pv => Vwrap (VFprim pv)
 		| Ftuple es => Vwrap (VFtuple (map eval es))
 		| Fpi (i, e) => List.nth (untuple (Vunwrap (eval e)), i)
 		| Finj (ts, _, e) => Vwrap (VFinj (length ts, eval e))
 		| Fcase (e, bs) => (case uninj (Vunwrap (eval e)) of (i, v) => evalBranch v (List.nth (bs,i)))
-		| Fif (e1, e2, e3) => eval (if unbool (Vunwrap (eval e1)) then e2 else e3)
+		| Fif (e1, e2, e3) => eval (if Prims.unbool (unprimV (Vunwrap (eval e1))) then e2 else e3)
 		| Flet (e, b) => evalBranch (eval e) b
-		| Fbinop (bo,e1,e2) => Vwrap (unconvertPrim (Prims.PrimEval.evalPrim (bo, convertP (eval e1), convertP (eval e2))))
+		| Fbinop (bo,e1,e2) => Vwrap (VFprim (Prims.evalPrim (bo, unprimV (Vunwrap (eval e1)), unprimV (Vunwrap (eval e2)))))
 		| Froll (_, e) => Vwrap (VFroll (eval e))
 		| Funroll e => unroll (Vunwrap (eval e))
 		| Ferror t => raise Stuck
 	end
 
+end
 end

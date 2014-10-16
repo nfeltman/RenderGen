@@ -6,7 +6,8 @@ local
 open LangCommon
 open Lambda12
 open SourceLang
-structure P = Prims.PrimEval
+open ValuesBase
+open Contexts
 
 infixr 9 `
 fun a ` b = a b
@@ -38,8 +39,7 @@ fun eval1 env (E1 exp) =
 	in
 		case exp of 
 		  Fvar v => (id, lookup env v)
-		| Fint i => (id, V ` VFint i)
-		| Fbool b => (id, V ` VFbool b)
+		| FprimVal pv => (id, V ` VFprim pv)
 		| Flam (_, b) => (id, V ` VFlam (env,b))
 		| Fapp (e1,e2) => 
 			let 
@@ -58,7 +58,7 @@ fun eval1 env (E1 exp) =
 			end
 		| Fif (e1, e2, e3) => 
 			let
-				val (g,b) = map2 (unbool o unV) (eval e1)
+				val (g,b) = map2 (Prims.unbool o unprimV o unV) (eval e1)
 			in
 				comp1 g ` eval (if b then e2 else e3)
 			end
@@ -67,9 +67,8 @@ fun eval1 env (E1 exp) =
 			let
 				val (g1,v1) = eval e1
 				val (g2,v2) = eval e2
-				val convertP = convertPrim o unV
 			in
-				(g1 o g2, V (unconvertPrim (P.evalPrim (bo, convertP v1, convertP v2))))
+				(g1 o g2, V (VFprim (Prims.evalPrim (bo, unprimV (unV v1), unprimV (unV v2)))))
 			end
 		| Froll (_,e) => map2 (V o VFroll) (eval e)
 		| Funroll e => map2 (unroll o unV) (eval e)
@@ -86,7 +85,7 @@ fun eval1 env (E1 exp) =
 			val (g,v) = eval1 env e
 			val y = Variable.newvar "y" 
 		in
-			(fn r=> g ` E ` Flet (E ` Fint ` unint ` unV1 v, (Pvar y, r)), V1hat y)
+			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unV1 v, (Pvar y, r)), V1hat y)
 		end
 	
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)

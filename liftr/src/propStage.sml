@@ -7,6 +7,8 @@ open LangCommon
 open Lambda12c
 open Lambda12
 open SourceLang
+open TypesBase
+open Contexts
 
 fun bind v e1 e2 = Elet (e1,(Pvar v,e2))
 fun elabLetRec (f,t1,t2,b,e) = 

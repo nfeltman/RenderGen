@@ -4,10 +4,11 @@ struct
 
 local
 open LangCommon
+open TypesBase
 structure S = SourceLang
 in
 
-datatype ty		= Tstandard of ty S.typeF
+datatype ty		= Tstandard of ty typeF
 				| Tfut of ty
 				| Tref of string
 
@@ -22,17 +23,17 @@ datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Eletr of string * ty * ty * (patt * expr) * expr
 
 				
-val Tint = Tstandard S.TFint
-val Tbool = Tstandard S.TFbool
-val Tvar = Tstandard o S.TFvar
-val Trec = Tstandard o S.TFrec
-val Tprod = Tstandard o S.TFprod
-fun Tsum (a,b) = Tstandard (S.TFsum [a,b])
-val Tarr = Tstandard o S.TFarr
+val Tint = Tstandard (TFprim Prims.Tint)
+val Tbool = Tstandard (TFprim Prims.Tbool)
+val Tvar = Tstandard o TFvar
+val Trec = Tstandard o TFrec
+val Tprod = Tstandard o TFprod
+fun Tsum (a,b) = Tstandard (TFsum [a,b])
+val Tarr = Tstandard o TFarr
 
 val Evar = Estandard o S.Fvar
-val Eint = Estandard o S.Fint
-val Ebool = Estandard o S.Fbool
+val Eint = Estandard o S.FprimVal o Prims.Vint
+val Ebool = Estandard o S.FprimVal o Prims.Vbool
 val Etuple = Estandard o S.Ftuple
 fun Einjl (t, e) = Estandard (S.Finj ([],[t],e))
 fun Einjr (t, e) = Estandard (S.Finj ([t],[],e))

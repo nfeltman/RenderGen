@@ -24,8 +24,9 @@ fun opToString bo = (
 structure S = TypesBase
 fun convertSourceTypes convert ty = 
 		case ty of
-		  S.TFint => Eatom "int"
-		| S.TFbool => Eatom "bool"
+		  S.TFprim Prims.Tint => Eatom "int"
+		| S.TFprim Prims.Tbool => Eatom "bool"
+		| S.TFprim Prims.Tstr => Eatom "string"
 		| S.TFvar i => Eatom (Int.toString i) 
 		| S.TFrec t => EprimApp ("mu", convert t)
 		| S.TFprod [] => Eatom ("unit")
@@ -42,8 +43,9 @@ fun convertSource convert convertTy ex =
 	in
 		case ex of 
 		  S.Fvar v => Eatom (Variable.toString v)
-		| S.Fint i => Eatom (Int.toString i)
-		| S.Fbool b => Eatom (if b then "true" else "false")
+		| S.FprimVal (Prims.Vint i) => Eatom (Int.toString i)
+		| S.FprimVal (Prims.Vbool b) => Eatom (if b then "true" else "false")
+		| S.FprimVal (Prims.Vstr s) => Eatom s
 		| S.Flam (t,b) => Elam (convertTy t, convertBranch b)
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
 		| S.Ftuple es => Etuple (map convert es)

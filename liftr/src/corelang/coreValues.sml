@@ -1,7 +1,6 @@
 structure ValuesBase = 
 struct
-	datatype ('v,'c,'r,'e) valueF	= VFint of int
-									| VFbool of bool
+	datatype ('v,'c,'r,'e) valueF	= VFprim of Prims.primValue
 									| VFroll of 'v
 									| VFtuple of 'v list
 									| VFinj of int * 'v
@@ -13,14 +12,12 @@ struct
 	  | untuple _ = raise LangCommon.Stuck
 	fun uninj (VFinj v) = v
 	  | uninj _ = raise LangCommon.Stuck
-	fun unbool (VFbool b) = b
-	  | unbool _ = raise LangCommon.Stuck
-	fun unint (VFint i) = i
-	  | unint _ = raise LangCommon.Stuck
+	fun unprimV (VFprim p) = p
+	  | unprimV _ = raise LangCommon.Stuck
 	fun unlam (VFlam e) = e
 	  | unlam _ = raise LangCommon.Stuck
 end
-
+(*
 signature ValueProvider = 
 sig
 	type v
@@ -75,3 +72,4 @@ struct
 	val uninj   = B.uninj o g
 	val unlam   = B.unlam o g
 end
+*)
