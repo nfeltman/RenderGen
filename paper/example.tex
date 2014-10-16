@@ -109,30 +109,32 @@ Here, the input $k$ and all parts of the computation that depend on it are color
 whereas all of the parts of the computation that do not depend on $k$ are colored red.
 The \texttt{qSelect} variable itself, due to its status as a function with a mixed-color body, is left black.
 
-To be precise, our coloring strategy respects data dependence, but not control dependence---the 
+To be precise, we use "depend on" to mean data dependence, but not control dependence---the 
 first arguments to the recursive calls to \texttt{qSelect} are colored red,
 despite appearing underneath a blue case statement.
-Because of this coloring strategy and the definition of data dependence, 
-information can flow from red code to blue code but not vice versa.
+This coloring rule is enough to ensure that information can flow from red code to blue code but not vice versa.
 
-Observe the that helper function \texttt{partition} is colored entirely red.
-This is where much of the work of the quickselect algorithm takes place, and it doesn't even depend on $k$!
+Observe the that helper function \texttt{partition} is colored entirely red,
+which is valid because it is called with only red arguments.  
+This is an illustration of the property stated above, that 
+the partitioning of the list, even through recursion, depends only on the list itself and not on $k$.
+Moreover, the property is notable because much of the work of the quickselect algorithm takes place in \texttt{partition}.
 
 This suggests an optimization: we can split \texttt{qSelect} into two functions, 
-one for all of the red code and another for all of the blue code. 
-We'll call them \texttt{qSelect1} and \texttt{qSelect2}.
+one for all of the red code (\texttt{qSelect1}) and another for all of the blue code (\texttt{qSelect2}). 
 Because of the dependence properties stated above, 
 \texttt{qSelect2} will need only depend on the results of \texttt{qSelect1} and the input index $k$,
 whereas \texttt{qSelect1} will only depend on the input list $l$.
-Of course, the meaning of \texttt{qSelect1} appropriately composed with \texttt{qSelect2} should be the same as \texttt{qSelect}, too.
+Additionally, the meaning of \texttt{qSelect1} appropriately composed with \texttt{qSelect2} should be the same as \texttt{qSelect}, too.
 Equationally, we can represent this relationship as simply 
 \[
 \mathtt{qSelect~l~k} \equiv \mathtt{qSelect2~(qSelect1~l)~k}
 \]
+for some list \texttt{l} and index \texttt{k}.
 
-With this goal in mind, we now set about deriving \texttt{qSelect1} and \texttt{qSelect2} from \texttt{qSelect}.
+With this goal in mind, we now set about deriving \texttt{qSelect1} and \texttt{qSelect2} from our colorized \texttt{qSelect}.
 Because the original function is recursive,
-the first step in this process is to assume this conclusion at the call sites.
+the first step in this process is to assume the conclusion at the call sites.
 This is performed in place:
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`

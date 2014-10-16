@@ -41,23 +41,16 @@ functions will split into two functions, whose bodies correspond to the stage
 
 \subsection{General Splitting}
 
-\ur{The reuse of residual is bothersome, we should use different terminology,
-1-value and 2-value perhaps.}
-
 Splitting arbitrary terms in \lang\ again results in two terms containing only
 the stage \bbone\ or stage \bbtwo\ content of the original term; these terms are
-called, respectively, the {\em precomputation} and {\em residual}.%
-\footnote{We also used the term {\em residual} for the result of
-partial evaluation.  Where necessary, we will distinguish between
-these concepts by using the terms {\em splitting-residual} and {\em
-evaluation-residual}.}
+called, respectively, the {\em precomputation} and {\em resumer}.
 %
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
 2`hold{`1` 1+2 `2`} < hold{`1` 3+4 `2`} - 5`
 \end{lstlisting}
-splits into a precomputation \verb|(1+2,3+4)| and a residual
-\verb|fn (L1,L2) => L1 < L2-5|, with the property that the residual applied to
+splits into a precomputation \verb|(1+2,3+4)| and a resumer
+\verb|fn (L1,L2) => L1 < L2-5|, with the property that the resumer applied to
 the precomputation must agree with the original term. This process of hoisting
 all the stage \bbone\ subterms out of a term is called \emph{lifting}.
 
@@ -81,7 +74,7 @@ must occur at stage \bbone, the former is needed by stage \bbone, while the
 latter is needed by stage \bbtwo.
 
 The precomputation for this term is a \emph{combined result} which is
-the pair of these components: \verb|(((),3*4),1+2)|. The splitting residual is
+the pair of these components: \verb|(((),3*4),1+2)|. The resumer is
 likewise the pair of the stage \bbtwo\ results of lifting and masking:
 \verb|fn L => (L<5,())|.
 %\footnote{In this example, the combined result is a 2-tuple, but more generally
@@ -100,11 +93,11 @@ constructors as \lang.
 %\footnote{Since \langmono\ is untyped, we could encode everything with just functions.}.
 
 The $\splitonesym$ judgment sends a stage \bbone\ term $e$ to a combined term
-$c$ and residual $l.r$, while $\splittwosym$ sends a stage \bbtwo\ term $e$ to a
-precomputation $p$ and a residual $l.r$. In both cases, the term $e$ is open on
+$c$ and resumer $l.r$, while $\splittwosym$ sends a stage \bbtwo\ term $e$ to a
+precomputation $p$ and a resumer $l.r$. In both cases, the term $e$ is open on
 variables in the context $\Gamma$. We write the rules using pattern notation
 when appropriate.
-%For concision, we represent residuals as a term open on a single variable,
+%For concision, we represent resumers as a term open on a single variable,
 %rather than as functions.
 
 \ur{Reformat rules to make them fit into the paper.}
@@ -112,20 +105,20 @@ when appropriate.
 The $\splittwosym$ rules are conceptually simple and almost all very similar.  
 As mentioned before, the only responsibility of $\splittwosym$ is to lift out the precomputation
 from contained stage \bbone\ code into a single expression $p$, 
-leaving a residual $l.r$ to interpret the results of that precomputation.
+leaving a resumer $l.r$ to interpret the results of that precomputation.
 Since base types and variables have no stage \bbone\ content, their precomputation is trivial;
 that is, $p$ is a unit value and $l$ is never used in $r$.
 At every other expression except $\prev$, the $\splittwosym$ rule works by bundling 
 the precomputations of the constituent parts, and then unbundling them with a pattern,
-with the residual precisely resembling the original expression.
+with the resumer precisely resembling the original expression.
 
 The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,
 while the rule for $\prev$ projects the combined result of its subexpression to isolate the precomputation.
 It may seem like this $\prev$ rule is throwing information away, but we well show later that the first component 
 of the evaluated form of $c$ in the $\prev$ rule must always be unit.
 The $\pause$ rule treats the entire combined result of its subexpression as a precomputation, 
-and projects out the integer result in the residual.%
-\footnote{The residual of an integer expression is usually trivial, 
+and projects out the integer result in the resumer.%
+\footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.}
 
 There are some particularly notable features of this definition of term
@@ -154,7 +147,7 @@ In the splitting rules for stage \bbone\ {\tt if} and {\tt case} expressions, we
 have enough information at stage \bbone\ to know what branch to take, so there's
 no need to speculate. Instead, we evaluate the stage \bbone\ portion of the
 taken branch only, and inject the precomputation into a sum type. In the
-residual, we case on that injection, and resume the stage \bbtwo\ portion of the
+resumer, we case on that injection, and resume the stage \bbtwo\ portion of the
 correct branch.
 
 \paragraph {Stage \bbone\ Functions}
@@ -162,7 +155,7 @@ correct branch.
 The body of a stage \bbone\ function may contain stage \bbtwo\ computation. We
 handle this by splitting the function into two functions: one in the immediate
 result which handles all the stage \bbone\ content of the original, and one in
-the residual which handles all of the stage \bbtwo\ content. Note that stage
+the resumer which handles all of the stage \bbtwo\ content. Note that stage
 \bbone\ lambdas are partial values, and so have only a trivial precomputation.
 
 %\subsection {Boundary Type Worst Case}
@@ -177,16 +170,16 @@ the residual which handles all of the stage \bbtwo\ content. Note that stage
 We can now develop an notion of what it means for splitting to be correct.  
 Our general approach is to say that the dynamic semantics from \ref{sec:semantics} and splitting method are equivalent in some way.  
 Thus, we start with two mutually dependent definitions of equivalence.  
-Both relate evaluation-residuals on the left with splitting residuals on the right,
+Both relate residuals on the left with resumers on the right,
 but $\equiv$ equates closed expressions, whereas $\sim$ equates values.
 
 \begin{definition}
-For evaluation-residual $q$ and splitting-residual $r$, define $q \equiv r : A$ to mean that 
+For residual $q$ and resumer $r$, define $q \equiv r : A$ to mean that 
 $q \tworedsym v_q$ iff $\reduce {r} {v_r}$ where $v_q \sim v_r : A$, 
 \end{definition}
 
 \begin{definition}
-For evaluation-residual value $v_1$ and splitting-residual value $v_2$, define $v_1 \sim v_2 : A$ by the following cases:
+For residual value $v_1$ and resumer value $v_2$, define $v_1 \sim v_2 : A$ by the following cases:
 \begin{itemize}
 \item $i \sim i : \rmint$
 \item $(v_1,u_1) \sim (v_2,u_2) : A \times B$ where $v_1 \sim v_2 : A$ and $u_1 \sim u_2 : B$
