@@ -22,9 +22,11 @@ datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Eletdata of stage * string * (string * ty option) list * expr
 				| Eletr of string * ty * ty * (patt * expr) * expr
 
+fun trim s = substring (s,1,size(s)-2)
 				
 val Tint = Tstandard (TFprim Prims.Tint)
 val Tbool = Tstandard (TFprim Prims.Tbool)
+val Tstr = Tstandard (TFprim Prims.Tstr)
 val Tvar = Tstandard o TFvar
 val Trec = Tstandard o TFrec
 val Tprod = Tstandard o TFprod
@@ -34,6 +36,7 @@ val Tarr = Tstandard o TFarr
 val Evar = Estandard o S.Fvar
 val Eint = Estandard o S.FprimVal o Prims.Vint
 val Ebool = Estandard o S.FprimVal o Prims.Vbool
+val Estr = Estandard o S.FprimVal o Prims.Vstr
 val Etuple = Estandard o S.Ftuple
 fun Einjl (t, e) = Estandard (S.Finj ([],[t],e))
 fun Einjr (t, e) = Estandard (S.Finj ([t],[],e))

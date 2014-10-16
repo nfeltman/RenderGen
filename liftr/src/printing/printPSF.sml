@@ -8,18 +8,19 @@ open PrettyPrinter
 
 fun opToString bo = (
 		case bo of 
-		  Iplus => "+"
-		| Iminus => "-"
-		| Itimes => "*"
-		| Idiv => "/"
-		| Imod => "mod"
-		| Iless => "<"
-		| Igreater => ">"
-		| Iequal => "=="
-		| Ilesseq => "<="
-		| Igreatereq => ">="
-		| Band => "and"
-		| Bor=> "or")
+		  O2plus => "+"
+		| O2minus => "-"
+		| O2times => "*"
+		| O2div => "/"
+		| O2mod => "mod"
+		| O2less => "<"
+		| O2greater => ">"
+		| O2equal => "=="
+		| O2lesseq => "<="
+		| O2greatereq => ">="
+		| O2and => "and"
+		| O2or => "or"
+		| O2cat => "^")
 
 structure S = TypesBase
 fun convertSourceTypes convert ty = 
@@ -45,7 +46,7 @@ fun convertSource convert convertTy ex =
 		  S.Fvar v => Eatom (Variable.toString v)
 		| S.FprimVal (Prims.Vint i) => Eatom (Int.toString i)
 		| S.FprimVal (Prims.Vbool b) => Eatom (if b then "true" else "false")
-		| S.FprimVal (Prims.Vstr s) => Eatom s
+		| S.FprimVal (Prims.Vstr s) => Eatom ("\""^s^"\"")
 		| S.Flam (t,b) => Elam (convertTy t, convertBranch b)
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
 		| S.Ftuple es => Etuple (map convert es)

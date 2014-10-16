@@ -15,6 +15,7 @@ val ansI = EXACT o V1 o ValuesBase.VFprim o Prims.Vint
 val ansNI = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vint
 val ansB = EXACT o V1 o ValuesBase.VFprim o Prims.Vbool
 val ansNB = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vbool
+val ansS = EXACT o V1 o ValuesBase.VFprim o Prims.Vstr
 
 infixr 9 `
 fun a ` b = a b
@@ -27,6 +28,8 @@ fun k (name,prog,t) = [
 		(name^"-first",Literal,prog,t), 
 		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (holdGeneral v) | _ => t)]
 val programs = [
+k("stringlit", 			"\"fourplussix\"",SAME),
+k("concat", 			"\"four\" ^ \"six\"",ansS "foursix"),
 k("fourPlusSix", 		"4 + 6",ansI 10),
 k("twoTimesThree", 		"2 * 3",ansI 6),
 k("twoGtThree", 		"2 > 3",ansB false),

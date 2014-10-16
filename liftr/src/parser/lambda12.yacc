@@ -22,7 +22,8 @@ open LangCommon
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
-	  MU | MOD | DEQ | LETTY | LETDT
+	  MU | MOD | DEQ | LETTY | LETDT | STR | 
+	  STRLIT of string
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
@@ -44,16 +45,17 @@ open LangCommon
 	  EXP : BEXP BINOP EXP				(Ebinop(BINOP,BEXP,EXP))
 		  | BEXP						(BEXP)
 
-	BINOP : PLUS						(Prims.Iplus)
-		  | TIMES						(Prims.Itimes)
-		  | SUB							(Prims.Iminus)
-		  | DIV							(Prims.Idiv)
-		  | DEQ							(Prims.Iequal)
-		  | GT							(Prims.Igreater)
-		  | LT							(Prims.Iless)
-		  | GTE							(Prims.Igreatereq)
-		  | LTE							(Prims.Ilesseq)
-		  | MOD							(Prims.Imod)
+	BINOP : PLUS						(Prims.O2plus)
+		  | TIMES						(Prims.O2times)
+		  | SUB							(Prims.O2minus)
+		  | DIV							(Prims.O2div)
+		  | DEQ							(Prims.O2equal)
+		  | GT							(Prims.O2greater)
+		  | LT							(Prims.O2less)
+		  | GTE							(Prims.O2greatereq)
+		  | LTE							(Prims.O2lesseq)
+		  | MOD							(Prims.O2mod)
+		  | CARAT						(Prims.O2cat)
  
 	 BEXP : BEXP AEXP					(Eapp (BEXP, AEXP))
 		  | PROJ AEXP					(Epi(PROJ - 1,AEXP))
@@ -67,6 +69,7 @@ open LangCommon
 	 AEXP : NUM          												(Eint NUM)
 		  | TRUE														(Ebool true)
 		  | FALSE														(Ebool false)
+		  | STRLIT														(Estr (trim STRLIT))
 		  | ID              											(Evar ID)
 		  | CASE EXP OF MATCHL											(Ecase(EXP,MATCHL))
 		  | LPAR RPAR													(Etuple [])

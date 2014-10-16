@@ -1,3 +1,5 @@
+%% fast exponent
+
 letrec exp ((b,e) : $int*int) : $int = 
 	if e == 0 then 
 		next{1} 
