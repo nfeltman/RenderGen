@@ -1,6 +1,8 @@
 \section {Example: Staged Quickselect in \texorpdfstring{\lang}{λ12}}
 \label{sec:staging}
 
+\ur{Indentation seems broken. Be consistent.}
+
 \begin{figure*}
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
@@ -86,6 +88,9 @@ Quickselect is an algorithm for finding the $k$-th largest element in a list.
 It works by partitioning the input list into sublists containing elements less than and greater than the head element, 
 then recurring on the sublist containing the desired element.
 
+
+\ur{I find it hard to distinguish between blue and black on printed paper.}
+
 One notable property of quickselect is that the partitioning of the list, 
 even through its recursive calls, depends only on the values of list elements, and not on the value of $k$.
 To illustrate this, we present colorized version of \texttt{qSelect}:
@@ -108,6 +113,9 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
 Here, the input $k$ and all parts of the computation that depend on it are colored blue,
 whereas all of the parts of the computation that do not depend on $k$ are colored red.
 The \texttt{qSelect} variable itself, due to its status as a function with a mixed-color body, is left black.
+
+\ur{I find control dependence issue very confusing.  Let's factor this
+out and talk about it in the end. }
 
 To be precise, we use "depend on" to mean data dependence, but not control dependence---the 
 first arguments to the recursive calls to \texttt{qSelect} are colored red,
@@ -132,9 +140,15 @@ Equationally, we can represent this relationship as simply
 \]
 for some list \texttt{l} and index \texttt{k}.
 
+
+\ur{I don't follow the explanation below, e.g., ``assuming conclusion''}
+
 With this goal in mind, we now set about deriving \texttt{qSelect1} and \texttt{qSelect2} from our colorized \texttt{qSelect}.
 Because the original function is recursive,
 the first step in this process is to assume the conclusion at the call sites.
+
+\ur{quickselect 1 and 2: how did we introduce them?}
+
 This is performed in place:
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
@@ -147,7 +161,10 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | EQ => h
       | GT => qSelect2 (`1`qSelect1 right`2`) (k-n-1)`
 \end{lstlisting}
-We then pull the stage \bbone\ portion of each branch of the comparison up into a single tuple.
+We then pull the stage \bbone\ portion of each branch of the
+comparison up into a single tuple.
+\ur{Why did we include h}
+
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
   case l of
@@ -160,6 +177,8 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | EQ => pi1 p
       | GT => qSelect2 (pi3 p) (k-n-1)`
 \end{lstlisting}
+
+\ur{Don't know what ``this last step'' refers to.}
 This last step is necessary, but we can perform it only because we're willing to ignore the control dependence.
 We continue to pull up the precomputation and include more in it:
 
@@ -181,6 +200,7 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
 This completes the splitting of the cons branch.  
 The empty branch can also be split, though in a trivial way:
 
+\ur{Not clear, ``can be split'' split.  Does or doesn't (split) should be the verb?}
 \begin{lstlisting} 
 fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
   case l of
@@ -195,6 +215,8 @@ fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
       | EQ => pi2 p
       | GT => qSelect2 (pi4 p) (k-n-1)`
 \end{lstlisting}
+
+
 
 To continue splitting the case statement, we need to generate a sum type in the precomputation
 to remind the code what branch its in.
