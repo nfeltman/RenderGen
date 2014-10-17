@@ -27,15 +27,15 @@ struct
 						| TFarr of 't * 't
 
 	fun unprim (TFprim pt) = pt
-	  | unprim _ = raise TypeError
+	  | unprim _ = raise (TypeError "expected prim")
 	fun unrec (TFrec a) = a
-	  | unrec _ = raise TypeError
+	  | unrec _ = raise (TypeError "expected rec")
 	fun unprod (TFprod ab) = ab
-	  | unprod _ = raise TypeError
+	  | unprod _ = raise (TypeError "expected prod")
 	fun unarr (TFarr v) = v
-	  | unarr _ = raise TypeError
+	  | unarr _ = raise (TypeError "expected function")
 	fun unsum (TFsum v) = v
-	  | unsum _ = raise TypeError
+	  | unsum _ = raise (TypeError "expected sum")
 	
 	fun mapType _ (TFprim pt) = TFprim pt
 	  | mapType _ (TFvar i) = TFvar i

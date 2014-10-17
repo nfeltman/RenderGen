@@ -90,7 +90,8 @@ i("iotaStaged",			"iotaStaged", ansI 5)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
-				
+
+exception Problem				
 fun testProgram verbose name programType p t = 
 	let
 		val _ = Variable.reset ()
@@ -118,6 +119,7 @@ fun testProgram verbose name programType p t =
 		
 		(* Typechecking *)
 		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
+			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
 		
 		(* Splitting *)
 		val (split1, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)

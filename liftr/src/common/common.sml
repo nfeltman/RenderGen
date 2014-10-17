@@ -4,11 +4,9 @@ struct
 
 type var = Variable.variable
 
-exception TypeError
+exception TypeError of string
 exception ParseError
 exception Stuck
-
-fun assertSame eq (a,b) = if eq a b then a else raise TypeError
 
 fun id x = x
 

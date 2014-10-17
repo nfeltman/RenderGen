@@ -1,4 +1,11 @@
 
+signature TypeSystem = 
+sig
+	type ty
+	val teq : ty -> ty -> bool
+	val toString : ty -> string
+end
+
 structure SourceLang = 
 struct
 
@@ -80,41 +87,48 @@ fun forPattern (f,unpack,_) g (Pvar x) t = f g x t
 and forPattList fu g [] [] = g
   | forPattList fu g (x::xs) (t::ts) = forPattern fu (forPattList fu g xs ts) x t
   | forPattList (_,_,ex) _ _ _ = raise ex
-	
-fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap teq subst exp = 
+
+
+functor TypeChecker (T : TypeSystem) = struct
+  
+fun typeCheck gamma checkrec (extendC,lookupC) Twrap Tunwrap subst exp = 
 	let
 		val check = checkrec gamma
-		fun checkbranch (t,(patt,e)) = checkrec (forPattern (extendC, unprod o Tunwrap,TypeError) gamma patt t) e
-		fun checkFun eq ((a,b),c) = if eq a c then b else raise TypeError
-		fun binSame (a,b) (c,d,e) = if (a = c) andalso (b = d) then e else raise TypeError
+		fun checkbranch (t,(patt,e)) = checkrec (forPattern (extendC, unprod o Tunwrap,TypeError "pattern") gamma patt t) e
+		fun checkFun ((a,b),c) = if T.teq a c then b else raise (TypeError "function domain")
+		fun binSame (a,b) (c,d,e) = if (a = c) andalso (b = d) then e else raise (TypeError "binop")
 		fun selfSubst t = subst 0 (Twrap (TFrec t)) t
-		fun assertAllSame [] = raise TypeError
+		fun assertSame (a,b) = if T.teq a b then a else raise (TypeError "branches not same")
+		fun assertAllSame [] = raise (TypeError "no branches in case")
 		  | assertAllSame (t::[]) = t
-		  | assertAllSame (t::ts) = assertSame teq (t,assertAllSame ts)
+		  | assertAllSame (t::ts) = assertSame (t,assertAllSame ts)
 		val checkOpArg = unprim o Tunwrap o check
 	in
 		case exp of 
 		  Fvar v => lookupC gamma v
 		| Flam (t,b) => Twrap (TFarr (t, checkbranch (t,b)))
-		| Fapp (e1,e2) => checkFun teq (unarr (Tunwrap (check e1)), check e2)
+		| Fapp (e1,e2) => checkFun (unarr (Tunwrap (check e1)), check e2)
 		| FprimVal pv => Twrap (TFprim (Prims.getValType pv))
 		| Ftuple es => Twrap (TFprod (map check es))
 		| Fpi (i, e) => List.nth(unprod (Tunwrap (check e)), i)
 		| Finj (ts, us, e) => Twrap (TFsum (ts @ (check e :: us)))
-		| Fcase (e1,bs) => assertAllSame (zip checkbranch (unsum (Tunwrap (check e1))) bs TypeError) 
-		| Fif (e1,e2,e3) => (Prims.assertBool (TypesBase.unprim (Tunwrap (check e1))); assertSame teq (check e2, check e3))
+		| Fcase (e1,bs) => assertAllSame 
+				(zip checkbranch (unsum (Tunwrap (check e1))) bs (TypeError "wrong number of branches")) 
+		| Fif (e1,e2,e3) => (Prims.assertBool (TypesBase.unprim (Tunwrap (check e1))); assertSame (check e2, check e3))
 		| Flet (e,b) => checkbranch (check e, b)
 		| Ferror t => t
-		| Froll (t, e) => if teq (selfSubst t) (check e) then Twrap (TFrec t) else raise TypeError
+		| Froll (t, e) => if T.teq (selfSubst t) (check e) then Twrap (TFrec t) else raise (TypeError "")
 		| Funroll e => selfSubst (unrec (Tunwrap (check e)))
 		| Fbinop (bo, e1, e2) => Twrap (TFprim (binSame (checkOpArg e1, checkOpArg e2) (Prims.getBinopType bo)))
 	end
+end
 
 fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
 	let
 		val eval = evalRec env
 		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, untuple o Vunwrap, Stuck) env patt value) e
 		fun evalBranch v b = evalBranchE v (env,b)
+		val evalOpArg = unprimV o Vunwrap o eval
 	in
 		case exp of 
 		  Fvar v => lookupC env v
@@ -127,7 +141,7 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 		| Fcase (e, bs) => (case uninj (Vunwrap (eval e)) of (i, v) => evalBranch v (List.nth (bs,i)))
 		| Fif (e1, e2, e3) => eval (if Prims.unbool (unprimV (Vunwrap (eval e1))) then e2 else e3)
 		| Flet (e, b) => evalBranch (eval e) b
-		| Fbinop (bo,e1,e2) => Vwrap (VFprim (Prims.evalPrim (bo, unprimV (Vunwrap (eval e1)), unprimV (Vunwrap (eval e2)))))
+		| Fbinop (bo,e1,e2) => Vwrap (VFprim (Prims.evalPrim (bo, evalOpArg e1, evalOpArg e2)))
 		| Froll (_, e) => Vwrap (VFroll (eval e))
 		| Funroll e => unroll (Vunwrap (eval e))
 		| Ferror t => raise Stuck
