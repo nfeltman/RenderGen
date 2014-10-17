@@ -1,0 +1,109 @@
+
+\section{Umut's notes}
+
+...To be added to the paper...
+(TODO: make a pass to make consistent the terminology. it is a bit complex.)
+
+Answer the following question for all of the related work:
+
+What happens when we try to write quickselect as a meta program? 
+
+\newcommand{\drun}[2]{\lVert{#2}\rVert_{#1}}
+
+\subsection{Mixed Computation, Partial Evaluation, and Data Specialization.}
+
+
+The following definitions are adapted from the partial evaluation
+book, the cited papers, and Malmkjaer thesis.  For simplicity and
+uniformity, we assume that data and all programs are drawn from the
+same set and that ill-behaved programs and non-terminating programs
+all return $bottom$.
+
+Definition[Residual].  
+
+Let $p \in P$ be a program in a language $P$, which takes two inputs
+$d_s \in P$ (static data) and $d_d \in P$ (dynamic data).  The program
+$r \in P$ is a {\em residual for $p$ with respect to $d_s$} if for all
+$d_d$, residual behaves that same as the $p$ for static data $d_s$,
+i.e., 
+\[
+\drun{P}{p} (d_s, d_d) = \drun{P}{r} (d_d).
+\]
+
+
+Definition[Partial Evaluator]
+A {\em partial evaluator} or a {\em program specializer} is a program
+$e \in P$ (for ``evaluate'') such that for every $p \in P$, and every
+$d_s, d_d \in P$, 
+\[
+\drun{P}{p} (d_s, d_d) = \drun{P}{\drun{P}{e}(p, d_s)} (d_d).
+\]
+
+Foundations of partial evaluation go back to Kleene's s-n-m theorem
+from 1952, which constructively proved the existence of partial
+evaluators by using Turing machines~\cite{Kleene52}.  Kleene did not
+intend to improve efficiency, however. The first use of the term
+``partial evaluation'' appears in Lombardi and Raphael (1964), in the
+context of a paper on incremental camputation. Futamura (1971)
+considered self-application of partial evaluation, also using it for
+the purpose of compiler generation.  Ershov enriched Futamura's work
+by considering double self-application, which led to compiler
+generator generators, calling also Futamura's equations between
+partially evaluated programs as ``Futamura projections.''  
+
+
+Data specialization (Barzdin and Bulyonkov 88) is a generalization of
+partial evaluation.
+
+Definition [Data Specialization].  A data specializer for a language
+$P$ consist of two algorithms $ds_p, ds_d \in P$ for specializing the
+data and the program such that for any program $p \in P$ and any
+static and dynamic data $d_s, d_d \in P$, the code-specialized program
+when run with static-data-specialized program behaves the same as the
+original program run with the original data, i.e.,
+
+\[
+\drun{P}{p} (d_s, d_d) = \drun{P}{\drun{P}{ds_p} (p)} (\drun{P}{ds_d}
+(p,d_s), d_d)).
+\]
+
+Seeing that partial evaluation is a special case of data
+specialization is not trivial, as it requires using an interpreter for
+the language $P$ (written in $P$).  Specifically, we can use a partial
+evaluator in place of data specializer $ds_d$ and an  interpreter for $P$ in
+place of the program specializer $ds_p$. 
+
+
+Both partial evaluation and data specialization are special cases of
+mixed computation, which allows both the program and the data to be
+specialized with respect to each other.  Ershov introduced {\em mixed
+  computation}. 
+
+
+Definition [Mixed computation]. A mixed-computation for a language $P$
+consist of two algorithms $m_p, m_d \in P$ for specializing the data
+and the program such that for any program $p \in P$ and any data $d
+\in P$ the specialized program run with the specialized data behaves
+the same as the original program run with the original data, i.e.,
+
+\[
+\drun{P}{p} (d) = \drun{P}{\drun{P}{m_p} (p,d)} (\drun{P}{m_d} (p,d)).
+\]
+
+
+Partial evaluation is trivially a special case of mixed computation,
+because it allows a transformation of the program only on the static
+data, and because it allows only a simple transformation on data (the
+extraction of the dynamic data).  Similarly data specialization is a
+special case of mixed computation because it allows the program to be
+specialized in the absence of data and only the static portion of the
+data to be specialized with respect to the program.
+
+
+\subsection{Techniques}
+
+Polyvariant.
+
+Call Unrolling.
+
+Elimination of duplicate work.
