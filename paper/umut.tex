@@ -1,0 +1,71 @@
+
+\section{Umut's notes}
+
+...To be added to the paper...
+
+
+Answer the following question for all of the related work:
+
+What happens when we try to write quickselect as a meta program? 
+
+
+\newcommand{\drun}[2]{\lVert{#2}\rVert_{#1}}
+\paragraph{Partial Evaluation.}
+
+
+The following definitions are adapted from the partial evaluation
+book.  For simplicity and uniformity, we assume that data and programs
+are draws from the same set and that ill-behaved programs and
+non-terminating programs all return $bottom$.
+
+Definition[Residual].  
+
+Let $p \in P$ be a program in a language $P$, which takes two inputs
+$d_s \in P$ (static data) and $d_d \in P$ (dynamic data).  The program
+$r \in P$ is a {\em residual for $p$ with respect to $d_s$} if for all
+$d_d$, residual behaves that same as the $p$ for static data $d_s$,
+i.e., 
+\[
+\drun{P}{p} (d_s, d_d) = \drun{P}{r} (d_d).
+\]
+
+
+Definition[Partial Evaluator]
+A {\em partial evaluator} or a {\em program specializer} is a program
+$e \in P$ (for ``evaluate'') such that for every $p \in P$, and every
+$d_s, d_d \in P$, 
+\[
+\drun{P}{p} (d_s, d_d) = \drun{P}{\drun{P}{e}(p, d_s)} (d_d).
+\]
+
+Foundations of partial evaluation go back to Kleene's s-n-m theorem
+from 1952, which constructively proved the existence of partial
+evaluators by using Turing machines~\cite{Kleene52}.  Kleene did not
+intend to improve efficiency, however. The first use of the term
+``partial evaluation'' appears in Lombardi and Raphael (1964), in the
+context of a paper on incremental camputation. Futamura (1971)
+considered self-application of partial evaluation, also using it for
+the purpose of compiler generation.  Ershov enriched Futamura's work
+by considering double self-application, which led to compiler
+generator generators, calling also Futamura's equations between
+partially evaluated programs as ``Futamura projections.''  
+
+Ershov also introduced a richer form of transformation, {\em mixed
+  computation} that generalizes partial evaluation.  While in some
+literature, mixed computation is characterized as similar to partial
+evaluation, it is significantly more general, at least by definition. 
+
+Definition [Mixed computation]. A mixed-computation for a language $P$
+consist of two algorithms $m_p, m_d \in P$ for specializing the data
+and the program such that for any program $p \in P$ and any data $d
+\in P$ the specialized program run with the specialized data behaves
+the same as the original program run with the original data, i.e.,
+
+\[
+\drun{P}{p} (d) = \drun{P}{\drun{P}{m_p} (p,d)} (\drun{P}{m_d} (p,d)).
+\]
+
+Partial evaluation is trivially a special case of mixed computation,
+because it allows a transformation of the program only on the static
+data, and because it allows only a simple transformation on data (the
+extraction of the dynamic data).
