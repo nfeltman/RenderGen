@@ -1,6 +1,440 @@
 \section {Example: Staged Quickselect in \texorpdfstring{\lang}{λ12}}
 \label{sec:staging}
 
+\ur{I find it hard to distinguish between blue and black on printed paper.}
+
+
+\begin{figure*}
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) 
+  : (int*list*list) =
+  case unroll l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) =>
+      let (s,left,right) = partition (p,t) in
+      if h<p 
+      then (s+1,Cons(h,left),right)
+      else (s,left,Cons(h,right))
+
+fun qSelect (l : list, k : int) : int = 
+  case l of
+    Empty => 0
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+        case compare k n of
+          LT => qSelect (left, k)
+        | EQ => h
+        | GT => qSelect (right, k-n-1)
+\end{lstlisting}
+\caption{Unstaged implementation of quickselect.}
+\label{fig:quickselect}
+\label{fig:qs-unstaged}
+\end{subfigure}%
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list, k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        `2`let n = hold{`1`n`2`} in
+          case compare prev{`1`k`2`} n of
+            LT => prev {`1`qsStaged (left k)`2`}
+          | EQ => hold {`1`h`2`}
+          | GT => prev {`1`qsStaged (right, 
+                             next{prev{k}-n-1)}`2`}`1`
+      }`
+\end{lstlisting}
+\caption{Staged implementation of quickselect in \lang.}
+\label{fig:qsstaged}
+\label{fig:qs-staged}
+\end{subfigure}
+\caption{Quickselect: traditional and staged.}
+\end{figure*}
+
+
+Staging is a technique for using language constructs and types to
+explicitly staged a computation according to the frequency or the
+arrival time of data.  As an example, suppose that we wish to issue
+order statistics queries on a collection of items represented as a
+list \texttt{l}.  For this tasks, we can use the expected linear time,
+quickselect algorithm~\cite{quickselect}, which takes a
+list~\texttt{l} and a rank~\texttt{k} and returns the element with
+rank~\texttt{k} in the list.  To this end, the algorithm, whose code
+is shown in ~\figref{qs-unstaged} partitions the list into two by
+using the first element as a pivot~\footnote{We assume that the list
+  is prepermuted to guarantee the expected linear time behavior.} and
+recurs down to one of the ``halves'' to find the desired element.  The
+``half'' to be considered recursively next is determined by the
+relationship of~\texttt{k} to the size of the first half~\texttt{n},
+which is returned by the function~\texttt{partition}.
+
+Continuing on our example, consider an application where we perform
+many order statistics queries using the same collection~\texttt{l}, but
+potentially with different ranks~\cite{k}.  To take advantage of this,
+we can {\em stage} quickselect so that the parts of the computation
+that depend on the collection~\texttt{l} is performed once, and the
+desired result is computed by using~\texttt{k} and the results from
+this prior stage. 
+
+Prior work proposed staging for exactly these kinds of applications
+and proposed techniques for writing staged
+programs~\cite{staging}. Using techniques essentially the same as
+prior work, we can stage our quickselect code by using staged typing
+and inserting three keywords~\texttt{next, prev, hold} into the
+appropriate places in the code as shown in \figref{qs-staged}. To
+write the staged version, the programmer first observes that the
+rank~\texttt{k} has now the type $\fut\rmint$ (read ``circle int'')
+rather than $\rmint$, indicating that it will be available in the
+second stage.  All types that are not of circle type are available in
+the first stage.  Naturally the output type, representing the $k$th
+largest element of the list, is also $\fut\rmint$, since it is not
+computed until the second stage. Having determined the type signature,
+the programmer can then insert $\next$ and $\prev$ constructs into the
+code. The construct $\next$ occurs in a stage \bbone\ context and
+indicates that the contents of its block are stage \bbtwo, whereas
+$\prev$ occurs in a stage \bbtwo\ context and indicates that the
+contents of its block is stage \bbone.  (We adopt the convention that
+the top-level context is stage \bbone.)  The output type of a $\next$
+block is the $\fut$'d version of the type of its stage
+\bbtwo\ contents.  For example, \verb|next{0}| from above has the type
+$\fut\rmint$.  Correspondingly, $\prev$ requires that its stage
+\bbone\ contents have a $\fut$ type, and it eliminates the wrapper.
+For example, \verb|prev{k}| from above has type $\rmint$ at stage
+\bbtwo, since $k$ is bound to a $\fut\rmint$ at stage
+\bbone. Informally speaking, the
+$\next$ construct enables operating on second stage computations in
+the first stage essentially by treating them as boxes that can be
+moved around, stored in data structures, and passed to functions, and
+the $\prev$ construct enables unwrapping the contents of such a box to
+use in the second stage. 
+
+
+\ur{$\pause$ should be called ``promote'' or something like that. I
+  believe this is what Taha calls cross stage persistence.  THat work should
+  be cited.}
+
+For convenience, the code also uses $\pause$ blocks.  This construct
+has same stage signature as $\prev$, but instead of ``unwrapping"
+$\fut$ types it simply promotes integers from stage~\bbone\ to
+stage~\bbtwo.
+\footnote{It will turn out that $\pause$ is implementable---though it takes some effort---from our other language features.
+We instead provide it as a primitive to shorten examples.  
+Furthermore, it would be wise to extend $\pause$ to other base types, if we had them, and to products and sums thereof.
+This is related to the notion of {\em mobility} in \cite{murphy05} and
+{\em stability} in \cite{krishnaswami13}.} 
+
+We note that given the type signature of staged quickselect, there are
+several ways to insert the staging annotations.  The version we
+presented here maximizes the work done at stage~\bbone.  
+
+
+\ur{I don't like fuzzy words like hygenic that dont mean anything.
+  What is the point of using them?  A paper ought to be written for
+  the reader not as a note to self.}
+
+
+
+%%%
+%% There has been the extensive research into the question of how to
+%% automatically add staging annotations to unstaged code.  This process
+%% is known as {\em binding time analysis}, and we do not consider it
+%% here.  Instead, we assume that all input programs are properly staged
+%% according to some programmer's intent.
+
+
+
+
+Prior work on meta programming allows us to evaluate such staged code
+in a staged fashion by first providing the first-stage arguments and
+generating a piece of code that is specialized for the arguments.  For
+example, we can evaluate the staged quickselect by providing a
+list~\texttt{l} to obtain a piece of code that then can be used with
+different ranks (\texttt{k} values) in the second stage.  Such a
+specialized code essentially performs all the first-stage computations
+first and uses their results to improve the efficiency in the second
+stage, where we issue many queries.  The type system guarantees that
+all first-stage computations depend only on the first stage values and
+can indeed be computed in the absence of second-stage values.  
+
+This staged evaluation technique corresponds to {\em partial
+  evaluation} or {\em program specialization} and can bring out
+dramatic improvements in the efficiency of programs.  It has however
+one major limitation: since it requires the first stage arguments to
+be available, it cannot be performed at compile time, except of course
+when the first-stage values are available at compile time.  Since the
+evaluation in the first stage produces a piece of code that must also
+be compiled or interpreted to execute in the second stage, the
+approach can lead to code blowup and tends to be relatively expensive
+in practice.  Due to these reasons, the applications of partial
+evaluation are limited.  For example, in our quickselect example, it
+is unlikely to know the list~\texttt{l} that we will be operation on
+at compile time. Partial evaluation dynamically at run time is
+difficult because the first stage generates code that is linear in the
+size of the list, whose generation, dynamic compilation or
+interpretation can be excruciatingly slow.
+
+Knoblock and Ruf~\cite{KR} proposed  the {\em data specialization} technique
+
+
+limitations of   
+
+ 
+Prior work on 
+
+
+
+
+
+
+To illustrate this, we present colorized version of \texttt{qSelect}:
+
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ... `
+
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  case l of
+    Empty => `2`0`1`
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in`2`
+      case compare k n of
+        LT => `qSelect 1`left `2`k
+      | EQ => h
+      | GT => `qSelect 1`right `2`(k-n-1)`
+\end{lstlisting}
+
+Here, the input $k$ and all parts of the computation that depend on it are colored blue,
+whereas all of the parts of the computation that do not depend on $k$ are colored red.
+The \texttt{qSelect} variable itself, due to its status as a function with a mixed-color body, is left black.
+
+\ur{I find control dependence issue very confusing.  Let's factor this
+out and talk about it in the end. }
+
+To be precise, we use "depend on" to mean data dependence, but not control dependence---the 
+first arguments to the recursive calls to \texttt{qSelect} are colored red,
+despite appearing underneath a blue case statement.
+This coloring rule is enough to ensure that information can flow from red code to blue code but not vice versa.
+
+Observe the that helper function \texttt{partition} is colored entirely red,
+which is valid because it is called with only red arguments.  
+This is an illustration of the property stated above, that 
+the partitioning of the list, even through recursion, depends only on the list itself and not on $k$.
+Moreover, the property is notable because much of the work of the quickselect algorithm takes place in \texttt{partition}.
+
+This suggests an optimization: we can split \texttt{qSelect} into two functions, 
+one for all of the red code (\texttt{qSelect1}) and another for all of the blue code (\texttt{qSelect2}). 
+Because of the dependence properties stated above, 
+\texttt{qSelect2} will need only depend on the results of \texttt{qSelect1} and the input index $k$,
+whereas \texttt{qSelect1} will only depend on the input list $l$.
+Additionally, the meaning of \texttt{qSelect1} appropriately composed with \texttt{qSelect2} should be the same as \texttt{qSelect}, too.
+Equationally, we can represent this relationship as simply 
+\[
+\mathtt{qSelect~l~k} \equiv \mathtt{qSelect2~(qSelect1~l)~k}
+\]
+for some list \texttt{l} and index \texttt{k}.
+
+
+\ur{I don't follow the explanation below, e.g., ``assuming conclusion''}
+
+With this goal in mind, we now set about deriving \texttt{qSelect1} and \texttt{qSelect2} from our colorized \texttt{qSelect}.
+Because the original function is recursive,
+the first step in this process is to assume the conclusion at the call sites.
+
+\ur{quickselect 1 and 2: how did we introduce them?}
+
+This is performed in place:
+\begin{lstlisting} 
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  case l of
+    Empty => `2`0`1`
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in`2`
+      case compare k n of
+        LT => qSelect2 (`1`qSelect1 left`2`) k
+      | EQ => h
+      | GT => qSelect2 (`1`qSelect1 right`2`) (k-n-1)`
+\end{lstlisting}
+We then pull the stage \bbone\ portion of each branch of the
+comparison up into a single tuple.
+\ur{Why did we include h}
+
+\begin{lstlisting} 
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  case l of
+    Empty => `2`0`1`
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      let p = `1`(h,qSelect1 left,qSelect1 right) in`2`
+      case compare k n of
+        LT => qSelect2 (pi2 p) k
+      | EQ => pi1 p
+      | GT => qSelect2 (pi3 p) (k-n-1)`
+\end{lstlisting}
+
+\ur{Don't know what ``this last step'' refers to.}
+This last step is necessary, but we can perform it only because we're willing to ignore the control dependence.
+We continue to pull up the precomputation and include more in it:
+
+\begin{lstlisting} 
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  case l of
+    Empty => `2`0`1`
+  | Cons (h,t) => 
+      let p =
+        let (left,right,n) = partition h t in
+        `1`(n,h,qSelect1 left,qSelect1 right)
+      in`2`
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+This completes the splitting of the cons branch.  
+The empty branch can also be split, though in a trivial way:
+
+\ur{Not clear, ``can be split'' split.  Does or doesn't (split) should be the verb?}
+\begin{lstlisting} 
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  case l of
+    Empty => let p = () in `2`0`1`
+  | Cons (h,t) => 
+      let p =
+        let (left,right,n) = partition h t in
+        `1`(n,h,qSelect1 left,qSelect1 right)
+      in`2`
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+
+
+To continue splitting the case statement, we need to generate a sum type in the precomputation
+to remind the code what branch its in.
+
+\begin{lstlisting} 
+fun qSelect (1`l : list`) (2`k : int`) : 2`int` = 1`
+  let p = 
+    case l of
+      Empty => Top ()
+    | Cons (h,t) =>
+        let (left,right,n) = partition h t in`1`
+        Bot (n,h,qSelect1 left,qSelect1 right)
+  in`2`
+  case p of 
+    Top () => 0
+  | Bot p => 
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+We finish where we start, splitting \texttt{qSelect} into
+\texttt{qSelect1} and \texttt{qSelect2}.  
+Omitting a few type annotations, that is:
+
+\begin{lstlisting} 
+1`fun qSelect1 (l : list) = 
+    case l of
+      Empty => Top ()
+    | Cons (h,t) =>
+        let (left,right,n) = partition h t in
+        Bot (n,h,qSelect1 left,qSelect1 right)
+`2`
+fun qSelect2 p (k : int) : int = 
+  case p of 
+    Top () => 0
+  | Bot p => 
+      case compare k (pi1 p) of
+        LT => qSelect2 (pi3 p) k
+      | EQ => pi2 p
+      | GT => qSelect2 (pi4 p) (k-n-1)`
+\end{lstlisting}
+
+The final version, cleaned up and given better datatype names, is shown in \ref{fig:qssplit}.
+Observe that \texttt{qSelect1} essentially builds a binary search tree from the input list, 
+and \texttt{qSelect2} searches that tree for the correct index.
+The benefits of this decomposition are substantial: for a randomly ordered list of length $n$, 
+the original \texttt{qSelect} takes expected $O(n)$ time per lookup, 
+whereas \texttt{qSelect2} takes $O(\log n)$ time.
+Since \texttt{qSelect1} does not depend on $k$, its $O(n\log n)$ cost can be amortized over many lookups.
+
+\nr{There's something else I need to say right here before the contribution statement below. 
+I want the reader to be thinking "yeah, this splitting business does seem cool."
+Bonus points if I also have them thinking "but it would be cooler if it were formal."}
+
+This paper formally describes and analyzes the splitting transformation exemplified above.
+(I also want to make it clear that recognizing \lang's appropriateness for this is itself is a contribution.)
+
+We start by defining a simple staged language, called \lang, to express the input to our splitting algorithm.  
+\lang\ unambiguously specifies how its terms should be split
+% and features a type system that ensures valid splittings exist.
+% only minimal refactoring should be required to write terms within this language,
+%and from there, the type system should be enough to prove that a valid splitting exists.
+by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
+Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate it---all stage-\bbone\
+subexpressions are evaluated before stage-\bbtwo\ ones.  
+After splitting, those parts of the \lang\ term that were identified with stage \bbone\ 
+will end up in the stage \bbone\ function ({\tt qSelect1}), 
+and those parts identified with stage \bbtwo\ will end up in the stage \bbtwo\ function ({\tt qSelect2}).
+Typing rules for \lang\ ensure a valid splitting exists.  That is, 
+within well-typed terms, information can flow from stage \bbone\ to stage \bbtwo\ portions,
+but never from \bbtwo\ to \bbone.
+
+
+
+
+
+\begin{figure}
+
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting}
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...`
+	
+datatype tree = Branch of int * int * tree * tree
+                | Leaf
+
+1`fun qSelect1 (l : list) : tree =
+  case l of
+    Empty => Leaf
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      Branch (n, h, qSelect1 left, qSelect1 right)`
+
+2`fun qSelect2 (p : tree, k : int) : int = 
+  case unroll p of
+    Leaf => 0
+  | Branch (n,h,p1,p2) => 
+      case compare k n of
+        LT => qSelect2 (p1,k)
+      | EQ => h
+      | GT => qSelect2 (p2,k-n-1)`
+\end{lstlisting}
+\caption{Split (two-phase) implementation of quickselect.}
+\label{fig:qssplit}
+\end{subfigure}
+\caption{Caption place holder}
+\end{figure}
+
+
+
+\begin{comment}
+
+%% Umut: this is the earlier version.  I am reorganizing this whole
+%% section.
+
+
 \ur{Indentation seems broken. Be consistent.}
 
 \begin{figure*}
@@ -327,3 +761,4 @@ that's just the identity at stage~\bbone\ and plus quickselect at stage~\bbtwo.
 There has been the extensive research into the question of how to automatically add staging annotations to unstaged code.
 This process is known as {\em binding time analysis}, and we do not consider it here.
 Instead, we assume that all input programs are properly staged according to some programmer's intent.
+\end{comment}
