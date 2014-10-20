@@ -12,7 +12,7 @@ What happens when we try to write quickselect as a meta program?
 
 \subsection{Mixed Computation, Partial Evaluation, and Data Specialization.}
 
-
+\paragraph{Defitions and relationships.}
 The following definitions are adapted from the partial evaluation
 book, the cited papers, and Malmkjaer thesis.  For simplicity and
 uniformity, we assume that data and all programs are drawn from the
@@ -74,6 +74,14 @@ evaluator in place of data specializer $ds_d$ and an  interpreter for $P$ in
 place of the program specializer $ds_p$. 
 
 
+THIS IS IMPORTANT. EXPAND ON THIS.  Knoblock and Ruf's data
+specialization is similar but statically splits the code. This is
+important because it is not feasible to perform splitting at run time
+as can be possible according to the definition of data splitting. This
+is similar to ours.  Their approach, however, seems to assume that the
+specialized code is a single non-recursive procedure.
+
+
 Both partial evaluation and data specialization are special cases of
 mixed computation, which allows both the program and the data to be
 specialized with respect to each other.  Ershov introduced {\em mixed
@@ -100,10 +108,12 @@ specialized in the absence of data and only the static portion of the
 data to be specialized with respect to the program.
 
 
-\subsection{Techniques}
+\paragraph{Techniques}
 
 Polyvariant.
 
 Call Unrolling.
 
 Elimination of duplicate work.
+
+

@@ -1,13 +1,13 @@
 \documentclass[pldi,preprint]{sigplanconf}
 
 \usepackage{amsmath}
-%\usepackage{amssymb}
+\usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{bbm}
+%\usepackage{bbm}
 \usepackage{stmaryrd}
 \usepackage{proof}
 \usepackage{mathpartir}
-\usepackage{mathabx}
+%\usepackage{mathabx}
 \usepackage{listings}
 \usepackage{enumitem}
 \usepackage{url}
@@ -18,6 +18,7 @@
 \usepackage[T1]{fontenc}
 %\usepackage[utf8x]{inputenc}
 %\PrerenderUnicode{λ}
+\usepackage{verbatim}
 
 \usepackage{cleveref}
 \AtBeginDocument{\renewcommand\ref\cref}
@@ -32,7 +33,8 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
-\input {macros}
+\input{macros}
+\input{macros-ref}
 \input{remarks}
 
 \definecolor{stageOneColor}{RGB}{120,30,0}
@@ -45,7 +47,8 @@
         keepspaces=true,
         basicstyle=\ttfamily,
         tabsize=4,
-        escapeinside={"*}{*"},
+%        escapeinside={"*}{*"},
+        escapeinside={@}{@},
         moredelim=*[is][\color{stageOneColor}]{1`}{`},
         moredelim=*[is][\color{stageTwoColor}]{2`}{`},
         literate={|->}{{\ $\mapsto$\ }}1
@@ -103,15 +106,16 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{intro}
+%% \input{intro}
 
 \input{example}
-\input{semantics}
+ \input{semantics}
 
-%\vfill\eject\pagebreak
-\input{splitting}
+%% %\vfill\eject\pagebreak
+%%\input{splitting}
 \input{algoexamples}
 \input{relatedwork}
+\input{umut}
 
 %\appendix
 %\section{Appendix Title}

@@ -32,12 +32,18 @@ at $\fut$ types, splitting assigns $v$ (which must have the form $\next~\hat y$)
 entirely to stage \bbtwo\ (and \texttt{()} to stage \bbone). This process of
 exposing only the relevant structure of a term is called \emph{masking}.
 
+
 \ur{The case for ``fold'' seems missing in partial value splitting rules.}
 
 Splitting a function is more complex, because function bodies are open terms,
 and so are split by the judgments described in the next subsection. Essentially,
 functions will split into two functions, whose bodies correspond to the stage
 \bbone\ and stage \bbtwo\ components of the original function body.
+
+\ur{Unclear whether the term ``masking'' includes the case for
+  functions or not.  If it does, then it sounds rather
+  inaccurate.  If not, then it should be stated clearly that it does
+  not, but then what is the value of introducing one more term?}
 
 \subsection{General Splitting}
 

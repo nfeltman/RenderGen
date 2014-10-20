@@ -1,7 +1,25 @@
 \section {Example: Staged Quickselect in \texorpdfstring{\lang}{λ12}}
 \label{sec:staging}
 
-\ur{I find it hard to distinguish between blue and black on printed paper.}
+
+\subsection{Comments, suggestions, and ``todo''}
+I rewrote this section.  There is more work to be done. 
+
+\begin{itemize}
+\item 
+I find it hard to distinguish between blue and black on printed paper.
+
+\item
+$\pause$ should be called ``promote'' or something like that. I
+  believe this is what Taha calls cross stage persistence.  THat work should
+  be cited.
+
+\item
+I don't like fuzzy words like hygenic that dont mean anything.
+  What is the point of using them?  A paper ought to be written for
+  the reader not as a note to self.
+\end{itemize}
+
 
 
 \begin{figure*}
@@ -116,9 +134,7 @@ the $\prev$ construct enables unwrapping the contents of such a box to
 use in the second stage. 
 
 
-\ur{$\pause$ should be called ``promote'' or something like that. I
-  believe this is what Taha calls cross stage persistence.  THat work should
-  be cited.}
+
 
 For convenience, the code also uses $\pause$ blocks.  This construct
 has same stage signature as $\prev$, but instead of ``unwrapping"
@@ -135,9 +151,6 @@ several ways to insert the staging annotations.  The version we
 presented here maximizes the work done at stage~\bbone.  
 
 
-\ur{I don't like fuzzy words like hygenic that dont mean anything.
-  What is the point of using them?  A paper ought to be written for
-  the reader not as a note to self.}
 
 
 
@@ -180,17 +193,98 @@ difficult because the first stage generates code that is linear in the
 size of the list, whose generation, dynamic compilation or
 interpretation can be excruciatingly slow.
 
-Knoblock and Ruf~\cite{KR} proposed  the {\em data specialization} technique
+Knoblock and Ruf~\cite{KR} proposed the {\em data specialization}
+technique to overcome some of these limitations of program
+specialization.  The idea behind this technique is to take a staged
+program and split it into a stage-1 and a stage-2 program without
+knowledge of any of the arguments.  Unlike program specialization,
+data specialization does not require knowledge of the first-stage
+arguments to produce fast code for the second stage.  Instead it yield
+a first stage program that maps the first stage arguments to an
+intermediate or {\em boundary data structure}, which is used by the
+second stage program along with the second stage arguments to produce
+the final results.  Knoblock and Ruf's observation is that the
+information required by the second stage can be represented solely as
+a data structure, making it unnecessary to generate and compile or
+interpret code dynamically at run time.  Data specialization can
+therefore be applied statically at compile time, leading to
+drastically improved run-time performance without any significant
+run-time overheads.
 
 
-limitations of   
+By applying data specialization to our quickselect example, we would
+wish to derive two functions, \texttt{quickselect1} and
+\texttt{quickselect2}, that would be semantically equivalent to
+quickselect in the following sense:
+\\
+\texttt{quickselect l k = quickselect2 (quickselect1 l) k}.
+\\
+%
+Since \texttt{quickselect1} requires only on a first stage
+argument~\texttt{l}, we can run it once to produce a boundary data
+structure that can be used for all subsequent queries on~\texttt{l},
+e.g.,  the code consisting of $m$ calls 
+\begin{lstlisting}
+quickselect l 1
+quickselect l 2
+ @$\ldots$@ 
+quickselect l @$m$@
+\end{lstlisting}
+%
+can be replaced by 
+%
+\begin{lstlisting}
+b = quickselect1 l
+quickselect2 b 1
+quickselect b 2
+@$\ldots$@ 
+quickselect b @$m$@.
+\end{lstlisting}
 
- 
-Prior work on 
+The benefit of this ``optimization'' can be dramatic.  For example, in
+principle at least, the first stage function \texttt{quickselect1}
+could produce a balanced binary search tree holding the elements
+of~\texttt{l} and the second stage function \texttt{quickselect2}
+could use this balanced binary search tree and the given rank value to
+perform a logarithmic-time search in the tree to return the desired
+result.  Assuming that the list~\texttt{l} contains $n$ elements, this
+optimization would change the asymptotic complexity from expected
+(randomized) $\Theta(n \cdot m)$ to $\Theta(n\log{n} \cdot m
+\cdot\log{n})$, which for any $m \approx n$ reduces the complexity
+from $\Theta (n^2)$ to $\Theta(n\log{n})$---a near linear time
+improvement.  Note that the desired optimized code shows above is
+intellectually more sophisticated than the code that we have started
+with: the optimized code is able to create a data structure, a
+balanced binary tree augmented with indexing information, and use a
+binary search technique over this tree to compute the result
+asymptotically more efficiently.  In fact, based our teaching
+experience, we can imagine this kind of problem to be a moderately
+difficult exam question in an undergraduate algorithms class, as it
+not only requires understanding of data structures such as binary
+search trees but also requires modifying them to augment with indexing
+information to support rank-based search.
 
 
+It is thus perhaps no surprise that the prior art in data
+specialization is not able to perform such ``optimizations''.
+Knoblock and Ruf's paper takes a very important step by formulating
+the problem and proposing a solution.  But their work applies to
+program fragments that don't involve sophisticated data types such as
+as sums and recursive types, and don't involve recursion. For example,
+their work would not apply to our quickselect example and similar ones
+involving recursion and/or  recursive types.
+
+In this paper, we show that it is possible to generalize data
+specialization to a fully general language with recursion and
+recursive types.  The key ideas behind our approach are: ...
 
 
+In what follows we present a relatively mechanical application of our
+techniques to our running example. 
+
+
+\ur{I made up to here.  What follows should be shortened and made to
+  the point. Some time later...}
 
 
 To illustrate this, we present colorized version of \texttt{qSelect}:
