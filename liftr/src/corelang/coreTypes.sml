@@ -1,19 +1,25 @@
+signature TypeSystem = 
+sig
+	type ty
+	val teq : ty -> ty -> bool
+	val toString : ty -> string
+end
+
 signature SourceTypes = 
 sig
-	datatype 't typeF	= TFprim of Prims.primType
-						| TFvar of int 
-						| TFrec of 't
-						| TFprod of 't list
-						| TFsum of 't list
-						| TFarr of 't * 't
-
-	val unprim : 't typeF -> Prims.primType
-	val unrec  : 't typeF -> 't
-	val unprod : 't typeF -> 't list
-	val unarr  : 't typeF -> 't * 't
-	val unsum  : 't typeF -> 't list
-	val mapType : ('t->'u) -> 't typeF -> 'u typeF
-	val teq : ('t -> 't -> bool) -> 't typeF -> 't typeF -> bool
+	type t
+	val makeprim	: Prims.primType -> t
+	val makevar		: int -> t
+	val makerec		: t -> t
+	val makeprod	: t list -> t
+	val makesum		: t list -> t
+	val makearr		: t * t -> t
+	val unprim		: t -> Prims.primType
+	val unrec		: t -> t
+	val unprod		: t -> t list
+	val unsum		: t -> t list
+	val unarr		: t -> t * t
+	val subst		: t -> t -> t
 end
 
 structure TypesBase  = 
@@ -51,7 +57,30 @@ struct
 	  | teq eq (TFsum ts) (TFsum us) = listeq eq ts us
 	  | teq eq (TFarr (t1,t2)) (TFarr (u1,u2)) = (eq t1 u1) andalso (eq t2 u2)
 	  | teq _ _ _ = false
+	  
 end
+
+functor EmbedTypes (T : sig 
+	type u 
+	val outof : u -> u TypesBase.typeF
+	val into : u TypesBase.typeF -> u 
+	val subst : u -> u -> u end) : SourceTypes = 
+struct
+	type t = T.u
+	val unprim = TypesBase.unprim o T.outof
+	val unrec = TypesBase.unrec o T.outof
+	val unprod = TypesBase.unprod o T.outof
+	val unsum = TypesBase.unsum o T.outof
+	val unarr = TypesBase.unarr o T.outof
+	val makeprim = T.into o TypesBase.TFprim
+	val makevar = T.into o TypesBase.TFvar
+	val makerec = T.into o TypesBase.TFrec
+	val makeprod = T.into o TypesBase.TFprod
+	val makesum = T.into o TypesBase.TFsum
+	val makearr = T.into o TypesBase.TFarr
+	val subst = T.subst
+end
+
 
 structure TypeSubst = 
 struct

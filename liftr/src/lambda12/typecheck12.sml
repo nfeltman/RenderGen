@@ -43,16 +43,29 @@ struct
 	fun toString t = "????"
 end
 
-structure Checker1 = TypeChecker (TS1)
-structure Checker2 = TypeChecker (TS2)
+structure TypeFeatures1 = EmbedTypes(struct 
+	type u = type1 
+	val into = T1 
+	val outof = Tunwrap 
+	val subst = subst1 0
+end)
+structure TypeFeatures2 = EmbedTypes(struct 
+	type u = type2 
+	val into = T2 
+	fun outof (T2 t) = t 
+	val subst = subst2 0
+end)
+
+structure Checker1 = TypeChecker (TS1) (TypeFeatures1)
+structure Checker2 = TypeChecker (TS2) (TypeFeatures2)
 
 in
 
-fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 extendLookup1 T1 Tunwrap subst1 exp
+fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 extendLookup1 exp
   | typeCheck1 gamma (E1next e) = T1fut (typeCheck2 gamma e)
   | typeCheck1 gamma (E1hold e) = handleHold (typeCheck1 gamma e)
 	
-and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 extendLookup2 T2 (fn (T2 t) => t) subst2 exp
+and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 extendLookup2 exp
   | typeCheck2 gamma (E2prev e) = unfut (typeCheck1 gamma e)
 
 end
