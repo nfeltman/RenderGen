@@ -52,6 +52,52 @@ generator generators, calling also Futamura's equations between
 partially evaluated programs as ``Futamura projections.''  
 
 
+\paragraph{Staging and staging transformations.}
+
+To the best of our knowledge, Jorring and Sherlis are the
+first to define precisely the notion of {\em staging} by recognizing
+it to be a common optimization performed in software design, as the
+programmer tries to stage computations based on frequency of a
+computation and the availability of data~\cite{jorring86}.  They then
+define, staging as the problem of taking a function of the form
+$f(x,y)$ and deriving two functions $f_1$ and $f_2$ such that $f(x,y)
+= f_2(f_1(x),y)$.  As the authors point out, the key difference
+between staging and partial evaluation as that the latter performs no
+a priori transformation; instead when $x$ becomes available it
+specialized $f(x,\cdot)$ as much as possible.  Based on this notion of
+staging, Jorring and Sherlis also define the {\em meta programming}
+approach where $f(x, \cdot)$ is specialized by a meta program derived
+from the definition of $f(x,y)$.
+
+Having defined staging and meta programming problems, Jorring and
+Scherlis move on to describe techniques for them.  They present the
+technique called {\em pass separation} as a solution the problem of
+splitting a function into two such that the stage-1 function produces
+an intermediate data structure from the stage-1 data, which is then
+used by the stage-2 function along with stage-2 data to produce the
+final result.  Jorring and Scherlis then note describe how
+pass-separation can be applied to an interpreter to obtain a compiler
+from it by manually transforming the interpreter code into a compiler
+by analysis. They also describe how meta programming can be used to
+derive a specialized program not by creating a data structure as pass
+separation does by generating a more optimized code that ``freezes''
+certain actions to be performed at run time. 
+
+Jorring and Scherlis highlight that their techniques are not meant to
+be applied automatically and that they describe what can be called a
+``vision.''  Indeed they describe their approach by way of examples as
+transformations that can be applied by the programmer manually and
+point out that they are powerful techniques that will require some time
+and further research to automate.
+
+Our work provides strong evidence that pass-separation transformations
+can indeed be performed on explicitly staged programs automatically.
+
+\ur{I didn't understand meta programming transformations that they do
+  and the relationship to followup work.}
+
+
+
 Data specialization (Barzdin and Bulyonkov 88) is a generalization of
 partial evaluation.
 
@@ -72,6 +118,8 @@ specialization is not trivial, as it requires using an interpreter for
 the language $P$ (written in $P$).  Specifically, we can use a partial
 evaluator in place of data specializer $ds_d$ and an  interpreter for $P$ in
 place of the program specializer $ds_p$. 
+
+
 
 
 THIS IS IMPORTANT. EXPAND ON THIS.  Knoblock and Ruf's data
