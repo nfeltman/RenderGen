@@ -98,11 +98,24 @@ which is returned by the function~\texttt{partition}.
 
 Continuing on our example, consider an application where we perform
 many order statistics queries using the same collection~\texttt{l}, but
-potentially with different ranks~\cite{k}.  To take advantage of this,
-we can {\em stage} quickselect so that the parts of the computation
-that depend on the collection~\texttt{l} is performed once, and the
-desired result is computed by using~\texttt{k} and the results from
-this prior stage. 
+ with $m$ different ranks~\texttt{k}:
+%
+\begin{lstlisting}
+quickselect l 1
+quickselect l 2
+ @$\ldots$@ 
+quickselect l @$m$@.
+\end{lstlisting}
+%
+Since \texttt{quickselect1} requires only on a first stage
+argument~\texttt{l}, we can run it once to produce a boundary data
+structure that can be used for all subsequent queries on~\texttt{l},
+e.g., the code consisting of $m$ calls To take advantage of this, we
+can {\em stage} quickselect so that the parts of the computation that
+depend on the collection~\texttt{l} is performed once, and the desired
+result is computed by using~\texttt{k} and the results from this prior
+stage.
+
 
 Prior work proposed staging for exactly these kinds of applications
 and proposed techniques for writing staged
@@ -116,7 +129,9 @@ rather than $\rmint$, indicating that it will be available in the
 second stage.  All types that are not of circle type are available in
 the first stage.  Naturally the output type, representing the $k$th
 largest element of the list, is also $\fut\rmint$, since it is not
-computed until the second stage. Having determined the type signature,
+computed until the second stage. 
+
+Having determined the type signature,
 the programmer can then insert $\next$ and $\prev$ constructs into the
 code. The construct $\next$ occurs in a stage \bbone\ context and
 indicates that the contents of its block are stage \bbtwo, whereas
@@ -137,21 +152,20 @@ the $\prev$ construct enables unwrapping the contents of such a box to
 use in the second stage. 
 
 
-
-
 For convenience, the code also uses $\pause$ blocks.  This construct
 has same stage signature as $\prev$, but instead of ``unwrapping"
 $\fut$ types it simply promotes integers from stage~\bbone\ to
 stage~\bbtwo.
-\footnote{It will turn out that $\pause$ is implementable---though it takes some effort---from our other language features.
-We instead provide it as a primitive to shorten examples.  
-Furthermore, it would be wise to extend $\pause$ to other base types, if we had them, and to products and sums thereof.
-This is related to the notion of {\em mobility} in \cite{murphy05} and
-{\em stability} in \cite{krishnaswami13}.} 
-
-We note that given the type signature of staged quickselect, there are
-several ways to insert the staging annotations.  The version we
-presented here maximizes the work done at stage~\bbone.  
+\footnote{It will turn out that $\pause$ is implementable---though it
+  takes some effort---from our other language features.  We instead
+  provide it as a primitive to shorten examples.  Furthermore, it
+  would be wise to extend $\pause$ to other base types, if we had
+  them, and to products and sums thereof.  This is related to the
+  notion of {\em mobility} in \cite{murphy05} and {\em stability} in
+  \cite{krishnaswami13}.} We note that given the type signature of
+staged quickselect, there are several ways to insert the staging
+annotations.  The version we presented here maximizes the work done at
+stage~\bbone.
 
 
 
@@ -252,8 +266,7 @@ could use this balanced binary search tree and the given rank value to
 perform a logarithmic-time search in the tree to return the desired
 result.  Assuming that the list~\texttt{l} contains $n$ elements, this
 optimization would change the asymptotic complexity from expected
-(randomized) $\Theta(n \cdot m)$ to $\Theta(n\log{n} \cdot m
-\cdot\log{n})$, which for any $m \approx n$ reduces the complexity
+(randomized) $\Theta(n \cdot m)$ to $\Theta(n\log{n} + m\log{n})$, which for any $m \approx n$ reduces the complexity
 from $\Theta (n^2)$ to $\Theta(n\log{n})$---a near linear time
 improvement.  Note that the desired optimized code shows above is
 intellectually more sophisticated than the code that we have started
