@@ -86,7 +86,7 @@ i("fastexp",			"fastexp",ansNI 243) ,
 i("quickselect",		"quickselect", ansNI 4),
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
-i("iotaStaged",			"iotaStaged", ansI 5)
+i("stress",				"stress", SAME)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -143,8 +143,8 @@ fun testProgram verbose name programType p t =
 		val v2DiagC = Comp.convertDiagValue2 v2Diag
 		
 		(* Printing Diagonal Semantics *)
-		val _ = printTerm ` PrintPSF.convertDiag diagResidual
-		val _ = debug "~~~~~~~~~~~\n";
+(*		val _ = printTerm ` PrintPSF.convertDiag diagResidual
+		val _ = debug "~~~~~~~~~~~\n"; *)
 		
 		(* Evaluating Split Part *)
 		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
