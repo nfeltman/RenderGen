@@ -9,6 +9,7 @@ open LangCommon
 open LambdaPSF
 open Lambda12
 structure S = SourceLang
+structure T = TypesBase
 
 infixr 9 `
 fun a ` b = a b

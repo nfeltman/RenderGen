@@ -23,7 +23,7 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ | LETTY | LETDT | STR | 
-	  STRLIT of string
+	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
@@ -77,6 +77,7 @@ open LangCommon
 		  | LPAR EXP COMMA EXP EXPL RPAR								(Etuple (EXP1 :: EXP2 :: EXPL))
 		  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 		  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
+		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
 		  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))

@@ -66,10 +66,12 @@ fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
   | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
 and convertTyStage2 (S.T2 t) = convertSourceTypes convertTyStage2 t
 fun convertStage1 (S.E1 e) = convertSource convertStage1 convertTyStage1 e
+  | convertStage1 (S.E1mono e) = EbraceApp("mono", convertStageM e)
   | convertStage1 (S.E1next e) = EbraceApp("next", convertStage2 e)
   | convertStage1 (S.E1hold e) = EprimApp("holdInt", convertStage1 e)
 and convertStage2 (S.E2 e) = convertSource convertStage2 convertTyStage2 e
   | convertStage2 (S.E2prev e) = EbraceApp("prev", convertStage1 e)
+and convertStageM (S.EM e) = convertSource convertStageM convertTyStage2 e
   
 fun convertDiag (DiagonalSemantics.E e) = convertSource convertDiag (fn _ => Eatom "_") e
 fun convertPSF (LambdaPSF.E e) = convertSource convertPSF (fn () => Eatom "_") e

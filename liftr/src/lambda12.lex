@@ -68,6 +68,7 @@ eol = ("\013\010"|"\010"|"\013");
 				| "fn" => Tokens.FN(!pos,!pos)
 				| "next" => Tokens.NEXT(!pos,!pos)
 				| "prev" => Tokens.PREV(!pos,!pos)
+				| "mono" => Tokens.MONO(!pos,!pos)
 				| "inl" => Tokens.INL(!pos,!pos)
 				| "inr" => Tokens.INR(!pos,!pos)
 				| "roll" => Tokens.ROLL(!pos,!pos)

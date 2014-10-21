@@ -30,6 +30,8 @@ fun subst1 n (v : type1) (T1 t) = TypeSubst.substTy subst1 lift1 T1 n v t
 fun handleHold (T1 (TFprim t)) = T1fut (T2 (TFprim t))
   | handleHold _ = raise (TypeError "expected any primitive type")
 
+fun promoteType (T2 t) = T1 (mapType promoteType t)
+
 structure TS1 : TypeSystem = 
 struct
 	type ty = type1
@@ -60,12 +62,14 @@ structure Checker1 = TypeChecker (TS1) (TypeFeatures1)
 structure Checker2 = TypeChecker (TS2) (TypeFeatures2)
 
 in
+fun typeCheckM gamma (EM e) = Checker2.typeCheck gamma typeCheckM DoubleContext.extendLookup2 e
 
-fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 extendLookup1 exp
+fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 DoubleContext.extendLookup1 exp
   | typeCheck1 gamma (E1next e) = T1fut (typeCheck2 gamma e)
   | typeCheck1 gamma (E1hold e) = handleHold (typeCheck1 gamma e)
+  | typeCheck1 gamma (E1mono e) = promoteType (typeCheckM empty e)
 	
-and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 extendLookup2 exp
+and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 DoubleContext.extendLookup2 exp
   | typeCheck2 gamma (E2prev e) = unfut (typeCheck1 gamma e)
 
 end

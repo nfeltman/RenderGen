@@ -17,6 +17,7 @@ type patt		= string S.pattern
 datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
+				| Emono of expr
 				| Ehold of expr
 				| Eletty of stage * string * ty * expr
 				| Eletdata of stage * string * (string * ty option) list * expr

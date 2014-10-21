@@ -79,7 +79,7 @@ k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int 
 						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
 						"cons (5, cons (3, empty))",SAME),
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
-j("sumlist",			"datatype list = Empty | Cons of int * list in " ^
+k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
 i("fastexp",			"fastexp",ansNI 243) ,
