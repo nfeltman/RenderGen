@@ -36,14 +36,35 @@ fun convertSourceTypes convert ty =
 		| S.TFarr (t1, t2) => Einfix ("->", [convert t1, convert t2])
 		
 structure S = SourceLang
-fun convertSourcePattern (S.Pvar x) = Pvar (Variable.toString x)
-  | convertSourcePattern (S.Ptuple xs) = Ptuple (map convertSourcePattern xs)
-fun convertSource convert convertTy ex = 
+fun convertSourcePatternv (Gnum,Gname) (S.Pvar x) = 
+		let
+			val (_,desiredName) = x
+			val (n, s) =
+				let	
+					val n = Contexts.lookup Gnum desiredName
+				in
+					(n+1, desiredName^"_"^(Int.toString n))
+				end
+				handle Contexts.UnboundVar _ => (0,desiredName)
+		in
+			(Pvar s, (Contexts.extendContext Gnum desiredName n, Contexts.extendContext Gname x s))
+		end
+  | convertSourcePatternv G (S.Ptuple xs) = 
+		let
+			fun f (x,(Gin,ps)) = let val (p,Gout) = convertSourcePatternv Gin x in (Gout,p::ps) end
+			val (Gfinal,ps) = foldr f (G,[]) xs
+		in
+			(Ptuple ps, Gfinal)
+		end
+fun convertSource (Gnum,Gname) convertRec convertTy ex = 
 	let
-		fun convertBranch (x,e) = (convertSourcePattern x, convert e)
+		val convert = convertRec (Gnum,Gname)
+		fun convertBranch (x,e) = 
+			let val (p, G2) = convertSourcePatternv (Gnum,Gname) x 
+			in (p,convertRec G2 e) end
 	in
 		case ex of 
-		  S.Fvar v => Eatom (Variable.toString v)
+		  S.Fvar v => Eatom (Contexts.lookup Gname v)
 		| S.FprimVal (Prims.Vint i) => Eatom (Int.toString i)
 		| S.FprimVal (Prims.Vbool b) => Eatom (if b then "true" else "false")
 		| S.FprimVal (Prims.Vstr s) => Eatom ("\""^s^"\"")
@@ -65,16 +86,27 @@ structure S = Lambda12
 fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
   | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
 and convertTyStage2 (S.T2 t) = convertSourceTypes convertTyStage2 t
-fun convertStage1 (S.E1 e) = convertSource convertStage1 convertTyStage1 e
-  | convertStage1 (S.E1mono e) = EbraceApp("mono", convertStageM e)
-  | convertStage1 (S.E1next e) = EbraceApp("next", convertStage2 e)
-  | convertStage1 (S.E1hold e) = EprimApp("holdInt", convertStage1 e)
-and convertStage2 (S.E2 e) = convertSource convertStage2 convertTyStage2 e
-  | convertStage2 (S.E2prev e) = EbraceApp("prev", convertStage1 e)
-and convertStageM (S.EM e) = convertSource convertStageM convertTyStage2 e
+fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 e
+  | convertStage1v G (S.E1mono e) = EbraceApp("mono", convertStageMv G e)
+  | convertStage1v G (S.E1next e) = EbraceApp("next", convertStage2v G e)
+  | convertStage1v G (S.E1hold e) = EprimApp("holdInt", convertStage1v G e)
+and convertStage2v G (S.E2 e) = convertSource G convertStage2v convertTyStage2 e
+  | convertStage2v G (S.E2prev e) = EbraceApp("prev", convertStage1v G e)
+and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 e
   
-fun convertDiag (DiagonalSemantics.E e) = convertSource convertDiag (fn _ => Eatom "_") e
-fun convertPSF (LambdaPSF.E e) = convertSource convertPSF (fn () => Eatom "_") e
+fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") e
+fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") e
 
+fun convertPSFBranch (x,e) = 
+	let 
+		val (p, G) = convertSourcePatternv (Contexts.empty, Contexts.empty) x 
+	in
+		(p,convertPSFv G e) 
+	end
+
+val convertStage1 = convertStage1v (Contexts.empty, Contexts.empty)
+val convertStage2 = convertStage2v (Contexts.empty, Contexts.empty)
+val convertDiag = convertDiagv (Contexts.empty, Contexts.empty)
+val convertPSF = convertPSFv (Contexts.empty, Contexts.empty)
 
 end

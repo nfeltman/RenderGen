@@ -12,4 +12,8 @@ letrec qs ((l,i) : list * $int) : $int =
 			if prev{i} < n then prev{qs (left,i)} 
 			else if prev{i} == n then prev{hold h} 
 			else prev{qs (right,next{(prev{i}-n)-1})}} 
-in let c = Cons in qs (c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))), next{2})
+in 
+let testlist = 
+	let c = Cons in 
+	c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))
+in qs (testlist, next{2})

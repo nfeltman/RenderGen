@@ -82,11 +82,11 @@ k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1)
 k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
-i("fastexp",			"fastexp",ansNI 243) ,
-i("quickselect",		"quickselect", ansNI 4),
+i("fastexp",			"fastexp",ansNI 243),
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
-i("stress",				"stress", SAME)
+i("quickselect",		"quickselect", ansNI 4)(*,
+i("stress",				"stress", SAME)*)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -127,9 +127,10 @@ fun testProgram verbose name programType p t =
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);
 		val _ = debug "---\n";
-		val _ = debug (PrintPSF.pat2string (PrintPSF.convertSourcePattern l));
+		val (printerL, printerSplit2) = PrintPSF.convertPSFBranch (l,split2)
+		val _ = debug (PrintPSF.pat2string printerL);
 		val _ = debug ".\n";
-		val _ = printTerm (PrintPSF.convertPSF split2);
+		val _ = printTerm printerSplit2;
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Erasure Semantics *)
