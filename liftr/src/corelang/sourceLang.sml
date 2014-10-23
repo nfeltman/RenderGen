@@ -118,6 +118,8 @@ fun typeCheck gamma checkrec (extendC,lookupC) exp =
 	end
 end
 
+functor Evaluator (F : SourceValues where type r = var pattern) = 
+struct
 fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
 	let
 		val eval = evalRec env
@@ -127,9 +129,9 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 	in
 		case exp of 
 		  Fvar v => lookupC env v
-		| Flam (t, b) => Vwrap (VFlam (env,b))
+		| Flam (t, b) => F.makelam (env,b)
 		| Fapp (e1, e2) => evalBranchE (eval e2) (unlam (Vunwrap (eval e1)))
-		| FprimVal pv => Vwrap (VFprim pv)
+		| FprimVal pv => F.makeprim pv
 		| Ftuple es => Vwrap (VFtuple (map eval es))
 		| Fpi (i, e) => List.nth (untuple (Vunwrap (eval e)), i)
 		| Finj (ts, _, e) => Vwrap (VFinj (length ts, eval e))
@@ -141,6 +143,7 @@ fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp =
 		| Funroll e => unroll (Vunwrap (eval e))
 		| Ferror t => raise Stuck
 	end
+end
 
 end
 end

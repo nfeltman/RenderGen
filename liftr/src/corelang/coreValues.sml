@@ -1,3 +1,23 @@
+signature SourceValues = 
+sig
+	type v (* value *)
+	type c (* context *)
+	type r (* variable *)
+	type e (* expr *)
+	
+	val makeprim   : Prims.primValue -> v
+	val makeroll  : v -> v
+	val maketuple : v list -> v
+	val makeinj   : int * v -> v
+	val makelam   : c * (r * e) -> v
+	
+	val unprim  : v -> Prims.primValue
+	val unroll  : v -> v
+	val untuple : v -> v list
+	val uninj   : v -> int * v
+	val unlam   : v -> c * (r * e)
+end
+
 structure ValuesBase = 
 struct
 	datatype ('v,'c,'r,'e) valueF	= VFprim of Prims.primValue
@@ -17,59 +37,31 @@ struct
 	fun unlam (VFlam e) = e
 	  | unlam _ = raise LangCommon.Stuck
 end
-(*
-signature ValueProvider = 
-sig
-	type v
-	type lamBody
-	type valueF
+
+
+functor EmbedValues (V : sig 
+	type v 
+	type c
+	type r
+	type e
+	val outof : v -> (v,c,r,e) ValuesBase.valueF
+	val into : (v,c,r,e) ValuesBase.valueF -> v 
+end) : SourceValues = 
+struct 
+	type v = V.v
+	type c = V.c 
+	type r = V.r 
+	type e = V.e
 	
-	val VFunit  : valueF
-	val VFint   : int -> valueF
-	val VFbool  : bool -> valueF
-	val VFroll  : v -> valueF
-	val VFtuple : v * v -> valueF
-	val VFinj   : int * v -> valueF
-	val VFlam   : lamBody -> valueF
+	val makeprim	= V.into o ValuesBase.VFprim
+	val makeroll	= V.into o ValuesBase.VFroll
+	val maketuple	= V.into o ValuesBase.VFtuple
+	val makeinj		= V.into o ValuesBase.VFinj
+	val makelam		= V.into o ValuesBase.VFlam
 	
-	val unint   : valueF -> int
-	val unbool  : valueF -> bool
-	val ununit  : valueF -> unit
-	val unroll  : valueF -> v
-	val untuple : valueF -> v * v
-	val uninj   : valueF -> int * v
-	val unlam   : valueF -> lamBody
+	val unprim  = ValuesBase.unprimV o V.outof
+	val unroll  = ValuesBase.unroll o V.outof
+	val untuple = ValuesBase.untuple o V.outof
+	val uninj   = ValuesBase.uninj o V.outof
+	val unlam   = ValuesBase.unlam o V.outof
 end
-(*
-structure BaseValueProvider : ValueProvider = struct open ValuesBase end 
-*)
-functor ConjugateValues (structure B : ValueProvider; 
-	structure M :
-	sig
-		type newVF
-		val f : B.valueF -> newVF
-		val g : newVF -> B.valueF 
-	end) : ValueProvider = 
-struct
-	open M
-	type v = B.v
-	type lamBody = B.lamBody
-	type valueF = newVF
-	
-	val VFunit	= f B.VFunit
-	val VFint	= f o B.VFint
-	val VFbool	= f o B.VFbool
-	val VFroll	= f o B.VFroll
-	val VFtuple	= f o B.VFtuple
-	val VFinj	= f o B.VFinj
-	val VFlam	= f o B.VFlam
-	
-	val unint   = B.unint o g
-	val unbool  = B.unbool o g
-	val ununit  = B.ununit o g
-	val unroll  = B.unroll o g
-	val untuple = B.untuple o g
-	val uninj   = B.uninj o g
-	val unlam   = B.unlam o g
-end
-*)

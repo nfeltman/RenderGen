@@ -90,8 +90,19 @@ fun eval1 env (E1 exp) =
 	
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
+  
+structure Values2 = EmbedValues (struct
+	type v = value2
+	type c = (var, value2) context
+	type r = var pattern
+	type e = expr
+	fun outof (V2 v) = v
+	val into = V2
+end)
 
-fun eval2 env (E exp) = evalF env eval2 (extendContext,lookup) V2 unV2 exp
+structure Evaluator2 = Evaluator (Values2)
+
+fun eval2 env (E exp) = Evaluator2.evalF env eval2 (extendContext,lookup) V2 unV2 exp
 end
 
 end

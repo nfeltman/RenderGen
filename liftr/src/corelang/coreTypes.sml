@@ -64,7 +64,8 @@ functor EmbedTypes (T : sig
 	type u 
 	val outof : u -> u TypesBase.typeF
 	val into : u TypesBase.typeF -> u 
-	val subst : u -> u -> u end) : SourceTypes = 
+	val subst : u -> u -> u 
+end) : SourceTypes = 
 struct
 	type t = T.u
 	val unprim = TypesBase.unprim o T.outof

@@ -229,12 +229,10 @@ fun stageSplit1 (E1 exp) =
 			in
 				case mapSplitResult toOpaque res1 of 
 				  NoPrec1 (e1,r1) => (
-						case res2 of
+						case mapSplitResult toOpaque res2 of
 						  NoPrec1 (e2, r2) => 
 							NoPrec1 (makeLet e1 e2, makeLet r1 r2)
-						| WithPrec1 (Splittable (c2,v2,p2),(l2,r2)) => 
-							WithPrec1 (Opaque ` makeLet e1 ` flattenContext c2 ` Etuple [v2,p2], (l2,makeLet r1 r2))
-						| WithPrec1 (Opaque e2,(l2,r2)) => 
+						| WithPrec1 (e2,(l2,r2)) => 
 							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLet r1 r2))
 					)
 				| WithPrec1 (c1, (l1,r1)) =>

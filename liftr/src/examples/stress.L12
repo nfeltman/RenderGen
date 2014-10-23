@@ -1,5 +1,4 @@
-letrec fac (x : int) : int =
-	if x == 0 then 1
-	else fac (x-1) * x
-in
-fac 5
+let a = next{1+prev{hold (1+1)}} in
+let b = next{2+prev{hold (2+2)}} in
+let c = next{3+prev{hold (3+3)}} in 
+next{prev{a}+prev{b}+prev{c}}

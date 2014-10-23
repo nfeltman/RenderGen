@@ -24,11 +24,31 @@ fun V1unwrap (V1 v) = v
 fun unnext (V1next v) = v
   | unnext _ = raise Stuck
   
-fun eval1 env (E1 exp) = evalF env eval1 Contexts.DoubleContext.extendLookup1 V1 V1unwrap exp
+structure Values1 = EmbedValues (struct
+	type v = value1
+	type c = cont
+	type r = var pattern
+	type e = expr1
+	val outof = V1unwrap
+	val into = V1
+end)
+structure Values2 = EmbedValues (struct
+	type v = value2
+	type c = cont
+	type r = var pattern
+	type e = expr2
+	fun outof (V2 v) = v
+	val into = V2
+end)
+
+structure Evaluator1 = Evaluator (Values1)
+structure Evaluator2 = Evaluator (Values2)
+  
+fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 Contexts.DoubleContext.extendLookup1 V1 V1unwrap exp
   | eval1 env (E1next e) = V1next (eval2 env e)
   | eval1 env (E1hold e) = holdGeneral (eval1 env e)
 	
-and eval2 env (E2 exp) = evalF env eval2 Contexts.DoubleContext.extendLookup2 V2 (fn (V2 v) => v) exp
+and eval2 env (E2 exp) = Evaluator2.evalF env eval2 Contexts.DoubleContext.extendLookup2 V2 (fn (V2 v) => v) exp
   | eval2 env (E2prev e) = unnext (eval1 env e)
 
 end
