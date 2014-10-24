@@ -13,8 +13,8 @@ datatype value1	= V1 of (value1,cont,var pattern,expr1) V.valueF
 				| V1next of value2
 				
 and		value2	= V2 of (value2,cont,var pattern,expr2) V.valueF
-withtype   cont = (var, (value1,value2) Contexts.DoubleContext.doubleEntry) Contexts.context
-
+and		valueM	= VM of (valueM,cont,var pattern,exprM) V.valueF
+withtype   cont = (var, (value1,value2,valueM) Contexts.TripleContext.tripleEntry) Contexts.context
 
 fun holdGeneral (V1 (V.VFprim i)) = V1next (V2 (V.VFprim i))
   | holdGeneral _ = raise Stuck
@@ -40,16 +40,36 @@ structure Values2 = EmbedValues (struct
 	fun outof (V2 v) = v
 	val into = V2
 end)
+structure ValuesM = EmbedValues (struct
+	type v = valueM
+	type c = cont
+	type r = var pattern
+	type e = exprM
+	fun outof (VM v) = v
+	val into = VM
+end)
+
 
 structure Evaluator1 = Evaluator (Values1)
 structure Evaluator2 = Evaluator (Values2)
+structure EvaluatorM = Evaluator (ValuesM)
   
-fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 Contexts.DoubleContext.extendLookup1 V1 V1unwrap exp
+fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 Contexts.TripleContext.extendLookup1 exp
   | eval1 env (E1next e) = V1next (eval2 env e)
   | eval1 env (E1hold e) = holdGeneral (eval1 env e)
+  | eval1 env (E1mono e) = 
+		let
+			fun promoteType (T2 t) = T1 (TypesBase.mapType promoteType t)
+			fun promoteToE1 (EM e) = E1(SourceLang.mapExpr promoteToE1 promoteType e)
+			fun promoteValue (VM v) = V1 (V.mapValue promoteValue promoteToE1 v)
+		in
+			promoteValue (evalM env e)
+		end
 	
-and eval2 env (E2 exp) = Evaluator2.evalF env eval2 Contexts.DoubleContext.extendLookup2 V2 (fn (V2 v) => v) exp
+and eval2 env (E2 exp) = Evaluator2.evalF env eval2 Contexts.TripleContext.extendLookup2 exp
   | eval2 env (E2prev e) = unnext (eval1 env e)
+  
+and evalM env (EM e) = EvaluatorM.evalF env evalM Contexts.TripleContext.extendLookup3 e
 
 end
 end

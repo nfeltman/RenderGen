@@ -36,6 +36,12 @@ struct
 	  | unprimV _ = raise LangCommon.Stuck
 	fun unlam (VFlam e) = e
 	  | unlam _ = raise LangCommon.Stuck
+	  
+	fun mapValue f fe (VFprim p) = VFprim p 
+	  | mapValue f fe (VFroll v) = VFroll (f v)
+	  | mapValue f fe (VFtuple vs) = VFtuple (map f vs)
+	  | mapValue f fe (VFinj (i,v)) = VFinj (i, f v)
+	  | mapValue f fe (VFlam (c,(r,e))) = VFlam (c,(r,fe e))
 end
 
 

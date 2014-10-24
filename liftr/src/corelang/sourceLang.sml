@@ -84,6 +84,7 @@ and forPattList fu g [] [] = g
 functor TypeChecker 
 	(T : TypeSystem) 
 	(F : SourceTypes where type t = T.ty) 
+	(*C : Context*)
 = struct
   
 fun typeCheck gamma checkrec (extendC,lookupC) exp = 
@@ -120,27 +121,27 @@ end
 
 functor Evaluator (F : SourceValues where type r = var pattern) = 
 struct
-fun evalF env evalRec (extendC,lookupC) Vwrap Vunwrap exp = 
+fun evalF env evalRec (extendC,lookupC) exp = 
 	let
 		val eval = evalRec env
-		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, untuple o Vunwrap, Stuck) env patt value) e
+		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, F.untuple, Stuck) env patt value) e
 		fun evalBranch v b = evalBranchE v (env,b)
-		val evalOpArg = unprimV o Vunwrap o eval
+		val evalOpArg = F.unprim o eval
 	in
 		case exp of 
 		  Fvar v => lookupC env v
 		| Flam (t, b) => F.makelam (env,b)
-		| Fapp (e1, e2) => evalBranchE (eval e2) (unlam (Vunwrap (eval e1)))
+		| Fapp (e1, e2) => evalBranchE (eval e2) (F.unlam (eval e1))
 		| FprimVal pv => F.makeprim pv
-		| Ftuple es => Vwrap (VFtuple (map eval es))
-		| Fpi (i, e) => List.nth (untuple (Vunwrap (eval e)), i)
-		| Finj (ts, _, e) => Vwrap (VFinj (length ts, eval e))
-		| Fcase (e, bs) => (case uninj (Vunwrap (eval e)) of (i, v) => evalBranch v (List.nth (bs,i)))
-		| Fif (e1, e2, e3) => eval (if Prims.unbool (unprimV (Vunwrap (eval e1))) then e2 else e3)
+		| Ftuple es => F.maketuple (map eval es)
+		| Fpi (i, e) => List.nth (F.untuple (eval e), i)
+		| Finj (ts, _, e) => F.makeinj (length ts, eval e)
+		| Fcase (e, bs) => (case F.uninj (eval e) of (i, v) => evalBranch v (List.nth (bs,i)))
+		| Fif (e1, e2, e3) => eval (if Prims.unbool (F.unprim (eval e1)) then e2 else e3)
 		| Flet (e, b) => evalBranch (eval e) b
-		| Fbinop (bo,e1,e2) => Vwrap (VFprim (Prims.evalPrim (bo, evalOpArg e1, evalOpArg e2)))
-		| Froll (_, e) => Vwrap (VFroll (eval e))
-		| Funroll e => unroll (Vunwrap (eval e))
+		| Fbinop (bo,e1,e2) => F.makeprim (Prims.evalPrim (bo, evalOpArg e1, evalOpArg e2))
+		| Froll (_, e) => F.makeroll (eval e)
+		| Funroll e => F.unroll (eval e)
 		| Ferror t => raise Stuck
 	end
 end

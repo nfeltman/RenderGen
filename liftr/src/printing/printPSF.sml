@@ -96,6 +96,7 @@ and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 e
   
 fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") e
 fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") e
+  | convertPSFv G (LambdaPSF.Edummy) = Eatom "dummy"
 
 fun convertPSFBranch (x,e) = 
 	let 

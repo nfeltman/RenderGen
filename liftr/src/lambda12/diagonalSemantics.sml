@@ -17,12 +17,25 @@ fun map2 f (a,b) = (a, f b)
 in
 
 (* first stage values *)				
-datatype value1	= V1 of (value1,(var, value1) context,var pattern,expr1) valueF
+datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
 				| V1hat of var
+and		valueM	= VM of (valueM,cont,var pattern,exprM) valueF
+withtype   cont = (var, (value1,valueM) Contexts.DoubleContext.doubleEntry) Contexts.context
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,unit) exprF
 datatype value2	= V2 of (value2,(var, value2) context,var pattern,expr) valueF
+
+structure ValuesM = EmbedValues (struct
+	type v = valueM
+	type c = cont
+	type r = var pattern
+	type e = exprM
+	fun outof (VM v) = v
+	val into = VM
+end)
+
+structure EvaluatorM = Evaluator (ValuesM)
 
 fun unV1 (V1 v) = v
   | unV1 _ = raise Stuck
@@ -35,10 +48,10 @@ fun eval1 env (E1 exp) =
 		fun comp1 f (g, h) = (f o g, h)
 		val (eval,V,unV) = (eval1 env, V1, unV1)
 		fun evalBranch env (g,v) (x,e) = 
-			comp1 g ` eval1 (forPattern (extendContext, untuple o unV1,Stuck) env x v) e 
+			comp1 g ` eval1 (forPattern (DoubleContext.extendContext1, untuple o unV1,Stuck) env x v) e 
 	in
 		case exp of 
-		  Fvar v => (id, lookup env v)
+		  Fvar v => (id, DoubleContext.lookup1 env v)
 		| FprimVal pv => (id, V ` VFprim pv)
 		| Flam (_, b) => (id, V ` VFlam (env,b))
 		| Fapp (e1,e2) => 
@@ -87,9 +100,20 @@ fun eval1 env (E1 exp) =
 		in
 			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unV1 v, (Pvar y, r)), V1hat y)
 		end
+  | eval1 env (E1mono e) = 
+		let
+			fun promoteType (T2 t) = T1 (TypesBase.mapType promoteType t)
+			fun promoteToE1 (EM e) = E1(SourceLang.mapExpr promoteToE1 promoteType e)
+			fun promoteValue (VM v) = V1 (ValuesBase.mapValue promoteValue promoteToE1 v)
+		in
+			(id, promoteValue (evalM env e))
+		end
 	
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
+  
+
+and evalM env (EM e) = EvaluatorM.evalF env evalM Contexts.DoubleContext.extendLookup2 e
   
 structure Values2 = EmbedValues (struct
 	type v = value2
@@ -102,7 +126,7 @@ end)
 
 structure Evaluator2 = Evaluator (Values2)
 
-fun eval2 env (E exp) = Evaluator2.evalF env eval2 (extendContext,lookup) V2 unV2 exp
+fun eval2 env (E exp) = Evaluator2.evalF env eval2 (extendContext,lookup) exp
 end
 
 end

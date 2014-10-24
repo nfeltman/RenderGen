@@ -11,7 +11,8 @@ structure S = SourceLang
 val PPtuple = S.Ptuple
 val PPvar = S.Pvar
 
-datatype expr = E of (expr,var,unit) S.exprF
+datatype expr 	= E of (expr,var,unit) S.exprF
+				| Edummy
 
 fun Evar x = E ` S.Fvar x
 fun Eprim x = E ` S.FprimVal x

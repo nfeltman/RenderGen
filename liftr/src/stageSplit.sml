@@ -41,6 +41,7 @@ fun terminates (E e) = (case e of
   | S.Froll (_,e) => terminates e
   | S.Funroll e => terminates e
   | S.Ferror _ => false)
+  | terminates Edummy = true
 
 fun chain2 (e1,e2) = if terminates e1 then e2 else Epi (1, Etuple [e1,e2])
 fun chain3 (e1,e2,e3) = 
@@ -265,6 +266,12 @@ fun stageSplit1 (E1 exp) =
 			  NoPrec1 (i, r) => WithPrec1 (Splittable ([], Eunit,i), (PPvar link, chain2 (r, Evar link)))
 			| WithPrec1 (c, lr) =>
 				WithPrec1 (Splittable ([], Eunit, c), (PPvar link, chain2 (Elet (pi 1, lr), pi 0)))
+		end
+  | stageSplit1 (E1mono e) = 
+		let
+			fun promoteToPSF (EM e) = E(SourceLang.mapExpr promoteToPSF (fn _ => ()) e)
+		in
+			NoPrec1(promoteToPSF e,Edummy)
 		end
 
 and stageSplit2 (E2 exp) = 
