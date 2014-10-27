@@ -7,6 +7,7 @@
 % core conventions and language names
 \newcommand {\bbone} {\ensuremath{ 1}}
 \newcommand {\bbtwo} {\ensuremath{ 2}}
+\newcommand {\bbmono} {\ensuremath{ M}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
 \newcommand {\ellResid} {$\mathrm{L^R}$}
 \newcommand {\ellTarget} {$\mathrm{L^T}$}
@@ -60,6 +61,7 @@
 \newcommand {\pause} {{\tt hold}}
 \renewcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
+\newcommand {\monoSt} {{\tt mono}}
 \newcommand {\fut} {\bigcirc}
 \newcommand {\inl} {{\tt inl}}
 \newcommand {\inr} {{\tt inr}}
@@ -80,9 +82,11 @@
 %judgments
 \newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
+\newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colwor} [2] {{#1}:{#2}~@~w}
 \newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
 \newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
+\newcommand {\typesmono} [3] [\Gamma] { {#1} \vdash \colmono{#2}{#3}}
 \newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
 \newcommand {\istypeone} {~{\rm type}~@~\bbone}
