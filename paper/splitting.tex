@@ -12,7 +12,7 @@ and produce two
 \TODO waiting on how the intro defines splitting
 
 In this section, we define splitting for partial values, then extend it to all
-terms, and prove correctness of this algorithm.
+terms.
 
 \subsection{Partial Values}
 
@@ -323,5 +323,48 @@ to the staged dynamic semantics.
 %\item $q \equiv (\letin{l}{u}{r}) : A_2$
 %\end{itemize}
 %\end{theorem}
+
+\subsection{Cost}
+
+While these splitting rules are all correct in terms of producing the right values, applying them naively can result in terms with needlessly large cost.  Consider the following example involving the factorial function:
+\begin{lstlisting}
+2`prev{
+  1`letfun fact (n : int) : int = 
+    if n <= 0 then 1 else fact(n-1)*n
+  in next{`2`hold {`1`fact 5`2`}-100`1`}`2`
+}`
+\end{lstlisting}
+
+The boundary type\footnote{The splitting results are untyped, but we add in type annotations to aid the reader.} of this is give by the following datatype declaration:
+\begin{lstlisting}
+datatype prec = L | R of prec
+\end{lstlisting}
+The example then splits into the precomputation,
+\begin{lstlisting}
+1`letfun fact (n : int) : int * prec = 
+  if n <= 0 then (1,L) 
+  else let (y,z) = fact(n-1) in (y*n,R z)
+in ((),fact 5)`
+\end{lstlisting}
+and the resumer
+\begin{lstlisting}
+2`l.
+letfun fact (n : unit, l0 : prec) : unit = 
+  case l0 of L => () | R l1 => fact ((),l0)
+in (fact (#2 l); #1 l)-100`
+\end{lstlisting}
+The problem here is that the naive system doesn't realize that the \texttt{fact} function has no stage \bbtwo\ content,
+and so it pessimistically retraces all of its steps in the resumer.  
+Fixing this requires some recursive reasoning.  
+
+We instead tried to solve the issue by adding a single new staging annotation to \lang, called \texttt{mono}.  
+A \texttt{mono} block must appear in a stage \bbone\ context, and it indicates that its entire context is monostage.
+This can be encoded in our statics and dynamics by adding a new stage \bbmono\ and the judgements:
+\begin{mathpar}
+\infer{\typesone{\monoSt~e}A}{\typesmono e A} \and
+\infer{\diaone{\monoSt~e}{\cdot;v}}{\diaone{e}{\cdot;v}}
+\end{mathpar}
+
+The splitting rule for \texttt{mono} is more difficult.
 
 \input{figures/splitting-misc}
