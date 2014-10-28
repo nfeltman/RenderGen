@@ -7,7 +7,6 @@ open LangCommon
 open SourceLang
 open Lambda12
 open TypesBase
-open Contexts
 
 fun Tunwrap (T1 t) = t
   | Tunwrap _ = raise (TypeError "expected non-$")
@@ -58,19 +57,23 @@ structure TypeFeatures2 = EmbedTypes(struct
 	val subst = subst2 0
 end)
 
-structure Checker1 = TypeChecker (TS1) (TypeFeatures1)
-structure Checker2 = TypeChecker (TS2) (TypeFeatures2)
+structure MyContext = TripleContext (ListDict (type var = var)) (type t1=type1) (type t2=type2) (type t3=type2)
+structure Checker1 = TypeChecker (TS1) (TypeFeatures1) (MyContext.C1)
+structure Checker2 = TypeChecker (TS2) (TypeFeatures2) (MyContext.C2)
+structure CheckerM = TypeChecker (TS2) (TypeFeatures2) (MyContext.C3)
 
 in
-fun typeCheckM gamma (EM e) = Checker2.typeCheck gamma typeCheckM DoubleContext.extendLookup2 e
+fun typeCheckM gamma (EM e) = CheckerM.typeCheck gamma typeCheckM e
 
-fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 DoubleContext.extendLookup1 exp
+fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 exp
   | typeCheck1 gamma (E1next e) = T1fut (typeCheck2 gamma e)
   | typeCheck1 gamma (E1hold e) = handleHold (typeCheck1 gamma e)
-  | typeCheck1 gamma (E1mono e) = promoteType (typeCheckM empty e)
+  | typeCheck1 gamma (E1mono e) = promoteType (typeCheckM gamma e)
 	
-and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 DoubleContext.extendLookup2 exp
+and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 exp
   | typeCheck2 gamma (E2prev e) = unfut (typeCheck1 gamma e)
+  
+val emptyContext = MyContext.Base.empty
 
 end
 end

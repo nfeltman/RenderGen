@@ -10,7 +10,8 @@ sig
 	val lookup : 't cont -> var -> 't
 end
 
-functor ListDict (eqtype var) : Dict = 
+functor ListDict (eqtype var) :> Dict 
+	where type var = var = 
 struct
 	exception UnboundVar of var
 	
@@ -69,7 +70,59 @@ struct
 	fun lookup g x = M.outof (M.C.lookup g x)
 end
 
+functor DoubleContext 
+	(D : Dict) 
+	(type t1) (type t2) = 
+struct
+	exception UnboundVar of D.var
+	exception WrongStage
+	datatype entry = Bind1 of t1 | Bind2 of t2
+	
+	structure Base = BasicContext (D) (type t = entry)
+	structure C1 = EmbedContext (struct 
+		structure C = Base 
+		type t = t1
+		val into = Bind1
+		fun outof (Bind1 v) = v | outof (Bind2 v) = raise WrongStage
+	end)
+	structure C2 = EmbedContext (struct 
+		structure C = Base 
+		type t = t2
+		val into = Bind2
+		fun outof (Bind2 v) = v | outof (Bind1 v) = raise WrongStage
+	end)
+end
 
+functor TripleContext 
+	(D : Dict) 
+	(type t1) (type t2) (type t3) = 
+struct
+	exception UnboundVar of D.var
+	exception WrongStage
+	datatype entry = Bind1 of t1 | Bind2 of t2 | Bind3 of t3
+	
+	structure Base = BasicContext (D) (type t = entry)
+	structure C1 = EmbedContext (struct 
+		structure C = Base 
+		type t = t1
+		val into = Bind1
+		fun outof (Bind1 v) = v | outof _ = raise WrongStage
+	end)
+	structure C2 = EmbedContext (struct 
+		structure C = Base 
+		type t = t2
+		val into = Bind2
+		fun outof (Bind2 v) = v | outof _ = raise WrongStage
+	end)
+	structure C3 = EmbedContext (struct 
+		structure C = Base 
+		type t = t3
+		val into = Bind3
+		fun outof (Bind3 v) = v | outof _ = raise WrongStage
+	end)
+end
+
+(* would be great to get rid of this below *)
 structure Contexts = 
 struct
 
@@ -85,7 +138,7 @@ fun lookup [] v = raise (UnboundVar "")
   | lookup ((v2,t)::g) v = if v = v2 then t else lookup g v
   
 
-structure DoubleContext = struct  
+structure DoubleContext = struct 
 datatype ('a,'b) doubleEntry = Bind1 of 'a | Bind2 of 'b
 fun extendContext1 g v t = (v, Bind1 t) :: g
 fun extendContext2 g v t = (v, Bind2 t) :: g

@@ -82,15 +82,15 @@ and forPattList fu g [] [] = g
 
 
 functor TypeChecker 
-	(T : TypeSystem) 
-	(F : SourceTypes where type t = T.ty) 
-	(*C : Context*)
+	(T : TypeSystem)
+	(F : SourceTypes where type t = T.ty)
+	(C : Context where type t = T.ty)
 = struct
   
-fun typeCheck gamma checkrec (extendC,lookupC) exp = 
+fun typeCheck (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty) (exp : ('e,C.var,T.ty) exprF) = 
 	let
 		val check = checkrec gamma
-		fun checkbranch (t,(patt,e)) = checkrec (forPattern (extendC, F.unprod, TypeError "pattern") gamma patt t) e
+		val checkbranch = typeCheckBranch gamma checkrec
 		fun checkFun ((a,b),c) = if T.teq a c then b else raise (TypeError "function domain")
 		fun binSame (a,b) (c,d,e) = if (a = c) andalso (b = d) then e else raise (TypeError "binop")
 		fun selfSubst t = F.subst (F.makerec t) t
@@ -101,7 +101,7 @@ fun typeCheck gamma checkrec (extendC,lookupC) exp =
 		val checkOpArg = F.unprim o check
 	in
 		case exp of 
-		  Fvar v => lookupC gamma v
+		  Fvar v => C.lookup gamma v
 		| Flam (t,b) => F.makearr (t, checkbranch (t,b))
 		| Fapp (e1,e2) => checkFun (F.unarr (check e1), check e2)
 		| FprimVal pv => F.makeprim (Prims.getValType pv)
@@ -117,14 +117,17 @@ fun typeCheck gamma checkrec (extendC,lookupC) exp =
 		| Funroll e => selfSubst (F.unrec (check e))
 		| Fbinop (bo, e1, e2) => F.makeprim (binSame (checkOpArg e1, checkOpArg e2) (Prims.getBinopType bo))
 	end
+
+and typeCheckBranch gamma checkrec (t,(patt,e)) = 
+		checkrec (forPattern (C.extend, F.unprod, TypeError "pattern") gamma patt t) e
 end
 
 functor Evaluator (F : SourceValues where type r = var pattern) = 
 struct
-fun evalF env evalRec (extendC,lookupC) exp = 
+fun evalF env evalRec (extendPatt,lookupC) exp = 
 	let
 		val eval = evalRec env
-		fun evalBranchE value (env,(patt,e)) = evalRec (forPattern (extendC, F.untuple, Stuck) env patt value) e
+		fun evalBranchE value (env,(patt,e)) = evalRec (extendPatt env patt value) e
 		fun evalBranch v b = evalBranchE v (env,b)
 		val evalOpArg = F.unprim o eval
 	in

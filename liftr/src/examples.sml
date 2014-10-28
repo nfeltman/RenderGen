@@ -119,7 +119,7 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Typechecking *)
-		val _ = Typecheck12.typeCheck1 Contexts.empty propegated
+		val _ = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
 		
 		(* Splitting *)
@@ -135,12 +135,15 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Erasure Semantics *)
+		val _ = debug "Running erasure semantics.\n";
 		val valErasure = ErasureSemantics.eval1 Contexts.empty propegated
 				
 		(* Diagonal Semantics *)
+		val _ = debug "Running diagonal semantics, part 1.\n"
 		val (xiDiag, v1Diag) = DiagonalSemantics.eval1 empty propegated
 		val (v1DiagC, diagBody) = Comp.splitDiagValue1 v1Diag
 		val diagResidual = xiDiag diagBody
+		val _ = debug "Running diagonal semantics, part 2.\n";
 		val v2Diag = DiagonalSemantics.eval2 empty diagResidual
 		val v2DiagC = Comp.convertDiagValue2 v2Diag
 		
@@ -149,7 +152,9 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n"; *)
 		
 		(* Evaluating Split Part *)
+		val _ = debug "Running split term, part 1.\n"
 		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
+		val _ = debug "Running split term, part 2.\n"
 		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
 		
 		
