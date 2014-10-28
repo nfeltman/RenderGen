@@ -269,7 +269,11 @@ fun stageSplit1 (E1 exp) =
 		end
   | stageSplit1 (E1mono e) = 
 		let
-			fun promoteToPSF (EM e) = E(SourceLang.mapExpr promoteToPSF (fn _ => ()) e)
+			fun promoteToPSF (EM e) =
+				case e of 
+				  S.Flam (_,(x,e)) => Elam ((), (x,Etuple[promoteToPSF e, Eunit]))
+				| S.Fapp (e1, e2) => Epi(0,Eapp(promoteToPSF e1, promoteToPSF e2))
+				| other => E(S.mapExpr promoteToPSF (fn _ => ()) other)
 		in
 			NoPrec1(promoteToPSF e,Edummy)
 		end
