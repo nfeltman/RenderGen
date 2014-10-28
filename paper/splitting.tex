@@ -6,13 +6,20 @@
 %takes the form of two mutually-dependent judgments, $\splitonesym$ and
 %$\splittwosym$, which respectively split terms that type $@ \bbone$ and $@
 %\bbtwo$.  Before diving into the full generality, 
-As discussed in the introduction, a stage splitter must take a term in \lang\
-and produce two 
 
-\TODO waiting on how the intro defines splitting
+The goal of splitting is to take a multistage term and produce two new terms:
+one with all of the stage \bbone\ content, and one with all of the stage \bbtwo\ content.
+Exactly how this goal manifests depends on the form of the input. 
+We consider four cases: stage \bbone\ values, stage \bbone\ terms, stage \bbtwo\ values,
+and stage \bbtwo\ terms.
 
-In this section, we define splitting for partial values, then extend it to all
-terms.
+We cover stage \bbtwo\ value splitting first, because it is trivial by construction.
+Since there is no stage \bbtwo\ expression that both is a value
+and contains \bbone\ subexpressions, 
+we say that stage \bbtwo\ values must contain no stage \bbone\ content.
+Accordingly, there is nothing really to split.
+
+
 
 \subsection{Partial Values}
 
@@ -366,5 +373,22 @@ This can be encoded in our statics and dynamics by adding a new stage \bbmono\ a
 \end{mathpar}
 
 The splitting rule for \texttt{mono} is more difficult.
+...
+transition to dummy.
+
+The evaluation rules for dummy values are given by:
+\begin{mathpar}
+\infer{e_1~e_2~\redsym~\mathtt{dummy}}{e_1~\redsym~\mathtt{dummy} & e_2~\redsym~v} \and
+\infer{\unroll~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}\and
+\infer{\pio~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}\and
+\infer{\pit~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}
+\end{mathpar}
+
+The basic idea here is that dummy will dynamically be whatever data structure you want it to be.
+
+This is safe because [nico is just throwing something out here] 
+it can only appear in the resumers of terms that have no circles in their \lang\ type.
+Since the $\prev$ rule requires a circle type, dummy values cannot leak from
+the resumers of stage \bbone\ terms into the resumers of stage \bbtwo\ terms.
 
 \input{figures/splitting-misc}
