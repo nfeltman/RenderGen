@@ -7,39 +7,36 @@
 %$\splittwosym$, which respectively split terms that type $@ \bbone$ and $@
 %\bbtwo$.  Before diving into the full generality, 
 
-The goal of splitting is to take a multistage term and produce two new terms:
+The goal of splitting is to take a multistage term,
+which may feature interleaved stage \bbone\ and stage \bbtwo\ code,
+and untangle it to produce two separate terms:
 one with all of the stage \bbone\ content, and one with all of the stage \bbtwo\ content.
-Exactly what content is implied by this goal depends on the form of the input. 
-There are four cases: stage \bbone\ partial values, stage \bbone\ terms, stage \bbtwo\ values,
-and stage \bbtwo\ terms.
+The splitting algorithm comes in several forms, depending on the stage of the input and whether it is a value.
+The stage \bbtwo\ versions will be addressed first,
+before the more complicated stage \bbone\ versions.
 
 In all cases, the outputs of splitting are terms in an unstaged language, \langmono. 
 This language is untyped and contains no staging features, 
 but otherwise has the same term constructors as \lang. 
 It has a evaluation judgment $\redsym$, which works in the expected way to produce unstaged values.
 
-\subsection {Stage \bbtwo\ Terms}
+\subsection {Stage \bbtwo\ Splitting}
 
 We cover stage \bbtwo\ term splitting first, because it has the most familiar signature.
-In spirit, splitting takes a term $\coltwo e A$ and produces from it a first stage term
-$p : \tau$ (called the {\em precomputation}) and a second stage term $r : \tau \to A$ (called the {\em resumer}).
-Here, the responsibility of $p$ is to produce an intermediate data structure, 
+Splitting takes a term $\coltwo e A$ and produces from it a first stage term
+$p$ (called the {\em precomputation}) and a second stage term $l.r$ (called the {\em resumer})
+open on a single variable, such that $e$ is equivalent to $\letin l p r$.
+Intuitively, the responsibility of $p$ is to produce an intermediate data structure, 
 and the responsibility of $r$ is to consume that data structure and produce the same final value as $e$.
-
-Our actual presentation of stage splitting differs from this ideal in two ways.
-Firstly, the outputs are untyped, for reasons discussed later.
-Secondly, we do not actually represent the resumer as a function 
-but instead as a term open on a variable, typically $l.r$.
-This helps keep the splitting rules concise.
 
  For example, the stage \bbtwo\ term
 \begin{lstlisting}
 2`hold{`1` 1+2 `2`} < hold{`1` 3+4 `2`} - 5`
 \end{lstlisting}
 splits into a precomputation \verb|(1+2,3+4)| and a resumer
-\verb|fn (L1,L2) => L1 < L2-5|, with the property that the resumer applied to
+\verb|(L1,L2) => L1 < L2-5|, with the property that the resumer applied to
 the precomputation must agree with the original term. This process of hoisting
-all the stage \bbone\ subterms out of a term is called \emph{lifting}.
+all the stage \bbone\ subterms out of a term is called \emph{precomputation lifting}.
 
 Splitting is implemented by the judgment $\splittwosym$,
 the rules for which are given in \cref{fig:termSplitTwo}.  
@@ -54,39 +51,33 @@ the precomputations of the constituent parts, and then unbundling them with a pa
 with the resumer precisely resembling the original expression.
 The $\prev$ rule depends on splitting stage \bbone\ terms, which is covered later.
 
-This is enough to define a correctness goal for splitting closed terms.
+\subsection{(Partial) Value Splitting}
 
-\paragraph {Correctness of stage \bbtwo\ splitting.}
-If $e : A \splittwosym [p,l.r]$, then $e \equiv (\letin l p r)$
+Observe that when applied to a stage \bbtwo\ values, 
+splitting always produces an effectively trivial precomputation:
+either \texttt{()}, or nested tuples thereof.
+Intuitively, this makes sense---there is no way to embed stage \bbone\ code
+in the internals of a stage \bbtwo\ value, 
+thus they can have no stage \bbone\ content.
+Indeed it would be almost nonsensical to talk of an algorithm for splitting stage \bbtwo\ values,
+since the precondition, that the input is a stage \bbtwo\ value, is enough to imply the postcondition,
+that no stage interleaving remains.
 
+The same is not true of partial values---partial values, a restriction on stage \bbone\ terms,
+{\em can} have stage \bbtwo\ content.
+Thus, it is meaningful to define some notion of splitting for them.
+This is useful to study, because the definition will later be used as a contract 
+with which general stage \bbone\ term splitting must comply.
 
-\subsection {Stage \bbtwo\ Values}
-
-We next consider splitting for the special case of stage \bbtwo\ values.
-Observing that no stage \bbtwo\ expression both is a value and contains stage \bbone\ subexpressions, 
-we say that stage \bbtwo\ values must contain no stage \bbone\ content.
-That is, stage \bbtwo\ value splitting is trivial by construction.
-
-When applied to partial values, stage \bbtwo\ term splitting always produces a trivial
-precomputation, in the sense that the output is a nested sequence, possibly
-empty, of tuples and injections of \texttt{()}. The intuition is that a partial
-value has no remaining stage \bbone\ computation, and hence no precomputation.
-
-%Partial value splitting is more than just a restriction of general expression
-%splitting precisely because it observes this property it at the structural
-%level, doing away with the precomputation entirely.
-
-\subsection{Stage \bbone\ Partial Values}
-
-Partial values, along with future environments, are produced by partially evaluating stage \bbone\ terms. 
-They, unlike stage \bbtwo\ values, {\em can} have content at both stages.
-As discussed above, the {\tt quickselect} function itself is an example of a multi-stage values.
-
-Although partial values have no more stage
-\bbone\ computation remaining, they may contain $\next$ blocks
-(the contents of which must be variables bound by the future environment).
+Recall that a partial value is externally a stage \bbone\ thing; 
+it has a type $@~\bbone$, and along with a future context, it is the result of reducing a stage \bbone\ term.
+But internally, a partial value might contain stage \bbtwo\ subexpressions.
+There are two places where such embedding may occur: 
+$\next$ blocks, which must contain a variable reference to some future context; 
+and lambda values, which may contain a $\next$ in their body.
 The goal of splitting for stage \bbone\ partial values is therefore 
-to separate the contents of $\next$ blocks from the rest of the value, while maintaining some structure.
+to separate the contents of $\next$ blocks from the rest of the value, 
+while maintaining some structure.
 
 Splitting a partial value $v$ creates two unstaged values $v_1$ and $v_2$,
 where $v_w$ contains only the information required for stage $w$ evaluation of
