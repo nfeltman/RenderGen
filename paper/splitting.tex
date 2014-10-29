@@ -7,24 +7,31 @@
 %$\splittwosym$, which respectively split terms that type $@ \bbone$ and $@
 %\bbtwo$.  Before diving into the full generality, 
 
-The goal of splitting is to take a multistage term,
+The goal of splitting is to take a multistage \lang\ term,
 which may feature interleaved stage \bbone\ and stage \bbtwo\ code,
 and untangle it to produce two separate terms:
-one with all of the stage \bbone\ content, and one with all of the stage \bbtwo\ content.
-The splitting algorithm comes in several forms, depending on the stage of the input and whether it is a value.
-The stage \bbtwo\ versions will be addressed first,
-before the more complicated stage \bbone\ versions.
+one with all of the stage \bbone\ CONTENT, and one with all of
+the stage \bbtwo\ CONTENT.
 
-In all cases, the outputs of splitting are terms in an unstaged language, \langmono. 
-This language is untyped and contains no staging features, 
-but otherwise has the same term constructors as \lang. 
-It has a evaluation judgment $\redsym$, which works in the expected way to produce unstaged values.
+Splitting emits terms in an unstaged language, \langmono, that is 
+untyped and contains no staging features, but otherwise has the same term constructors as \lang. 
+\langmono\ has a evaluation judgment $\redsym$, which works in the expected way to produce unstaged values.
+
+Since splitting stage \bbtwo\ terms from \lang\ is a simpler operation than splitting stage 1 terms,
+we first describe the mechanics of splitting stage \bbtwo, before moving to the more complex
+case of stage \bbone\ term splitting.
+
+%The splitting algorithm comes in several forms, depending on the stage of the input and whether it is a value.
+%The stage \bbtwo\ versions will be addressed first,
+%before the more complicated stage \bbone\ versions.
+
 
 \subsection {Stage \bbtwo\ Splitting}
 
-We cover stage \bbtwo\ term splitting first, because it has the most familiar signature.
-Splitting takes a term $\coltwo e A$ and produces from it a first stage term
-$p$ (called the {\em precomputation}) and a second stage term $l.r$ (called the {\em resumer})
+% We cover stage \bbtwo\ term splitting first, because it has the most familiar signature.
+
+Splitting a stage-2 term $\coltwo e A$ produces a term
+$p$ (called the {\em precomputation}) and a term $l.r$ (called the {\em resumer})
 open on a single variable, such that $e$ is equivalent to $\letin l p r$.
 Intuitively, the responsibility of $p$ is to produce an intermediate data structure, 
 and the responsibility of $r$ is to consume that data structure and produce the same final value as $e$.
