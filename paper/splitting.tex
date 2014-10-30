@@ -60,7 +60,7 @@ The $\prev$ rule depends on splitting stage \bbone\ terms, which is covered late
 
 \subsection{(Partial) Value Splitting}
 
-Observe that when applied to a stage \bbtwo\ values, 
+Observe that, when applied to stage \bbtwo\ values, 
 splitting always produces an effectively trivial precomputation:
 either \texttt{()}, or nested tuples thereof.
 Intuitively, this makes sense---there is no way to embed stage \bbone\ code
@@ -182,167 +182,18 @@ result which handles all the stage \bbone\ content of the original, and one in
 the resumer which handles all of the stage \bbtwo\ content. Note that stage
 \bbone\ lambdas are partial values, and so have only a trivial precomputation.
 
-\subsection {Boundary Type Worst Case}
+\paragraph {Typing the Boundary}
 
 \TODO add the example which shows that we need dynamic types
 
-
 \input{figures/splitting-term}
 
-\subsection{Correctness of Splitting}
-
-We can now develop an notion of what it means for splitting to be correct.  
-Our general approach is to say that the dynamic semantics from \ref{sec:semantics} and splitting method are equivalent in some way.  
-Thus, we start with two mutually dependent definitions of equivalence.  
-Both relate residuals on the left with resumers on the right,
-but $\equiv$ equates closed expressions, whereas $\sim$ equates values.
-
-\begin{definition}
-For residual $q$ and resumer $r$, define $q \equiv r : A$ to mean that 
-$q \tworedsym v_q$ iff $\reduce {r} {v_r}$ where $v_q \sim v_r : A$, 
-\end{definition}
-
-\begin{definition}
-For residual value $v_1$ and resumer value $v_2$, define $v_1 \sim v_2 : A$ by the following cases:
-\begin{itemize}
-\item $i \sim i : \rmint$
-\item $(v_1,u_1) \sim (v_2,u_2) : A \times B$ where $v_1 \sim v_2 : A$ and $u_1 \sim u_2 : B$
-\item $\inl~v_1 \sim \inl~v_2 : A + B$ where $v_1 \sim v_2 : A$
-\item $\inr~v_1 \sim \inr~v_2 : A + B$ where $v_1 \sim v_2 : B$
-\item $\lam {x_1} A {e_1} \sim \lambda x_2.e_2 : A \to B$ where \\ $\forall (v_1 \sim v_2 : A). [v_1/x_1]e_1 \equiv [v_2/x_2]e_2 : B$
-\end{itemize}
-\end{definition}
-
-Essentially, we can read these as saying that two terms are equivalent if they evaluate to the same value,
-where "same" for functions means that those functions always evaluate to the same thing given equivalent inputs.
-
-We give the following end-to-end correctness lemmas for open terms. 
-Those readers not interested in the gritty details are advised to skip ahead to the theorems for closed terms, which give the important gist.
-
-In some of the lemmas, we sort the usually heterogeneous context into $\Gamma$ and $\Gamma'$, 
-which respectively hold all of the stage \bbone\ and stage \bbtwo\ variable bindings.
-Substitution splitting works just like value splitting, which is why they use the same symbol.
-
-\begin{lemma}
-If $\typesone e A$ then
-$\Gamma\vdash e : A \splitonesym [c,l.r]$.
-If $\typestwo e A$ then
-$\Gamma\vdash e : A \splittwosym [p,l.r]$.
-\end{lemma}
-
-\begin{lemma}
-If $\Gamma, \Gamma'\vdash e : A \splittwosym [p,l.r]$ then for all substitutions $\gamma : \Gamma$,
-\begin{itemize}
-\item $\gamma \vsplito [\gamma_1, \gamma_2]$
-\item $\diatwo [\Gamma'] {\gamma(e)} q$ iff $\reduce {\gamma_1(p)} u$ where
-\item $\Gamma' \vdash q \equiv (\letin{l}{u}{\gamma_2(r)})$
-\end{itemize}
-\end{lemma}
-
-\begin{lemma}
-If $\Gamma, \Gamma'\vdash e : A \splitonesym [c,l.r]$ then for all $\gamma : \Gamma$,
-\begin{itemize}
-\item $\gamma \vsplito [\gamma_1, \gamma_2]$
-\item $\diaone [\Gamma'] {\gamma(e)} {\xi;v}$ iff $\reduce {\gamma_1(c)} {(v_1,u)}$ where
-\item $\Gamma',\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi {v_2} q$
-\item $\Gamma'\vdash q \equiv (\letin{l}{u}{\gamma_2(r)})$
-\end{itemize}
-\end{lemma}
-
-%You should think of these theorems as saying that 
-%splitting commutes with evaluation.
-These lemmas are rather technical, but they ultimately imply that evaluating a
-closed term by splitting or by the dynamic semantics of \ref{ssec:dynamics} are
-equivalent. 
-We state this result for closed terms at each stage.
-
-\begin{theorem}[Correctness of splitting at $\bbone$]
-If $\vdash e:A~@~\bbone$, then (by splitting)
-\begin{itemize}
-\item $\vdash e : A \splitonesym [c,l.r]$
-\item $\reduce {c} {(v_1,u)}$
-\item $\reduce {(\letin{l}{u}{r})} v_S$
-\end{itemize}
-if and only if (by the staged dynamic semantics)
-\begin{itemize}
-\item $\diaone [] e {\xi;v}$
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi{v_2}q$
-\item $q \mathbin{\tworedsym} v_D$
-\end{itemize}
-and if so, then $v_D \sim v_S$.
-\end{theorem}
-
-\begin{theorem}[Correctness of splitting at $\bbtwo$]
-If $\vdash e:A~@~\bbtwo$, then (by splitting)
-\begin{itemize}
-\item $\vdash e : A \splittwosym [p,l.r]$
-\item $\reduce p u$
-\item $\reduce{(\letin{l}{u}{r})}{v_S}$
-\end{itemize}
-if and only if (by the staged dynamic semantics)
-\begin{itemize}
-\item $\diatwo [] e q$
-\item $q \mathbin{\tworedsym} v_D$
-\end{itemize}
-and if so, then $v_D \sim v_S$.
-\end{theorem}
-
-If we apply the former theorem to \verb|next{e}| of type $\fut A$, we
-essentially obtain the latter theorem at \verb|e|.
-
-The latter theorem implies that, given a multi-stage function $f:A\to\fut(B\to
-C)~@~\bbone$, the two methods of evaluating \verb|prev{f a} b| agree.
-However, we also expect that splitting $f$ directly will give us two functions,
-one which accepts an $A$ and outputs an intermediate value and boundary data,
-and another which takes in that boundary data and a $B$ and outputs a $C$.
-Moreover, the composition of these two functions should be extensionally equal
-to the staged dynamic semantics.
-
-\TODO write the theorem for $\vdash f:A\to\fut(B\to C)~@~\bbone$.
-
-%
-%\subsubsection{Simple Types}
-%
-%\begin{theorem}
-%If $\cdot\vdash e : A \splittwosym [p,l:\tau.r]$ then,
-%\begin{itemize}
-%\item $\cdot \vdash e : A~@~\bbtwo$ 
-%\item $\types [\cdot] p \tau$ and $\types [l:\tau] r A$ 
-%\item $\diatwo [\cdot] e q$ iff $\reduce p u$ and if so
-%\item $q \equiv (\letin{l}{u}{r})$
-%\end{itemize}
-%\end{theorem}
-%
-%\begin{theorem}
-%If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
-%\begin{itemize}
-%\item $\typesone [\cdot] e A$ 
-%\item $A \tsplito [A_1,A_2]$
-%\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau] r A_2$ 
-%\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
-%\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-%\item $\reify \xi {v_2} q$
-%\item $q \equiv (\letin{l}{u}{r}) : A_2$
-%\end{itemize}
-%\end{theorem}
-%
-%\subsubsection{\bbone-Dependent Types}
-%\begin{theorem}
-%If $\cdot\vdash e : A \splitonesym [c,l:\tau.r]$ then,
-%\begin{itemize}
-%\item $\typesone [\cdot] e A$ 
-%\item $A \tsplito [A_1,a.A_2]$
-%\item $\types [\cdot] c {A_1 \times \tau}$ and $\types [l:\tau,a:A_1] r A_2$ 
-%\item $\diaone [\cdot] e {\xi;v}$ iff $\reduce c {(v_1,u)}$ and if so
-%\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-%\item $\reify \xi {v_2} q$
-%\item $q \equiv (\letin{l}{u}{r}) : A_2$
-%\end{itemize}
-%\end{theorem}
+\TODO say something about correctness criteria for splitting? (see
+\texttt{obsolete/correctness.tex})
 
 \subsection{Cost}
+
+\TODO don't use that word
 
 While these splitting rules are all correct in terms of producing the right values, applying them naively can result in terms with needlessly large cost.  Consider the following example involving the factorial function:
 \begin{lstlisting}
