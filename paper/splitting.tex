@@ -17,15 +17,16 @@ stage \bbone\ and stage \bbtwo\ subcomputations of the original term.
 
 We begin by describing how to split stage \bbtwo\ terms.
 
+
 %Since splitting stage \bbtwo\ terms from \lang\ is a simpler operation than
 %splitting stage 1 terms, we first describe the mechanics of splitting stage
 %\bbtwo, before moving to the more complex case of stage \bbone\ term splitting.
 
 \subsection {Stage \bbtwo\ Splitting}
 
-Splitting a stage-\bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
+Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, such that $e$ is equivalent to
-$\letin l p r$. This is implemented by the judgment $\splittwosym$,
+$\letin l p r$. This is implemented by the judgment $\splittwosym$ 
 (\cref{fig:termSplitTwo}), which operates inductively on the structure of the
 term.
 
@@ -41,10 +42,14 @@ intuitively, amounts to computing a data structure which is consumed by $r$.
 
 Since base types and variables have no stage \bbone\ content, their
 precomputations are \texttt{()}, and are not used in the resumer. At every other
-expression except $\prev$, splitting bundles the precomputations of the
+expression except $\prev$ and $\pause$, splitting bundles the precomputations of the
 constituent parts, and then unbundles them with a pattern, with the resumer
-precisely resembling the original expression. The $\prev$ rule depends on
+precisely resembling the original expression. The $\prev$ and $\pause$ rules depends on
 splitting stage \bbone\ terms, which is covered later.
+
+Observe that in the rules for {\tt if}s, {\tt case}s, and functions, the
+precomputation is lifted out from within branches. This is the manifestation of
+the speculation behavior from the semantics.
 
 %As mentioned before, the only responsibility of $\splittwosym$ is to lift
 %out the precomputation from contained stage \bbone\ code into a single
@@ -57,7 +62,7 @@ As described above, splitting a stage \bbtwo\ value always produces a trivial
 precomputation---either \texttt{()}, or nested tuples thereof. Intuitively,
 this is because stage-\bbtwo\ values contain no stage \bbone\ computations.
 
-The same is not true of partial values (at stage \bbone), which \emph{can}
+The same is not true of partial values (by definition, stage \bbone), which \emph{can}
 contain stage \bbtwo\ computations, namely, inside $\next$ blocks, which must
 contain a variable reference to some future context, and inside lambdas, which
 may contain a $\next$ in their body.
@@ -69,7 +74,7 @@ At product, sum, and recursive types, splitting acts recursively, gathering all
 subterms' stage $w$ content into $v_w$.
 At base types, splitting assigns $v$ entirely to stage \bbone\ (and \texttt{()}
 to stage \bbtwo);
-on the other hand, at $\fut$ types, splitting assigns $v$ (which must have the
+conversely, at $\fut$ types, splitting assigns $v$ (which must have the
 form $\next~\hat y$) entirely to stage \bbtwo\ (and \texttt{()} to stage
 \bbone).
 This process of exposing only the relevant structure of a term at each stage is
@@ -79,6 +84,9 @@ Splitting a function is more complex, because function bodies are open terms,
 and so are split by the judgments described in the next subsection. Essentially,
 functions will split into two functions, whose bodies correspond to the stage
 \bbone\ and stage \bbtwo\ components of the original function body.
+
+\TODO talk about the changed function signature, which is necessitated by the precomputation;
+note that we have to assume {\em all} stage \bbone\ functions have meaningful precomputations
 
 %Indeed it would be almost nonsensical to talk of an algorithm for splitting
 %stage \bbtwo\ values, since the precondition, that the input is a stage \bbtwo\
@@ -143,11 +151,6 @@ but we have to include it here for termination purposes.}
 There are some particularly notable features of this definition of term
 splitting.
 
-\paragraph {Speculation}
-
-In the stage \bbtwo\ rules for {\tt if}s, {\tt case}s, and functions, the
-precomputation is lifted out from within branches. This is the manifestation of
-the speculation behavior from the semantics.
 
 \paragraph {Stage \bbone\ Divergence}
 
