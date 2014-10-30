@@ -97,17 +97,10 @@ at $\fut$ types, splitting assigns $v$ (which must have the form $\next~\hat y$)
 entirely to stage \bbtwo\ (and \texttt{()} to stage \bbone). This process of
 exposing only the relevant structure of a term is called \emph{masking}.
 
-\ur{The case for ``roll'' seems missing in partial value splitting rules.}
-
 Splitting a function is more complex, because function bodies are open terms,
 and so are split by the judgments described in the next subsection. Essentially,
 functions will split into two functions, whose bodies correspond to the stage
 \bbone\ and stage \bbtwo\ components of the original function body.
-
-\ur{Unclear whether the term ``masking'' includes the case for
-  functions or not.  If it does, then it sounds rather
-  inaccurate.  If not, then it should be stated clearly that it does
-  not, but then what is the value of introducing one more term?}
 
 \subsection{Stage \bbone\ Term Splitting}
 
@@ -235,8 +228,11 @@ This can be encoded in our statics and dynamics by adding a new stage \bbmono\ a
 \end{mathpar}
 
 The splitting rule for \texttt{mono} is more difficult.
-...
-transition to dummy.
+The problem is that the rules needs to produce a resumer with the correct shape
+for whatever the type of the \texttt{mono} is.
+This is difficult in the presence of sums and general recursion,
+and so we introduce a new value in our target language called dummy.
+Dummy can only appear in resumers and dynamically takes the shape of whatever is required of it.
 
 The evaluation rules for dummy values are given by:
 \begin{mathpar}
@@ -246,9 +242,15 @@ The evaluation rules for dummy values are given by:
 \infer{\pit~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}
 \end{mathpar}
 
-The basic idea here is that dummy will dynamically be whatever data structure you want it to be.
+Coming back to \texttt{mono}, the splitting rule is:
+\begin{mathpar}
+\infer{\splitone{\monoSt~e}A {e', {\tt dummy}} }{e \overset{C}{\rightarrow} e'} \and
+\infer{e_1~e_2 \overset{C}{\rightarrow} \pio~(e_1'~e_2')}{e_1 \overset{C}{\rightarrow} e_1' & e_2 \overset{C}{\rightarrow} e_2'} \and
+\infer{\lambda x.e \overset{C}{\rightarrow} \lambda x.(e',())}{e \overset{C}{\rightarrow} e'}
+\end{mathpar}
+And $\overset{C}{\rightarrow}$ operates like a map at all other terms.
 
-This is safe because [nico is just throwing something out here] 
+Our use of {\tt dummy} is safe because
 it can only appear in the resumers of terms that have no circles in their \lang\ type.
 Since the $\prev$ rule requires a circle type, dummy values cannot leak from
 the resumers of stage \bbone\ terms into the resumers of stage \bbtwo\ terms.
