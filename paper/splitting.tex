@@ -1,13 +1,5 @@
-%\langmono\ has a evaluation judgment $\redsym$, which works in the expected way
-%to produce unstaged values.
-
 \section{Splitting Algorithm}
 \label{sec:splitting}
-
-%As with the dynamics, our stage-splitting algorithm for expressions in \lang\
-%takes the form of two mutually-dependent judgments, $\splitonesym$ and
-%$\splittwosym$, which respectively split terms that type $@ \bbone$ and $@
-%\bbtwo$.
 
 Although terms in \lang\ clearly distinguish their stage \bbone\ and stage
 \bbtwo\ components, these components may be interleaved in complex ways. The
@@ -17,66 +9,75 @@ stage \bbone\ and stage \bbtwo\ subcomputations of the original term.
 
 We begin by describing how to split stage \bbtwo\ terms.
 
-
-%Since splitting stage \bbtwo\ terms from \lang\ is a simpler operation than
-%splitting stage 1 terms, we first describe the mechanics of splitting stage
-%\bbtwo, before moving to the more complex case of stage \bbone\ term splitting.
-
 \subsection {Stage \bbtwo\ Splitting}
 
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
-term $p$ and a \emph{resumer} function $l.r$, such that $e$ is equivalent to
-$\letin l p r$. This is implemented by the judgment $\splittwosym$ 
-(\cref{fig:termSplitTwo}), which operates inductively on the structure of the
-term.
+term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
+and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
+computations can depend on stage \bbone, $r$ can depend on $p$ via the variable
+$l$. The correctness of splitting thus requires that $e$ is equivalent to
+$\letin l p r$. 
 
+Splitting, as implemented by the judgment $e \splittwosym [p,l.r]$
+(\cref{fig:termSplitTwo}), is guided by the structure of the term $e$. 
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
-2`hold{`1` 1+2 `2`} < hold{`1` 3+4 `2`} - 5`
+2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
 \end{lstlisting}
-splits into a precomputation \verb|(1+2,3+4)| and a resumer
-\verb|(L1,L2) => L1 < L2-5|, with the property that the resumer applied to the
-precomputation must agree with the original term. This process of hoisting stage
-\bbone\ subterms out of $e$ is called \emph{precomputation lifting}, and
-intuitively, amounts to computing a data structure which is consumed by $r$.
+has two subterms, the latter of which itself has two subterms. Two are $\pause$s
+containing stage \bbone\ computations, while the third has no stage \bbone\
+content. The precomputation \emph{lifts} these computations in the same tree
+structure: \verb|(1+2,(3+4,()))|.%
+\footnote{In later examples, we will optimize out unnecessary \texttt{()}s.}
+The resumer is a function which computes the stage \bbtwo\ value of the original
+term by mapping the results of the precomputation in place of the $\pause$s:
+\verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
 
-Since base types and variables have no stage \bbone\ content, their
-precomputations are \texttt{()}, and are not used in the resumer. At every other
-expression except $\prev$ and $\pause$, splitting bundles the precomputations of the
-constituent parts, and then unbundles them with a pattern, with the resumer
-precisely resembling the original expression. The $\prev$ and $\pause$ rules depends on
-splitting stage \bbone\ terms, which is covered later.
+In general, constants and variables have no stage \bbone\ content, so their
+precomputations are \texttt{()}, and their resumers return the original term's
+value. Non-staging constructs with $n$ subterms have precomputations which are
+$n$-tuples of their subterms' precomputations, and resumers which pass each
+component to the resumer of the respective subterm. (This behavior at
+\texttt{case} and functions gives rise to speculative execution of
+precomputations from underneath binders.) The $\prev$ and $\pause$ rules depends
+on splitting stage \bbone\ terms, which is covered later.
 
-Observe that in the rules for {\tt if}s, {\tt case}s, and functions, the
-precomputation is lifted out from within branches. This is the manifestation of
-the speculation behavior from the semantics.
+\subsection{Partial Value Splitting}
 
-%As mentioned before, the only responsibility of $\splittwosym$ is to lift
-%out the precomputation from contained stage \bbone\ code into a single
-%expression $p$, leaving a resumer $l.r$ to interpret the results of that
-%precomputation.
+%while maintaining the term's original structure. 
 
-\subsection{(Partial) Value Splitting}
-
-As described above, splitting a stage \bbtwo\ value always produces a trivial
-precomputation---either \texttt{()}, or nested tuples thereof. Intuitively,
-this is because stage-\bbtwo\ values contain no stage \bbone\ computations.
-
-The same is not true of partial values (by definition, stage \bbone), which \emph{can}
-contain stage \bbtwo\ computations, namely, inside $\next$ blocks, which must
+Stage \bbtwo\ values can contain no stage \bbone\ subcomputations, but the
+reverse is not true of partial values (at stage \bbone). These \emph{can}
+contain stage \bbtwo\ computations, both inside $\next$ blocks, which must
 contain a variable reference to some future context, and inside lambdas, which
 may contain a $\next$ in their body.
 
 Thus, to split partial values, we must separate the contents of $\next$ blocks
-from the rest of the term, while maintaining the term's original structure. This
-is implemented by the judgment $v \vsplito [v_1,v_2]$ (\ref{fig:valSplit}).
-At product, sum, and recursive types, splitting acts recursively, gathering all
-subterms' stage $w$ content into $v_w$.
-At base types, splitting assigns $v$ entirely to stage \bbone\ (and \texttt{()}
-to stage \bbtwo);
-conversely, at $\fut$ types, splitting assigns $v$ (which must have the
+from the rest of the term. This is implemented by the judgment $v \vsplito
+[v_1,v_2]$ (\ref{fig:valSplit}). 
+
+No dependence here.
+
+For example, the stage \bbone\ term
+\begin{lstlisting}
+1`inl(3, next{`2`yhat`1`})`
+\end{lstlisting}
+splits into
+\verb|inl(3,())| and \texttt{((),$\mathtt{\hat{y}}$)}.
+
+sum types
+
+
+
+
+In general,
+at product and recursive types, splitting acts
+recursively, gathering all subterms' stage $w$ content into $v_w$. At base
+types, splitting assigns $v$ entirely to stage \bbone\ (and \texttt{()} to stage
+\bbtwo); conversely, at $\fut$ types, splitting assigns $v$ (which must have the
 form $\next~\hat y$) entirely to stage \bbtwo\ (and \texttt{()} to stage
 \bbone).
+
 This process of exposing only the relevant structure of a term at each stage is
 called \emph{masking}.
 
@@ -84,12 +85,10 @@ Splitting a function is more complex, because function bodies are open terms,
 and so are split by the judgments described in the next subsection. Essentially,
 functions will split into two functions, whose bodies correspond to the stage
 \bbone\ and stage \bbtwo\ components of the original function body.
-Moreover, the body of the function may contain a precomputation,
-which should be saved and resumer appropriately wherever the function is applied.
+Because that body may contain a precomputation, the generated function signatures must properly emit and resume with that precomputation.
 
-%Indeed it would be almost nonsensical to talk of an algorithm for splitting
-%stage \bbtwo\ values, since the precondition, that the input is a stage \bbtwo\
-%value, is enough to imply the postcondition, that no stage interleaving remains
+%As described above, splitting a stage \bbtwo\ value always produces a trivial
+%precomputation---either \texttt{()}, or nested tuples thereof. 
 
 %Thus, it is meaningful to define some notion of splitting for them.  This is
 %useful to study, because the definition will later be used as a contract with
@@ -100,7 +99,33 @@ which should be saved and resumer appropriately wherever the function is applied
 %stage \bbone\ term. But internally, a partial value might contain stage \bbtwo\
 %subexpressions.
 
-\subsection{Stage \bbone\ Term Splitting}
+\subsection{Stage \bbone\ Splitting}
+
+\crem{value splitting figure is missing injections}
+
+\TODO
+\begin{enumerate}
+\item Examples
+\item Lifting (and masking)
+\item Correctness? (Does this require partial value splitting?)
+\end{enumerate}
+
+\begin{theorem}[Correctness of splitting at $\bbone$]
+If $\vdash e:A~@~\bbone$, then (by splitting)
+\begin{itemize}
+\item $\vdash e : A \splitonesym [c,l.r]$
+\item $\reduce {c} {(v_1,u)}$
+\item $\reduce {(\letin{l}{u}{r})} v_S$
+\end{itemize}
+if and only if (by the staged dynamic semantics)
+\begin{itemize}
+\item $\diaone [] e {\xi;v}$
+\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
+\item $\reify \xi{v_2}q$
+\item $q \mathbin{\tworedsym} v_D$
+\end{itemize}
+and if so, then $v_D \sim v_S$.
+\end{theorem}
 
 Lifting and masking are two necessary ingredients for ensuring that splitting
 observes the stages of \lang. When splitting a partial value, the stage \bbone\
@@ -111,7 +136,7 @@ performed first, even though their results are only used in stage \bbtwo.
 %and it's accessible to whatever surrounding piece of code refers to the value being split.
 %is not accessible externally.
 
-Splitting a stage \bbone\ term, in contrast, requires both masking and splitting.
+Splitting a stage \bbone\ term, in contrast, requires both masking and lifting.
 Consider the term 
 \begin{lstlisting}
 1`(next{`2`hold{`1` 1+2 `2`} < 5`1`},3*4)`
@@ -150,38 +175,11 @@ taken branch only, and inject the precomputation into a sum type. In the
 resumer, we case on that injection, and resume the stage \bbtwo\ portion of the
 correct branch.
 
-%\subsection {Notable Properties}
-%
-%\nr{These points will probably get lifted into the preceding sections.}
-%
-%There are some particularly notable features of this definition of term
-%splitting.
-
-
-%\paragraph {Stage \bbone\ Divergence}
-%
-
-
-%\paragraph {Stage \bbone\ Functions}
-%
-%The body of a stage \bbone\ function may contain stage \bbtwo\ computation. We
-%handle this by splitting the function into two functions: one in the immediate
-%result which handles all the stage \bbone\ content of the original, and one in
-%the resumer which handles all of the stage \bbtwo\ content. Note that stage
-%\bbone\ lambdas are partial values, and so have only a trivial precomputation.
-%
-%\paragraph {Typing the Boundary}
-%
-%\TODO add the example which shows that we need dynamic types
-
 \input{figures/splitting-term}
-
-\TODO say something about correctness criteria for splitting? (see
-\texttt{obsolete/correctness.tex})
 
 \subsection{Eliminating Unnecessary Code}
 
-\TODO don't use that word
+\crem{don't say ``cost''}
 
 While these splitting rules are all correct in terms of producing the right values, applying them naively can result in terms with needlessly large cost.  Consider the following example involving the factorial function:
 \begin{lstlisting}

@@ -88,8 +88,8 @@ list \texttt{l}.  For this tasks, we can use the expected linear time,
 quickselect algorithm~\cite{quickselect}, which takes a
 list~\texttt{l} and a rank~\texttt{k} and returns the element with
 rank~\texttt{k} in the list.  To this end, the algorithm, whose code
-is shown in ~\figref{qs-unstaged} partitions the list into two by
-using the first element as a pivot~\footnote{We assume that the list
+is shown in ~\ref{fig:qs-unstaged} partitions the list into two by
+using the first element as a pivot\footnote{We assume that the list
   is prepermuted to guarantee the expected linear time behavior.} and
 recurs down to one of the ``halves'' to find the desired element.  The
 ``half'' to be considered recursively next is determined by the
@@ -122,7 +122,7 @@ and proposed techniques for writing staged
 programs~\cite{staging}. Using techniques essentially the same as
 prior work, we can stage our quickselect code by using staged typing
 and inserting three keywords~\texttt{next, prev, hold} into the
-appropriate places in the code as shown in \figref{qs-staged}. To
+appropriate places in the code as shown in \ref{fig:qs-staged}. To
 write the staged version, the programmer first observes that the
 rank~\texttt{k} has now the type $\fut\rmint$ (read ``circle int'')
 rather than $\rmint$, indicating that it will be available in the
