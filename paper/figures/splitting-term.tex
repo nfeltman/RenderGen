@@ -13,13 +13,13 @@
 									\end{array}}}																				{\sub 1 A & \sub 2 B} \and
 \infersplitone [\times E_1]	{\spl {\pio~e}{A}{\talllet{(y,z)}{c}{(\pio~y,z)},l.\pio~r}}								{\sub {} {A\times B}} \and
 \infersplitone [\times E_2]	{\spl {\pit~e}{B}{\talllet{(y,z)}{c}{(\pit~y,z)},l.\pit~r}}								{\sub {} {A\times B}} \and
-\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
-								\begin{array}{l}
-									\left(\talllet{(x,z_1)}{c_1}{
-									\talllet{(y,z_2)}{c_2}{
-									(y, (z_1, z_2))}}\right),
-									(l_1,l_2).\letin{x}{r_1}{r_2}
-								\end{array}}}																					{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
+%\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
+%								\begin{array}{l}
+%									\left(\talllet{(x,z_1)}{c_1}{
+%									\talllet{(y,z_2)}{c_2}{
+%									(y, (z_1, z_2))}}\right),
+%									(l_1,l_2).\letin{x}{r_1}{r_2}
+%								\end{array}}}																					{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
 \infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{\lam{x}{A}{c},
 							\_.(\lam{(x,l)}{\_}{r})}}																			{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplitone [\to E]	{\spl {e_1~e_2}{B}{
@@ -44,14 +44,14 @@
 \infersplitone [\mu I]		{\spl {\roll~e}{\mu\alpha.\tau}{\talllet{(y,z)}{c}{(\roll~y,z)},l.\roll~r}}						{\sub {} {[\mu\alpha.\tau/\alpha]\tau}}							\and
 \infersplitone [\mu E]		{\spl {\unroll~e}{[\mu\alpha.\tau/\alpha]\tau}{\talllet{(y,z)}{c}{(\unroll~y,z)},l.\unroll~r}}	{\sub {} {\mu\alpha.\tau}}										\and
 %
-\infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
-								{\begin{array}{l}
-									\left(\talllet{(y_1,z_1)}{c_1}{\tallif {y_1}
-										{\letin{(y_2,z_2)}{c_2}{(y_2, (z_1, \inl~z_2))}}
-										{\letin{(y_3,z_3)}{c_2}{(y_3, (z_1, \inl~z_3))}}}
-									\right), \\
-									(l_1,l_b).(r_1;\caseof{l_b}{l_2.r_2}{l_3.r_3})
-								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
+%\infersplitone [if]			{\spl {\left( \tallif {e_1}{e_2}{e_3} \right)}{A} 
+%								{\begin{array}{l}
+%									\left(\talllet{(y_1,z_1)}{c_1}{\tallif {y_1}
+%										{\letin{(y_2,z_2)}{c_2}{(y_2, (z_1, \inl~z_2))}}
+%										{\letin{(y_3,z_3)}{c_2}{(y_3, (z_1, \inl~z_3))}}}
+%									\right), \\
+%									(l_1,l_b).(r_1;\caseof{l_b}{l_2.r_2}{l_3.r_3})
+%								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
 
 \end{mathpar}
 \caption{Stage \bbone\ Splitting}
@@ -77,9 +77,9 @@
 																									& \sub [\Gamma,\col{x_3} B] 3 C} 								\and
 \infersplittwo [\mu I]		{\spl {\roll~e}{\mu\alpha.\tau}{l.\roll~r}}												{\sub {} {[\mu\alpha.\tau/\alpha]\tau}}							\and
 \infersplittwo [\mu E]		{\spl {\unroll~e}{[\mu\alpha.\tau/\alpha]\tau}{l.\roll~r}}								{\sub {} {\mu\alpha.\tau}}										\and
-\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), (l_1,l_2).\letin{x}{r_1}{r_2}}}				{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
-\infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
-								{(p_1,p_2,p_3),(l_1,l_2,l_3).\left(\tallif{r_1}{r_2}{r_2}\right)}}						{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
+%\infersplittwo [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{(p_1,p_2), (l_1,l_2).\letin{x}{r_1}{r_2}}}				{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
+%\infersplittwo [if]			{\spl {\left(\tallif {e_1}{e_2}{e_3}\right)}{A} 
+%								{(p_1,p_2,p_3),(l_1,l_2,l_3).\left(\tallif{r_1}{r_2}{r_2}\right)}}						{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
 \end{mathpar}
 \hrule
 \begin{mathpar}

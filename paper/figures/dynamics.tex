@@ -30,9 +30,9 @@
 \inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\inl~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}} 					\and
 \inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\inr~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}					\and
 %
-\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2; v_2}}					{\sub [1] & \red [\Gamma,\dom{\xi_1}] {[v_1/x]e_2}{\xi_2;v_2}}											\and
-\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\tt true}  & \red {e_2}{\xi_2;v}} 							\and
-\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
+%\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2; v_2}}					{\sub [1] & \red [\Gamma,\dom{\xi_1}] {[v_1/x]e_2}{\xi_2;v_2}}											\and
+%\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\tt true}  & \red {e_2}{\xi_2;v}} 							\and
+%\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
 %
 \inferdiaone [\mu I]   		{\red {\roll~e}{\xi;\roll~v}}									{\sub}												\and
 \inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							\and
@@ -66,8 +66,8 @@
 \inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
 \inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
 									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		\and
-\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
-\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
+%\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
+%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
 %
 \inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
 \inferdiaspc [\mu E]   		{\red {\unroll~e}{v}}											{\red {e}{\roll~v}}						\and

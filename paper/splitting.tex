@@ -84,9 +84,8 @@ Splitting a function is more complex, because function bodies are open terms,
 and so are split by the judgments described in the next subsection. Essentially,
 functions will split into two functions, whose bodies correspond to the stage
 \bbone\ and stage \bbtwo\ components of the original function body.
-
-\TODO talk about the changed function signature, which is necessitated by the precomputation;
-note that we have to assume {\em all} stage \bbone\ functions have meaningful precomputations
+Moreover, the body of the function may contain a precomputation,
+which should be saved and resumer appropriately wherever the function is applied.
 
 %Indeed it would be almost nonsensical to talk of an algorithm for splitting
 %stage \bbtwo\ values, since the precondition, that the input is a stage \bbtwo\
@@ -144,41 +143,43 @@ and projects out the integer result in the resumer.%
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.}
 
-\subsection {Notable Properties}
-
-\nr{These points will probably get lifted into the preceding sections.}
-
-There are some particularly notable features of this definition of term
-splitting.
-
-
-\paragraph {Stage \bbone\ Divergence}
-
-In the splitting rules for stage \bbone\ {\tt if} and {\tt case} expressions, we
+In the splitting rules for stage \bbone\ {\tt case} expressions, we
 have enough information at stage \bbone\ to know what branch to take, so there's
 no need to speculate. Instead, we evaluate the stage \bbone\ portion of the
 taken branch only, and inject the precomputation into a sum type. In the
 resumer, we case on that injection, and resume the stage \bbtwo\ portion of the
 correct branch.
 
-\paragraph {Stage \bbone\ Functions}
+%\subsection {Notable Properties}
+%
+%\nr{These points will probably get lifted into the preceding sections.}
+%
+%There are some particularly notable features of this definition of term
+%splitting.
 
-The body of a stage \bbone\ function may contain stage \bbtwo\ computation. We
-handle this by splitting the function into two functions: one in the immediate
-result which handles all the stage \bbone\ content of the original, and one in
-the resumer which handles all of the stage \bbtwo\ content. Note that stage
-\bbone\ lambdas are partial values, and so have only a trivial precomputation.
 
-\paragraph {Typing the Boundary}
+%\paragraph {Stage \bbone\ Divergence}
+%
 
-\TODO add the example which shows that we need dynamic types
+
+%\paragraph {Stage \bbone\ Functions}
+%
+%The body of a stage \bbone\ function may contain stage \bbtwo\ computation. We
+%handle this by splitting the function into two functions: one in the immediate
+%result which handles all the stage \bbone\ content of the original, and one in
+%the resumer which handles all of the stage \bbtwo\ content. Note that stage
+%\bbone\ lambdas are partial values, and so have only a trivial precomputation.
+%
+%\paragraph {Typing the Boundary}
+%
+%\TODO add the example which shows that we need dynamic types
 
 \input{figures/splitting-term}
 
 \TODO say something about correctness criteria for splitting? (see
 \texttt{obsolete/correctness.tex})
 
-\subsection{Cost}
+\subsection{Eliminating Unnecessary Code}
 
 \TODO don't use that word
 
