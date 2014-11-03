@@ -9,8 +9,8 @@ split1-ztup	: split1 ztup (tup ztup ztup) ([x:term] ztup).
 split1-tup	: split1 (tup E1 E2) 
 				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
-			<- split1 E1 C1 R1
-			<- split1 E2 C2 R2.
+			<- split1 E2 C2 R2
+			<- split1 E1 C1 R1.
 split1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l))
 			<- split1 E C R.
 split1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l))
@@ -189,11 +189,13 @@ eesc2 : split2 E P R -> spc E Q -> ered P U -> eqv Q (R U) -> type.
 		(split1-tup Dspl1 Dspl2)
 		(red-tup Drof Dred1 Dred2)
 		DsplitW
-		_
-		_ 
-	<- eesc1 Dspl1 Dred1 Dsplit1 Dered1 Deqv1
-	<- eesc1 Dspl2 Dred2 Dsplit2 Dered2 Deqv2
-	<- rofsc-tup Drof Dsplit1 Dsplit2 DsplitW Didty (Deqv : eqv (tup U2 V2) W2).
+		(ered-lett (ered-lett (ered-tup (ered-tup DredV1 DredV2) (ered-tup DredU1 DredU2)) Dered2) Dered1)
+		(eqv-trans (eqv-sym Deqv) (eqv-lettsub (eqv-tup Deqv1 Deqv2)))
+	<- eesc1 Dspl1 Dred1 Dsplit1 Dered1 (Deqv1)
+	<- eesc1 Dspl2 Dred2 Dsplit2 Dered2 (Deqv2)
+	<- rofsc-tup Drof Dsplit1 Dsplit2 DsplitW Didty (Deqv)
+	<- idem Dered1 (ered-tup DredV1 DredU1)
+	<- idem Dered2 (ered-tup DredV2 DredU2).
 - : eesc1 
 		(split1-pi1 (Dspl : split1 E C R)) 
 		(red-pi1 (Drof : rof-pi1 V W) (Dred : red E V)) 
@@ -215,15 +217,6 @@ eesc2 : split2 E P R -> spc E Q -> ered P U -> eqv Q (R U) -> type.
 	<- idem Dered (ered-tup DredV1 DredU)
 	<- ered-resp DredV1 Didty DredV1'.
 - : eesc1 (split1-lam DsplitM) red-lam (cpvsplit-e (vsplit-lam DsplitM)) (ered-tup ered-lam ered-ztup) eqv-refl.
-- : eesc1 
-		(split1-app Dspl1 Dspl2)
-		(red-app Drof Dred1 Dred2)
-		_
-		_
-		_ 
-	<- eesc1 Dspl1 Dred1 Dsplit1 Dered1 Deqv1
-	<- eesc1 Dspl2 Dred2 Dsplit2 Dered2 Deqv2
-	<- rofsc-app Drof Dsplit1 Dsplit2 
 - : eesc1 
 		(split1-next (Dspl : split2 E P R)) 
 		(red-next (Dspc : spc E Q)) 
