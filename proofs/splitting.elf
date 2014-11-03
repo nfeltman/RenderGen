@@ -149,6 +149,19 @@ eesc2 : split2 E P R -> spc E Q -> ered P U -> eqv Q (R U) -> type.
 %mode eesc1 +Dsplit +Dred -Dcpvsplit -Dered -Deqv. 
 %mode eesc2 +Dsplit +Dspc -Dered -Deqv. 
 
+%% ROF SPLITTING CORRECTNESS LET/APP
+rofsc-let : rof-let V M W -> ({x:term} split1 x x ([_:term] x) -> split1 (M x) (C x) (R x)) -> cpvsplit V V1 V2 -> cpvsplit W W1 W2 -> type. 
+%mode rofsc-let +Drof +DredM +DsplV -DsplW.
+- : rofsc-let (rof-let-l Drof) DsplM (cpvsplit-l DsplV) (cpvsplit-l DsplW) %{(eqv-let eqv-refl Deqv)}%
+	<- {x : term} rofsc-let (Drof x) DsplM (DsplV x) (DsplW x) %{(Deqv x)}%.
+- : rofsc-let 
+		(rof-let-e (Dred : red (M X) V)) 
+		(DsplM : {x:term} split1 x x ([_:term] x) -> split1 (M x) (C x) (R x)) 
+		(cpvsplit-e (Dvspl : vsplit X X1 X2)) 
+		Dspl
+		
+	<- eesc1 (DsplM X _) Dred (Dspl : cpvsplit V V1 V2) (Dered : ered (C X) (tup V1 U)) (Deqv : eqv V2 (R X U)).
+
 %% SPLITTING CORRECTNESS STAGE 2
 - : eesc2 split2-ztup spc-ztup ered-ztup eqv-refl.
 - : eesc2 
@@ -216,6 +229,14 @@ eesc2 : split2 E P R -> spc E Q -> ered P U -> eqv Q (R U) -> type.
 	<- rofsc-pi2 Drof DsplitV DsplitW Didty Deqv2
 	<- idem Dered (ered-tup DredV1 DredU)
 	<- ered-resp DredV1 Didty DredV1'.
+- : eesc1 
+		(split1-let DsplM DsplE) 
+		(red-let Drof DredE)
+		DsplitW
+		_
+		_
+	<- eesc1 DsplE DredE (DsplitV : cpvsplit V V1 V2) (Dered : ered C (tup V1 U)) (Deqv : eqv V2 (R U))
+	<- rofsc-let Drof DsplM DsplitV (DsplitW : cpvsplit W W1 W2).
 - : eesc1 (split1-lam DsplitM) red-lam (cpvsplit-e (vsplit-lam DsplitM)) (ered-tup ered-lam ered-ztup) eqv-refl.
 - : eesc1 
 		(split1-next (Dspl : split2 E P R)) 

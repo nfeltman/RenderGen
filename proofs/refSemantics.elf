@@ -2,7 +2,6 @@
 cpval : type. %name cpval C.
 empty : term -> cpval.
 layer : term -> (term -> cpval) -> cpval.
-
 %% CPV TYPING
 cpv-of : cpval -> ty -> type. %name cpv-of Dof.
 %mode cpv-of +C -T.
