@@ -106,3 +106,11 @@ idem : ered E V -> ered V V -> type.
 	<- idem Dred (ered-next Dself).
 %worlds () (idem _ _).
 %total Dred (idem Dred _).
+
+%% REDUCTION RESPECTS IDENTITY
+ered-resp : ered E V -> eidty V V' -> ered E V' -> type.
+%mode ered-resp +Dred +Didty -Dred'.
+- : ered-resp Dred eidty/refl Dred.
+%worlds () (ered-resp _ _ _).
+%total {} (ered-resp _ _ _).
+

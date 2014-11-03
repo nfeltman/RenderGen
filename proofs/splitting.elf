@@ -15,13 +15,13 @@ split1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l))
 			<- split1 E C R.
 split1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l))
 			<- split1 E C R.
-split1-lam	: split1 (lam _ M) (lam unit C)	([_] lam unit ([xl] lett xl R))
+split1-lam	: split1 (lam _ M) (tup (lam unit C) ztup) ([_] lam unit ([xl] lett xl R))
 			<- {x : term} split1 x x ([_:term] x) -> split1 (M x) (C x) ([l:term] R x l).
 split1-app	: split1 (app E1 E2) 
 				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3))))) 
 				([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
-			<- split1 E1 C1 R1
-			<- split1 E2 C2 R2.
+			<- split1 E2 C2 R2
+			<- split1 E1 C1 R1.
 split1-let	: split1 (let E M) 
 				(lett C1 ([x] [z1] lett (C2 x) ([y] [z2] tup y (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
@@ -29,11 +29,11 @@ split1-let	: split1 (let E M)
 			<- {x : term} split1 x x ([_] x) -> split1 (M x) (C2 x) ([l] R2 x l).
 split1-next : split1 (next E) (tup ztup P) R
 			<- split2 E P R. 
-split1-letn : split1 (letn E M) 
+%{split1-letn : split1 (letn E M) 
 				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
 			<- split1 E C1 R1
-			<- {x : term} split2 x ztup ([_] x) -> split1 (M x) C2 ([l] R2 x l).
+			<- {x : term} split2 x ztup ([_] x) -> split1 (M x) C2 ([l] R2 x l).}%
 			
 split2-ztup : split2 ztup ztup ([_] ztup).
 split2-tup	: split2 (tup E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
@@ -46,8 +46,8 @@ split2-pi2  : split2 (pi2 E) P ([l] pi2 (R l))
 split2-lam  : split2 (lam _ M) P ([l] lam unit ([x] R x l))
 			<- {x : term} split2 x ztup ([_] x) -> split2 (M x) P ([l] R x l).
 split2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2)))
-			<- split2 E1 P1 R1
-			<- split2 E2 P2 R2.
+			<- split2 E2 P2 R2
+			<- split2 E1 P1 R1.
 split2-let	: split2 (let E M) (tup P1 P2) ([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
 			<- split2 E P1 R1
 			<- {x : term} split2 x ztup ([_] x) -> split2 (M x) P2 ([l] R2 x l).
@@ -58,47 +58,179 @@ vsplit : term -> term -> term -> type.
 %mode vsplit +V -V1 -V2.
 vsplit-ztup	: vsplit ztup ztup ztup.
 vsplit-tup	: vsplit (tup V1 V2) (tup U1 U2) (tup W1 W2) 
-			<- vsplit V1 U1 W1 
-			<- vsplit V2 U2 W2.
+			<- vsplit V2 U2 W2
+			<- vsplit V1 U1 W1.
 vsplit-lam	: vsplit (lam _ M) (lam unit C)	(lam unit ([xl] lett xl R))
 			<- {x : term} split1 x x ([_:term] x) -> split1 (M x) (C x) ([l:term] R x l).
 vsplit-next : vsplit (next V) ztup V.
 
-cpvsplit : cpval -> term -> cpval -> type.
+cpvsplit : cpval -> term -> term -> type.
 %mode cpvsplit +V -V1 -V2.
+cpvsplit-e : cpvsplit (empty V) V1 V2
+			<- vsplit V V1 V2.
+cpvsplit-l : cpvsplit (layer Q C) V1 (let Q V2)
+			<- {x:term} cpvsplit (C x) V1 (V2 x).
 
 %% EQUIVALENCE
-eqt : term -> term -> type.
-
 eqv : term -> term -> type.
-eqv-ztup : eqv ztup ztup.
-eqv-tup  : eqv (tup U1 V1) (tup U2 V2)
-		<- eqv U1 U2
-		<- eqv V1 V2.
-eqv-lam  : eqv (lam _ M1) (lam _ M2)
-		<- ({x : term} {y : term}
-        ered x x -> ered y y -> eqv x y -> eqt (M1 x) (M2 y)).
+eqv-refl	: eqv E E.
+eqv-sym		: eqv E1 E2
+			<- eqv E2 E1.
+eqv-trans	: eqv E1 E3
+			<- eqv E2 E3
+			<- eqv E1 E2.
+eqv-letsub	: eqv E (let E1 M)
+			<- eqv E (M E1).
+eqv-lettsub	: eqv E (lett (tup E1 E2) M)
+			<- eqv E (M E1 E2).
+eqv-eltup1	: eqv (pi1 (tup E1 E2)) E1.
+eqv-eltup2	: eqv (pi2 (tup E1 E2)) E2.
+eqv-pilet1	: eqv (pi1 (let E M)) (let E ([x] pi1 (M x))).
+eqv-pilet2	: eqv (pi2 (let E M)) (let E ([x] pi2 (M x))).
+eqv-tuplet1 : eqv (tup Q (let E M)) (let E ([x] tup Q (M x))).
+eqv-tuplet2 : eqv (tup (let E M) Q) (let E ([x] tup (M x) Q)).
+eqv-tup		: eqv (tup E1 E2) (tup F1 F2)
+			<- eqv E2 F2
+			<- eqv E1 F1.
+eqv-pi1		: eqv (pi1 E) (pi1 F)
+			<- eqv E F.
+eqv-pi2		: eqv (pi2 E) (pi2 F)
+			<- eqv E F.
+eqv-lam		: eqv (lam _ M) (lam unit N)
+			<- {x:term} eqv x x -> eqv (M x) (N x).
+eqv-app		: eqv (app E1 E2) (app F1 F2)
+			<- eqv E2 F2
+			<- eqv E1 F1.
+eqv-let		: eqv (let E1 M1) (let E2 M2)
+			<- ({x:term} eqv (M1 x) (M2 x))
+			<- eqv E1 E2.
+
+%% STANDARD BLOCKS
+%block rofsc-block : block {x : term}.
+
+%% ROF (REDUCTION OUTPUT FACTOR) SPLITTING CORRECTNESS
+rofsc-prev : rof-prev V Q -> cpvsplit V V1 V2 -> eqv Q V2 -> type.
+%mode rofsc-prev +Drof +Dsplit -Deqv.
+- : rofsc-prev (rof-prev-l Drof) (cpvsplit-l Dsplit) (eqv-let eqv-refl Deqv)
+	<- {x : term} rofsc-prev (Drof x) (Dsplit x) (Deqv x).
+- : rofsc-prev rof-prev-e (cpvsplit-e vsplit-next) eqv-refl.
+%worlds (rofsc-block) (rofsc-prev _ _ _).
+%total (D) (rofsc-prev D _ _).
+
+rofsc-tup : rof-tup U V W -> cpvsplit U U1 U2 -> cpvsplit V V1 V2 -> cpvsplit W W1 W2 -> eidty (tup U1 V1) W1 -> eqv (tup U2 V2) W2 -> type. 
+%mode rofsc-tup +Drof +DsplU +DsplV -DsplW -Didty -Deqv.
+- : rofsc-tup (rof-tup-l Drof) (cpvsplit-l DsplU) DsplV (cpvsplit-l DsplW) Didty (eqv-trans eqv-tuplet2 (eqv-let eqv-refl Deqv))
+	<- {x : term} rofsc-tup (Drof x) (DsplU x) DsplV (DsplW x) Didty (Deqv x).
+- : rofsc-tup (rof-tup-el Drof) (cpvsplit-e DsplU) (cpvsplit-l DsplV) (cpvsplit-l DsplW) Didty (eqv-trans eqv-tuplet1 (eqv-let eqv-refl Deqv))
+	<- {x : term} rofsc-tup (Drof x) (cpvsplit-e DsplU) (DsplV x) (DsplW x) Didty (Deqv x).
+- : rofsc-tup rof-tup-ee (cpvsplit-e DsplU) (cpvsplit-e DsplV) (cpvsplit-e (vsplit-tup DsplU DsplV)) eidty/refl eqv-refl.
+%worlds (rofsc-block) (rofsc-tup _ _ _ _ _ _).
+%total (D) (rofsc-tup D _ _ _ _ _).
+
+rofsc-pi1 : rof-pi1 V W -> cpvsplit V V1 V2 -> cpvsplit W W1 W2 -> eidty V1 (tup W1 _) -> eqv (pi1 V2) W2 -> type. 
+%mode rofsc-pi1 +Drof +DsplV -DsplW -Didty -Deqv.
+- : rofsc-pi1 (rof-pi1-l Drof) (cpvsplit-l DsplV) (cpvsplit-l DsplW) Didty (eqv-trans eqv-pilet1 (eqv-let eqv-refl Deqv))
+	<- {x : term} rofsc-pi1 (Drof x) (DsplV x) (DsplW x) Didty (Deqv x).
+- : rofsc-pi1 rof-pi1-e (cpvsplit-e (vsplit-tup Dvspl _)) (cpvsplit-e Dvspl) eidty/refl eqv-eltup1.
+%worlds (rofsc-block) (rofsc-pi1 _ _ _ _ _).
+%total (D) (rofsc-pi1 D _ _ _ _).
+
+rofsc-pi2 : rof-pi2 V W -> cpvsplit V V1 V2 -> cpvsplit W W1 W2 -> eidty V1 (tup _ W1) -> eqv (pi2 V2) W2 -> type. 
+%mode rofsc-pi2 +Drof +DsplV -DsplW -Didty -Deqv.
+- : rofsc-pi2 (rof-pi2-l Drof) (cpvsplit-l DsplV) (cpvsplit-l DsplW) Didty (eqv-trans eqv-pilet2 (eqv-let eqv-refl Deqv))
+	<- {x : term} rofsc-pi2 (Drof x) (DsplV x) (DsplW x) Didty (Deqv x).
+- : rofsc-pi2 rof-pi2-e (cpvsplit-e (vsplit-tup _ Dvspl)) (cpvsplit-e Dvspl) eidty/refl eqv-eltup2.
+%worlds (rofsc-block) (rofsc-pi2 _ _ _ _ _).
+%total (D) (rofsc-pi2 D _ _ _ _).
 
 %% END-TO-END SPLITTING CORRECTNESS
-eesc2 : split2 E P R -> spc E Q -> ered P U -> ered Q V -> ered (R U) V -> type. %% probably not right
-%mode eesc2 +Dsplit +Dspc +DredP +DredQ -DredR. 
-- : eesc2 split2-ztup spc-ztup ered-ztup ered-ztup ered-ztup.
+eesc1 : split1 E C R -> red E V -> cpvsplit V V1 V2 -> ered C (tup V1 U) -> eqv V2 (R U) -> type.   
+eesc2 : split2 E P R -> spc E Q -> ered P U -> eqv Q (R U) -> type.
+%mode eesc1 +Dsplit +Dred -Dcpvsplit -Dered -Deqv. 
+%mode eesc2 +Dsplit +Dspc -Dered -Deqv. 
+
+%% SPLITTING CORRECTNESS STAGE 2
+- : eesc2 split2-ztup spc-ztup ered-ztup eqv-refl.
 - : eesc2 
 		(split2-tup Dspl1 Dspl2 : split2 (tup E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))) 
-		(spc-tup Dspc1 Dspc2) 
-		(ered-tup DredP1 DredP2 : ered (tup P1 P2) (tup U1 U2)) 
-		(ered-tup DredQ1 DredQ2) 
-		(ered-lett (ered-tup DredR1 DredR2) Dself)
-	<- eesc2 Dspl1 Dspc1 DredP1 DredQ1 (DredR1 : ered (R1 U1) V1)
-	<- eesc2 Dspl2 Dspc2 DredP2 DredQ2 (DredR2 : ered (R2 U2) V2)
-	<- idem (ered-tup DredP1 DredP2) (Dself : ered (tup U1 U2) (tup U1 U2)).
-- : eesc2 (split2-pi1 Dspl) (spc-pi1 Dspc) DredP (ered-pi1 DredQ) (ered-pi1 DredR)
-	<- eesc2 Dspl Dspc DredP DredQ DredR.
-- : eesc2 (split2-pi2 Dspl) (spc-pi2 Dspc) DredP (ered-pi2 DredQ) (ered-pi2 DredR)
-	<- eesc2 Dspl Dspc DredP DredQ DredR.
-- : eesc2 (split2-lam DsplM) (spc-lam DspcM) DredP DredQ
-	<- {x : term} {dsplX : split2 x ztup ([_] x)} {dspcX : spc x x} {DredX : red x V} 
-		eesc2 (Dspl x dsplX) (DspcM x dspcX) DredP .
+		(spc-tup Dspc1 Dspc2)
+		(ered-tup DredP1 DredP2)
+		(eqv-lettsub (eqv-tup Deqv1 Deqv2))
+	<- eesc2 Dspl1 Dspc1 DredP1 (Deqv1 : eqv E1 (R1 U1))
+	<- eesc2 Dspl2 Dspc2 DredP2 (Deqv2 : eqv E2 (R2 U2)).
+- : eesc2 (split2-pi1 Dspl) (spc-pi1 Dspc) DredP (eqv-pi1 Deqv)
+	<- eesc2 Dspl Dspc DredP Deqv.
+- : eesc2 (split2-pi2 Dspl) (spc-pi2 Dspc) DredP (eqv-pi2 Deqv)
+	<- eesc2 Dspl Dspc DredP Deqv.
+- : eesc2 (split2-lam DsplM) (spc-lam DspcM) DredP (eqv-lam Deqv)
+	<- {x : term} {dsplX : split2 x ztup ([_] x)} {dspcX : spc x x} {deqvx : eqv x x} 
+		eesc2 (DsplM x dsplX) (DspcM x dspcX) DredP (Deqv x deqvx).
+- : eesc2 
+		(split2-app Dspl1 Dspl2) 
+		(spc-app Dspc1 Dspc2) 
+		(ered-tup DredP1 DredP2)
+		(eqv-lettsub (eqv-app Deqv1 Deqv2))
+	<- eesc2 Dspl1 Dspc1 DredP1 Deqv1
+	<- eesc2 Dspl2 Dspc2 DredP2 Deqv2.
+- : eesc2
+		(split2-prev (Dspl : split1 E C R))
+		(spc-prev (Drof : rof-prev V Q) (Dred : red E V))
+		(ered-pi2 Dered)
+		(eqv-trans Deqv1 Deqv2) %% wts: eqv Q (R U)
+	<- eesc1 Dspl Dred 
+		(Dcpvsplit : cpvsplit V V1 V2)
+		(Dered : ered C (tup V1 U))
+		(Deqv2 : eqv V2 (R U))
+	<- rofsc-prev Drof Dcpvsplit (Deqv1 : eqv Q V2).
+
+	
+- : eesc1 split1-ztup red-ztup (cpvsplit-e vsplit-ztup) (ered-tup ered-ztup ered-ztup) eqv-refl.
+- : eesc1 
+		(split1-tup Dspl1 Dspl2)
+		(red-tup Drof Dred1 Dred2)
+		DsplitW
+		_
+		_ 
+	<- eesc1 Dspl1 Dred1 Dsplit1 Dered1 Deqv1
+	<- eesc1 Dspl2 Dred2 Dsplit2 Dered2 Deqv2
+	<- rofsc-tup Drof Dsplit1 Dsplit2 DsplitW Didty (Deqv : eqv (tup U2 V2) W2).
+- : eesc1 
+		(split1-pi1 (Dspl : split1 E C R)) 
+		(red-pi1 (Drof : rof-pi1 V W) (Dred : red E V)) 
+		DsplitW
+		(ered-lett (ered-tup (ered-pi1 DredV1') DredU) Dered)
+		(eqv-trans (eqv-sym Deqv2) (eqv-pi1 Deqv)) 
+	<- eesc1 Dspl Dred (DsplitV : cpvsplit V V1 V2) (Dered : ered C (tup V1 U)) (Deqv : eqv V2 (R U))
+	<- rofsc-pi1 Drof DsplitV (DsplitW : cpvsplit W W1 W2) (Didty : eidty V1 (tup W1 _)) (Deqv2 : eqv (pi1 V2) W2)
+	<- idem Dered (ered-tup DredV1 DredU)
+	<- ered-resp DredV1 Didty DredV1'.
+- : eesc1 
+		(split1-pi2 Dspl) 
+		(red-pi2 Drof Dred) 
+		DsplitW
+		(ered-lett (ered-tup (ered-pi2 DredV1') DredU) Dered)
+		(eqv-trans (eqv-sym Deqv2) (eqv-pi2 Deqv))
+	<- eesc1 Dspl Dred DsplitV Dered Deqv
+	<- rofsc-pi2 Drof DsplitV DsplitW Didty Deqv2
+	<- idem Dered (ered-tup DredV1 DredU)
+	<- ered-resp DredV1 Didty DredV1'.
+- : eesc1 (split1-lam DsplitM) red-lam (cpvsplit-e (vsplit-lam DsplitM)) (ered-tup ered-lam ered-ztup) eqv-refl.
+- : eesc1 
+		(split1-app Dspl1 Dspl2)
+		(red-app Drof Dred1 Dred2)
+		_
+		_
+		_ 
+	<- eesc1 Dspl1 Dred1 Dsplit1 Dered1 Deqv1
+	<- eesc1 Dspl2 Dred2 Dsplit2 Dered2 Deqv2
+	<- rofsc-app Drof Dsplit1 Dsplit2 
+- : eesc1 
+		(split1-next (Dspl : split2 E P R)) 
+		(red-next (Dspc : spc E Q)) 
+		(cpvsplit-l ([x:term] cpvsplit-e vsplit-next))
+		(ered-tup ered-ztup DredP)
+		(eqv-trans (eqv-sym (eqv-letsub eqv-refl)) Deqv)
+	<- eesc2 Dspl Dspc (DredP : ered P U) (Deqv : eqv Q (R U)).
 
 %{
 ztup  : term.
