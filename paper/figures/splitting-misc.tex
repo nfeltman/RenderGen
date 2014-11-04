@@ -15,30 +15,6 @@
 %\end{figure*}
 %
 
-\begin{figure}
-\centering
-$\begin{aligned}
-\text{Expressions}\ \ 
-\expr &::= ()\gbar\inte\gbar\bool\gbar \var
- \gbar \lambda \var. \expr
- \gbar \expr~\expr \\
-&\gbar (\expr, \expr) 
- \gbar \pio~\expr 
- \gbar \pit~\expr
- \gbar \inl~\expr 
- \gbar \inr~\expr \\
-&\gbar (\caseof {\expr}{\var.\expr}{\var.\expr})
- \gbar \ifthen {\expr}{\expr}{\expr} \\
-&\gbar \roll~e
- \gbar \unroll~e
- \gbar \letin{\var}{\expr}{\expr} \\
-\text{Contexts}\ \ 
-\context &::=\emptyC \gbar \context, \var
-\end{aligned} $
-\caption{\langmono~Syntax}
-\label{fig:monoGrammar}
-\end{figure}
-
 \begin{figure*}
 \begin{mathpar}
 \infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
@@ -82,37 +58,3 @@ $\begin{aligned}
 %\end{mathpar}
 %\end{figure*}
 
-
-%The theorem that we want to be true is...
-
-%\begin{center}
-%\begin{tabular}{l}
-%If $\splittwo{e}{A}{p,l.r}$ \\
-%and $\reducetwo{e}{v}$ \\
-%then $\reduce{p}{u}$ \\
-%and $\reduce{[u/l]r}{w}$ \\
-%and $v = w$ 
-%\end{tabular}
-%\end{center}
-
-%\begin{center}
-%\begin{tabular}{l}
-%If $\splitone {e}{A}{c,l.r}$ \\
-%and $\colone {\gamma_1}{\Gamma}$ \\
-%and $\coltwo {\gamma_2}{\Gamma}$\\
-%and $\rsone{\gamma_1(e)}{v}{q}$ \\
-%and $\reducetwo{\gamma_2(q)}{w}$ \\
-%then $\reduce{|\gamma_1|(c)}{\valprod{v}{u}}$ \\
-%and $\reduce{[u/l]|\gamma_2|(r)}{w}$
-%\end{tabular}
-%~~~
-%\begin{tabular}{l}
-%If $\splittwo{e}{B}{p,l.r}$ \\
-%and $\colone {\gamma_1}{\Gamma}$ \\
-%and $\coltwo {\gamma_2}{\Gamma}$\\
-%and $\rstwo{\gamma_1(e)}{q}$ \\
-%and $\reducetwo{\gamma_2(q)}{w}$ \\
-%then $\reduce{|\gamma_1|(p)}{u}$ \\
-%and $\reduce{[u/l]|\gamma_2|(r)}{w}$ 
-%\end{tabular}
-%\end{center}
