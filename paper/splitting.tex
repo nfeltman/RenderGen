@@ -7,23 +7,23 @@ goal of \emph{stage splitting} is to produce from a term in \lang\ a pair of
 terms in an unstaged language \langmono, which respectively perform all the
 stage \bbone\ and stage \bbtwo\ subcomputations of the original term.
 
-Since splitting stage \bbtwo\ terms is easier than splitting stage \bbone\ terms, 
-we begin by describing how to split stage \bbtwo\ terms.
+Since splitting stage \bbtwo\ terms is easier than splitting stage \bbone\
+terms, we begin by describing how to split stage \bbtwo\ terms.
 
 \subsection {Stage \bbtwo\ Splitting}
 
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
 and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
-computations can depend on stage \bbone\ computations, $r$ can depend on $p$ via the variable
-$l$. The correctness of splitting thus requires that $e$ is equivalent to
-$\letin l p r$.
+computations can depend on stage \bbone\ computations, $r$ can depend on $p$ via
+the variable $l$. The correctness of splitting thus requires that $e$ is
+equivalent to $\letin l p r$.
 
 % TODO this contract works because a stage-2 term reduces to a value
 % so we can simply compare (p,l.r) to that value
 
-Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym [p,l.r]$
-(\cref{fig:termSplitTwo}), is guided by the structure of the term $e$. 
+Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym
+[p,l.r]$ (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$.
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
 2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
@@ -42,133 +42,85 @@ precomputations are \texttt{()}, and their resumers return the original term's
 value. Non-staging constructs with $n$ subterms have precomputations which are
 $n$-tuples of their subterms' precomputations, and resumers which pass each
 component to the resumer of the respective subterm. (This behavior at
-\texttt{case} and functions causes precomputations to be lifted out from 
-underneath stage \bbtwo\ binders.) The $\prev$ and $\pause$ rules depends
-on splitting stage \bbone\ terms, which is covered later.
+\texttt{case} and functions causes precomputations to be lifted out from
+underneath stage \bbtwo\ binders.) The $\prev$ and $\pause$ rules depends on
+splitting stage \bbone\ terms, which is covered later.
 
 \subsection{Stage \bbone\ Splitting}
 
-\TODO
-The contract for splitting stage \bbone\ terms is more complex, because stage \bbone\ 
-terms reduce to a pair of a future context and a partial value, not simply to a value.
+Splitting a stage \bbone\ term $\colone e A$ produces a term and a function,
+which respectively contain all the stage \bbone\ and stage \bbtwo\
+subcomputations of $e$. The situation is more complex than when splitting stage
+\bbtwo\ terms; to see why, consider the correctness criterion for splitting
+stage \bbone\ terms.
 
-
-
-
-%while maintaining the term's original structure. 
-
-Stage \bbtwo\ values can contain no stage \bbone\ subcomputations, but the
-reverse is not true of partial values (at stage \bbone). These \emph{can}
-contain stage \bbtwo\ computations, both inside $\next$ blocks, which must
-contain a variable reference to some future context, and inside lambdas, which
-may contain a $\next$ in their body.
-
-Thus, to split partial values, we must separate the contents of $\next$ blocks
-from the rest of the term. This is implemented by the judgment $v \vsplito
-[v_1,v_2]$ (\ref{fig:valSplit}). 
-
-No dependence here.
-
-For example, the stage \bbone\ term
+Stage \bbone\ evaluation of $e$, via $e\mathbin{\redonesym}[\xi;v]$,
+yields a table of (stage \bbtwo) residuals $\xi$, and a (stage \bbone) partial
+value $v$. It is tempting to compare the two results of evaluating $e$ to the
+two results of splitting it. To see where this goes wrong, consider the stage
+\bbone\ term
 \begin{lstlisting}
-1`inl(3, next{`2`yhat`1`})`
+1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
 \end{lstlisting}
-splits into
-\verb|inl(3,())| and \texttt{((),$\mathtt{\hat{y}}$)}.
-
-sum types
-
-
-
-
-In general,
-at product and recursive types, splitting acts
-recursively, gathering all subterms' stage $w$ content into $v_w$. At base
-types, splitting assigns $v$ entirely to stage \bbone\ (and \texttt{()} to stage
-\bbtwo); conversely, at $\fut$ types, splitting assigns $v$ (which must have the
-form $\next~\hat y$) entirely to stage \bbtwo\ (and \texttt{()} to stage
-\bbone).
-
-This process of exposing only the relevant structure of a term at each stage is
-called \emph{masking}.
-
-Splitting a function is more complex, because function bodies are open terms,
-and so are split by the judgments described in the next subsection. Essentially,
-functions will split into two functions, whose bodies correspond to the stage
-\bbone\ and stage \bbtwo\ components of the original function body.
-Because that body may contain a precomputation, the generated function signatures must properly emit and resume with that precomputation.
-
-%As described above, splitting a stage \bbtwo\ value always produces a trivial
-%precomputation---either \texttt{()}, or nested tuples thereof. 
-
-%Thus, it is meaningful to define some notion of splitting for them.  This is
-%useful to study, because the definition will later be used as a contract with
-%which general stage \bbone\ term splitting must comply.
-
-%Recall that a partial value is externally a stage \bbone\ thing; it has a type
-%$@~\bbone$, and along with a future context, it is the result of reducing a
-%stage \bbone\ term. But internally, a partial value might contain stage \bbtwo\
-%subexpressions.
-
-\subsection{Stage \bbone\ Splitting}
-
-\crem{value splitting figure is missing injections}
-
-\TODO
-\begin{enumerate}
-\item Examples
-\item Lifting (and masking)
-\item Correctness? (Does this require partial value splitting?)
-\end{enumerate}
-
-\begin{theorem}[Correctness of splitting at $\bbone$]
-If $\vdash e:A~@~\bbone$, then (by splitting)
-\begin{itemize}
-\item $\vdash e : A \splitonesym [c,l.r]$
-\item $\reduce {c} {(v_1,u)}$
-\item $\reduce {(\letin{l}{u}{r})} v_S$
-\end{itemize}
-if and only if (by the staged dynamic semantics)
-\begin{itemize}
-\item $\diaone [] e {\xi;v}$
-\item $\dom \xi \vdash v \vsplito [v_1,v_2]$
-\item $\reify \xi{v_2}q$
-\item $q \mathbin{\tworedsym} v_D$
-\end{itemize}
-and if so, then $v_D \sim v_S$.
-\end{theorem}
-
-Lifting and masking are two necessary ingredients for ensuring that splitting
-observes the stages of \lang. When splitting a partial value, the stage \bbone\
-result must \emph{mask} the stage \bbtwo\ computations in order to be
-single-staged. When splitting a stage \bbtwo\ term, the precomputation must
-\emph{lift} out all embedded stage \bbone\ computations, so they can be
-performed first, even though their results are only used in stage \bbtwo.
-%and it's accessible to whatever surrounding piece of code refers to the value being split.
-%is not accessible externally.
-
-Splitting a stage \bbone\ term, in contrast, requires both masking and lifting.
-Consider the term 
+which evaluates to
 \begin{lstlisting}
-1`(next{`2`hold{`1` 1+2 `2`} < 5`1`},3*4)`
+2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-Masking yields the stage \bbone\ computation \verb|((),3*4)|, while lifting
-yields the (stage \bbone) precomputation \verb|(1+2)|. While both computations
-must occur at stage \bbone, the former is needed by stage \bbone, while the
-latter is needed by stage \bbtwo.
+This partial value contains a $\next$, and so is itself multistaged:
+intuitively, its stage \bbone\ part is \texttt{3}, while its stage \bbtwo\ part
+is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5}.
 
-The precomputation for this term is a \emph{combined result} which is
-the pair of these components: \verb|(((),3*4),1+2)|. The resumer is
-likewise the pair of the stage \bbtwo\ results of lifting and masking:
-\verb|fn L => (L<5,())|.
-%\footnote{In this example, the combined result is a 2-tuple, but more generally
-%it only must be a term which reduces to a 2-tuple.}
+We formalize this notion via two \emph{masking} functions (\ref{fig:valSplit}),
+$\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
+a partial value at each stage, essentially by replacing all stage \bbone\
+(resp., \bbtwo) components of a partial value by \texttt{()}. The first result
+of splitting must then compute the \bbone-mask of the partial value, and the
+second result the \bbtwo-mask.
 
-Splitting is implemented by the judgment $\splitonesym$,
-the rules for which are given in \cref{fig:termSplitOne}.  
-It operates inductively on the structure of the term.  
-The $\splitonesym$ judgment sends a stage \bbone\ term $e$ to a combined term
-$c$ and resumer $l.r$. 
+There is one final subtlety to splitting stage \bbone\ terms. In the example
+above, there are \emph{two} flavors of stage \bbone\ subcomputations:
+\texttt{1+2}, which is needed to compute the \bbone-mask, and \texttt{3+4},
+a precomputation which is used by the computation of the \bbtwo-mask. 
+
+Formally, splitting a stage \bbone\ term, as implemented by the judgment $e
+\splitonesym [c,l.r]$ (\ref{fig:termSplitOne}), yields a \emph{combined result}
+$c$ which computes a pair of the stage \bbone\ result and the precomputation,
+and a \emph{resumer} function $l.r$. The correctness of splitting requires that,
+for $e\mathbin{\redonesym}[\xi;v]$, we have that $\pio~c$ agrees with
+$\masko{v}$, and $\letin l{\pit~c}r$ agrees with $\maskt{\xi;v}$.
+
+The example splits into a combined result $c=$ \texttt{((1+2,()), 3+4)}, and a
+resumer $l.r=$ \texttt{L => ((),L+5)}. Then $\pio~c$ reduces to \texttt{(3,())},
+which agrees with the stage \bbone\ mask, and $\letin l{\pit~c}r$ reduces to
+\texttt{((),12)}, which agrees with the stage \bbtwo\ mask.
+
+\paragraph{Stage \bbone\ masking}
+
+The purpose of masking is to expose only the relevant structure of a partial
+value $v$ at each stage. For the most part, stage \bbone\ masking, $\masko{v}$,
+simply replaces all $\next$s in $v$ with \texttt{()}. The only exception is for
+functions $\lam xAe$; such a value represents a computation, so masking splits
+its body as a computation, $e\splitonesym [c,l.r]$, and replaces it with its
+stage \bbone\ component, the combined result.
+
+\paragraph{Stage \bbtwo\ masking}
+
+Stage \bbtwo\ masking, unlike stage \bbone\ masking, requires access to the
+future context $\xi$, because the stage \bbtwo\ parts of $v$ contain variables
+in $\xi$. To compute $\maskt{\xi;v}$, we rewrite $v$ to expose only the relevant
+structure, and then reify the resulting term in the context $\xi$. This
+rewriting process replaces base type constants in $v$ with \texttt{()}, and
+$\next~\hat{y}$ with $\hat{y}$. Injection tags are eliminated, because the sum
+type is at stage \bbone, so the tag is not relevant at stage \bbtwo. For
+functions $\lam xAe$, masking again splits its body $e\splitonesym [c,l.r]$,
+replaces it with the resumer, and uncurries, to yield $\lambda (x,l).r$.
+
+\paragraph{Splitting}
+
+Splitting stage \bbone\ terms, as implemented by the judgment $e\splitonesym
+[c,l.r]$, is also guided by the structure of the term $e$.
+
+\TODO polish the following explanation
 
 The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,
 while the rule for $\prev$ projects the combined result of its subexpression to isolate the precomputation.
@@ -185,6 +137,12 @@ no need to speculate. Instead, we evaluate the stage \bbone\ portion of the
 taken branch only, and inject the precomputation into a sum type. In the
 resumer, we case on that injection, and resume the stage \bbtwo\ portion of the
 correct branch.
+
+\crem{split value splitting into two judgments, and call it masking}
+
+\crem{masking figure is missing injections}
+
+\crem{rename future context to residual table}
 
 \input{figures/splitting-term}
 

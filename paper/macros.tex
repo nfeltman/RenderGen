@@ -1,6 +1,5 @@
 \newcommand {\TODO} {\textbf{TODO:} }
 
-\usepackage{color}
 \definecolor{needsfixcolor}{rgb}{0.8,0.0,0.0}
 \newcommand{\needsfix}[1]{{\color{needsfixcolor}\textbf{#1}}}
 
@@ -58,6 +57,7 @@
 \newcommand {\gbar} {~~|~~}
 
 % nodes
+\newcommand {\yhat} {\ensuremath{\mathtt{\hat y}}}
 \newcommand {\pause} {{\tt hold}}
 \renewcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
@@ -122,8 +122,11 @@
 \newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1};v_{#1}}}
 \newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
+\newcommand {\masko} [1] {|#1|_{\bbone}}
+\newcommand {\maskt} [1] {|#1|_{\bbtwo}}
+
 \newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
-\newcommand {\vsplits} {\overset{\bbtwo}\curvearrowbotright}
+\newcommand {\vsplitt} {\overset{\bbtwo}\curvearrowbotright}
 \newcommand {\tsplito} {\overset{\bbone}\curvearrowright}
 \newcommand {\tsplits} {\overset{\bbtwo}\curvearrowright}
 \newcommand {\csplit} {\curvearrowright}
