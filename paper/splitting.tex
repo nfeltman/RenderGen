@@ -7,18 +7,22 @@ goal of \emph{stage splitting} is to produce from a term in \lang\ a pair of
 terms in an unstaged language \langmono, which respectively perform all the
 stage \bbone\ and stage \bbtwo\ subcomputations of the original term.
 
-We begin by describing how to split stage \bbtwo\ terms.
+Since splitting stage \bbtwo\ terms is easier than splitting stage \bbone\ terms, 
+we begin by describing how to split stage \bbtwo\ terms.
 
 \subsection {Stage \bbtwo\ Splitting}
 
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
 and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
-computations can depend on stage \bbone, $r$ can depend on $p$ via the variable
+computations can depend on stage \bbone\ computations, $r$ can depend on $p$ via the variable
 $l$. The correctness of splitting thus requires that $e$ is equivalent to
-$\letin l p r$. 
+$\letin l p r$.
 
-Splitting, as implemented by the judgment $e \splittwosym [p,l.r]$
+% TODO this contract works because a stage-2 term reduces to a value
+% so we can simply compare (p,l.r) to that value
+
+Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym [p,l.r]$
 (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$. 
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
@@ -38,11 +42,18 @@ precomputations are \texttt{()}, and their resumers return the original term's
 value. Non-staging constructs with $n$ subterms have precomputations which are
 $n$-tuples of their subterms' precomputations, and resumers which pass each
 component to the resumer of the respective subterm. (This behavior at
-\texttt{case} and functions gives rise to speculative execution of
-precomputations from underneath binders.) The $\prev$ and $\pause$ rules depends
+\texttt{case} and functions causes precomputations to be lifted out from 
+underneath stage \bbtwo\ binders.) The $\prev$ and $\pause$ rules depends
 on splitting stage \bbone\ terms, which is covered later.
 
-\subsection{Partial Value Splitting}
+\subsection{Stage \bbone\ Splitting}
+
+\TODO
+The contract for splitting stage \bbone\ terms is more complex, because stage \bbone\ 
+terms reduce to a pair of a future context and a partial value, not simply to a value.
+
+
+
 
 %while maintaining the term's original structure. 
 
