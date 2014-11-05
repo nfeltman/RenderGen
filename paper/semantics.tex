@@ -108,7 +108,7 @@ substitute it for the three occurrences of \verb|x| in the body of the
 \end{lstlisting}
 The outermost $\next$ here is not yet a value, because there remains stage~\bbone\ work to do in its body.
 So to proceed, the semantics must first search the body of the $\next$ for stage~\bbone\ subterms and reduce them in place.
-This search process is called {\em speculation}.
+This search process is called {\em specialization}.
 In our example this means reducing all three projections to give,
 \begin{lstlisting} 
 2`prev{`1`
@@ -155,14 +155,14 @@ $\mathtt{\hat y}$ rather than the expression \verb|f 20|.
   `1`}`2`
 }`
 \end{lstlisting}
-We then speculate to reduce the projections and cancel the $\next$s and $\prev$s, giving:
+We then specialize to reduce the projections and cancel the $\next$s and $\prev$s, giving:
 \begin{lstlisting} 
 2`prev {
 [yhat|->f 20]
     `1`next{`2`yhat * yhat * 7`1`}
 `2`}`
 \end{lstlisting}
-Once again, we lift the results of speculation into a substitution:
+Once again, we lift the results of specialization into a substitution:
 \begin{lstlisting} 
 2`prev {
 [yhat|->f 20]
@@ -180,29 +180,29 @@ This concludes stage \bbone\ evaluation of the program---we have reduced all
 stage \bbone\ redexes, resulting in a monostaged term in \langTwo. Stage \bbtwo\
 evaluation, $\tworedsym$, then reduces this to a numeral.
 
-\subsubsection{Evaluation and Speculation}
+\subsubsection{Evaluation and Specialization}
 \label{ssec:dynamics}
 
 \input{figures/dynamics}
 
 The dynamics for \lang\ implements the stage \bbone\ evaluation algorithm
 described above using three judgments: $\redonesym$ (evaluation), $\redtwosym$
-(speculation), and the auxiliary $\reifysym$ (reification). 
+(specialization), and the auxiliary $\reifysym$ (reification). 
 Along with these are three judgments identifying forms of values:
 $\pvalsym$ (partial values), $\ressym$ (residuals), 
-and the auxiliary $\fcon$ (future context).
+and the auxiliary $\fcon$ (residual table).
 These judgments are related as follows:
 \begin{itemize}
 \item Evaluation sends a stage~\bbone\ term to a partial value.
 In order to avoid duplicating subterms, evaluation collects explicit
-substitutions into a single {\em future context} that is also the output of
+substitutions into a single {\em residual table} that is also the output of
 evaluation.
-\item Speculation sends a stage~\bbtwo\ term to a residual.
-\item Reification sends a residual and a future context to another residual.  
-\item Evaluation depends on speculation for $\next$ terms, which have
+\item Specialization sends a stage~\bbtwo\ term to a residual.
+\item Reification sends a single residual and a residual table to another residual.  
+\item Evaluation depends on specialization for $\next$ terms, which have
 stage~\bbtwo\ subterms.
-\item Speculation depends on evaluation for $\prev$ and $\pause$, which have
-stage~\bbone\ subterms. The future context produced by evaluation is also
+\item Specialization depends on evaluation for $\prev$ and $\pause$, which have
+stage~\bbone\ subterms. The residual table produced by evaluation is also
 reified here.
 \end{itemize}
 
@@ -231,30 +231,30 @@ The $\redonesym$ judgment, defined in \ref{fig:diaSemantics}, takes an stage
 the type system ensures that those must occur under a $\next$. Consequently
 $\redonesym$ will never directly encounter a variable.}
 %
-to a {\em future environment} $\xi$ and a partial value $v$. The future
-environment implements the explicit substitutions in our example---it maps fresh
+to a {\em residual table} $\xi$ and a partial value $v$. The residual
+table implements the explicit substitutions in our example---it maps fresh
 stage \bbtwo\ variables (which may appear inside $\next$ blocks in $v$) to
 residuals. For non-staging features of \lang, $\redonesym$ is essentially
-standard call-by-value evaluation, and gathers the subterms' future environments
+standard call-by-value evaluation, and gathers the subterms' residual tables
 into a single one.
 
 \crem{Can we cut \ref{fig:diaSemanticsSpec} from the paper? Perhaps just put a
 few representative rules into \ref{fig:diaSemantics}?}
 
-At $\next~e$, in contrast, $\redonesym$ speculates into $e$ for stage~\bbone\ 
+At $\next~e$, in contrast, $\redonesym$ specializes into $e$ for stage~\bbone\ 
 subexpressions to evaluate.  This is implemented by the $\redtwosym$ judgment,
 which takes a stage \bbtwo\ term to a residual. 
-For the most part (\ref{fig:diaSemanticsSpec}), speculation simply recurs into
+For the most part (\ref{fig:diaSemanticsSpec}), specialization simply recurs into
 all subexpressions; at $\prev$, however, it resumes $\redonesym$ evaluation,
-which produces a future context $\xi$ and (by canonical forms) an expression
+which produces a residual table $\xi$ and (by canonical forms) an expression
 $\next\{\hat y\}$. $\xi$ is then reified using $\reifysym$ into a series of let
 bindings enclosing $\mathtt{\hat y}$.
-Once speculation reduces $e$ to a residual $q$, the output of $\redonesym$ is a
-fresh variable wrapped in a $\next$ block ($\next~\hat y$), along with a future
-environment which maps that variable to the residual ($\hat y \mapsto q$).
+Once specialization reduces $e$ to a residual $q$, the output of $\redonesym$ is a
+fresh variable wrapped in a $\next$ block ($\next~\hat y$), along with a residual
+table which maps that variable to the residual ($\hat y \mapsto q$).
 
-Within speculation lies a subtle---if perhaps unintuitive---feature.  
-Observe that speculation will traverse into both branches of a stage-\bbtwo\ {\tt if} or {\tt case} 
+Within specialization lies a subtle---if perhaps unintuitive---feature.  
+Observe that specialization will traverse into both branches of a stage-\bbtwo\ {\tt if} or {\tt case} 
 statement in its search for stage~\bbone\ code. 
 Thus the evaluation of that stage~\bbone\ code will occur {\em regardless of the eventual value of the predicate},
 and so a term like 
@@ -266,8 +266,7 @@ and so a term like
 }`
 \end{lstlisting}
 will fail to evaluate at stage \bbone.
-This behavior is why the judgment is named ``speculation."
-Although it may seem undesirable, this speculative behavior is a deliberate feature.
+Although it may seem undesirable, this behavior is a deliberate feature.
 Indeed it is critical to the quickselect example, 
 wherein all three branches of the $n$-$k$ comparison are evaluated at stage~\bbone.
 As always, it is the programmer's responsibility to ensure that her staging annotations 

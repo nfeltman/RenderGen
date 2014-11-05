@@ -16,23 +16,29 @@
 %
 
 \begin{figure*}
-\begin{mathpar}
-\infer [\rmunit\vsplito]		{() \vsplito [(), ()]}{\cdot} \and
-\infer [\mathrm{int}\vsplito]	{i \vsplito [i,()]}{\cdot} \and
-\infer [\mathrm{bool}\vsplito]	{b \vsplito [b,()]}{\cdot} \and
-\infer [\times\vsplito]	
-	{\valprod{v_1}{v_2} \vsplito [\valprod{u_1}{u_2}, \valprod{w_1}{w_2}]}
-	{v_1 \vsplito [u_1,w_1] & v_2 \vsplito [u_2,w_2]} \and
-\infer [\mu\vsplito]	{\roll~v \vsplito [\roll~u, \roll~w]} {v \vsplito [u,w]} \and
-\infer [\fut\vsplito]
-	{\next~\hat y \vsplito [(),\hat y]}
-	{\cdot} \and
-\infer [\to\vsplito]
-	{\lam x A e \vsplito [\lambda x.c, \lambda (x,l).r]}
-	{\splitone [x:A] e B {c,l.r}} 
-\end{mathpar}
-\caption{Value Splitting}
-\label{fig:valSplit}
+\begin{align*}
+\masko {()}			=& () \\
+\masko {i}				=& i \\
+\masko {\next~\hat y}	=& () \\
+\masko {(v_1,v_2)}	=& (\masko {v_1},\masko {v_2}) \\
+\masko {\inl~v}		=& \inl~\masko v \\
+\masko {\inr~v}		=& \inr~\masko v \\
+\masko {\roll~v}		=& \roll~\masko v \\
+\masko {\lam xAe}		=& \lambda x.c \text{ where } \splitone e A {c,l.r}
+\end{align*}
+
+\begin{align*}
+\maskt {()}			=& () \\
+\maskt {i}				=& () \\
+\masko {\next~\hat y}	=& \hat y \\
+\maskt {(v_1,v_2)}	=& (\maskt {v_1},\maskt {v_2}) \\
+\maskt {\inl~v}		=& \maskt v \\
+\maskt {\inr~v}		=& \maskt v \\
+\maskt {\roll~v}		=& \maskt v \\
+\maskt {\lam xAe}		=& \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
+\end{align*}
+\caption{Partial Value Masking}
+\label{fig:valMask}
 \end{figure*}
 
 %\begin{figure*}

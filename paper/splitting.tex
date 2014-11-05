@@ -12,9 +12,6 @@ terms, we begin by describing how to split stage \bbtwo\ terms.
 
 \subsection {Stage \bbtwo\ Splitting}
 
-\ur{Why is there a free variable ``Gamma'' in the figure for splitting
-  stage 2?}
-
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
 and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
@@ -105,16 +102,12 @@ is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5}.
 \ur{The following paragraph makes no sense to me, especially because
   it does not match Figure 11.  AS far as I can see Figure 11 does not
 talk about masking but value splitting.}
-We formalize this notion via two \emph{masking} functions (\ref{fig:valSplit}),
+We formalize this notion via two \emph{masking} functions (\ref{fig:valMask}),
 $\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
 a partial value at each stage, essentially by replacing all stage \bbone\
 (resp., \bbtwo) components of a partial value by \texttt{()}. The first result
 of splitting must then compute the \bbone-mask of the partial value, and the
 second result the \bbtwo-mask. 
-
-
-\ur{The following paragraph makes no sense to me, especially because
-  it does not match Figure 11.}
 
 There is one final subtlety to splitting stage \bbone\ terms. In the example
 above, there are \emph{two} flavors of stage \bbone\ subcomputations:
@@ -147,8 +140,8 @@ stage \bbone\ component, the combined result.
 \paragraph{Stage \bbtwo\ masking}
 
 Stage \bbtwo\ masking, unlike stage \bbone\ masking, requires access to the
-future context $\xi$, because the stage \bbtwo\ parts of $v$ contain variables
-in $\xi$. To compute $\maskt{\xi;v}$, we rewrite $v$ to expose only the relevant
+residual table $\xi$, because the stage \bbtwo\ parts of $v$ contain references
+to $\xi$. To compute $\maskt{\xi;v}$, we rewrite $v$ to expose only the relevant
 structure, and then reify the resulting term in the context $\xi$. This
 rewriting process replaces base type constants in $v$ with \texttt{()}, and
 $\next~\hat{y}$ with $\hat{y}$. Injection tags are eliminated, because the sum
@@ -174,16 +167,10 @@ but we have to include it here for termination purposes.}
 
 In the splitting rules for stage \bbone\ {\tt case} expressions, we
 have enough information at stage \bbone\ to know what branch to take, so there's
-no need to speculate. Instead, we evaluate the stage \bbone\ portion of the
+no need to evaluate both sides. Instead, we evaluate the stage \bbone\ portion of the
 taken branch only, and inject the precomputation into a sum type. In the
 resumer, we case on that injection, and resume the stage \bbtwo\ portion of the
 correct branch.
-
-\crem{split value splitting into two judgments, and call it masking}
-
-\crem{masking figure is missing injections}
-
-\crem{rename future context to residual table}
 
 \input{figures/splitting-term}
 

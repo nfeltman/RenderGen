@@ -17,7 +17,7 @@
 \begin{mathpar}
 \inferdiaone [\rmunit]   	{\red {()}{\cdot;()}}												{\cdot} 																					\and
 \inferdiaone [int]			{\red {i}{\cdot;i}}												{\cdot} 																					\and
-\inferdiaone [bool]   		{\red {b}{\cdot;b}}												{\cdot} 																					\and
+%\inferdiaone [bool]   		{\red {b}{\cdot;b}}												{\cdot} 																					\and
 \inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}					{\cdot} 																					\and
 \inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}							{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
 %
@@ -55,7 +55,7 @@
 \begin{mathpar}
 \inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
 \inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
-\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
+%\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
 \inferdiaspc [hyp]			{\red {x}{x}}													{x \in \Gamma}								\and
 \inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Gamma,x] e q} 				\and
 \inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
@@ -72,6 +72,6 @@
 \inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
 \inferdiaspc [\mu E]   		{\red {\unroll~e}{v}}											{\red {e}{\roll~v}}						\and
 \end{mathpar}
-\caption{\lang~Dynamic Semantics: Speculation}
+\caption{\lang~Dynamic Semantics: Specialization}
 \label{fig:diaSemanticsSpec}
 \end{figure*}
