@@ -14,9 +14,9 @@ terms, we begin by describing how to split stage \bbtwo\ terms.
 
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
-and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
-computations can depend on its stage \bbone\ computations within $e$, 
-$r$ must depend on $p$, which splitting accomplishes via the variable $l$. 
+and \bbtwo\ subcomputations of $e$, respectively. As stage \bbtwo\
+computations within $e$ can depend on its stage \bbone\ computations, 
+$r$ must depend on the results of $p$, which splitting accomplishes via the variable $l$. 
 Given this form, the goal for splitting is to ensure that evaluating
 $\letin l p r$ agrees with the value to which $e$ itself evaluates. 
 
@@ -26,17 +26,8 @@ $\letin l p r$ agrees with the value to which $e$ itself evaluates.
    that shoves everything to r, e.g., p = () and r is ``e''
   (might need to flatten).}
 
-
-
 Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym
 [p,l.r]$ (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$.
-
-\ur{At this point, I would have expected a brief discussion of the
-  easy cases, like the paragraph that starts with ``In general'' below
-  does. You can move that paragraph here and edit to play this role.
-  You can then move onto the example below after stating that more
-  interesting things happen with prev and hold.}
-
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
 2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
@@ -55,11 +46,8 @@ The resumer is a function which computes the stage \bbtwo\ value of the original
 term by mapping the results of the precomputation in place of the $\pause$s:
 \verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
 
-\ur{The above example should refer to Figure 11 (not Figure 10).  But
-  this is not mentioned.}
+\nr{Synopsis of Umut's comments: consider moving some of the easier rules descriptions earlier.}
 
-\ur{This paragraph should come first, followed by a paragraph that
-  talks about Figure 11.}
 In general, constants and variables have no stage \bbone\ content, so their
 precomputations are \texttt{()}, and their resumers return the original term's
 value. Non-staging constructs with $n$ subterms have precomputations which are
@@ -67,7 +55,7 @@ $n$-tuples of their subterms' precomputations, and resumers which pass each
 component to the resumer of the respective subterm. (This behavior at
 \texttt{case} and functions causes precomputations to be lifted out from
 underneath stage \bbtwo\ binders.) The $\prev$ and $\pause$ rules depends on
-splitting stage \bbone\ terms, which is covered later.
+splitting stage \bbone\ terms, and so they are covered later.
 
 \subsection{Stage \bbone\ Splitting}
 

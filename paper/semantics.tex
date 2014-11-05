@@ -138,7 +138,7 @@ containing $\prev$ block:
 2`prev {
 [yhat|->f 20]
   `1`let x = (next{`2`yhat`1`}, 7) in
-  next{`2`prev{`1`#1 x`2`} * prev{`1`#1 x`2`} * hold{`1`#2 x`2`}`1`}
+  next{`2`prev{`1`#1 x`2`} * prev{`1`#1 x`2`} * hold{`1`#2 x`2`}`1`}`2`
 }`
 \end{lstlisting}
 %As a convention, we render the new variable with a %stylish and fashionable
@@ -165,8 +165,8 @@ We then specialize to reduce the projections and cancel the $\next$s and $\prev$
 Once again, we lift the results of specialization into a substitution:
 \begin{lstlisting} 
 2`prev {
-[yhat|->f 20]
-[zhat|->yhat * yhat * 7]
+[yhat|->f 20,
+ zhat|->yhat * yhat * 7]
     `1`next{`2`zhat`1`}`2`
 }`
 \end{lstlisting}
