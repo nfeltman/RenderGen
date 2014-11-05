@@ -15,14 +15,12 @@ terms, we begin by describing how to split stage \bbtwo\ terms.
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
 and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
-computations can depend on stage \bbone\ computations, $r$ can depend on $p$ via
-the variable $l$. The correctness of splitting thus requires that evaluating
+computations can depend on its stage \bbone\ computations within $e$, 
+$r$ must depend on $p$, which splitting accomplishes via the variable $l$. 
+Given this form, the goal for splitting is to ensure that evaluating
 $\letin l p r$ agrees with the value to which $e$ itself evaluates. 
 
-\ur{I would not say that ``The correctness of splitting requires'',
-  because we don't know what splitting is.  Instead, it is better to
-  state this actively, e.g., say that we wish to split the code such
-  that the condition e = let l = p in r holds.  correctness will have
+\ur{Correctness will have
   to go beyond this, by saying for example that all stage 1 parts are
   in p etc.  Note that this correctness allows a trivial split
    that shoves everything to r, e.g., p = () and r is ``e''
