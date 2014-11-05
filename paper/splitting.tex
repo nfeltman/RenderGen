@@ -12,28 +12,59 @@ terms, we begin by describing how to split stage \bbtwo\ terms.
 
 \subsection {Stage \bbtwo\ Splitting}
 
+\ur{Why is there a free variable ``Gamma'' in the figure for splitting
+  stage 2?}
+
 Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
 term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
 and \bbtwo\ subcomputations of $e$, respectively. Since stage \bbtwo\
 computations can depend on stage \bbone\ computations, $r$ can depend on $p$ via
 the variable $l$. The correctness of splitting thus requires that evaluating
-$\letin l p r$ agrees with the value to which $e$ itself evaluates.
+$\letin l p r$ agrees with the value to which $e$ itself evaluates. 
+
+\ur{I would not say that ``The correctness of splitting requires'',
+  because we don't know what splitting is.  Instead, it is better to
+  state this actively, e.g., say that we wish to split the code such
+  that the condition e = let l = p in r holds.  correctness will have
+  to go beyond this, by saying for example that all stage 1 parts are
+  in p etc.  Note that this correctness allows a trivial split
+   that shoves everything to r, e.g., p = () and r is ``e''
+  (might need to flatten).}
+
+
 
 Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym
 [p,l.r]$ (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$.
+
+\ur{At this point, I would have expected a brief discussion of the
+  easy cases, like the paragraph that starts with ``In general'' below
+  does. You can move that paragraph here and edit to play this role.
+  You can then move onto the example below after stating that more
+  interesting things happen with prev and hold.}
+
 For example, the stage \bbtwo\ term
 \begin{lstlisting}
 2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
 \end{lstlisting}
 has two subterms, the latter of which itself has two subterms. Two are $\pause$s
 containing stage \bbone\ computations, while the third has no stage \bbone\
-content. The precomputation \emph{lifts} these computations in the same tree
+content. 
+
+\ur{The discussion of the subterms is not helpful. what is the point?}
+
+The precomputation \emph{lifts} these computations in the same tree
 structure: \verb|(1+2,(3+4,()))|.%
+\ur{Not clear what a ``tree structure'' is. }
 \footnote{In later examples, we will optimize out unnecessary \texttt{()}s.}
 The resumer is a function which computes the stage \bbtwo\ value of the original
 term by mapping the results of the precomputation in place of the $\pause$s:
 \verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
 
+\ur{The above example should refer to Figure 11 (not Figure 10).  But
+  this is not mentioned.}
+
+\ur{This paragraph should come first, followed by a paragraph that
+  talks about Figure 11.}
 In general, constants and variables have no stage \bbone\ content, so their
 precomputations are \texttt{()}, and their resumers return the original term's
 value. Non-staging constructs with $n$ subterms have precomputations which are
@@ -67,17 +98,30 @@ This partial value contains a $\next$, and so is itself multistaged:
 intuitively, its stage \bbone\ part is \texttt{3}, while its stage \bbtwo\ part
 is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5}.
 
+\ur{So what goes wrong?  I have no idea what you are talking about at
+  this point.  The thought seems unfinished.}
+
+
+\ur{The following paragraph makes no sense to me, especially because
+  it does not match Figure 11.  AS far as I can see Figure 11 does not
+talk about masking but value splitting.}
 We formalize this notion via two \emph{masking} functions (\ref{fig:valSplit}),
 $\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
 a partial value at each stage, essentially by replacing all stage \bbone\
 (resp., \bbtwo) components of a partial value by \texttt{()}. The first result
 of splitting must then compute the \bbone-mask of the partial value, and the
-second result the \bbtwo-mask.
+second result the \bbtwo-mask. 
+
+
+\ur{The following paragraph makes no sense to me, especially because
+  it does not match Figure 11.}
 
 There is one final subtlety to splitting stage \bbone\ terms. In the example
 above, there are \emph{two} flavors of stage \bbone\ subcomputations:
 \texttt{1+2}, which is needed to compute the \bbone-mask, and \texttt{3+4},
 a precomputation which is used by the computation of the \bbtwo-mask. 
+
+\ur{This paragraph is unintellegible to me.  What is the point?}
 
 Formally, splitting a stage \bbone\ term, as implemented by the judgment $e
 \splitonesym [c,l.r]$ (\ref{fig:termSplitOne}), yields a \emph{combined result}
