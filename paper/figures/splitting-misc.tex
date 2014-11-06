@@ -16,27 +16,32 @@
 %
 
 \begin{figure*}
+\centering
+\begin{minipage}[]{10em}
 \begin{align*}
-\masko {()}			=& () \\
-\masko {i}				=& i \\
-\masko {\next~\hat y}	=& () \\
-\masko {(v_1,v_2)}	=& (\masko {v_1},\masko {v_2}) \\
-\masko {\inl~v}		=& \inl~\masko v \\
-\masko {\inr~v}		=& \inr~\masko v \\
-\masko {\roll~v}		=& \roll~\masko v \\
-\masko {\lam xAe}		=& \lambda x.c \text{ where } \splitone e A {c,l.r}
+\masko {()}			&= () \\
+\masko {i}				&= i \\
+\masko {\next~\hat y}	&= () \\
+\masko {(v_1,v_2)}	&= (\masko {v_1},\masko {v_2}) \\
+\masko {\inl~v}		&= \inl~\masko v \\
+\masko {\inr~v}		&= \inr~\masko v \\
+\masko {\roll~v}		&= \roll~\masko v \\
+\masko {\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
 \end{align*}
-
+\end{minipage}
+\qquad\qquad
+\begin{minipage}[]{10em}
 \begin{align*}
-\maskt {()}			=& () \\
-\maskt {i}				=& () \\
-\masko {\next~\hat y}	=& \hat y \\
-\maskt {(v_1,v_2)}	=& (\maskt {v_1},\maskt {v_2}) \\
-\maskt {\inl~v}		=& \maskt v \\
-\maskt {\inr~v}		=& \maskt v \\
-\maskt {\roll~v}		=& \maskt v \\
-\maskt {\lam xAe}		=& \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
+\maskt {()}			&= () \\
+\maskt {i}				&= () \\
+\maskt {\next~\hat y}	&= \hat y \\
+\maskt {(v_1,v_2)}	&= (\maskt {v_1},\maskt {v_2}) \\
+\maskt {\inl~v}		&= \maskt v \\
+\maskt {\inr~v}		&= \maskt v \\
+\maskt {\roll~v}		&= \maskt v \\
+\maskt {\lam xAe}		&= \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
 \end{align*}
+\end{minipage}
 \caption{Partial Value Masking}
 \label{fig:valMask}
 \end{figure*}
