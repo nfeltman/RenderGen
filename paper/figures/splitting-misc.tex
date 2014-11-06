@@ -19,27 +19,29 @@
 \centering
 \begin{minipage}[]{10em}
 \begin{align*}
-\masko {()}			&= () \\
-\masko {i}				&= i \\
-\masko {\next~\hat y}	&= () \\
-\masko {(v_1,v_2)}	&= (\masko {v_1},\masko {v_2}) \\
-\masko {\inl~v}		&= \inl~\masko v \\
-\masko {\inr~v}		&= \inr~\masko v \\
-\masko {\roll~v}		&= \roll~\masko v \\
-\masko {\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
+\masko {\xi;v}				&= \masko{\cdot;v} \\
+\masko {\cdot;()}			&= () \\
+\masko {\cdot;i}			&= i \\
+\masko {\cdot;\next~\hat y}	&= () \\
+\masko {\cdot;(v_1,v_2)}	&= (\masko {\cdot;v_1},\masko {\cdot;v_2}) \\
+\masko {\cdot;\inl~v}		&= \inl~\masko{\cdot;v} \\
+\masko {\cdot;\inr~v}		&= \inr~\masko{\cdot;v} \\
+\masko {\cdot;\roll~v}		&= \roll~\masko{\cdot;v} \\
+\masko {\cdot;\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
 \end{align*}
 \end{minipage}
 \qquad\qquad
 \begin{minipage}[]{10em}
 \begin{align*}
-\maskt {()}			&= () \\
-\maskt {i}				&= () \\
-\maskt {\next~\hat y}	&= \hat y \\
-\maskt {(v_1,v_2)}	&= (\maskt {v_1},\maskt {v_2}) \\
-\maskt {\inl~v}		&= \maskt v \\
-\maskt {\inr~v}		&= \maskt v \\
-\maskt {\roll~v}		&= \maskt v \\
-\maskt {\lam xAe}		&= \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
+\maskt {\yhat \mapsto q,\xi;v}			&= (\letin \yhat q {\maskt{\xi;v}}) \\
+\maskt {\cdot;()}			&= () \\
+\maskt {\cdot;i}			&= () \\
+\maskt {\cdot;\next~\hat y}	&= \hat y \\
+\maskt {\cdot;(v_1,v_2)}	&= (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\
+\maskt {\cdot;\inl~v}		&= \maskt {\cdot;v} \\
+\maskt {\cdot;\inr~v}		&= \maskt {\cdot;v} \\
+\maskt {\cdot;\roll~v}		&= \maskt {\cdot;v} \\
+\maskt {\cdot;\lam xAe}		&= \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
 \end{align*}
 \end{minipage}
 \caption{Partial Value Masking}
