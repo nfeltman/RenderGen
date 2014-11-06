@@ -1,29 +1,97 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-Although terms in \lang\ clearly distinguish their stage~\bbone\ and stage
-\bbtwo\ components, these components may be interleaved in \lang\ code. The
-goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \bbtwo\ subcomputations
-of a term $e$ in \lang\ into a pair of
-terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
-stage~\bbone\ subcomputations in $e$ and $e_2$ performs all of the stage~\bbtwo\ subcomputations.
-Informally, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same result 
-as evaluating $e$ in \lang. (We make this intuition precise in the subsequent subsections.)
+Given a term in the source language \lang\ where terms of
+stage~\bbone\ and stage-\bbtwo\ may be interleaved, \emph{(stage)
+  splitting} separates the stage-\bbone\ and stage-\bbtwo\
+subcomputations into two separate terms, each performing the
+subcomputations corresponding to each stage.  More precisely, given a
+\lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
+unstaged target language \langmono\ such that~$e_1$ performs all the
+stage~\bbone\ subcomputations in~$e$ and $e_2$~performs all of the
+stage~\bbtwo\ subcomputations.
 
-Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
-terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
+\ur{Technically, target language is not lambda but lambda plus pairs.
+  Please use some other symbol than lambda, lambda-p lambda+ or
+  something like that, or simply:} \textsf{\bf \textsc{Mono}}.
 
-\subsection {Splitting Stage \bbtwo\ Terms}
 
-Splitting a stage~\bbtwo\ term $\coltwo e A$ generates
- a \emph{precomputation} $p$, and a \emph{resumer} function $l.r$. Whereas direct evaluation of $e$ in \lang\ reduces the stage \bbone\ subcomputations
-of $e$ in place to create a residual, splitting statically isolates these computations into
-$p$.  The resumer accepts the value produced by the precomputation as input
-% (bound to the free variable $l$)
-and executes all stage~\bbtwo\ subcomputations.   
-Specifically, if $e$ in \lang\ reduces to the final value $v$, 
-then after splitting the term $\letin l p r$ should reduce to the same value in \langmono.
-(Thus, the resumer, bound to the value output by $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
+Splitting preserves correctness in the sense that evaluation of~$e$ in
+the staged language produces the same result as evaluating~$e_1$ and
+then~$e_2$ with the result from~$e_1$.  In this section, we present a
+splitting algorithm for the source language \lang\, specifying
+precisely the algorithm and the correctness condition.  We start by
+defining a masking relation that helps us to isolate stage-1 and
+stage-2 components of a partial value and then move on to the
+specification of the splitting algorithms.
+
+\subsection{Partial Value Masking}
+
+{\em Partial-value masking} or simply {\em masking} are a functions
+for each stage that project from the domain of a partial value and
+residual table to the a term in the target language \langmono.
+
+\ur{I am attempting to define this even though it is not clear from
+  the text what it is.  The definition should specify precisely the
+  domain and the range of the functions.  Does the domain include the
+  table?  The figure does not.  }
+
+
+\ref{fig:valMask} defines the functions, $\masko{\cdot}$ and
+$\maskt{\cdot}$. Since \texttt{next}'s only contain references to the
+residual table (computations that occur in stage~\bbtwo),
+$\masko{\xi;v}$ is to replaces all~$\next$s in~$v$ with~\texttt{()}.
+The result is a \langmono\ value with the same structure as~$v$, but
+containing only its stage~\bbone\ information. Masking is more complex
+when~$v$ is a function since the function's body itself may contain
+stage~\bbtwo\ subterms.  As a result, masking of functions depends on
+the general behavior of stage~\bbone\ splitting, described shortly.
+
+While $\masko{\cdot}$ produces a value in \langmono, $\maskt{\xi;v}$
+produces a term in \langmono\ that corresponds to the stage~\bbtwo\
+computation represented by~$[\xi;v]$.  Stage~\bbone\ information
+in~$v$ is discarded by replacing base constants with~\texttt{()},
+replacing $\next~\hat{y}$ with~$\hat{y}$, and eliminating all
+injection tags. (The sum type is at stage \bbone, so the tag is not
+relevant at stage \bbtwo.)  Last, $\maskt{\cdot}$ reifies~$\xi$ around
+the modified~$v$ to produce a term in \langmono.  As with
+$\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on
+general term splitting.
+
+
+\subsection{Splitting Algorithm}
+
+
+\paragraph{Splitting of stage-\bbone\ terms.}
+
+\ur{Fill this in.}
+
+OUTLINE:
+
+\begin{itemize}
+\item 
+The structure of the splitting judgment.
+
+\item
+The equivalence condition.
+
+\item
+Walk through the cases.
+\end{itemize}
+
+
+\paragraph{Splitting stage-\bbtwo\ terms.}
+
+Splitting a stage~\bbtwo\ term $\coltwo e A$ generates a
+\emph{precomputation}~$p$, and a~\emph{resumer} function $l.r$.  The
+resumer accepts the value produced by the precomputation as input
+($l$) and performs the stage~\bbtwo\ subcomputations of~$e$.
+Specifically, if~$e$ in~\lang\ reduces to the value~$v$, then after
+splitting the term $\letin l p r$ also reduces to~$v$ in \langmono.
+
+\ur{I don't quite understand the following.}
+(Thus, the resumer, bound to the value output by $p$, is equivalent to
+the residual term defined in~\ref{ssec:dynamics})
 
 
 %	\ur{Correctness will have
@@ -33,17 +101,29 @@ then after splitting the term $\letin l p r$ should reduce to the same value in 
 %	  (might need to flatten).}
 
 
-Splitting stage~\bbtwo\ terms, as implemented by the judgment $e \splittwosym
-[p,l.r]$ in \cref{fig:termSplitTwo} is defined recursively on the structure of $e$.
-In the terminal cases of constants and variables, splitting generates precomputations that are \texttt{()}
-(these terms do not involve any stage~\bbone\ computations) and resumers that produce the original term's value.
-For example, the integer constant \texttt{5} splits into the precomputation \texttt{()} and \texttt{l=>5}.
+The splitting algorithm for stage~\bbtwo\ terms, as specified by the
+judgment $e \splittwosym [p,l.r]$ in \cref{fig:termSplitTwo}, proceeds
+recursively on the structure of~$e$.  In the terminal cases of
+constants and variables, splitting generates precomputations that are
+\texttt{()}, because these terms do not involve any stage~\bbone\
+computations, and resumers that produce the original term. For
+example, the integer constant \texttt{5} splits into the
+precomputation \texttt{()} and \texttt{l=>5}.
 
-For all non-terminal stage~\bbtwo\ terms $e$ in \lang\ (except $\prev$ and $\pause$), splitting descends into $e$, recursively splitting subterms.  
-The precompuation is formed by combining the resultant $n$ subterm precomputations into a tuple: $p=(p_1,\ldots,p_n)$.
-The generated resumer has the same structure as $e$, with every subterm replaced by its resumer.
-Notice that splitting \texttt{case}s and functions causes the precomputation of subterms to be lifted out from
-underneath stage \bbtwo\ binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
+For all non-terminal stage~\bbtwo\ terms~$e$ in \lang\ (except $\prev$
+and $\pause$), splitting descends into~$e$, recursively splitting
+subterms and generating precomputations $p_1, \ldots, p_n$ and
+resumers $r_1, \ldots, r_n$ for a term with~$n$ immediate subterms.
+The precompuation of~$e$ is defined as the combined precomputations:
+$p=(p_1,\ldots,p_n)$.  The resumer binds each precomputation to an
+argument $(l_1,\ldots,l_n)$ in a term that has the same structure
+of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
+Notice that splitting \texttt{case}s and functions causes the
+precomputation of subterms to be lifted out from underneath stage
+\bbtwo\
+binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
+\ur{This last point seems important.  It would be important to come
+  back to it.}
 
 The $\prev$ and $\pause$ rules depends on
 splitting stage \bbone\ terms, and so they are covered later.
@@ -73,6 +153,11 @@ splitting stage \bbone\ terms, and so they are covered later.
 %component to the resumer of the respective subterm.  
 
 \subsection{Splitting Stage \bbone\ Terms}
+
+\ur{What follows is still a bit vague to me. Some
+  suggestions/questions: are ``term'' and ``computation'' being used
+  interchangeably? Not sure I understand this.  Isn't ``multi-stage''
+  tuple a partial-value?}
 
 The goal of stage 2 splitting was to generate a precomputation and resumer such that the resumer and the \lang\ residual reduce to the same final value. However, stage~\bbone\ terms do not reduce to final values, rather they reduce to residual tables and partial values.  For example, consider the stage 1 term: 
 \begin{lstlisting}
@@ -109,19 +194,6 @@ Therefore, to make the results of splitting match the the partial value above, w
 
 % Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
 
-\subsubsection{Partial Value Masking}
-
-To concretize the meaning of ``match", we introduce two {\em partial value masking} functions, $\masko{\cdot}$ and $\maskt{\cdot}$, that project from the residual table and partial value only the subterms that are relevant at a particular stage.  The masking functions are defined in \ref{fig:valMask}. 
-
-Since \texttt{next}'s only contain references to the residual table (computations that occur in stage~\bbtwo),
-the primary operation of $\masko{\xi;v}$ is to replace all $\next$s in $v$ with \texttt{()}.   The result is a \langmono\ value with the same structure as $v$, but containing only its stage~\bbone\ information. Masking is more complex when $v$ is a function since the function's body itself may contain stage~\bbtwo\ subterms.  As a result, masking of functions depends on the general behavior of stage~\bbone\ splitting, described shortly.
-
-
-While $\masko{\cdot}$ produces a value in \langmono,
-$\maskt{\xi;v}$ produces a \emph{term} in \langmono\ that corresponds to the stage~\bbtwo\ computation represented by $[\xi;v]$.
-Stage~\bbone\ information in $v$ is discarded by replacing base constants with \texttt{()}, replacing $\next~\hat{y}$ with $\hat{y}$, and eliminating all injection tags. (The sum type is at stage \bbone, so the tag is not relevant at stage \bbtwo.)
-Last, $\maskt{\cdot}$ reifies $\xi$ around the modified $v$ to produce a term in \langmono. 
-As with $\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on general term splitting.
 
 % For functions $\lam xAe$, masking again splits its body $e\splitonesym [c,l.r]$,
 % replaces it with the resumer, and uncurries, to yield $\lambda (x,l).r$.
@@ -156,7 +228,174 @@ As with $\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on general 
 %a partial value at each stage, essentially by replacing all stage \bbone\
 %(resp., \bbtwo) components of a partial value by \texttt{()}. 
 
+
+
+
+
+% % Umut: I made a pass over this, see above.  I don't think I lost
+% % anything, so it should be fine to delete this.
+% % \section{Splitting Algorithm}
+% % \label{sec:splitting}
+% % Although terms in \lang\ clearly distinguish their stage~\bbone\ and stage
+% % \bbtwo\ components, these components may be interleaved in \lang\ code. The
+% % goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \bbtwo\ subcomputations
+% % of a term $e$ in \lang\ into a pair of
+% % terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
+% % stage~\bbone\ subcomputations in $e$ and $e_2$ performs all of the stage~\bbtwo\ subcomputations.
+% % Informally, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same result 
+% % as evaluating $e$ in \lang. (We make this intuition precise in the subsequent subsections.)
+
+% % Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
+% % terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
+
+% % \subsection {Splitting Stage \bbtwo\ Terms}
+
+% % Splitting a stage~\bbtwo\ term $\coltwo e A$ generates
+% %  a \emph{precomputation} $p$, and a \emph{resumer} function $l.r$. Whereas direct evaluation of $e$ in \lang\ reduces the stage \bbone\ subcomputations
+% % of $e$ in place to create a residual, splitting statically isolates these computations into
+% % $p$.  The resumer accepts the value produced by the precomputation as input
+% % % (bound to the free variable $l$)
+% % and executes all stage~\bbtwo\ subcomputations.   
+% % Specifically, if $e$ in \lang\ reduces to the final value $v$, 
+% % then after splitting the term $\letin l p r$ should reduce to the same value in \langmono.
+% % (Thus, the resumer, bound to the value output by $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
+
+
+% % %	\ur{Correctness will have
+% % %	  to go beyond this, by saying for example that all stage 1 parts are
+% % %	  in p etc.  Note that this correctness allows a trivial split
+% % %	   that shoves everything to r, e.g., p = () and r is ``e''
+% % %	  (might need to flatten).}
+
+
+% % Splitting stage~\bbtwo\ terms, as implemented by the judgment $e \splittwosym
+% % [p,l.r]$ in \cref{fig:termSplitTwo} is defined recursively on the structure of $e$.
+% % In the terminal cases of constants and variables, splitting generates precomputations that are \texttt{()}
+% % (these terms do not involve any stage~\bbone\ computations) and resumers that produce the original term's value.
+% % For example, the integer constant \texttt{5} splits into the precomputation \texttt{()} and \texttt{l=>5}.
+
+% % For all non-terminal stage~\bbtwo\ terms $e$ in \lang\ (except $\prev$ and $\pause$), splitting descends into $e$, recursively splitting subterms.  
+% % The precompuation is formed by combining the resultant $n$ subterm precomputations into a tuple: $p=(p_1,\ldots,p_n)$.
+% % The generated resumer has the same structure as $e$, with every subterm replaced by its resumer.
+% % Notice that splitting \texttt{case}s and functions causes the precomputation of subterms to be lifted out from
+% % underneath stage \bbtwo\ binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
+
+% % The $\prev$ and $\pause$ rules depends on
+% % splitting stage \bbone\ terms, and so they are covered later.
+
+% % %For example, the stage \bbtwo\ term
+% % %\begin{lstlisting}
+% % %2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
+% % %\end{lstlisting}
+% % %has two subterms, the latter of which itself has two subterms. Two are $\pause$s
+% % %containing stage \bbone\ computations, while the third has no stage \bbone\
+% % %content. 
+% % %
+% % %\ur{The discussion of the subterms is not helpful. what is the point?}
+% % %
+% % %The precomputation \emph{lifts} these computations in the same tree
+% % %structure: \verb|(1+2,(3+4,()))|.%
+% % %\ur{Not clear what a ``tree structure'' is. }
+% % %\footnote{In later examples, we will optimize out unnecessary \texttt{()}s.}
+% % %The resumer is a function which computes the stage \bbtwo\ value of the original
+% % %term by mapping the results of the precomputation in place of the $\pause$s:
+% % %\verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
+% % %
+% % %\nr{Synopsis of Umut's comments: consider moving some of the easier rules descriptions earlier.}
+% % %
+% % %Non-staging constructs with $n$ subterms have precomputations which are
+% % %$n$-tuples of their subterms' precomputations, and resumers which pass each
+% % %component to the resumer of the respective subterm.  
+
+% % \subsection{Splitting Stage \bbone\ Terms}
+
+% % The goal of stage 2 splitting was to generate a precomputation and resumer such that the resumer and the \lang\ residual reduce to the same final value. However, stage~\bbone\ terms do not reduce to final values, rather they reduce to residual tables and partial values.  For example, consider the stage 1 term: 
+% % \begin{lstlisting}
+% % 1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
+% % \end{lstlisting}
+% % which evaluates (via $\mathbin{\redonesym}$), to the following residual table and a multi-stage tuple:
+
+% % \begin{lstlisting}
+% % 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
+% % \end{lstlisting}
+
+
+% % %Like stage \bbtwo\ splitting, splitting a stage~\bbone\ term $\colone e A$ produces a term $c$ containing all stage~\bbone\ subcomputations in $e$ and a resumer function %$l.r$ containing all stage~\bbtwo\ subcomputations.  
+% % %which respectively contain all the stage \bbone\ and stage \bbtwo\
+% % %subcomputations of $e$. 
+% % %But where the stage \bbtwo\ splitting goal was phrased terms ensure.
+
+% % %The situation is more complex than when splitting stage
+% % %\bbtwo\ terms; to see why, consider the correctness criterion for splitting
+% % %stage \bbone\ terms.
+
+% % %Stage \bbone\ evaluation of $e$, via $e\mathbin{\redonesym}[\xi;v]$,
+% % %yields a table of (stage \bbtwo) residuals $\xi$, and a (stage \bbone) partial
+% % %value $v$. 
+
+% % Note that this result simultaneously represents information at {\em both} stages: 
+% % a stage~\bbone\ value 3, and the stage~\bbtwo\ computation $\letin \yhat {\mathtt{7+5}} \yhat$. 
+% % Therefore, to make the results of splitting match the the partial value above, we choose to split \bbone\ terms in \lang\ into a resumer that reduces to the same value as the stage~\bbtwo\ computation, and an $e1$ that not only performs the precomputation expected by the resumer, but also computes values that match the stage~\bbone\ aspects of the partial value.
+
+% % % Ergo, if we intend to compare the results of evaluation to the those of splitting, 
+% % % then we'll need some mechanism to project from the residual table and partial value only the parts that are relevant at a particular stage.
+
+% % % But the whole point of splitting is that its results (and their evaluated forms) are monostage.
+
+% % % Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
+
+% % \subsubsection{Partial Value Masking}
+
+% % To concretize the meaning of ``match", we introduce two {\em partial value masking} functions, $\masko{\cdot}$ and $\maskt{\cdot}$, that project from the residual table and partial value only the subterms that are relevant at a particular stage.  The masking functions are defined in \ref{fig:valMask}. 
+
+% % Since \texttt{next}'s only contain references to the residual table (computations that occur in stage~\bbtwo),
+% % the primary operation of $\masko{\xi;v}$ is to replace all $\next$s in $v$ with \texttt{()}.   The result is a \langmono\ value with the same structure as $v$, but containing only its stage~\bbone\ information. Masking is more complex when $v$ is a function since the function's body itself may contain stage~\bbtwo\ subterms.  As a result, masking of functions depends on the general behavior of stage~\bbone\ splitting, described shortly.
+
+
+% % While $\masko{\cdot}$ produces a value in \langmono,
+% % $\maskt{\xi;v}$ produces a \emph{term} in \langmono\ that corresponds to the stage~\bbtwo\ computation represented by $[\xi;v]$.
+% % Stage~\bbone\ information in $v$ is discarded by replacing base constants with \texttt{()}, replacing $\next~\hat{y}$ with $\hat{y}$, and eliminating all injection tags. (The sum type is at stage \bbone, so the tag is not relevant at stage \bbtwo.)
+% % Last, $\maskt{\cdot}$ reifies $\xi$ around the modified $v$ to produce a term in \langmono. 
+% % As with $\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on general term splitting.
+
+% % % For functions $\lam xAe$, masking again splits its body $e\splitonesym [c,l.r]$,
+% % % replaces it with the resumer, and uncurries, to yield $\lambda (x,l).r$.
+
+
+% % %The only exception is for
+% % %functions $\lam xAe$; such a value represents a computation, so masking splits
+% % %its body as a computation, $e\splitonesym [c,l.r]$, and replaces it with its
+% % %stage \bbone\ component, the combined result.
+
+% % %They operate by replacing all stage \bbone\
+% % %(resp., \bbtwo) components of a partial value by \texttt{()}. 
+
+% % %It is tempting to compare the two results of evaluating $e$ to the
+% % %two results of splitting it.
+
+% % %To see where this goes wrong, consider the stage
+% % %\bbone\ term
+% % %\begin{lstlisting}
+% % %1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
+% % %\end{lstlisting}
+% % %which evaluates to
+% % %\begin{lstlisting}
+% % %2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
+% % %\end{lstlisting}
+% % %This partial value contains a $\next$, and so is itself multistaged:
+% % %intuitively, its stage \bbone\ part is \texttt{3}, while its stage \bbtwo\ part
+% % %is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5} in the table.
+
+% % %We formalize this notion via two \emph{masking} functions (\ref{fig:valMask}),
+% % %$\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
+% % %a partial value at each stage, essentially by replacing all stage \bbone\
+% % %(resp., \bbtwo) components of a partial value by \texttt{()}. 
+
 \subsubsection{Splitting Mechanics}
+
+\ur{It starts getting rough here, mostly because combined term is not
+  defined.  Specifically, we should say what
+  the  form of the splitting judgment is. }
 
 Given the definition of masking, splitting a stage \bbone\ term $\colone e A$ 
 (where $e\mathbin{\redonesym}[\xi;v]$), yields a \emph{combined term}
