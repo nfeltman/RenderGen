@@ -1,26 +1,26 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-Although terms in \lang\ clearly distinguish their stage \bbone\ and stage
+Although terms in \lang\ clearly distinguish their stage~\bbone\ and stage
 \bbtwo\ components, these components may be interleaved in \lang\ code. The
 goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \bbtwo\ subcomputations
 of a term $e$ in \lang\ into a pair of
 terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
-stage \bbone\ subcomputations in $e$ and $e_2$ performs all of the stage \bbtwo\ subcomputations.
+stage~\bbone\ subcomputations in $e$ and $e_2$ performs all of the stage~\bbtwo\ subcomputations.
 Intuitively, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same value 
 as evaluating $e$ in \lang.
 
-Since the mechanics of splitting stage \bbtwo\ terms are conceptually simpler than those for stage \bbone\
+Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
 terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
 
 \subsection {Stage \bbtwo\ Splitting}
 
-Splitting a stage \bbtwo\ term $\coltwo e A$ generates
+Splitting a stage~\bbtwo\ term $\coltwo e A$ generates
  a \emph{precomputation} $p$, and a \emph{resumer} function $l.r$. Whereas direct evaluation of $e$ in \lang\ reduces the stage \bbone\ subcomputations
 of $e$ in place to create a residual, splitting statically isolates these computations into
 $p$.  The resumer accepts the value produced by the precomputation as input
 % (bound to the free variable $l$)
-and executes all stage 2 subcomputations.   
+and executes all stage~\bbtwo\ subcomputations.   
 Specifically, if $e$ in \lang\ reduces to the final value $v$, 
 then after splitting the term $\letin l p r$ should reduce to the same value in \langmono.
 (The resumer, bound to the output of $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
@@ -35,36 +35,44 @@ then after splitting the term $\letin l p r$ should reduce to the same value in 
 %	   that shoves everything to r, e.g., p = () and r is ``e''
 %	  (might need to flatten).}
 
-Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym
-[p,l.r]$ (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$.
-For example, the stage \bbtwo\ term
-\begin{lstlisting}
-2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
-\end{lstlisting}
-has two subterms, the latter of which itself has two subterms. Two are $\pause$s
-containing stage \bbone\ computations, while the third has no stage \bbone\
-content. 
+Splitting stage~\bbtwo\ terms, as implemented by the judgment $e \splittwosym
+[p,l.r]$ in \cref{fig:termSplitTwo} is defined recursively on the structure of $e$.
+In the terminal cases of constants and variables, splitting generates precomputations that are \texttt{()}
+(these terms do not involve any stage~\bbone\ computations) and resumers that produce the original term's value.
+For example, the integer constant \texttt{5} splits into the precomputation \texttt{()} and \texttt{l=>5}.
 
-\ur{The discussion of the subterms is not helpful. what is the point?}
+For all non-terminal stage~\bbtwo\ terms $e$ in \lang\ (except $\prev$ and $\pause$), splitting descends into $e$, recursively splitting subterms.  
+The precompuation is formed by combining the resultant $n$ subterm precomputations into a tuple: $p=(p_1,\ldots,p_n)$.
+The generated resumer has the same structure as $e$, with every subterm replaced by its resumer.
+Notice that splitting \texttt{case}s and functions causes the precomputation of subterms to be lifted out from
+underneath stage \bbtwo\ binders. % should probably draw a parallel to the same behavior in dynamics
 
-The precomputation \emph{lifts} these computations in the same tree
-structure: \verb|(1+2,(3+4,()))|.%
-\ur{Not clear what a ``tree structure'' is. }
-\footnote{In later examples, we will optimize out unnecessary \texttt{()}s.}
-The resumer is a function which computes the stage \bbtwo\ value of the original
-term by mapping the results of the precomputation in place of the $\pause$s:
-\verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
-
-\nr{Synopsis of Umut's comments: consider moving some of the easier rules descriptions earlier.}
-
-In general, constants and variables have no stage \bbone\ content, so their
-precomputations are \texttt{()}, and their resumers return the original term's
-value. Non-staging constructs with $n$ subterms have precomputations which are
-$n$-tuples of their subterms' precomputations, and resumers which pass each
-component to the resumer of the respective subterm. (This behavior at
-\texttt{case} and functions causes precomputations to be lifted out from
-underneath stage \bbtwo\ binders.) The $\prev$ and $\pause$ rules depends on
+The $\prev$ and $\pause$ rules depends on
 splitting stage \bbone\ terms, and so they are covered later.
+
+%For example, the stage \bbtwo\ term
+%\begin{lstlisting}
+%2`hold{`1` 1+2 `2`} < (hold{`1` 3+4 `2`} - 5)`
+%\end{lstlisting}
+%has two subterms, the latter of which itself has two subterms. Two are $\pause$s
+%containing stage \bbone\ computations, while the third has no stage \bbone\
+%content. 
+%
+%\ur{The discussion of the subterms is not helpful. what is the point?}
+%
+%The precomputation \emph{lifts} these computations in the same tree
+%structure: \verb|(1+2,(3+4,()))|.%
+%\ur{Not clear what a ``tree structure'' is. }
+%\footnote{In later examples, we will optimize out unnecessary \texttt{()}s.}
+%The resumer is a function which computes the stage \bbtwo\ value of the original
+%term by mapping the results of the precomputation in place of the $\pause$s:
+%\verb|(L1,(L2,_)) => L1 < (L2 - 5)|. 
+%
+%\nr{Synopsis of Umut's comments: consider moving some of the easier rules descriptions earlier.}
+%
+%Non-staging constructs with $n$ subterms have precomputations which are
+%$n$-tuples of their subterms' precomputations, and resumers which pass each
+%component to the resumer of the respective subterm.  
 
 \subsection{Stage \bbone\ Splitting}
 
