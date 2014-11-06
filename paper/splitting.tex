@@ -13,7 +13,7 @@ as evaluating $e$ in \lang.
 Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
 terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
 
-\subsection {Stage \bbtwo\ Splitting}
+\subsection {Splitting Stage \bbtwo\ Terms}
 
 Splitting a stage~\bbtwo\ term $\coltwo e A$ generates
  a \emph{precomputation} $p$, and a \emph{resumer} function $l.r$. Whereas direct evaluation of $e$ in \lang\ reduces the stage \bbone\ subcomputations
@@ -31,6 +31,7 @@ then after splitting the term $\letin l p r$ should reduce to the same value in 
 %	  in p etc.  Note that this correctness allows a trivial split
 %	   that shoves everything to r, e.g., p = () and r is ``e''
 %	  (might need to flatten).}
+
 
 Splitting stage~\bbtwo\ terms, as implemented by the judgment $e \splittwosym
 [p,l.r]$ in \cref{fig:termSplitTwo} is defined recursively on the structure of $e$.
@@ -71,7 +72,7 @@ splitting stage \bbone\ terms, and so they are covered later.
 %$n$-tuples of their subterms' precomputations, and resumers which pass each
 %component to the resumer of the respective subterm.  
 
-\subsection{Stage \bbone\ Splitting}
+\subsection{Splitting Stage \bbone\ Terms}
 
 The goal of stage 2 splitting was to generate a precomputation and resumer such that the resumer and the \lang\ residual reduce to the same final value. However, stage~\bbone\ terms do not reduce to final values, rather they reduce to residual tables and partial values.  For example, consider the stage 1 term: 
 \begin{lstlisting}
@@ -97,9 +98,9 @@ which evaluates (via $\mathbin{\redonesym}$), to the following residual table an
 %yields a table of (stage \bbtwo) residuals $\xi$, and a (stage \bbone) partial
 %value $v$. 
 
-Note that this result carries information at {\em both} stages: 
-at stage~\bbone\ it carries the value 3, and at stage~\bbtwo\ it carries the code $\letin \yhat {\mathtt{7+5}} \yhat$. 
-Therefore, to make the results of splitting match the the partial value above, we choose to split \bbone\ terms to create a resumer that reduces to the same value as the stage~\bbtwo\ carried by the partial value, and an $e1$ that not only performs the precomputation necessary for the resumer, but also generates values that match the stage~\bbone\ aspects of the partial value.
+Note that this result simultaneously represents information at {\em both} stages: 
+a stage~\bbone\ value 3, and the stage~\bbtwo\ computation $\letin \yhat {\mathtt{7+5}} \yhat$. 
+Therefore, to make the results of splitting match the the partial value above, we choose to split \bbone\ terms in \lang\ into a resumer that reduces to the same value as the stage~\bbtwo\ computation, and an $e1$ that not only performs the precomputation expected by the resumer, but also computes values that match the stage~\bbone\ aspects of the partial value.
 
 % Ergo, if we intend to compare the results of evaluation to the those of splitting, 
 % then we'll need some mechanism to project from the residual table and partial value only the parts that are relevant at a particular stage.
@@ -108,8 +109,31 @@ Therefore, to make the results of splitting match the the partial value above, w
 
 % Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
 
-To concretize what it means by ``match", we introduce two {\em masking} functions, $\masko{\cdot}$ and $\maskt{\cdot}$, that project from the residual table and partial value only the parts that are relevant at a particular stage.  These functions are shown in \ref{fig:valMask}. They operate by replacing all stage \bbone\
-(resp., \bbtwo) components of a partial value by \texttt{()}. 
+\subsubsection{Partial Value Masking}
+
+To concretize the meaning of ``match", we introduce two {\em partial value masking} functions, $\masko{\cdot}$ and $\maskt{\cdot}$, that project from the residual table and partial value only the subterms that are relevant at a particular stage.  The masking functions are defined in \ref{fig:valMask}. 
+
+Since \texttt{next}'s only contain references to the residual table (computations that occur in stage~\bbtwo),
+the primary operation of $\masko{\xi;v}$ is to replace all $\next$s in $v$ with \texttt{()}.   The result is a \langmono\ value with the same structure as $v$, but containing only its stage~\bbone\ information. Masking is more complex when $v$ is a function since the function's body itself may contain stage~\bbtwo\ subterms.  As a result, masking of functions depends on the general behavior of stage~\bbone\ splitting, described shortly.
+
+
+While $\masko{\cdot}$ produces a value in \langmono,
+$\maskt{\xi;v}$ produces a \emph{term} in \langmono\ that corresponds to the stage~\bbtwo\ computation represented by $[\xi;v]$.
+Stage~\bbone\ information in $v$ is discarded by replacing base constants with \texttt{()}, replacing $\next~\hat{y}$ with $\hat{y}$, and eliminating all injection tags. (The sum type is at stage \bbone, so the tag is not relevant at stage \bbtwo.)
+Last, $\maskt{\cdot}$ reifies $\xi$ around the modified $v$ to produce a term in \langmono. 
+As with $\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on general term splitting.
+
+% For functions $\lam xAe$, masking again splits its body $e\splitonesym [c,l.r]$,
+% replaces it with the resumer, and uncurries, to yield $\lambda (x,l).r$.
+
+
+%The only exception is for
+%functions $\lam xAe$; such a value represents a computation, so masking splits
+%its body as a computation, $e\splitonesym [c,l.r]$, and replaces it with its
+%stage \bbone\ component, the combined result.
+
+%They operate by replacing all stage \bbone\
+%(resp., \bbtwo) components of a partial value by \texttt{()}. 
 
 %It is tempting to compare the two results of evaluating $e$ to the
 %two results of splitting it.
@@ -131,6 +155,8 @@ To concretize what it means by ``match", we introduce two {\em masking} function
 %$\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
 %a partial value at each stage, essentially by replacing all stage \bbone\
 %(resp., \bbtwo) components of a partial value by \texttt{()}. 
+
+\subsubsection{Splitting}
 
 The first result
 of splitting must then compute the \bbone-mask of the partial value, and the
