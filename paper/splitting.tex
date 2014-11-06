@@ -7,8 +7,8 @@ goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \
 of a term $e$ in \lang\ into a pair of
 terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
 stage~\bbone\ subcomputations in $e$ and $e_2$ performs all of the stage~\bbtwo\ subcomputations.
-Intuitively, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same result 
-as evaluating $e$ in \lang.
+Informally, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same result 
+as evaluating $e$ in \lang. (We make this intuition precise in the subsequent subsections.)
 
 Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
 terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
@@ -156,56 +156,24 @@ As with $\masko{\cdot}$, function masking by $\maskt{\cdot}$ depends on general 
 %a partial value at each stage, essentially by replacing all stage \bbone\
 %(resp., \bbtwo) components of a partial value by \texttt{()}. 
 
-\subsubsection{Splitting}
+\subsubsection{Splitting Mechanics}
 
-The first result
-of splitting must then compute the \bbone-mask of the partial value, and the
-second result the \bbtwo-mask. 
+Given the definition of masking, splitting a stage \bbone\ term $\colone e A$ 
+(where $e\mathbin{\redonesym}[\xi;v]$), yields a \emph{combined term}
+$c$ that performs all stage~\bbone\ computations in $e$ and a \emph{resumer} function $l.r$ that represents all stage~\bbtwo\ computations.
+Whereas in stage~\bbtwo\ term splitting,
+$p$ constitutes only the precomputation to the resumer, in stage~\bbone\ splitting we require $c$ to reduce (via~$\redsym$) to the tuple $(y,z)$, where $y$ is an \emph{immediate result} that is identical to $\masko{\xi;v}$, and $z$ is the required precomputation such that $\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. 
 
-% There is one final subtlety to splitting stage \bbone\ terms. In the example
-% above, there are \emph{two} flavors of stage \bbone\ subcomputations:
-% \texttt{1+2}, which is needed to compute the \bbone-mask, and \texttt{3+4},
-% a precomputation which is used by the computation of the \bbtwo-mask. 
+Splitting stage~\bbone\ terms is implemented by the judgment $e \splitonesym [c,l.r]$ in \ref{fig:termSplitOne}. 
 
-Formally, splitting a stage \bbone\ term, as implemented by the judgment $e
-\splitonesym [c,l.r]$ (\ref{fig:termSplitOne}), yields a \emph{combined result}
-$c$ which computes a pair of the stage \bbone\ result and the precomputation,
-and a \emph{resumer} function $l.r$. The correctness of splitting requires that,
-for $e\mathbin{\redonesym}[\xi;v]$, we have that $\pio~c$ agrees with
-$\masko{v}$, and $\letin l{\pit~c}r$ agrees with $\maskt{\xi;v}$.
 
-The example splits into a combined result $c=$ \texttt{((1+2,()), 3+4)}, and a
-resumer $l.r=$ \texttt{L => ((),L+5)}. Then $\pio~c$ reduces to \texttt{(3,())},
-which agrees with the stage \bbone\ mask, and $\letin l{\pit~c}r$ reduces to
-\texttt{((),12)}, which agrees with the stage \bbtwo\ mask.
+% The example splits into a combined result $c=$ \texttt{((1+2,()), 3+4)}, and a
+% resumer $l.r=$ \texttt{L => ((),L+5)}. Then $\pio~c$ reduces to \texttt{(3,())},
+% which agrees with the stage \bbone\ mask, and $\letin l{\pit~c}r$ reduces to
+% \texttt{((),12)}, which agrees with the stage \bbtwo\ mask.
 
-\paragraph{Stage \bbone\ masking}
 
-The purpose of masking is to expose only the relevant structure of a partial
-value $v$ at each stage. For the most part, stage \bbone\ masking, $\masko{v}$,
-simply replaces all $\next$s in $v$ with \texttt{()}. The only exception is for
-functions $\lam xAe$; such a value represents a computation, so masking splits
-its body as a computation, $e\splitonesym [c,l.r]$, and replaces it with its
-stage \bbone\ component, the combined result.
-
-\paragraph{Stage \bbtwo\ masking}
-
-Stage \bbtwo\ masking, unlike stage \bbone\ masking, requires access to the
-residual table $\xi$, because the stage \bbtwo\ parts of $v$ contain references
-to $\xi$. To compute $\maskt{\xi;v}$, we rewrite $v$ to expose only the relevant
-structure, and then reify the resulting term in the context $\xi$. This
-rewriting process replaces base type constants in $v$ with \texttt{()}, and
-$\next~\hat{y}$ with $\hat{y}$. Injection tags are eliminated, because the sum
-type is at stage \bbone, so the tag is not relevant at stage \bbtwo. For
-functions $\lam xAe$, masking again splits its body $e\splitonesym [c,l.r]$,
-replaces it with the resumer, and uncurries, to yield $\lambda (x,l).r$.
-
-\paragraph{Splitting}
-
-Splitting stage \bbone\ terms, as implemented by the judgment $e\splitonesym
-[c,l.r]$, is also guided by the structure of the term $e$.
-
-\TODO polish the following explanation
+\TODO REDO THE REST OF THE TEXT TO WALK THROUGH THE MAJOR RULES OF SPLITTING
 
 The rule for $\next$ simply tuples up the precomputation of its subexpression with a trivial immediate result,
 while the rule for $\prev$ projects the combined result of its subexpression to isolate the precomputation.
