@@ -100,8 +100,15 @@ which evaluates (via $\mathbin{\redonesym}$), to the following residual table an
 %yields a table of (stage \bbtwo) residuals $\xi$, and a (stage \bbone) partial
 %value $v$. 
 
+Note that this result carries information at {\em both} stages: 
+at stage~\bbone\ it carries the value 3, and at stage~\bbtwo\ it carries the code $\letin \yhat {\mathtt{7+5}} \yhat$. 
 
-Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
+But the whole point of splitting is that its results (and their evaluated forms) are monostage.
+Ergo, if we intend to compare the results of evaluation to the those of splitting, 
+then we'll need some mechanism to project from the residual table and partial value only the parts that are relevant at a particular stage.
+
+% Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
+To this end, we introduce two {\em masking} functions...
 
 %It is tempting to compare the two results of evaluating $e$ to the
 %two results of splitting it.
@@ -119,10 +126,6 @@ Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, a
 %intuitively, its stage \bbone\ part is \texttt{3}, while its stage \bbtwo\ part
 %is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5} in the table.
 
-
-\ur{The following paragraph makes no sense to me, especially because
-  it does not match Figure 11.  AS far as I can see Figure 11 does not
-talk about masking but value splitting.}
 We formalize this notion via two \emph{masking} functions (\ref{fig:valMask}),
 $\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
 a partial value at each stage, essentially by replacing all stage \bbone\
