@@ -7,7 +7,7 @@ goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \
 of a term $e$ in \lang\ into a pair of
 terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
 stage~\bbone\ subcomputations in $e$ and $e_2$ performs all of the stage~\bbtwo\ subcomputations.
-Intuitively, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same value 
+Intuitively, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same result 
 as evaluating $e$ in \lang.
 
 Since the mechanics of splitting stage~\bbtwo\ terms are conceptually simpler than those for stage \bbone\
@@ -23,10 +23,7 @@ $p$.  The resumer accepts the value produced by the precomputation as input
 and executes all stage~\bbtwo\ subcomputations.   
 Specifically, if $e$ in \lang\ reduces to the final value $v$, 
 then after splitting the term $\letin l p r$ should reduce to the same value in \langmono.
-(The resumer, bound to the output of $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
-
-
-
+(Thus, the resumer, bound to the value output by $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
 
 
 %	\ur{Correctness will have
@@ -45,7 +42,7 @@ For all non-terminal stage~\bbtwo\ terms $e$ in \lang\ (except $\prev$ and $\pau
 The precompuation is formed by combining the resultant $n$ subterm precomputations into a tuple: $p=(p_1,\ldots,p_n)$.
 The generated resumer has the same structure as $e$, with every subterm replaced by its resumer.
 Notice that splitting \texttt{case}s and functions causes the precomputation of subterms to be lifted out from
-underneath stage \bbtwo\ binders. % should probably draw a parallel to the same behavior in dynamics
+underneath stage \bbtwo\ binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
 
 The $\prev$ and $\pause$ rules depends on
 splitting stage \bbone\ terms, and so they are covered later.
@@ -102,13 +99,17 @@ which evaluates (via $\mathbin{\redonesym}$), to the following residual table an
 
 Note that this result carries information at {\em both} stages: 
 at stage~\bbone\ it carries the value 3, and at stage~\bbtwo\ it carries the code $\letin \yhat {\mathtt{7+5}} \yhat$. 
+Therefore, to make the results of splitting match the the partial value above, we choose to split \bbone\ terms to create a resumer that reduces to the same value as the stage~\bbtwo\ carried by the partial value, and an $e1$ that not only performs the precomputation necessary for the resumer, but also generates values that match the stage~\bbone\ aspects of the partial value.
 
-But the whole point of splitting is that its results (and their evaluated forms) are monostage.
-Ergo, if we intend to compare the results of evaluation to the those of splitting, 
-then we'll need some mechanism to project from the residual table and partial value only the parts that are relevant at a particular stage.
+% Ergo, if we intend to compare the results of evaluation to the those of splitting, 
+% then we'll need some mechanism to project from the residual table and partial value only the parts that are relevant at a particular stage.
+
+% But the whole point of splitting is that its results (and their evaluated forms) are monostage.
 
 % Intuitively for splitting TO MATCH THIS THING ABOVE.  It needs to match the 3, and the resumer should reduce to the same value as the reified partial value.
-To this end, we introduce two {\em masking} functions...
+
+To concretize what it means by ``match", we introduce two {\em masking} functions, $\masko{\cdot}$ and $\maskt{\cdot}$, that project from the residual table and partial value only the parts that are relevant at a particular stage.  These functions are shown in \ref{fig:valMask}. They operate by replacing all stage \bbone\
+(resp., \bbtwo) components of a partial value by \texttt{()}. 
 
 %It is tempting to compare the two results of evaluating $e$ to the
 %two results of splitting it.
@@ -126,19 +127,19 @@ To this end, we introduce two {\em masking} functions...
 %intuitively, its stage \bbone\ part is \texttt{3}, while its stage \bbtwo\ part
 %is $\mathtt{\hat{y}}$, which is bound to \texttt{7+5} in the table.
 
-We formalize this notion via two \emph{masking} functions (\ref{fig:valMask}),
-$\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
-a partial value at each stage, essentially by replacing all stage \bbone\
-(resp., \bbtwo) components of a partial value by \texttt{()}. The first result
+%We formalize this notion via two \emph{masking} functions (\ref{fig:valMask}),
+%$\masko{\cdot}$ and $\maskt{\cdot}$, which expose only the relevant structure of
+%a partial value at each stage, essentially by replacing all stage \bbone\
+%(resp., \bbtwo) components of a partial value by \texttt{()}. 
+
+The first result
 of splitting must then compute the \bbone-mask of the partial value, and the
 second result the \bbtwo-mask. 
 
-There is one final subtlety to splitting stage \bbone\ terms. In the example
-above, there are \emph{two} flavors of stage \bbone\ subcomputations:
-\texttt{1+2}, which is needed to compute the \bbone-mask, and \texttt{3+4},
-a precomputation which is used by the computation of the \bbtwo-mask. 
-
-\ur{This paragraph is unintellegible to me.  What is the point?}
+% There is one final subtlety to splitting stage \bbone\ terms. In the example
+% above, there are \emph{two} flavors of stage \bbone\ subcomputations:
+% \texttt{1+2}, which is needed to compute the \bbone-mask, and \texttt{3+4},
+% a precomputation which is used by the computation of the \bbtwo-mask. 
 
 Formally, splitting a stage \bbone\ term, as implemented by the judgment $e
 \splitonesym [c,l.r]$ (\ref{fig:termSplitOne}), yields a \emph{combined result}
