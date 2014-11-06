@@ -2,29 +2,38 @@
 \label{sec:splitting}
 
 Although terms in \lang\ clearly distinguish their stage \bbone\ and stage
-\bbtwo\ components, these components may be interleaved in complex ways. The
-goal of \emph{stage splitting} is to produce from a term in \lang\ a pair of
-terms in an unstaged language \langmono, which respectively perform all the
-stage \bbone\ and stage \bbtwo\ subcomputations of the original term.
+\bbtwo\ components, these components may be interleaved in \lang\ code. The
+goal of \emph{stage splitting} is to statically separate the stage \bbone\ and \bbtwo\ subcomputations
+of a term $e$ in \lang\ into a pair of
+terms $e_1$ and $e_2$ in an unstaged language \langmono, where $e_1$ performs all the
+stage \bbone\ subcomputations in $e$ and $e_2$ performs all of the stage \bbtwo\ subcomputations.
+Intuitively, splitting must ensure that running $e_2$ on the output of $e_1$ yields the same value 
+as evaluating $e$ in \lang.
 
-Since splitting stage \bbtwo\ terms is easier than splitting stage \bbone\
-terms, we begin by describing how to split stage \bbtwo\ terms.
+Since the mechanics of splitting stage \bbtwo\ terms are conceptually simpler than those for stage \bbone\
+terms, we begin by describing how to split stage \bbtwo\ terms before proceeding to more complicated cases.
 
 \subsection {Stage \bbtwo\ Splitting}
 
-Splitting a stage \bbtwo\ term $\coltwo e A$ produces a \emph{precomputation}
-term $p$ and a \emph{resumer} function $l.r$, which contain all stage \bbone\
-and \bbtwo\ subcomputations of $e$, respectively. As stage \bbtwo\
-computations within $e$ can depend on its stage \bbone\ computations, 
-$r$ must depend on the results of $p$, which splitting accomplishes via the variable $l$. 
-Given this form, the goal for splitting is to ensure that evaluating
-$\letin l p r$ agrees with the value to which $e$ itself evaluates. 
+Splitting a stage \bbtwo\ term $\coltwo e A$ generates
+ a \emph{precomputation} $p$, and a \emph{resumer} function $l.r$. Whereas direct evaluation of $e$ in \lang\ reduces the stage \bbone\ subcomputations
+of $e$ in place to create a residual, splitting statically isolates these computations into
+$p$.  The resumer accepts the value produced by the precomputation as input
+% (bound to the free variable $l$)
+and executes all stage 2 subcomputations.   
+Specifically, if $e$ in \lang\ reduces to the final value $v$, 
+then after splitting the term $\letin l p r$ should reduce to the same value in \langmono.
+(The resumer, bound to the output of $p$, is equivalent to the residual term defined in~\ref{ssec:dynamics})
 
-\ur{Correctness will have
-  to go beyond this, by saying for example that all stage 1 parts are
-  in p etc.  Note that this correctness allows a trivial split
-   that shoves everything to r, e.g., p = () and r is ``e''
-  (might need to flatten).}
+
+
+
+
+%	\ur{Correctness will have
+%	  to go beyond this, by saying for example that all stage 1 parts are
+%	  in p etc.  Note that this correctness allows a trivial split
+%	   that shoves everything to r, e.g., p = () and r is ``e''
+%	  (might need to flatten).}
 
 Splitting stage \bbtwo\ terms, as implemented by the judgment $e \splittwosym
 [p,l.r]$ (\cref{fig:termSplitTwo}), is guided by the structure of the term $e$.
