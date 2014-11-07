@@ -4,21 +4,23 @@
 \infersplitone [int]			{\spl {i}{\rm int}{(i,()),\_.()}}															{\cdot} \and
 \infersplitone [hyp]			{\spl {x}{A}{(x,()),\_.x}}																	{\cdot} \and
 \infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{(\lambda x.c,()),\_.(\lam{(x,l)}{\_}{r})}}					{\sub [\Gamma,\col x A] {} B} 									\and
-\infersplitone [\to E]	{\spl {e_1~e_2}{B}{
+\infersplitone [\to E]	{\spl {e_1~e_2}{B}{\left(
 									\talllet{(y_1,z_1)}{c_1}{
 									\talllet{(y_2,z_2)}{c_2}{
-									\talllet{(y_3,z_3)}{y_1~y_2}{(y_3,(z_1,z_2,z_3))}}},
-							(l_1,l_2,l_3).(r_1~(r_2,l_3))
+									\talllet{(y_3,z_3)}{y_1~y_2}{(y_3,(z_1,z_2,z_3))}}}\right),
+							\begin{split}
+									(l_1,&l_2,l_3).\\[-\baselineskip] % terrible hax
+									&(r_1~(r_2,l_3))\\
+							\end{split}
 							}}																									{\sub 1 {A \to B} & \sub 2 A}							\and
 \infersplitone [\times I] 	{\spl {(e_1,e_2)}{A\times B}
-									{ \begin{array}{l}
-									\left(
+									{\left(
 										\talllet{(y_1,z_1)}{c_1}{
 										\talllet{(y_2,z_2)}{c_2}{
 										((y_1, y_2),(z_1, z_2))}}
 									\right),
 									(l_1,l_2).(r_1,r_2)
-									\end{array}}}																				{\sub 1 A & \sub 2 B} \and
+							}}																				{\sub 1 A & \sub 2 B} \and
 \infersplitone [\times E_1]	{\spl {\pio~e}{A}{\talllet{(y,z)}{c}{(\pio~y,z)},l.\pio~r}}								{\sub {} {A\times B}} \and
 \infersplitone [\times E_2]	{\spl {\pit~e}{B}{\talllet{(y,z)}{c}{(\pit~y,z)},l.\pit~r}}								{\sub {} {A\times B}} \and
 %\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
