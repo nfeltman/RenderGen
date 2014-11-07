@@ -10,8 +10,8 @@ subcomputations corresponding to each stage.  More precisely, given a
 unstaged target language \langmono\ such that~$e_1$ performs all the
 stage~\bbone\ subcomputations in~$e$ and $e_2$~performs all of the
 stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluation of~$e$ in
-the staged language produces the same result as evaluating~$e_1$ and 
-then~$e_2$ with the result from~$e_1$.
+the staged language produces the same result as evaluating~$e_1$, followed by evaluating 
+$e_2$ with the result from~$e_1$.
 
 In this section, we present a
 splitting algorithm for the source language \lang, specifying
@@ -57,7 +57,7 @@ evaluates via $\redonesym$ to:
 \end{lstlisting}
 Intuitively, splitting this term should generate an $e1$ that reduces to the stage 1 content of the partial value (3), and an $e2$ corresponding to the stage~\bbtwo\
 computation $\letin \yhat {\mathtt{7+5}} \yhat$.
-To precisely delineate the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
+To precisely define the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
 \emph{partial-value masking} (or simply {\em masking}) functions, written $\masko{{-}}$ and $\maskt{{-};{-}}$, 
 which take a residual table and partial value as input and emit a term in \langmono\ that corresponds to only the content belonging to a single stage. \ref{fig:valMask} defines these
 masking functions.
@@ -70,14 +70,14 @@ the stage~\bbone\ component. $\masko{v}$ always produces a value in \langmono\ t
 the same structure as~$v$.
 
 \emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context $\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
-exactly the stage~\bbtwo\ content of $[\xi;v]$. Stage~\bbtwo\ masking 
-requires access to the residual table $\xi$ since all stage~\bbtwo\
+exactly the stage~\bbtwo\ content of $[\xi;v]$. Unlike stage~\bbone\ masking, stage~\bbtwo\ masking 
+requires access to the residual table $\xi$ because all stage~\bbtwo\
 content in $v$ has been lifted out into $\xi$. Stage~\bbtwo\ masking discards
 stage~\bbone\ content in $v$ by replacing base constants with~\texttt{()},
 replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
 constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ splitting, stage~\bbtwo\
 splititing masks functions by splitting their bodies as general stage~\bbone\ terms, and
-returning the stage~\bbtwo\ component. After discarding stage~\bbone\ content from $v$, stage~\bbtwo\ reifies $\xi$ around the result,
+returning the stage~\bbtwo\ component. After discarding stage~\bbone\ content from $v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
 producing a term in \langmono. 
 
 \subsection{Splitting Stage \bbone\ Terms}
