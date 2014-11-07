@@ -294,19 +294,19 @@ Splitting a stage \bbone\ term in \lang\
 % $\colone e A$ 
 (where $e\mathbin{\redonesym}[\xi;v]$), yields a term 
 $e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer} function $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
-For splitting to match the results of evaluating $e$ in \lang,
+To ensure the results of splitting produce the same output as the evaluation $e$ in \lang,
 we require that $e_1$ reduce to the tuple $(y,z)$,
 where $y$ is identical to $\masko{\xi;v}$, and 
-$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Intuitively, $e_1$ performs both the stage~\bbone\ subcomputations needed to produce an \emph{immediate result} $y$, and the stage~\bbone\ subcomputations (called \emph{precomputations}) required to produce the input required by the resumer.
+$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Since $e_1$ performs both stage~\bbone\ subcomputations needed to produce an \emph{immediate result} $y$, and the stage~\bbone\ subcomputations (called \emph{precomputations}) required to produce the input required by the resumer, we refer to this term as the \emph{combined result}, and hereafter denote it as $c$.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
-judgment $e \splitonesym [e_1,l.r]$ in \cref{fig:termSplitOne}, proceeds
-recursively on the structure of~$e$.  
+judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplitOne}, proceeds
+recursively on the structure of~$e$.
+When $e$ is a terminal (a variables or base constant)
+splitting yields a combined result formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ content.)  For example, \texttt{3} splits into combined result \texttt{(3,())} and resumer \texttt{\_=>()}.
 
-When $e$ is a terminal (variable or base constant), the combined result
-is formed by tupling $e$ with a \texttt{()} precomputation, 
-and the resumer is just constant \texttt{()}.  
-For example, \texttt{3} simply splits into combined result \texttt{((3,())} and \texttt{\_=>4}.
+% Note the direct correspondence of these splitting outputs to the output of the stage~\bbone\ and~\bbtwo\ masking functions.
+
 When $e$ is a non-terminal (except $\next$),
 splitting descends into $e$, recursively splitting subterms
 and generating combined terms $c_1,\ldots,c_n$.
