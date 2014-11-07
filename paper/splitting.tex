@@ -1,7 +1,7 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-Given a term $e$ in the source language \lang\ where terms of
+Given a term $e$ in the source language \lang, where terms of
 stage~\bbone\ and stage~\bbtwo\ may be interleaved, \emph{(stage)
   splitting} separates the stage~\bbone\ and stage~\bbtwo\
 subcomputations into two terms, $e_1$ and $e_2$, in an unstaged target language \langmono\ 
@@ -290,13 +290,14 @@ let yhat=7+5 in ((),yhat)
 % % %(resp., \bbtwo) components of a partial value by \texttt{()}. 
 
 
-Splitting a stage \bbone\ term $\colone e A$ 
+Splitting a stage \bbone\ term in \lang\
+% $\colone e A$ 
 (where $e\mathbin{\redonesym}[\xi;v]$), yields a term 
-$e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer} function $e_2 = l.r$ that represents all stage~\bbtwo\ subcomputations.
+$e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer} function $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
 For splitting to match the results of evaluating $e$ in \lang,
 we require that $e_1$ reduce to the tuple $(y,z)$,
 where $y$ is identical to $\masko{\xi;v}$, and 
-$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Intuitively, $e_1$ performs both the stage~\bbone\ subcomputations needed to produce an \emph{immediate result} $y$, and the stage~\bbone\ subcomputations (\emph{precomputations}) required to produce the input for the resumer.
+$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Intuitively, $e_1$ performs both the stage~\bbone\ subcomputations needed to produce an \emph{immediate result} $y$, and the stage~\bbone\ subcomputations (called \emph{precomputations}) required to produce the input required by the resumer.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [e_1,l.r]$ in \cref{fig:termSplitOne}, proceeds
