@@ -19,7 +19,7 @@ In this section, we present a
 splitting algorithm for the source language \lang, specifying
 precisely the algorithm and its correctness conditions.  
 We begin by defining a masking relation that serves to extract stage~\bbone\ and
-stage~\bbtwo\ components of \lang\ partial values into \langmono\ terms that the outputs of splitting must match. We then 
+stage~\bbtwo\ components of \lang\ partial values into \langmono\ terms that the outputs of splitting are designed to match. We then 
 move on to the specification of the splitting algorithm itself.
 
 
@@ -40,10 +40,10 @@ evaluates via $\redonesym$ to:
 \begin{lstlisting}
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-Intuitively, splitting this term should generate an $e_1$ that reduces to the stage 1 content of the partial value (3), and an $e_2$ corresponding to the stage~\bbtwo\
-computation $\letin \yhat {\mathtt{7+5}} \yhat$.
+Intuitively, splitting this term should generate an $e_1$ that reduces to the stage 1 content of the partial value \texttt{3}, and an $e_2$ corresponding to the stage~\bbtwo\ computation: \\
+$\letin \yhat {\mathtt{7+5}} \yhat$.
 
-To precisely define the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
+To precisely specify the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
 \emph{partial-value masking} (or simply {\em masking}) functions, written $\masko{{-}}$ and $\maskt{{-};{-}}$, 
 which take a residual table and partial value as input and emit a term in \langmono\
 that corresponds to only the content belonging to a single stage. \ref{fig:valMask} defines these
@@ -79,13 +79,13 @@ $e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer
 To ensure that the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$ in \lang,
 we require that $e_1$ reduce to the tuple $(y,z)$,
 where $y$ is identical to $\masko{\xi;v}$, and 
-$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Since $e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (called the \emph{immediate result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the input required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
+$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Since $e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (a value we call the \emph{immediate result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the input required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplitOne}, proceeds
 recursively on the structure of~$e$.
 When $e$ is a terminal (a variable or base constant)
-splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ content.)  For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
+splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
 
 % Note the direct correspondence of these splitting outputs to the output of the stage~\bbone\ and~\bbtwo\ masking functions.
 
@@ -100,7 +100,7 @@ The resumer binds the precomputation results $z_1,\ldots,z_n$ to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
 
-The combined term of a {\tt case} executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
+Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
 The precomputation result $z_i$ for this branch is injected and bundled with that of the predicate ($z_1$).   
 $z_i$ is cased in the resumer to determine which branch's resumer should be executed.
 {\tt case} and $\pause$ are the only two rules where splitting adds non-trivial logic is added to the precomputation.
@@ -135,11 +135,11 @@ to compute the input expected by the resumer.
 As with stage~\bbone\ terms, the splitting algorithm for stage~\bbtwo\ terms,
 as specified by the judgment $e \splittwosym [p,l.r]$ in \cref{fig:termSplitTwo}, is defined on the local structure of $e$.
 In the terminal cases of
-constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers that produce the original term. For
-example, the integer constant \texttt{3} splits into the
+constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers consisting of the original term.
+For example, the integer constant \texttt{3} splits into the
 precomputation \texttt{()} and resumer \texttt{\_=>3}.
 
-For non-terminal terms~$e$ in \lang\ (except $\prev$
+For all non-terminal terms~$e$ in \lang\ (except $\prev$
 and $\pause$)
 % recursively splitting
 % subterms and generating precomputations $p_1, \ldots, p_n$ and
@@ -148,6 +148,7 @@ the precomputation of~$e$ is defined as the combined precomputations of $e$'s $n
 $p=(p_1,\ldots,p_n)$.  The resumer binds each precomputation to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its corresponding resumer $r_i$.
+
 A notable properly of splitting stage~\bbtwo\ \texttt{case}s and functions is that the
 precomputation of subterms is lifted out from underneath stage
 \bbtwo\
