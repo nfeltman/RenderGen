@@ -302,30 +302,36 @@ $\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Since $e_1$ perform
 The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplitOne}, proceeds
 recursively on the structure of~$e$.
-When $e$ is a terminal (a variables or base constant)
-splitting yields a combined result formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ content.)  For example, \texttt{3} splits into combined result \texttt{(3,())} and resumer \texttt{\_=>()}.
+When $e$ is a terminal (a variable or base constant)
+splitting yields a combined result formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ content.)  For example, \texttt{3} splits into the combined result \texttt{(3,())} and resumer \texttt{\_=>()}.
 
 % Note the direct correspondence of these splitting outputs to the output of the stage~\bbone\ and~\bbtwo\ masking functions.
 
-When $e$ is a non-terminal (except $\next$),
-splitting descends into $e$, recursively splitting subterms
-and generating combined terms $c_1,\ldots,c_n$.
-The new combined term of $e$ then works by binding $c_1,\ldots,c_n$
+For all non-terminals (except $\next$),
+splitting descends into $e$, recursively splitting its $n$ subterms
+to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
+The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
 to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
-to isolate their immediate results and precomputations.
-The immediate result of $e$ is then formed by replacing its subterms with $y_1,\ldots,y_n$, 
-and the precomputation is formed from the tuple of $z_1,\ldots,z_n$.
+to isolate immediate results from the results of precomputations. Then,
+the immediate result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
+The resumer binds the precomputation results $z_1,\ldots,z_n$ to an
+argument $(l_1,\ldots,l_n)$ in a term that has the same structure
+of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
 
-At {\tt case}s, only one of the branches' combined results is executed, and its precomputation injected and bundled with the precomputation of the predicate. 
-This precomputation is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
-This rule and $\pause$ are the only two places where nontrivial information is added to the precomputation.
+The combined term of a {\tt case} executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
+The precomputation result $z_i$ for this branch is injected and bundled with that of the predicate ($z_1$).   
+$z_i$ is cased in the resumer to determine which branch's resumer should be executed.
+{\tt case} and $\pause$ are the only two rules where splitting adds non-trivial logic is added to the precomputation.
 
-Function introduction has a \texttt{()} precomputation, since functions are already fully reduced in our semantics.
-But since the body of a function may be multistage, splitting must continue into it.
-The immediate result is a new function formed out of the stage \bbone\ part of the original body,
-and the resumer is a new function formed out of the stage \bbtwo\ part of the original body.
+% We call attention to the rule for {\tt case}s since it, and the rule for $\pause$, where splitting adds non-trivial logic to the precomputation.
+
+Function introduction has a \texttt{()} precomputation result,
+since functions are already fully reduced in our semantics.
+However, since the body of a function may itself be multi-stage, splitting must continue into it.
+The immediate result is a new function formed from the stage~\bbone\ part of the original body.
+The resumer is a new function formed out of the stage \bbtwo\ part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
-and then appropriately pass it to the resumer version of the function.
+and pass it to the resumer version of the function.
 
 \subsection{Splitting Stage \bbtwo\ Terms}
 
