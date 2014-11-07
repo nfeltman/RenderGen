@@ -63,7 +63,7 @@ replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
 constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ masking, stage~\bbtwo\
 masking splits the bodies of lambdas as general stage~\bbone\ terms, and
 returns the stage~\bbtwo\ component. After discarding all stage~\bbone\ content from $v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
-producing a term in \langmono. The stage~\bbtwo\ mask of the partial value and residual table given above is:
+producing a term in \langmono. For example, the stage~\bbtwo\ mask of the partial value and residual table given above is:
 \begin{lstlisting}
 let yhat=7+5 in ((),yhat)
 \end{lstlisting}
