@@ -1,36 +1,41 @@
 \begin{figure*}
 
-**Evaluation:
+\textbf{\lang\ Evaluation:}
 
-If  
-$e: A @ 1$
-then
-$e$ $red_1$ residual table, partial value
+\hspace{2em}\bbone-Evaluation: $e\mathbin{\redonesym}[\xi;v]$, where $\xi$ is a \emph{residual table} and $v$ is a \emph{partial value}. 
 
-$red_1$: 1-eval
+\hspace{2em}\bbtwo-Evaluation: $e\mathbin{\redtwosym}q$, where $q$ is a \emph{residual} in the unstaged language \langTwo
 
-If 
-$e: A @ 2$ 
-then
-$e$ $red_2$ $q$, where $q$ is a residual in an unstaged language.
+% $red_2$: 2-eval,  which we think of as being identical to specialization. 
 
-$red_2$: 2-eval,  which we think of as being identical to specialization. 
+\vspace{.75em}
+\textbf{\lang\ Splitting:}
 
-** Splitting
+\hspace{2em}\bbone-Splitting Structure: $e \splitonesym [c,l.r]$, where:
 
-$e:A@1$ splits into $c$, which represents all stage-1 subcomputations
-where $c$ reduces $(y,b)$, where $y$ is the 1-result and $b$ is the
-boundary value.  
+\hspace{4em}$c$ is the \emph{combined term} (representing all stage~\bbone\ subcomputations in $e$)
+
+\hspace{4em}$l.r$ is the \emph{resumer} (representating all stage~\bbtwo\ subcomputatiosn in $e$)
+
+\hspace{4em}$c~\redsym~(y,b)$, where $y$ is the \emph{\bbone-result} of $e$, and $b$ is the \emph{boundary value} of $e$
 
  
-** Correctness
+\hspace{2em}\bbone-Splitting Correctness: If $e\mathbin{\redonesym}[\xi;v]$, then:
 
-$y$ is equal to one-mask of evaluating e with 1-eval.
+\hspace{4em}$y$ is identical to $\masko{\xi;v}$
 
-let l = b in r $red$ $v$ (vanilla reduction), where $v$ is identical
-to the reduced value (via $red$) of two-mask of  e with 1-eval.
+\hspace{4em}$\maskt{\xi;v}$ and \texttt{(let l=b in r)} reduce (via $\redsym$) to identical values.  
 
-\caption{Stage \bbtwo\ Splitting}
+\hspace{2em}\bbtwo-Splitting Structure: $e \splittwosym [p,l.r]$, where:
+
+\hspace{4em}$p$ is the \emph{precomputation} (representing all stage~\bbone\ subcomputations in $e$)
+
+\hspace{4em}$l.r$ is the \emph{resumer} (representating all stage~\bbtwo\ subcomputations in $e$)
+
+\hspace{2em}\bbtwo-Splitting Correctness: If $e~\redtwosym~q$, and $q~\redsym~v$, then \texttt{(let l=b in r)}~$\redsym~v$
+
+
+\caption{Summary of \lang\ evaluation and splitting.}
 \label{fig:termSplitTwo}
 \end{figure*}
 

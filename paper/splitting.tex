@@ -7,16 +7,16 @@
 Given a term $e$ in the source language \lang, where terms of
 stage~\bbone\ and stage~\bbtwo\ may be interleaved, \emph{(stage)
   splitting} separates the stage~\bbone\ and stage~\bbtwo\
-subcomputations into two terms, $e_1$ and $e_2$, in an unstaged target language \langmono\ 
+subcomputations into two terms,~$e_1$ and~$e_2$, in an unstaged target language \langmono\ 
 %each performing the
 %subcomputations corresponding to each stage.  More precisely, given a
 %\lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
 %unstaged target language \langmono\
 such that~$e_1$ performs all the
-stage~\bbone\ subcomputations in~$e$ and $e_2$~performs all of the
+stage~\bbone\ subcomputations in~$e$ and~$e_2$~performs all of the
 stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluating~$e$ in
-the staged language produces the same result as evaluating~$e_1$ in the target language, then further evaluating 
-$e_2$ in the target language with the result from~$e_1$.
+the staged language produces the same result as evaluating~$e_1$ in the target language,
+then further evaluating~$e_2$ in the target language with the result from~$e_1$.
 
 In this section, we present a
 splitting algorithm for the source language \lang, specifying
@@ -26,7 +26,7 @@ stage~\bbtwo\ components of \lang\ partial values into \langmono\ terms that the
 move on to the specification of the splitting algorithm itself.
 
 
-\subsection{Partial Value Masking}
+\subsection{Masking}
 
 % Intuitively, we require that the terms obtained by splitting a term $e$, when
 % evaluated, agree with $e$ when evaluated according to our dynamic semantics. In
@@ -43,30 +43,31 @@ evaluates via $\redonesym$ to:
 \begin{lstlisting}
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-Intuitively, splitting this term should generate an $e_1$ that reduces to the stage 1 content of the partial value \texttt{3}, and an $e_2$ corresponding to the stage~\bbtwo\ computation: \\
+Intuitively, splitting this term should generate an~$e_1$ that reduces to the stage~\bbone\ content of the partial value \texttt{3},
+and an~$e_2$ corresponding to the stage~\bbtwo\ computation: \\
 $\letin \yhat {\mathtt{7+5}} \yhat$.
 
 To precisely specify the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
-\emph{partial-value masking} (or simply {\em masking}) functions, written $\masko{{-}}$ and $\maskt{{-};{-}}$, 
+\emph{masking} functions, written $\masko{{-};{-}}$ and $\maskt{{-};{-}}$, 
 which take a residual table and partial value as input and emit a term in \langmono\
 that corresponds to only the content belonging to a single stage. \ref{fig:valMask} defines these
 masking functions.
 
-\emph{Stage~\bbone\ masking} of the partial value $v$ (written $\masko{v}$) produces a term in \langmono\ containing exactly
-the stage~\bbone\ content of $v$. Since \next\ terms only contain stage~\bbtwo\
-content, $\masko{v}$ replaces all $\next$ subterms of $v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits their bodies as general stage~\bbone\ terms (as described in \ref{sec:split-one}), and returns
+\emph{Stage~\bbone\ masking} of the partial value~$v$ (written $\masko{v}$) produces a term in \langmono\ containing exactly
+the stage~\bbone\ content of~$v$. Since \next\ terms only contain stage~\bbtwo\
+content, $\masko{v}$ replaces all $\next$ subterms of~$v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits their bodies as general stage~\bbone\ terms (as described in \ref{sec:split-one}), and returns
 the stage~\bbone\ component. $\masko{v}$ always produces a value in \langmono\ that has
 the same structure as~$v$.  For example, the stage~\bbone\ mask of the partial value given above is \texttt{(3,())}. 
 
-\emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context $\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
+\emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context~$\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
 exactly the stage~\bbtwo\ content of $[\xi;v]$. Unlike stage~\bbone\ masking, stage~\bbtwo\ masking 
 requires access to the residual table $\xi$ because all stage~\bbtwo\
-content in $v$ has been lifted out into $\xi$. Stage~\bbtwo\ masking discards
-stage~\bbone\ content in $v$ by replacing base constants with~\texttt{()},
+content in~$v$ has been lifted out into~$\xi$. Stage~\bbtwo\ masking discards
+stage~\bbone\ content in~$v$ by replacing base constants with~\texttt{()},
 replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
 constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ masking, stage~\bbtwo\
 masking splits the bodies of lambdas as general stage~\bbone\ terms, and
-returns the stage~\bbtwo\ component. After discarding all stage~\bbone\ content from $v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
+returns the stage~\bbtwo\ component. After discarding all stage~\bbone\ content from~$v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
 producing a term in \langmono. For example, the stage~\bbtwo\ mask of the partial value and residual table given above is:
 \begin{lstlisting}
 let yhat=7+5 in ((),yhat)
@@ -75,14 +76,12 @@ let yhat=7+5 in ((),yhat)
 \subsection{Stage \bbone\ Term Splitting}
 \label{sec:split-one}
 
-Splitting a stage \bbone\ term $e$ in \lang\
-% $\colone e A$ 
-yields a term 
+Splitting a stage~\bbone\ term $e$ in \lang\ yields a term 
 $e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer} function $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
-To ensure that the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$ in \lang,
-we require that $e_1$ reduce to the tuple $(y,z)$,
+To ensure that the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$,
+we require that $e_1$ reduce to the tuple $(y,b)$,
 where $y$ is identical to $\masko{\xi;v}$, and 
-$\letin l z r$ reduces to the same value as $\maskt{\xi;v}$. Since $e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (a value we call the \emph{immediate result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the input required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
+$\letin l b r$ reduces to the same value as $\maskt{\xi;v}$. Since~$e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (a value we call the \emph{stage~\bbone\ result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the \emph{boundary value} $b$ required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplitOne}, proceeds
@@ -96,28 +95,28 @@ For all non-terminals (except $\next$),
 splitting descends into $e$, recursively splitting its $n$ subterms
 to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
 The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
-to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
-to isolate immediate results from the results of precomputations. Then,
-the immediate result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
-The resumer binds the precomputation results $z_1,\ldots,z_n$ to an
+to the patterns $(y_1,b_1),\ldots,(y_n,b_n)$
+to isolate \bbone-results from boundary values. Then,
+the \bbone-result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
+The resumer binds the boundary values $b_1,\ldots,b_n$ to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
 
-Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
-The precomputation result $z_i$ for this branch is injected and bundled with that of the predicate ($z_1$).   
-$z_i$ is cased in the resumer to determine which branch's resumer should be executed.
+Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the \bbone-result $y_1$ of the predicate.
+The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$).   
+$b_i$ is cased in the resumer to determine which branch's resumer should be executed.
 {\tt case} and $\pause$ are the only two rules where splitting adds non-trivial logic is added to the precomputation.
 
-Function introduction has a \texttt{()} precomputation result,
+Function introduction has a \texttt{()} boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multi-stage, splitting must continue into it.
-The immediate result is a new function formed from the stage~\bbone\ part of the original body.
-The resumer is a new function formed out of the stage \bbtwo\ part of the original body.
+The \bbone-result is a new function formed from the stage~\bbone\ part of the original body.
+The resumer is a new function formed out of the stage~\bbtwo\ part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
 
 Since the results of splitting $\next$ terms depend on the output of splitting its stage~\bbtwo\ subterm,
-we defer description of $\next$ until after describing stage~\bbtwo\ term splitting. % in the subsequent section.
+we defer description of $\next$ until after describing stage~\bbtwo\ term splitting.
 
 \subsection{Stage \bbtwo\ Term Splitting}
 
@@ -148,7 +147,7 @@ and $\pause$)
 % subterms and generating precomputations $p_1, \ldots, p_n$ and
 % resumers $r_1, \ldots, r_n$ for a term with~$n$ immediate subterms.
 the precomputation of~$e$ is defined as the combined precomputations of $e$'s $n$ subterms:
-$p=(p_1,\ldots,p_n)$.  The resumer binds each precomputation to an
+$p=(p_1,\ldots,p_n)$.  The resumer binds each boundary value to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its corresponding resumer $r_i$.
 
@@ -159,13 +158,13 @@ binders.  % TODO: should probably draw a parallel to the same behavior in dynami
 \ur{This last point seems important.  It would be important to come
   back to it.}
 
-Splitting $\prev$ generates a precomputation that projects the combined result of its stage~\bbone\ subterm.
-Since the argument to $\prev$ is of $\fut$ type, its immediate result reduces to \texttt{()}, justifying why it can be thrown away.
-$\pause$ treats the entire combined result of its stage~\bbone\ subexpression as a precomputation, 
+Splitting $\prev$ generates a precomputation that projects the \bbone-result of its stage~\bbone\ subterm.
+Since the argument to $\prev$ is of $\fut$ type, its \bbone-result reduces to \texttt{()}, justifying why it can be thrown away.
+$\pause$ treats the entire combined term of its stage~\bbone\ subexpression as a precomputation, 
 and projects out the integer result in the resumer. 
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.} 
-Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial immediate result \texttt{()}.
+Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
 
 \input{figures/splitting-term}
 
@@ -179,7 +178,7 @@ The above splitting rules are correct, but can be optimized in many cases.
 For instance, if multiple subterms have a \texttt{()} precomputation, these can be
 combined into a single \texttt{()}, with the residual changed accordingly.
 This becomes more difficult to fix when it occurs within a recursive function.
-For example, consider the stage \bbtwo\ term
+For example, consider the stage~\bbtwo\ term
 \begin{lstlisting}
 2`prev{
   1`letfun fact (n : int) : int = 
