@@ -320,7 +320,12 @@ At {\tt case}s, only one of the branches' combined results is executed, and its 
 This precomputation is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
 This rule and $\pause$ are the only two places where nontrivial information is added to the precomputation.
 
-[FUNCTIONS]
+Function introduction has a \texttt{()} precomputation, since functions are already fully reduced in our semantics.
+But since the body of a function may be multistage, splitting must continue into it.
+The immediate result is a new function formed out of the stage \bbone\ part of the original body,
+and the resumer is a new function formed out of the stage \bbtwo\ part of the original body.
+It is the responsibility of the application site to save the precomputation of the function body
+and then appropriately pass it to the resumer version of the function.
 
 \subsection{Splitting Stage \bbtwo\ Terms}
 
