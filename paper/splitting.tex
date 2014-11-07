@@ -9,61 +9,75 @@ subcomputations corresponding to each stage.  More precisely, given a
 \lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
 unstaged target language \langmono\ such that~$e_1$ performs all the
 stage~\bbone\ subcomputations in~$e$ and $e_2$~performs all of the
-stage~\bbtwo\ subcomputations.
+stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluation of~$e$ in
+the staged language produces the same result as evaluating~$e_1$ and 
+then~$e_2$ with the result from~$e_1$.
 
-Splitting preserves correctness in the sense that evaluation of~$e$ in
-the staged language produces the same result as evaluating~$e_1$ and
-then~$e_2$ with the result from~$e_1$.  In this section, we present a
-splitting algorithm for the source language \lang\, specifying
-precisely the algorithm and the correctness condition.  We start by
-defining a masking relation that helps us to isolate stage~\bbone\ and
-stage~\bbtwo\ components of a partial value and then move on to the
-specification of the splitting algorithms.
+In this section, we present a
+splitting algorithm for the source language \lang, specifying
+precisely the algorithm and its correctness condition.  
+We begin by defining a masking relation that serves to extract stage~\bbone\ and
+stage~\bbtwo\ components of \lang\ partial values into \langmono\ terms that the outputs of splitting must match. We then 
+move on to the specification of the splitting algorithm itself.
+
 
 \subsection{Partial Value Masking}
 
-Intuitively, we require that the terms obtained by splitting a term $e$, when
-evaluated, agree with $e$ when evaluated according to our dynamic semantics. In
-the case of stage~\bbone\ terms, our dynamic semantics produce partial values
-containing information at \emph{both} stages, which goes against the idea that
-splitting separates the subcomputations belonging to each stage.
+% Intuitively, we require that the terms obtained by splitting a term $e$, when
+% evaluated, agree with $e$ when evaluated according to our dynamic semantics. In
+% the case of stage~\bbone\ terms, our dynamic semantics produce partial values
+% containing information at \emph{both} stages, which goes against the idea that
+% splitting separates the subcomputations belonging to each stage.
 
-For example, consider the stage 1 term
+%For example, the partial value below contains both a stage~\bbone\ value 3, and a stage~\bbtwo\
+%computation $\letin \yhat {\mathtt{7+5}} \yhat$.
+
+% such as in the example below: 
+
+
+%For example, consider the stage 1 term
+%\begin{lstlisting}
+%1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
+%\end{lstlisting}
+%which evaluates via $\redonesym$ to a 
+%
+%residual table and multi-stage tuple
+
+%This partial value contains both a stage~\bbone\ value 3, and a stage~\bbtwo\
+%computation $\letin \yhat {\mathtt{7+5}} \yhat$.
+
+Recall that \lang\ partial values and residual tables together may
+contain content at \emph{both} stages. For example the term:
 \begin{lstlisting}
 1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
 \end{lstlisting}
-which evaluates via $\redonesym$ to a residual table and multi-stage tuple
+evaluates via $\redonesym$ to:
 \begin{lstlisting}
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-This partial value contains both a stage~\bbone\ value 3, and a stage~\bbtwo\
+Intuitively, splitting this term should generate an $e1$ that reduces to the stage 1 content of the partial value (3), and an $e2$ corresponding to the stage~\bbtwo\
 computation $\letin \yhat {\mathtt{7+5}} \yhat$.
+To precisely delineate the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
+\emph{partial-value masking} (or simply {\em masking}) functions, written $\masko{{-}}$ and $\maskt{{-};{-}}$, 
+which take a residual table and partial value as input and emit a term in \langmono\ that corresponds to only the content belonging to a single stage. \ref{fig:valMask} defines these
+masking functions.
+% written $\masko{{-}}$ and $\maskt{{-};{-}}$. 
 
-To clearly delineate these parts of the partial value, we define 
-\emph{partial-value masking}, or simply {\em masking}, functions at each stage,
-which compute from a residual table and partial value the content (expressed as
-a term in \langmono) belonging to each stage. \ref{fig:valMask} defines these
-masking functions, written $\masko{{-}}$ and $\maskt{{-};{-}}$. 
-
-The goal of $\masko{v}$ is to produce a term in \langmono\ containing exactly
+\emph{Stage~\bbone\ masking} of the partial value $v$ (written $\masko{v}$) produces a term in \langmono\ containing exactly
 the stage~\bbone\ content of $v$. Since \next\ terms only contain stage~\bbtwo\
-content, we replace all $\next$ subterms of $v$ with \texttt{()}.  For lambdas,
-since these represent potentially-multistage computations, we split their bodies
-as general stage~\bbone\ terms (as described in \ref{sec:split-one}), and return
-the stage~\bbone\ component. $\masko{v}$ is always a value in \langmono, and has
+content, $\masko{v}$ replaces all $\next$ subterms of $v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits their bodies as general stage~\bbone\ terms (as described in \ref{sec:split-one}), and returns
+the stage~\bbone\ component. $\masko{v}$ always produces a value in \langmono\ that has
 the same structure as~$v$.
 
-The goal of $\maskt{\xi;v}$ is to produce a term in \langmono\ containing
-exactly the stage~\bbtwo\ content of $[\xi;v]$. Unlike in stage \bbone\ masking,
-here we need access to the residual table $\xi$, because all stage~\bbtwo\
-content in $v$ has already been lifted out into $\xi$. To discard all
-stage~\bbone\ information in $v$, we replace base constants with~\texttt{()},
-replace $\next~\hat{y}$ with~$\hat{y}$, and replace all $n$-ary term
-constructors with an $n$-tuple of their subterms, themselves masked. As before,
-we mask functions by splitting their bodies as general stage~\bbone\ terms, and
-use the stage~\bbtwo\ component.
-
-After performing this transformation on $v$, we reify $\xi$ around the result,
+\emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context $\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
+exactly the stage~\bbtwo\ content of $[\xi;v]$. Stage~\bbtwo\ masking 
+requires access to the residual table $\xi$ since all stage~\bbtwo\
+content in $v$ has been lifted out into $\xi$. Stage~\bbtwo\ masking discards
+stage~\bbone\ content in $v$ by replacing base constants with~\texttt{()},
+replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
+constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ splitting, stage~\bbtwo\
+splititing masks functions by splitting their bodies as general stage~\bbone\ terms, and
+returning the stage~\bbtwo\ component. After discarding stage~\bbone\ content from $v$, stage~\bbtwo\ reifies $\xi$ around the result,
 producing a term in \langmono. 
 
 \subsection{Splitting Stage \bbone\ Terms}
