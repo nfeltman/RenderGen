@@ -5,7 +5,7 @@
 %\infersplitone [unit]			{\spl {()}{\rmunit}{((),()),\_.()}}															{\cdot} \and
 \infersplitone [int]			{\spl {i}{\rm int}{(i,()),\_.()}}															{\cdot} \and
 \infersplitone [hyp]			{\spl {x}{A}{(x,()),\_.x}}																	{\cdot} \and
-\infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{(\lambda x.c,()),\_.(\lam{(x,l)}{\_}{r})}}					{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplitone	 [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{(\lambda x.c,()),\_.(\lambda (x,l).r)}}					{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplitone [\to E]	{\spl {e_1~e_2}{B}{\left(
 									\talllet{(y_1,z_1)}{c_1}{
 									\talllet{(y_2,z_2)}{c_2}{
