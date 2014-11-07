@@ -19,15 +19,15 @@
 \centering
 \begin{minipage}[]{10em}
 \begin{align*}
-&\\
-\masko {()}			&= () \\
-\masko {i}			&= i \\
-\masko {\next~\hat y}	&= () \\
-\masko {(v_1,v_2)}	&= (\masko {v_1},\masko {v_2}) \\
-\masko {\inl~v}		&= \inl~\masko{v} \\
-\masko {\inr~v}		&= \inr~\masko{v} \\
-\masko {\roll~v}		&= \roll~\masko{v} \\
-\masko {\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
+\masko {\yhat \mapsto q,\xi;v}			&= \masko{\cdot;v} \\
+\masko {\cdot;()}			&= () \\
+\masko {\cdot;i}			&= i \\
+\masko {\cdot;\next~\hat y}	&= () \\
+\masko {\cdot;(v_1,v_2)}	&= (\masko {\cdot;v_1},\masko {\cdot;v_2}) \\
+\masko {\cdot;\inl~v}		&= \inl~\masko{\cdot;v} \\
+\masko {\cdot;\inr~v}		&= \inr~\masko{\cdot;v} \\
+\masko {\cdot;\roll~v}		&= \roll~\masko{\cdot;v} \\
+\masko {\cdot;\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
 \end{align*}
 \end{minipage}
 \qquad\qquad
