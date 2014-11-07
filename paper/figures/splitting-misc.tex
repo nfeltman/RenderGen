@@ -15,38 +15,43 @@
 %\end{figure*}
 %
 
-\begin{figure*}
-\centering
-\begin{minipage}[]{10em}
-\begin{align*}
-&\\
-\masko {()}			&= () \\
-\masko {i}			&= i \\
-\masko {\next~\hat y}	&= () \\
-\masko {(v_1,v_2)}	&= (\masko {v_1},\masko {v_2}) \\
-\masko {\inl~v}		&= \inl~\masko{v} \\
-\masko {\inr~v}		&= \inr~\masko{v} \\
-\masko {\roll~v}		&= \roll~\masko{v} \\
-\masko {\lam xAe}		&= \lambda x.c \text{ where } \splitone e A {c,l.r}
-\end{align*}
-\end{minipage}
-\qquad\qquad
-\begin{minipage}[]{10em}
-\begin{align*}
-\maskt {\yhat \mapsto q,\xi;v}			&= (\letin \yhat q {\maskt{\xi;v}}) \\
-\maskt {\cdot;()}			&= () \\
-\maskt {\cdot;i}			&= () \\
-\maskt {\cdot;\next~\hat y}	&= \hat y \\
-\maskt {\cdot;(v_1,v_2)}	&= (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\
-\maskt {\cdot;\inl~v}		&= \maskt {\cdot;v} \\
-\maskt {\cdot;\inr~v}		&= \maskt {\cdot;v} \\
-\maskt {\cdot;\roll~v}		&= \maskt {\cdot;v} \\
-\maskt {\cdot;\lam xAe}		&= \lambda (x,l).r \text{ where } \splitone e A {c,l.r}
-\end{align*}
-\end{minipage}
+\begin{figure}
+\[\begin{array}{l|l|l}
+[\xi;v] & \masko{\xi;v} & \maskt{\xi;v} \\ \hline
+[\yhat \mapsto q,\xi;v]
+  & \masko{\cdot;v}
+  & \letin \yhat q {\maskt{\xi;v}} \\\relax
+[\cdot;()] 
+  & ()
+  & () \\\relax
+[\cdot;i] 
+  & i
+  & () \\\relax
+[\cdot;\next~\hat y] 
+  & ()
+  & \hat y \\\relax
+[\cdot;(v_1,v_2)] 
+  & (\masko {\cdot;v_1},\masko {\cdot;v_2})
+  & (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\\relax
+[\cdot;\inl~v] 
+  & \inl~\masko{\cdot;v}
+  & \maskt {\cdot;v} \\\relax
+[\cdot;\inr~v] 
+  & \inr~\masko{\cdot;v}
+  & \maskt {\cdot;v} \\\relax
+[\cdot;\roll~v] 
+  & \roll~\masko{\cdot;v}
+  & \maskt {\cdot;v} \\\relax
+[\cdot;\lam xAe]
+  & \lambda x.c 
+  & \lambda (x,l).r \\
+& \text{ for } \splitone e A {c,l.r}
+& \text{ for } \splitone e A {c,l.r}
+\end{array}\]
+
 \caption{Partial Value Masking}
 \label{fig:valMask}
-\end{figure*}
+\end{figure}
 
 %\begin{figure*}
 %\begin{mathpar}
