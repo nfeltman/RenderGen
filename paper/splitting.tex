@@ -323,7 +323,23 @@ Splitting stage~\bbone\ terms is implemented by the judgment $e \splitonesym [c,
 
 \TODO REDO THE REST OF THE TEXT TO WALK THROUGH THE MAJOR RULES OF SPLITTING
 
-In general, the 
+When $e$ is a terminal (variable or base constant), the combined result
+is formed by tupling $e$ with a \texttt{()} precomputation, 
+and the resumer is just \texttt{()}.
+When $e$ is a non-terminal (except $\next$),
+splitting descends into $e$, recursively splitting subterms
+and generating combined terms $c_1,\ldots,c_n$.
+The new combined term of $e$ then works by calling $c_1,\ldots,c_n$,
+destucting them into variables $y_1,\ldots,y_n$ for immediate results 
+and $z_1,\ldots,z_n$ for precomputations.
+The immediate result of $e$ is then formed by replacing its subterms with $y_1,\ldots,y_n$, 
+and the precomputations is formed from the tuple of $z_1,\ldots,z_n$.
+
+In the These combined terms are each 
+
+At stage \bbone\ {\tt case}s, the splitting rules adds injections to the precomputations of each branch. 
+This is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
+This rule and $\pause$ are the only two places where nontrivial information is added to the precomputation.
 
 The rule for $\next$ simply tuples up the precomputation of its subterm with a trivial immediate result,
 while the rule for $\prev$ projects the combined result of its subterm to isolate the precomputation.
@@ -333,10 +349,6 @@ The $\pause$ rule treats the entire combined result of its subexpression as a pr
 and projects out the integer result in the resumer.% 
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.}
-
-At stage \bbone\ {\tt case}s, the splitting rules adds injections to the precomputations of each branch. 
-This is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
-This rule and $\pause$ are the only two places where nontrivial information is added to the precomputation.
 
 The goal of stage 2 splitting was to generate a precomputation and resumer such
 that the resumer and the \lang\ residual reduce to the same final value.
