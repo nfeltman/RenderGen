@@ -70,11 +70,11 @@
 \newcommand {\roll} {{\tt roll}}
 \newcommand {\unroll} {{\tt unroll}}
 \newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
-\newcommand {\talllet} [3] {\begin{array}{l} {\tt let}~{#1} = {#2}~{\tt in} \\ {#3}\end{array}}
+\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} {\tt let}~{#1} = {#2}~{\tt in} \\ {#3}\end{array}}
 \newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
-\newcommand {\tallcase} [3] {\begin{array}{l} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
+\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
 \newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}
-\newcommand {\tallif} [3] {\begin{array}{l} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
+\newcommand {\tallif} [3] {\begin{array}{@{}l@{}} {\tt if}~{#1} \\{\tt then}~{#2}\\{\tt else}~{#3} \end{array}}
 \newcommand {\lam} [3] {\lambda{#1}\mathrm{:}{#2}.{#3}}
 \newcommand {\valprod} [2] {({#1},{#2})}
 \newcommand {\projbind} [1] {\letin{l_{#1}}{\pi_{#1} l}{r_{#1}}}
