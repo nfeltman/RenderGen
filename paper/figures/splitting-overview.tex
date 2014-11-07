@@ -1,0 +1,36 @@
+\begin{figure*}
+
+**Evaluation:
+
+If  
+$e: A @ 1$
+then
+$e$ $red_1$ residual table, partial value
+
+$red_1$: 1-eval
+
+If 
+$e: A @ 2$ 
+then
+$e$ $red_2$ $q$, where $q$ is a residual in an unstaged language.
+
+$red_2$: 2-eval,  which we think of as being identical to specialization. 
+
+** Splitting
+
+$e:A@1$ splits into $c$, which represents all stage-1 subcomputations
+where $c$ reduces $(y,b)$, where $y$ is the 1-result and $b$ is the
+boundary value.  
+
+ 
+** Correctness
+
+$y$ is equal to one-mask of evaluating e with 1-eval.
+
+let l = b in r $red$ $v$ (vanilla reduction), where $v$ is identical
+to the reduced value (via $red$) of two-mask of  e with 1-eval.
+
+\caption{Stage \bbtwo\ Splitting}
+\label{fig:termSplitTwo}
+\end{figure*}
+
