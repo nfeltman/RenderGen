@@ -303,35 +303,24 @@ The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [e_1,l.r]$ in \cref{fig:termSplitOne}, proceeds
 recursively on the structure of~$e$.  
 
+When $e$ is a terminal (variable or base constant), the combined result
+is formed by tupling $e$ with a \texttt{()} precomputation, 
+and the resumer is just constant \texttt{()}.  
+For example, \texttt{3} simply splits into combined result \texttt{((3,())} and \texttt{\_=>4}.
+When $e$ is a non-terminal (except $\next$),
+splitting descends into $e$, recursively splitting subterms
+and generating combined terms $c_1,\ldots,c_n$.
+The new combined term of $e$ then works by binding $c_1,\ldots,c_n$
+to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
+to isolate their immediate results and precomputations.
+The immediate result of $e$ is then formed by replacing its subterms with $y_1,\ldots,y_n$, 
+and the precomputation is formed from the tuple of $z_1,\ldots,z_n$.
 
-
-\TODO REDO THE REST OF THE TEXT TO WALK THROUGH THE MAJOR RULES OF SPLITTING
-
-In general, the 
-
-The rule for $\next$ simply tuples up the precomputation of its subterm with a trivial immediate result,
-while the rule for $\prev$ projects the combined result of its subterm to isolate the precomputation.
-Since the argument to $\prev$ must have a $\fut$ type, its immediate result must reduce to \texttt{()},
-justifying why that part can be thrown away.
-The $\pause$ rule treats the entire combined result of its subexpression as a precomputation, 
-and projects out the integer result in the resumer.% 
-\footnote{The resumer of an integer expression is usually trivial, 
-but we have to include it here for termination purposes.}
-
-At stage \bbone\ {\tt case}s, the splitting rules adds injections to the precomputations of each branch. 
-This is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
+At {\tt case}s, only one of the branches' combined results is executed, and its precomputation injected and bundled with the precomputation of the predicate. 
+This precomputation is then cased in the resumer to resume the stage \bbtwo\ portion of the correct branch.
 This rule and $\pause$ are the only two places where nontrivial information is added to the precomputation.
 
-The goal of stage 2 splitting was to generate a precomputation and resumer such
-that the resumer and the \lang\ residual reduce to the same final value.
-However, stage~\bbone\ terms do not reduce to final values, rather they reduce
-to residual tables and partial values.  
-Therefore, to make the results of splitting match the
-the partial value above, we choose to split \bbone\ terms in \lang\ into a
-resumer that reduces to the same value as the stage~\bbtwo\ computation, and an
-$e_1$ that not only performs the precomputation expected by the resumer, but
-also computes values that match the stage~\bbone\ aspects of the partial value.
-
+[FUNCTIONS]
 
 \subsection{Splitting Stage \bbtwo\ Terms}
 
@@ -378,8 +367,16 @@ binders.  % TODO: should probably draw a parallel to the same behavior in dynami
 \ur{This last point seems important.  It would be important to come
   back to it.}
 
-The $\prev$ and $\pause$ rules depends on
-splitting stage \bbone\ terms, and so they are covered later.
+\subsection{Interface Rules}
+
+The rule for $\next$ simply tuples up the precomputation of its subterm with a trivial immediate result,
+while the rule for $\prev$ projects the combined result of its subterm to isolate the precomputation.
+Since the argument to $\prev$ must have a $\fut$ type, its immediate result must reduce to \texttt{()},
+justifying why that part can be thrown away.
+The $\pause$ rule treats the entire combined result of its subexpression as a precomputation, 
+and projects out the integer result in the resumer.% 
+\footnote{The resumer of an integer expression is usually trivial, 
+but we have to include it here for termination purposes.}
 
 
 %For example, the stage \bbtwo\ term
