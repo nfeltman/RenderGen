@@ -198,13 +198,11 @@ but we have to include it here for termination purposes.}
 
 \subsection{Optimizations}
 
-The above splitting rules are correct, but can be optimized in many cases. One
-major optimization is to eliminate redundant instances of \texttt{()}---for
-example, if multiple subterms have a \texttt{()} precomputation, these can be
-combined.
-
-A similar issue can occur in the precomputations for recursive function bodies.
-Consider the stage \bbtwo\ term
+The above splitting rules are correct, but can be optimized in many cases. 
+For instance, if multiple subterms have a \texttt{()} precomputation, these can be
+combined into a single \texttt{()}, with the residual changed accordingly.
+This becomes more difficult to fix when it occurs within a recursive function.
+For example, consider the stage \bbtwo\ term
 \begin{lstlisting}
 2`prev{
   1`letfun fact (n : int) : int = 
@@ -224,7 +222,7 @@ letfun fact (n : unit, l0 : prec) : unit =
   case l0 of L => () | R l1 => fact ((),l0)
 in (fact (pi2 l); pi1 l)-100`
 \end{lstlisting}
-\texttt{fact}, being a stage \bbone\ function, itself splits into two recursive
+Here, the stage \bbone\ function \texttt{fact} splits into two recursive
 functions, which compute a combined result (stage \bbone\ result and
 precomputation), and a stage \bbtwo\ result, respectively. This precomputation
 could be given the type
@@ -235,17 +233,17 @@ while the stage \bbtwo\ result is always \texttt{()}.
 
 It is wasteful to run the stage \bbtwo\ version of \texttt{fact}, since it
 always returns \texttt{()}; worse yet, it has linear runtime!
-
-We solve this issue by adding a new staging annotation to \lang, called
-\texttt{mono}. $\monoSt~e$ is stage \bbone, and requires that $e$ contains
+But optimizing this away is in general a global operation,
+so we instead solve this issue by adding a new staging annotation to \lang, called
+\texttt{mono}. The term $\monoSt~e$ is stage \bbone, and requires that $e$ contains
 no stage \bbtwo\ subexpressions. This adds a new stage \bbmono\ and two new
 rules to \lang:
 \begin{mathpar}
-\infer{\typesone{\monoSt~e}A}{\typesmono e A} \and
+\infer{\typesone{\monoSt~e}A}{\typesmono e A & A~\mathrm{safe}} \and
 \infer{\diaone{\monoSt~e}{\cdot;v}}{\diaone{e}{\cdot;v}}
 \end{mathpar}
-
-\crem{Why is it difficult?}
+Here, the ``safe" judgment requires that $A$ has no $\to$ types in negative position.
+Intuitively, this is to ensure that stage \bbtwo\ code cannot be substituted into a monostage region.
 
 To split \texttt{mono} terms, we must produce a resumer with the correct shape
 for the enclosed term. This is difficult to produce statically, because the
@@ -258,21 +256,20 @@ it had any type:
 \infer{\pio~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}\and
 \infer{\pit~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}
 \end{mathpar}
-
-\crem{Explain $\overset{C}{\to}$.}
-
 The splitting rules are then
 \begin{mathpar}
-\infer{\splitone{\monoSt~e}A {e', {\tt dummy}} }{e \overset{C}{\rightarrow} e'} \and
-\infer{e_1~e_2 \overset{C}{\rightarrow} \pio~(e_1'~e_2')}{e_1 \overset{C}{\rightarrow} e_1' & e_2 \overset{C}{\rightarrow} e_2'} \and
-\infer{\lambda x.e \overset{C}{\rightarrow} \lambda x.(e',())}{e \overset{C}{\rightarrow} e'}
+\infer{\splitone{\monoSt~e}A {(e',()), \_.{\tt dummy}} }{e \overset{C}{\rightarrow} e'}
 \end{mathpar}
-And $\overset{C}{\rightarrow}$ operates like a map at all other terms.
-
-To see that this optimization is correct, notice that \texttt{dummy} can only
-appear in the resumers of terms that have no circles in their \lang\ type.
-Since the $\prev$ rule requires a circle type, dummy values cannot leak from the
-resumers of stage \bbone\ terms into the resumers of stage \bbtwo\ terms.
+Here, $\overset{C}{\rightarrow}$ translates functions to the signature expected for stage \bbone\ splitting outputs
+by performing the two rewrites in place:
+\begin{align*}
+\lam x A e &\overset{C}{\rightarrow} \lambda x.(e,())\\
+e_1~e_2 &\overset{C}{\rightarrow} \pio~(e_1~e_2)
+\end{align*}
+For $\splitone e A {c,l.r}$, \texttt{dummy} can only appear as the 
+final value of $r$ when $e$ has no $\fut$ in its \lang\ type.
+Since the $\prev$ rule requires a circle type, \texttt{dummy} values cannot leak 
+into the resumers of stage \bbtwo\ terms.
 
 \input{figures/splitting-misc}
 
