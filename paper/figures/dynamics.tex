@@ -15,6 +15,8 @@
 
 \begin{figure*}
 \begin{mathpar}
+\fbox{Evaluation}
+\and
 \inferdiaone [\rmunit]   	{\red {()}{\cdot;()}}												{\cdot} 																					\and
 \inferdiaone [int]			{\red {i}{\cdot;i}}												{\cdot} 																					\and
 %\inferdiaone [bool]   		{\red {b}{\cdot;b}}												{\cdot} 																					\and
@@ -35,7 +37,30 @@
 %\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
 %
 \inferdiaone [\mu I]   		{\red {\roll~e}{\xi;\roll~v}}									{\sub}												\and
-\inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							\and
+\inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\fbox{Specialization}
+\and
+\inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
+\inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
+%\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
+\inferdiaspc [hyp]			{\red {x}{x}}													{\cdot}										\and
+\inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Gamma,x] e q} 				\and
+\inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
+\inferdiaspc [\times I]		{\red {(e_1,e_2)}{(q_1,q_2)}}								{\sub [1] & \sub [2]} 					\and
+\inferdiaspc [\times E_1]	{\red {\pio~e}{\pio~q}}										{\sub} 										\and
+%\inferdiaspc [\times E_2]	{\red {\pit~e}{\pit~q}}										{\sub} 										\and
+%\inferdiaspc [+ I_1]			{\red {\inl~e}{\inl~q}}										{\sub} 										\and
+%\inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
+\inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
+									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		
+%\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
+%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
+%
+%\inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
+%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}								{\sub}										\and
 \end{mathpar}
 \hrule
 \begin{mathpar}
@@ -47,31 +72,6 @@
 \infer							{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \infer							{\reify{\cdot}{q}{q}}													{\cdot}												
 \end{mathpar}
-\caption{\lang~Dynamic Semantics}
+\caption{\lang~Dynamic Semantics.  Specialization rules for \texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll} follow same pattern as \texttt{pi1}.}
 \label{fig:diaSemantics}
-\end{figure*}
-
-\begin{figure*}
-\begin{mathpar}
-\inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
-\inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
-%\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
-\inferdiaspc [hyp]			{\red {x}{x}}													{x \in \Gamma}								\and
-\inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Gamma,x] e q} 				\and
-\inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
-\inferdiaspc [\times I]		{\red {(e_1,e_2)}{(q_1,q_2)}}								{\sub [1] & \sub [2]} 					\and
-\inferdiaspc [\times E_1]	{\red {\pio~e}{\pio~q}}										{\sub} 										\and
-\inferdiaspc [\times E_2]	{\red {\pit~e}{\pit~q}}										{\sub} 										\and
-\inferdiaspc [+ I_1]			{\red {\inl~e}{\inl~q}}										{\sub} 										\and
-\inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
-\inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
-									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		\and
-%\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
-%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
-%
-\inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
-\inferdiaspc [\mu E]   		{\red {\unroll~e}{v}}											{\red {e}{\roll~v}}						\and
-\end{mathpar}
-\caption{\lang~Dynamic Semantics: Specialization}
-\label{fig:diaSemanticsSpec}
 \end{figure*}

@@ -1,0 +1,77 @@
+\section {Implementation and Optimization}
+
+We have implemented the semantics and splitting algorithm of \lang\ in Standard ML.
+In addition to the features shown here, our implementation includes more base types, 
+$n$-ary products and sums, if and let statements, and a basic elaboration step.
+
+The rules of \cref{sec:splitting} can be optimized in many cases.
+For instance, multiple trivial subterm precomputations can be merged:
+\[
+\infer {\splittwo {(e_1,e_2)} A {p,l.(r_1,r_2)}}{\splittwo {e_1} A {(),\_.r_1} & \splittwo {e_2} A {p,l.r_2}}
+\]
+This sort of optimization is easy, because it is local on the structure of $e$,
+but the problem becomes more difficult when trying to optimize across functions, including recursive calls.
+For example, consider the stage \bbtwo\ term,
+\begin{lstlisting}
+2`prev{
+  1`letfun fact (n : int) : int = 
+    if n <= 0 then 1 else fact(n-1)*n
+  in next{`2`hold {`1`fact 5`2`}-100`1`}`2`
+}`
+\end{lstlisting}
+Noting that the precomputation of the body of \texttt{fact} could be given the type,
+\begin{lstlisting}
+datatype prec = L | R of prec
+\end{lstlisting}
+the whole expression splits into:
+\begin{lstlisting}
+1`letfun fact (n : int) : int * prec = 
+  if n <= 0 then (1,L) 
+  else let (y,z) = fact(n-1) in (y*n,R z)
+in fact 5`
+
+2`l => 
+letfun fact (n : unit, l0 : prec) : unit = 
+  case l0 of L => () | R l1 => fact ((),l0)
+in (fact (pi2 l); pi1 l)-100`
+\end{lstlisting}
+
+Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{fact}, since it
+always returns \texttt{()}; worse yet, it has linear runtime!
+But recognizing and optimizing this away is in general a global operation,
+so we instead solve this issue by adding a new staging annotation to \lang, called
+\texttt{mono}. The term $\monoSt~e$ is stage \bbone, and requires that $e$ contains
+no stage \bbtwo\ subexpressions. This adds a new stage \bbmono\ and two new
+rules to \lang:
+\begin{mathpar}
+\infer{\typesone{\monoSt~e}A}{\typesmono e A & A~\mathrm{safe}} \and
+\infer{\diaone{\monoSt~e}{\cdot;v}}{\diaone{e}{\cdot;v}}
+\end{mathpar}
+Here, the ``safe" judgment requires that $A$ has no $\to$ types in negative position.
+Intuitively, this is to ensure that stage \bbtwo\ code cannot be substituted into a monostage region.
+
+To split \texttt{mono} terms, we must produce a resumer with the correct shape
+for the enclosed term. This is difficult to produce statically, because the
+language has sums and general recursion. We instead produce it dynamically,
+using a new value in \langmono, \texttt{dummy}, which can be consumed as though
+it had any type:
+\begin{mathpar}
+\infer{e_1~e_2~\redsym~\mathtt{dummy}}{e_1~\redsym~\mathtt{dummy} & e_2~\redsym~v} \and
+\infer{\unroll~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}\and
+\infer{\pio~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}\and
+\infer{\pit~e~\redsym~\mathtt{dummy}}{e~\redsym~\mathtt{dummy}}
+\end{mathpar}
+The splitting rules are then
+\begin{mathpar}
+\infer{\splitone{\monoSt~e}A {(e',()), \_.{\tt dummy}} }{e \overset{C}{\rightarrow} e'}
+\end{mathpar}
+Here, $\overset{C}{\rightarrow}$ translates functions to the signature expected for stage \bbone\ splitting outputs
+by performing the two rewrites in place:
+\begin{align*}
+\lam x A e &\overset{C}{\rightarrow} \lambda x.(e,())\\
+e_1~e_2 &\overset{C}{\rightarrow} \pio~(e_1~e_2)
+\end{align*}
+For $\splitone e A {c,l.r}$, \texttt{dummy} can only appear as the 
+final value of $r$ when $e$ has no $\fut$ in its \lang\ type.
+Since the $\prev$ rule requires a circle type, \texttt{dummy} values cannot leak 
+into the resumers of stage \bbtwo\ terms.
