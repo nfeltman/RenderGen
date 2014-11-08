@@ -84,7 +84,7 @@ where $y$ is identical to $\masko{\xi;v}$, and
 $\letin l b r$ reduces to the same value as $\maskt{\xi;v}$. Since~$e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (a value we call the \emph{stage~\bbone\ result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the \emph{boundary value} $b$ required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
-judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplitOne}, proceeds
+judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplit}, proceeds
 recursively on the structure of~$e$.
 When $e$ is a terminal (a variable or base constant)
 splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
@@ -135,7 +135,7 @@ to compute the input expected by the resumer.
 % the residual term defined in~\ref{ssec:dynamics})
 
 As with stage~\bbone\ terms, the splitting algorithm for stage~\bbtwo\ terms,
-as specified by the judgment $e \splittwosym [p,l.r]$ in \cref{fig:termSplitTwo}, is defined on the local structure of $e$.
+as specified by the judgment $e \splittwosym [p,l.r]$ in \cref{fig:termSplit}, is defined on the local structure of $e$.
 In the terminal cases of
 constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers consisting of the original term.
 For example, the integer constant \texttt{3} splits into the
