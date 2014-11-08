@@ -4,13 +4,13 @@ We have implemented the semantics and splitting algorithm of \lang\ in Standard 
 In addition to the features shown here, our implementation includes more base types, 
 $n$-ary products and sums, if and let statements, and a basic elaboration step.
 
-The rules of \cref{sec:splitting} can be optimized in many cases.
-For instance, multiple trivial subterm precomputations can be merged:
+Applying the rules of \cref{sec:splitting} naively can yield inefficient split programs.
+In many cases, the results can be improved by considering special cases in individual rules.
+For instance, trivial subterm precomputations needn't be saved at tuples:
 \[
 \infer {\splittwo {(e_1,e_2)} A {p,l.(r_1,r_2)}}{\splittwo {e_1} A {(),\_.r_1} & \splittwo {e_2} A {p,l.r_2}}
 \]
-This sort of optimization is easy, because it is local on the structure of $e$,
-but the problem becomes more difficult when trying to optimize across functions, including recursive calls.
+The problem becomes more difficult when trying to optimize across functions, including recursive calls.
 For example, consider the stage \bbtwo\ term,
 \begin{lstlisting}
 2`prev{
