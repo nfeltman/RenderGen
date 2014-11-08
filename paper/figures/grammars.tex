@@ -4,14 +4,14 @@ $\begin{aligned}
 \text{Stages}\ \ 
 \world &::= \bbone \gbar \bbtwo \\
 \text{Types}\ \ 
-\type &::= \text{unit}~|~\text{int}~|~\text{bool}
+\type &::= \text{unit}~|~\text{int}%~|~\text{bool}
  \gbar \type \times \type 
  \gbar \type + \type \\
 &\gbar \type \to \type
  \gbar \fut \type
  \gbar \alpha \gbar \mu \alpha.\tau \\
 \text{Expressions}\ \ 
-\expr &::= ()\gbar\inte\gbar\bool\gbar \var
+\expr &::= ()\gbar\inte\gbar\var%\bool
  \gbar \lam{\var}{\type}{\expr} 
  \gbar \expr_1~\expr_2 \\
 &\gbar (\expr_1, \expr_2) 
@@ -22,8 +22,8 @@ $\begin{aligned}
 &\gbar (\caseof {\expr_1}{\var_2.\expr_2}{\var_3.\expr_3})
 \\ %\gbar \ifthen {\expr_1}{\expr_2}{\expr_3} \\
 &\gbar \roll_{\mu \alpha.\tau}~e
- \gbar \unroll~e
- \gbar \letin{\var}{\expr_1}{\expr_2} \\
+ \gbar \unroll~e\\
+ %\gbar \letin{\var}{\expr_1}{\expr_2} \\
 &\gbar \next~\expr 
  \gbar \prev~\expr 
  \gbar \pause~\expr \\
