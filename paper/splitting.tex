@@ -28,47 +28,43 @@ move on to the specification of the splitting algorithm itself.
 
 \subsection{Masking}
 
-% Intuitively, we require that the terms obtained by splitting a term $e$, when
-% evaluated, agree with $e$ when evaluated according to our dynamic semantics. In
-% the case of stage~\bbone\ terms, our dynamic semantics produce partial values
-% containing information at \emph{both} stages, which goes against the idea that
-% splitting separates the subcomputations belonging to each stage.
-
-Recall that \lang\ partial values and residual tables together may
+Recall that partial values and residual tables produced by \bbone-evaluation may
 contain content at \emph{both} stages. For example the term:
 \begin{lstlisting}
-1`(1+2, next{`2`hold{`1`3+4`2`} + 5`1`})`
+1`(1+2, next{`2`7 + 5`1`})`
 \end{lstlisting}
 evaluates via $\redonesym$ to:
 \begin{lstlisting}
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-Intuitively, splitting this term should generate an~$e_1$ that reduces to the stage~\bbone\ content of the partial value \texttt{3},
+To match the results of \bbone-evaluation,
+splitting the term should generate an~$e_1$ that reduces to the stage~\bbone\ content of the partial value, \texttt{3},
 and an~$e_2$ corresponding to the stage~\bbtwo\ computation: \\
 $\letin \yhat {\mathtt{7+5}} \yhat$.
 
-To precisely specify the stage~\bbone\ and stage~\bbtwo\ components of the partial value, we define 
+to precisely specific the stage~\bbone\ and stage~\bbtwo\ components of \bbone-evaluation results, we define 
 \emph{masking} functions, written $\masko{{-};{-}}$ and $\maskt{{-};{-}}$, 
 which take a residual table and partial value as input and emit a term in \langmono\
-that corresponds to only the content belonging to a single stage. \ref{fig:valMask} defines these
-masking functions.
+that corresponds to only the content belonging to a single stage.
+\ref{fig:valMask} defines these masking functions.
 
 \emph{Stage~\bbone\ masking} of the partial value~$v$ (written $\masko{v}$) produces a term in \langmono\ containing exactly
 the stage~\bbone\ content of~$v$. Since \next\ terms only contain stage~\bbtwo\
-content, $\masko{v}$ replaces all $\next$ subterms of~$v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits their bodies as general stage~\bbone\ terms (as described in \ref{sec:split-one}), and returns
+content, $\masko{v}$ replaces all $\next$ subterms of~$v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits the body of lambdas as a general stage~\bbone\ term (as described in \ref{sec:split-one}), and returns
 the stage~\bbone\ component. $\masko{v}$ always produces a value in \langmono\ that has
 the same structure as~$v$.  For example, the stage~\bbone\ mask of the partial value given above is \texttt{(3,())}. 
 
 \emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context~$\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
 exactly the stage~\bbtwo\ content of $[\xi;v]$. Unlike stage~\bbone\ masking, stage~\bbtwo\ masking 
-requires access to the residual table $\xi$ because all stage~\bbtwo\
-content in~$v$ has been lifted out into~$\xi$. Stage~\bbtwo\ masking discards
+requires access to the residual table $\xi$ because after \bbone-evaluation, all stage~\bbtwo\
+has been lifted out of~$v$. Stage~\bbtwo\ masking discards
 stage~\bbone\ content in~$v$ by replacing base constants with~\texttt{()},
 replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
 constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ masking, stage~\bbtwo\
 masking splits the bodies of lambdas as general stage~\bbone\ terms, and
 returns the stage~\bbtwo\ component. After discarding all stage~\bbone\ content from~$v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
-producing a term in \langmono. For example, the stage~\bbtwo\ mask of the partial value and residual table given above is:
+producing a term in \langmono. This term reduces to a value that with the same structure as~$v$.
+For example, the stage~\bbtwo\ mask of the partial value and residual table given above is:
 \begin{lstlisting}
 let yhat=7+5 in ((),yhat)
 \end{lstlisting}
@@ -77,11 +73,11 @@ let yhat=7+5 in ((),yhat)
 \label{sec:split-one}
 
 Splitting a stage~\bbone\ term $e$ in \lang\ yields a term 
-$e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer} function $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
-To ensure that the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$,
+$e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer term} $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
+To ensure the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$,
 we require that $e_1$ reduce to the tuple $(y,b)$,
-where $y$ is identical to $\masko{\xi;v}$, and 
-$\letin l b r$ reduces to the same value as $\maskt{\xi;v}$. Since~$e_1$ performs both stage~\bbone\ subcomputations needed to produce $y$ (a value we call the \emph{stage~\bbone\ result}), and the stage~\bbone\ subcomputations (called \emph{precomputations}) that produce the \emph{boundary value} $b$ required by the resumer, we refer to this term as the \emph{combined term}, and hereafter denote it as $c$.
+where $y$, called the \emph{\bbone-result} of $e$, is identical to $\masko{\xi;v}$, and that
+$\letin l b r$ reduces to the same value as $\maskt{\xi;v}$. (We refer to $b$ as the \emph{boundary value} of the split since it carries information between stage~\bbone\ and stage~\bbtwo\ subcomputations.) Since~$e_1$ performs both stage~\bbone\ subcomputations needed to produce the \bbone-result and subcomputations (refered to as \emph{precomputations}) that produce the boundary value, we refer to this term as the \emph{combined term}, and hereafter denote it as~$c$.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
 judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplit}, proceeds
@@ -124,11 +120,11 @@ Because stage~\bbtwo\ terms in \lang\ fully reduce to values (as opposed to part
 splitting stage~\bbtwo\ terms in \lang\ assumes a simpler form than that of stage~\bbone\ term splitting. 
 Specifically, splitting a stage~\bbtwo\ term $e$ in \lang\ generates a precomputation term $p$
 (performing all stage~\bbone\ subcomputations in $e$) and a
-resumer function $e_2=l.r$ (performing all stage~\bbtwo\ subcomputations) such that when 
+resumer term $e_2=l.r$ (performing all stage~\bbtwo\ subcomputations) such that when 
 $e$ reduces to the value~$v$, $\letin l p r$ reduces to an identical value in \langmono.
 Note that in contrast to the combined term produced during stage~\bbone\ splitting,
 the precomputation $p$ generated by stage~\bbtwo\ splitting exists entirely
-to compute the input expected by the resumer.
+to compute the boundary value expected by the resumer.
 
 % \ur{I don't quite understand the following.}
 % (Thus, the resumer, bound to the value output by $p$, is equivalent to
