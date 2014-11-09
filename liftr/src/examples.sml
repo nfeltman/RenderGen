@@ -84,9 +84,9 @@ k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
 i("fastexp",			"fastexp",ansNI 243),
 i("prefixtree",			"prefixtree", ansNB true),
-i("iota",				"iota", ansI 5),
 i("quickselect",		"quickselect", ansNI 4),
-i("quickselect_fixed",	"quickselect_fixed", ansNI 4)(*,
+i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
+i("iota",				"iota", ansI 5)(*,
 i("stress",				"stress", SAME)*)
 ]
 

@@ -5,12 +5,12 @@
 
 We investigate two applications of our splitting algorithm.
 
-In the first, we use our stage splitting algorithm on a stage search algorithm to derive a classic data structure.
-In the second, we use use our algorithm on a staged interpretter to generate a ``byte code" compiler and interpretter.
+In the first application, we split a staged search algorithm where the data comes at stage \bbone\ and the search index comes at stage \bbtwo.  
+In the second application, we split a staged interpreter where the source program comes at stage \bbone, and some input to the program comes at stage \bbtwo.
  
-We urge the reader to pay attention to how partial evaluation (essentially \lang's dynamic semantics) and execution of the outputs of stage splitting compare for these examples.
+We urge the reader to pay attention to how partial evaluation (\lang's dynamic semantics) and stage splitting compare for these examples.
 The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
-essentially embed that datastructure in the residual. 
+essentially embed that data structure in the residual. 
 
 %\subsection{Fast Exponent}
 %
@@ -72,25 +72,29 @@ The function {\tt qs} in the code below is a staged version of the quickselect a
 Standard quickselect finds the $i$th largest number in a list (l) by recursively partitioning the list by its 
 first element and picking the side which contains the $i$th largest element.
 In this case, we've staged quickselect by saying that the list is stage \bbone\ and $i$ is stage \bbtwo.
-Note that the helper function {\tt partition} operates entirely in stage \bbone.
+The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{mono}.
 
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 /* helper function */
-fun partition ((p,l) : int*list) : (int*list*list) =
-  case unroll l of 
-    Empty => (0,Empty, Empty) 
-  | Cons (h,t) =>
-      let (s,left,right) = partition (p,t) in
-      if h<p 
-      then (s+1,Cons(h,left),right)
-      else (s,left,Cons(h,right))
+val partition = mono {
+  let fun partition ((p,l) : int*list) 
+  : (int*list*list) =
+    case unroll l of 
+      Empty => (0,Empty, Empty) 
+    | Cons (h,t) =>
+        let (s,left,right) = partition (p,t) in
+        if h<p 
+        then (s+1,Cons(h,left),right)
+        else (s,left,Cons(h,right))
+  in partition
+}
 
 fun qs (l : list, i: $int) = 
   case l of
     Empty => next {0}
   | Cons (h,t) => 
-      let (left,right,n) = partition h t in
+      let (n,left,right) = partition (h,t) in
       next{
         let n = hold{n} in
           case compare prev{i} n of
@@ -136,6 +140,7 @@ fun qs2 ((l, i), p) =
 
 These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
 which stores a set element and subtree size at every branch.
+All of the list partitioning work now occurs within the precomputation.
 
 Partial evaluation creates a giant tree of if statements proportional to the size of the list,
 whereas splitting just creates the tree out of values, and then interprets it in the residual.
@@ -144,6 +149,88 @@ For large input lists (which is typical), this saves a lot on memory.
 This works well because quickselect does a lot of work at stage one that can be amortized across all of stage two.
 
 Also, the behavior where we lift precomputations out from branches is very important.
+
+\subsection{Interpreter}
+
+\begin{lstlisting}
+datatype binop  = Plus | Minus in
+datatype iota	= Arg
+				| Int of int 
+				| Binop of binop * iota * iota
+				| If of iota * iota * iota
+
+fun eval2K (e,a,k) 
+	: (iota * $int * ($int -> $int)) =
+	case e of
+	  Arg => k a
+	| Int i => k next{hold{i}}
+	| Binop (op,e1,e2) =>
+		  eval2K (e1,a,
+		  fn i => 
+		    eval2K (e2,a,fn j => k (evalBinop2 (op,i,j)))
+		  )
+	| If (e1,e2,e3) =>
+		  eval2K
+		  (e1,a,fn i =>
+				next {
+					if prev { i }>0 then
+						prev { eval2K (e2,a,k) }
+					else
+						prev { eval2K (e3,a,k) }
+				})
+\end{lstlisting}
+splits into first part
+\begin{lstlisting}
+fun eval2K (e,a,k) =
+	case e of
+	  Arg => let (v,p) = k a in (v,inj1 p)
+	| Int i =>
+		let (v_1,p_1) = k ()
+		(v_1,inj2 ((),i,p_1))
+	| Binop (op,e1,e2) =>
+		let (v,p) =
+			eval2K (e1,a,
+			fn i =>
+				eval2K (e2,a,
+				fn j =>
+					let (v,p) = evalBinop2 (op,i,j) in
+					let (v_1,p_1) = k v in
+					(v_1, ((),p,p_1))
+				)
+			)
+		in
+		(v,inj3 p)
+	| If (e1,e2,e3) =>
+		let (v,p) =
+			eval2K (e1,a,
+			fn i =>
+				((),(#2 (eval2K (e2,a,k)),#2 (eval2K (e3,a,k))))
+			)
+		in
+		(v,inj4 p)
+\end{lstlisting}
+and second part
+\begin{lstlisting}
+fun eval2K ((e,a,k),l_3) =
+	case l_3 of
+	  inj1 l_4 => k (a,l_4)
+	| inj2 l_4 => k (#2 l_4, #3 l_4)
+	| inj3 l_4 =>
+		eval2K (((),a,
+		fn (i,l_5) =>
+			eval2K (((),a,
+			fn (j,l_6) => 
+				k (evalBinop2 (((),i,j),#2 l_6),#3 l_6)
+			),l_5)
+		),l_4)
+	| inj4 l_4 =>
+		  eval2K
+		  (((),a,fn (i,(l_6,l_5)) =>
+				 if i>0 then
+					 eval2K (((),a,k),l_6)
+				 else
+					 eval2K (((),a,k),l_5)),l_4)
+\end{lstlisting}
 
 %\subsection{Trie}
 %
