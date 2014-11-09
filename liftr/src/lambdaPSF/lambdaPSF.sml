@@ -8,9 +8,6 @@ fun a ` b = a b
 open LangCommon
 structure S = SourceLang
 
-val PPtuple = S.Ptuple
-val PPvar = S.Pvar
-
 datatype expr 	= E of (expr,var,unit) S.exprF
 				| Edummy
 

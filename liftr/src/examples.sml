@@ -84,9 +84,9 @@ k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
 i("fastexp",			"fastexp",ansNI 243),
 i("prefixtree",			"prefixtree", ansNB true),
-i("iota",				"iota", ansI 5),
 i("quickselect",		"quickselect", ansNI 4),
-i("quickselect_fixed",	"quickselect_fixed", ansNI 4)(*,
+i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
+i("iota",				"iota", ansI 5)(*,
 i("stress",				"stress", SAME)*)
 ]
 
@@ -119,11 +119,12 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Typechecking *)
-		val _ = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
+		val ty1 = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
 		
 		(* Splitting *)
-		val (split1, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
+		val (ty2, res) = StageSplit.stageSplit1 Typecheck12.emptyContext propegated
+		val (split1, (l,split2)) = StageSplit.coerce1 res
 		
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);

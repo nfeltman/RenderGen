@@ -27,7 +27,7 @@ fun splitErasureValue1 v =
 		  E.V1 (VFprim v) => (Vprim v, Vtuple [])
 		| E.V1 (VFroll v) => 
 			(case splitErasureValue1 v of 
-			(u,w) => (Vroll u, Vroll w))
+			(u,w) => (Vroll u, w))
 		| E.V1 (VFtuple vs) => 
 			(case unzip ` map splitErasureValue1 vs of 
 			(us,ws) => (Vtuple us, Vtuple ws))
@@ -50,7 +50,7 @@ fun splitDiagValue1 v =
 		  D.V1 (VFprim i) => (Vprim i, D.E ` Ftuple []) : value * DiagonalSemantics.expr
 		| D.V1 (VFroll v) => 
 			(case splitDiagValue1 v of 
-			(u,w) => (Vroll u, D.E ` Froll ((),w)))
+			(u,w) => (Vroll u, w))
 		| D.V1 (VFtuple vs) => 
 			(case unzip ` map splitDiagValue1 vs of 
 			(us,ws) => (Vtuple us, D.E ` Ftuple ws)) 

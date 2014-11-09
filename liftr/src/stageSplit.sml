@@ -14,10 +14,13 @@ structure T = TypesBase
 infixr 9 `
 fun a ` b = a b
 
-fun convertPattern (S.Pvar v) = PPvar v
-  | convertPattern (S.Ptuple ps) = PPtuple (map convertPattern ps)
+val PPtuple = S.Ptuple
+val PPvar = S.Pvar
   
 val Eunit = Etuple []
+
+fun makeUnitForPattern (S.Pvar v) = Eunit
+  | makeUnitForPattern (S.Ptuple ps) = Etuple (map makeUnitForPattern ps)
 
 fun freshPi () = 
 	let
@@ -42,15 +45,47 @@ fun terminates (E e) = (case e of
   | S.Funroll e => terminates e
   | S.Ferror _ => false)
   | terminates Edummy = true
+ 
+fun unusedAnswer (e as E exp) = (case exp of
+	S.Fvar _ => []
+  | S.FprimVal _ => []
+  | S.Flam _ => []
+  | S.Fapp (e1,e2) => [e]
+  | S.Ftuple es => List.concat (map unusedAnswer es)
+  | S.Fpi (_,e) => unusedAnswer e
+  | S.Finj (_,_,e) => unusedAnswer e
+  | S.Fcase (e1,bs) => [E (S.Fcase (e1,map (fn (x,e) => (x,chain2 (e, Eunit))) bs))]
+  | S.Fif (e1,e2,e3) => [E (S.Fif (e1,chain2 (e2, Eunit),chain2 (e3, Eunit)))]
+  | S.Flet (e1,(x,e2)) => [E (S.Flet (e1,(x,chain2 (e2, Eunit))))]
+  | S.Fbinop (_,e1,e2) => (unusedAnswer e1) @ (unusedAnswer e2)
+  | S.Froll (_,e) => unusedAnswer e
+  | S.Funroll e => unusedAnswer e
+  | S.Ferror _ => [e])
+  | unusedAnswer Edummy = []
 
-fun chain2 (e1,e2) = if terminates e1 then e2 else Epi (1, Etuple [e1,e2])
+and chain2 (e1,e2) = 
+	let
+		val es = unusedAnswer e1
+		val len = List.length es
+	in
+		if len = 0 then e2 else Epi (len, Etuple (es@[e2]))
+	end
 fun chain3 (e1,e2,e3) = 
 	case (terminates e1, terminates e2) of
 	  (true,  true ) => e3
 	| (true,  false) => Epi (1, Etuple [e2,e3])
 	| (false, true ) => Epi (1, Etuple [e1,e3])
 	| (false, false) => Epi (2, Etuple [e1,e2,e3])
-
+	
+fun valHasNoStage2 (T1fut _) = false
+  | valHasNoStage2 (T1 t) = 
+		case t of
+		  T.TFprim _ => true
+		| T.TFvar _ => true
+		| T.TFrec t => valHasNoStage2 t
+		| T.TFprod ts => List.all valHasNoStage2 ts
+		| T.TFsum ts => List.all valHasNoStage2 ts
+		| T.TFarr _ => false
 in
 
 type ppatt	= var S.pattern
@@ -128,7 +163,7 @@ fun decompTuple (E (S.Ftuple [v,p])) f = f (v,p)
 			Elet (c,(PPtuple[PPvar v, PPvar p], f (Evar v, Evar p)))
 		end	
 fun caseBranch c addPrec ts us = 
-		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])		
+		decompTuple c (fn (v,p) => Etuple[v, addPrec(Einj(ts, us, p))])
 
 fun roll e = Eroll ((),e)
 fun eraseTy xs = map (fn _ => ()) xs
@@ -139,18 +174,21 @@ exception Oops
 val coerce1 = coerce  
 
 (* assume here that the expression already type-checks *)
-fun stageSplit1 (E1 exp) = 
+fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 = 
 	let
-		val split = stageSplit1 : expr1 -> stage1Part splitResult1
-	in
+		val (t,exp) = Typecheck12.Checker1.typeCheckSpecial gamma stageSplit1 exp
+		fun split (a,b) = b
+		fun getType (a,b) = a
+		val answer = 
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
 		| S.FprimVal i  => NoPrec1 (Eprim i,  Eunit)
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce1 (split e)
+				val resumerX = if valHasNoStage2 t then PPvar (Variable.newvar "unused") else x
 			in
-				NoPrec1 (Elam ((), (convertPattern x, c)), Elam ((),(PPtuple[convertPattern x,l], r)))
+				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[resumerX,l], r)))
 			end
 		| S.Fapp (e1, e2) => 
 			let
@@ -196,11 +234,11 @@ fun stageSplit1 (E1 exp) =
 				  | processBranches ((x,e)::xes) prefixes = 
 					let
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
-						val x = convertPattern x
 						val (c,(l,r)) = coerce1 (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
+						val rBranch = if valHasNoStage2 (getType e1) then r else Elet(Evar z,(x,r))
 					in
-						((x,branch)::branches, (l, Elet(Evar z,(x,r)))::residuals, ()::suffixes)
+						((x,branch)::branches, (l, rBranch)::residuals, ()::suffixes)
 					end
 					
 				val (branches, residuals, _) = processBranches bs []
@@ -224,17 +262,20 @@ fun stageSplit1 (E1 exp) =
 			end
 		| S.Flet (e1, (x,e2)) => 
 			let
-				val x = convertPattern x
-				fun makeLet e1 e2 = Elet (e1, (x,e2))
 				val (res1,res2) = (split e1, split e2)
+				fun makeLet a b = Elet (a, (x,b))
+				val makeLetR = 
+					if valHasNoStage2 (getType e1)
+					then fn a => fn b => chain2 (a,b)
+					else fn a => fn b => Elet (a, (x,b))
 			in
 				case mapSplitResult toOpaque res1 of 
 				  NoPrec1 (e1,r1) => (
 						case mapSplitResult toOpaque res2 of
 						  NoPrec1 (e2, r2) => 
-							NoPrec1 (makeLet e1 e2, makeLet r1 r2)
+							NoPrec1 (makeLet e1 e2, makeLetR r1 r2)
 						| WithPrec1 (e2,(l2,r2)) => 
-							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLet r1 r2))
+							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLetR r1 r2))
 					)
 				| WithPrec1 (c1, (l1,r1)) =>
 					let
@@ -243,44 +284,67 @@ fun stageSplit1 (E1 exp) =
 					in
 						case mapSplitResult toSplit res2 of
 						  NoPrec1 (e2, r2) => 
-							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,makeLet r1 r2))
+							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,makeLetR r1 r2))
 						| WithPrec1 ((c2,v2,p2),(l2,r2)) => 
-							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), (PPtuple[l1,l2],makeLet r1 r2))
+							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), 
+								(PPtuple[l1,l2],makeLetR r1 r2))
 					end
 			end
 		| S.Fbinop (bo,e1,e2) =>
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
-		| S.Froll (_,e) => merge1 (split e) roll roll
-		| S.Funroll e => merge1 (split e) Eunroll Eunroll
+		| S.Froll (_,e) => merge1 (split e) roll id
+		| S.Funroll e => merge1 (split e) Eunroll id
 		| S.Ferror t => NoPrec1 (Eerror (), Eerror ())
+		
+		fun optimizeResidual t r = if (valHasNoStage2 t) then chain2 (r, Eunit) else r
+	in
+		(t,
+		case answer of
+		  NoPrec1 (e,r) => NoPrec1 (e, optimizeResidual t r)
+		| WithPrec1 (e, (x, r)) => WithPrec1 (e, (x, optimizeResidual t r)) )
 	end
-  | stageSplit1 (E1next e) = (
-		case stageSplit2 e of
-		  NoPrec2 r => NoPrec1 (Eunit, r)
-		| WithPrec2 (p,b) => WithPrec1 (Splittable ([], Eunit, p),b))
-  | stageSplit1 (E1hold e) =
+  | stageSplit1 gamma (E1next e) =
+		let
+			val (t,res) = stageSplit2 gamma e
+		in
+			(T1fut t,
+			case res of
+			  NoPrec2 r => NoPrec1 (Eunit, r)
+			| WithPrec2 (p,b) => WithPrec1 (Splittable ([], Eunit, p),b)
+			)
+		end
+  | stageSplit1 gamma (E1hold e) =
 		let
 			val (link, pi) = freshPi ()
-		in
-			case mapSplitResult toOpaque ` stageSplit1 e of
+			val (t,res) = (stageSplit1 gamma e) : type1 * stage1Part splitResult1
+			val splitAnswer = 
+			case mapSplitResult toOpaque res of
 			  NoPrec1 (i, r) => WithPrec1 (Splittable ([], Eunit,i), (PPvar link, chain2 (r, Evar link)))
 			| WithPrec1 (c, lr) =>
 				WithPrec1 (Splittable ([], Eunit, c), (PPvar link, chain2 (Elet (pi 1, lr), pi 0)))
+		in
+			(Typecheck12.handleHold t,splitAnswer)
 		end
-  | stageSplit1 (E1mono e) = 
+  | stageSplit1 gamma (E1mono e) = 
 		let
 			fun promoteToPSF (EM e) =
 				case e of 
 				  S.Flam (_,(x,e)) => Elam ((), (x,Etuple[promoteToPSF e, Eunit]))
 				| S.Fapp (e1, e2) => Epi(0,Eapp(promoteToPSF e1, promoteToPSF e2))
 				| other => E(S.mapExpr promoteToPSF (fn _ => ()) other)
+				
+			fun makeResumerFunc (T2 (T.TFarr (_,t))) = Elam ((),(PPvar (Variable.newvar "unused"), makeResumerFunc t))
+			  | makeResumerFunc (T2 _) = Eunit
+			  
+			val ty = Typecheck12.typeCheckM gamma e
 		in
-			NoPrec1(promoteToPSF e,Edummy)
+			(Typecheck12.promoteType ty, NoPrec1(promoteToPSF e, makeResumerFunc ty))
 		end
 
-and stageSplit2 (E2 exp) = 
+and stageSplit2 gamma (E2 exp) : type2 * splitResult2 = 
 	let
-		val split = stageSplit2
+		val (t,exp2) = Typecheck12.Checker2.typeCheckSpecial gamma stageSplit2 exp
+		fun split (a,b) = b
 		fun merge1 (NoPrec2 r) f = NoPrec2 (f r)
 		  | merge1 (WithPrec2 (c,(l,r))) f = WithPrec2 (c,(l,f r))
 		fun merge2 (NoPrec2 e1, res) f = merge1 res (fn x => f (e1, x))
@@ -303,10 +367,11 @@ and stageSplit2 (E2 exp) =
 		
 		fun mergeList results f = finalize f (foldr h ([],[]) results)
 	in
-		case exp of 
+		(t,
+		case exp2 of 
 		  S.Fvar v => NoPrec2 (Evar v)
 		| S.FprimVal p => NoPrec2 (Eprim p)
-		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertPattern x,r)))
+		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| S.Ftuple es => mergeList (map split es) Etuple
 		| S.Fpi (i, e) => merge1 (split e) (fn r => Epi (i, r))
@@ -321,16 +386,23 @@ and stageSplit2 (E2 exp) =
 				mergeList (map split (e :: es)) f
 			end
 		| S.Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
-		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertPattern x,b)))
+		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
 		| S.Ferror t => NoPrec2 (Eerror ())
+		)
 	end
-  | stageSplit2 (E2prev e) = (
-		case stageSplit1 e of
+  | stageSplit2 gamma (E2prev e) = 
+		let
+			val (t,res) = stageSplit1 gamma e: type1 * stage1Part splitResult1
+		in
+		(Typecheck12.unfut t,
+		case res of
 		  NoPrec1 (c,r) => if terminates c then NoPrec2 r else WithPrec2 (chain2 (c,Eunit), (PPtuple [], r))
 		| WithPrec1 (Splittable (c,v,p), lr) => WithPrec2 (flattenContext c ` chain2 (v, p),lr)
-		| WithPrec1 (Opaque c, lr) => WithPrec2 (Epi (1, c),lr))
+		| WithPrec1 (Opaque c, lr) => WithPrec2 (Epi (1, c),lr)
+		)
+		end
 end
 end
 end
