@@ -83,67 +83,102 @@ from stage \bbtwo\ to stage \bbone, and what makes splitting possible.
 As is the case in essentially all staged language, the dynamic
 semantics evaluates a term to a residual (a term in the target
 language \langmono) in two stages. In the first stage, all stage-1
-terms are evaluated; in the second stage all stage-2 terms are
-evaluated.  To eliminate duplication, our semantics lifts out each
-stage-2 term nested inside of a stage-1 expressions, into table which
-makes it possible for the stage-2 term, actually the corresponding
-residual obtained by reducing all stage-1 subterms, to be referred to
-by use a dynamically generated variable (a label).
+terms are evaluated by a relation, called {\em 1-evaluation}; in the
+second stage all stage-2 terms are evaluated by a relation
+$\redtwosym$, called {\em 2-evaluation}.  To eliminate duplication,
+our semantics lifts out each stage-2 term nested inside of a stage-1
+expressions, into a table which makes it possible for the stage-2
+term---more precisely the corresponding residual obtained by reducing
+all stage-1 subterms---to be referred to by use a dynamically
+generated variable (a label).
 
 Since stage-1 evaluation does not evaluate stage-2 terms and since
-stage-2 terms may be nested inside stage-1 terms, stage-1 evaluation
-cannot reduce \lang\ terms to values but only to {\em partial values},
-which are stage~\bbone\ terms that have been evaluated except for
-their stage-2 subterms, which can only be~\bbtwo\ variables wrapped in
-$\next$ blocks.  \figref{validPvalues} defines partial values.
+stage-2 terms may be nested inside stage-1 terms, 1-evaluation cannot
+reduce \lang\ terms to values.  Instead 1-evaluation yields a {\em
+  partial value}, which which is a stage~\bbone\ term that have been
+evaluated except for its stage-2 subterms, which can only
+be~\bbtwo\ variables wrapped in $\next$ blocks.  \figref{validPvalues}
+defines partial values.
+
+In order to avoid duplication of stage-2 computations, 1-evaluation
+labels stage-2 computations by generating variable symbols for them as
+needed and stores their residuals in a {\em residual table} keyed by
+the variable.
 
 
-The dynamic semantics consist of two evaluation relations $\redonesym$
-and $\redtwosym$, called {\em 1-evaluation} and {\em 2-evaluation},
-that respectively evaluates stage-1 and stage-2 expressions. 
-
-\input{figures/dynamics}
-
-
-
-
-
-The relation 1-evaluation maps a stage-1 term to a partial value and a
-residual table. 
-
-
- In the example above, 
-\begin{lstlisting} 
-1`(next {`2`yhat`1`},7)`
-\end{lstlisting}
-is a partial value.
+The relation 1-evaluation, defined by $\redonesym$ judgment as shown
+in \ref{fig:diaSemantics}, takes an stage \bbone\ term%
+\footnote{ The input to $\redonesym$ may be open on stage \bbtwo\ variables, but
+the type system ensures that those must occur under a $\next$. Consequently
+$\redonesym$ will never directly encounter a variable.}
+%
+to a residual table $\xi$ and a partial value $v$.  For non-staging
+features of \lang, $\redonesym$ is essentially standard call-by-value
+evaluation but in addition gathers the subterms' residual tables into
+a single table. \ur{The syntax of residual tables should be defined in
+  the terminology figure} Residual table entries are created by the
+evaluation of \next: 1-evaluation reduces a \next expression by
+reducing the body of the \next with 2-evaluation to obtain a
+residual $q$ and returns a residual table that maps a freshly
+generated variable to the residual.  \ur{Variable should be fresh in
+  the rule.}
 
 
+The relation 2-evaluation, defined by $\redtwosym$ judgment, as shows
+in \figref{diaSemantics}, takes a stage \bbtwo\ term and reduces it to
+a residual.  Apart from the evaluation of \prev and \pause, the
+evaluation is straightforward. To reduce a \prev term, 2-evaluation
+reduces the body by 1-evaluation to obtain a residual table and a
+partial value.  It then reifies the residual table and the partial
+value into an residual term, by creating for each variable-residual
+pair in the table a corresponding variable binding in the residual,
+finally ending with the partial value.
+\ur{There seems to be errors in the semantics in the handling of
+  recursive types.  I don't see any reason to do any reductions here.
+If you want to, the description above needs to be updated.}
+
+...UMUT: UP TO HERE...
 
 
-In the example
-above,
-\begin{lstlisting} 
-2`let zhat = yhat*yhat*7 in zhat`
-\end{lstlisting}
-is a residual.
+
+
+ In addition, 1-evaluation {\em reifies} the contents of
+the residual table into a residual when changing from stage-2 to stage
 
 
 
-The dynamics for \lang\ implements the stage \bbone\ evaluation algorithm
-described above using three judgments: $\redonesym$ (evaluation), $\redtwosym$
-(specialization), and the auxiliary $\reifysym$ (reification). 
+%% Note that partial values and residuals are both terms for which stage \bbone\
+%% computation has completed; however, partial values are stage~\bbone\ terms,
+%% while residuals are stage~\bbtwo\ terms.
+
+
+
+ The residual
+table implements the explicit substitutions in our example---it maps fresh
+stage \bbtwo\ variables (which may appear inside $\next$ blocks in $v$) to
+residuals.
+
+
+In order to avoid duplicating subterms, evaluation collects explicit
+substitutions into a single {\em residual table} that is also the output of
+evaluation.
+
+
+
+
+ the auxiliary $\reifysym$ (reification). 
 Along with these are three judgments identifying forms of values:
 $\pvalsym$ (partial values), $\ressym$ (residuals), 
 and the auxiliary $\fcon$ (residual table).
 These judgments are related as follows:
 \begin{itemize}
 \item Evaluation sends a stage~\bbone\ term to a partial value.
-In order to avoid duplicating subterms, evaluation collects explicit
-substitutions into a single {\em residual table} that is also the output of
-evaluation.
+
 \item Specialization sends a stage~\bbtwo\ term to a residual.
+
 \item Reification sends a single residual and a residual table to another residual.  
+
+
 \item Evaluation depends on specialization for $\next$ terms, which have
 stage~\bbtwo\ subterms.
 \item Specialization depends on evaluation for $\prev$ and $\pause$, which have
@@ -154,22 +189,6 @@ reified here.
 
 
 
-Note that partial values and residuals are both terms for which stage \bbone\
-computation has completed; however, partial values are stage~\bbone\ terms,
-while residuals are stage~\bbtwo\ terms.
-
-The $\redonesym$ judgment, defined in \ref{fig:diaSemantics}, takes an stage
-\bbone\ term%
-\footnote{ The input to $\redonesym$ may be open on stage \bbtwo\ variables, but
-the type system ensures that those must occur under a $\next$. Consequently
-$\redonesym$ will never directly encounter a variable.}
-%
-to a {\em residual table} $\xi$ and a partial value $v$. The residual
-table implements the explicit substitutions in our example---it maps fresh
-stage \bbtwo\ variables (which may appear inside $\next$ blocks in $v$) to
-residuals. For non-staging features of \lang, $\redonesym$ is essentially
-standard call-by-value evaluation, and gathers the subterms' residual tables
-into a single one.
 
 
 
