@@ -50,25 +50,55 @@
 \and
 %\inferdiaone [bool]
 %{\red {b}{\cdot;b}}
-%{\cdot} 																					\and
-\inferdiaone [\to I]  		{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}					{\cdot} 																					\and
-\inferdiaone [\to E]  		{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}							{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	\and
+%{\cdot}
 %
-\inferdiaone [\times I]  	{\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}				{\sub [1] & \sub [2]} 																	\and
-\inferdiaone [\times E_1]	{\red {\pio~e}{\xi;v_1}}											{\red{e}{\xi;\valprod{v_1}{v_2}}} 													\and
-\inferdiaone [\times E_2]	{\red {\pit~e}{\xi;v_2}}											{\red{e}{\xi;\valprod{v_1}{v_2}}} 													\and
-\inferdiaone [+ I_1]  		{\red {\inl~e} {\xi;\inl~v}}										{\sub} 																						\and
-\inferdiaone [+ I_2]  		{\red {\inr~e} {\xi;\inr~v}}										{\sub} 																						\and
+\inferdiaone [\to I]  		
+{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}					
+{\cdot}
+\and
+\inferdiaone [\to E]  		
+{\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}
+{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	
+\and
 %
-\inferdiaone [+ E_1]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\inl~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}} 					\and
-\inferdiaone [+ E_2]  		{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\inr~v} & \red [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}					\and
+\inferdiaone [\times I]  	
+{\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}
+{\sub [1] & \sub [2]}
+\and
+\inferdiaone [\times E_1]	
+{\red {\pio~e}{\xi;v_1}}
+{\red{e}{\xi;\valprod{v_1}{v_2}}}
+\and
+\inferdiaone [\times E_2]	
+{\red {\pit~e}{\xi;v_2}}
+{\red{e}{\xi;\valprod{v_1}{v_2}}}
+\and
+\inferdiaone [+ I_1]  		
+{\red {\inl~e} {\xi;\inl~v}}
+{\sub}
+\and
+\inferdiaone [+ I_2]  		
+{\red {\inr~e} {\xi;\inr~v}}
+{\sub}
+\and
+%
+\inferdiaone [+ E_1]  		
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		
+{\red {e_1}{\xi_1;\inl~v} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}}
+\and
+\inferdiaone [+ E_2]  		
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		
+{\red {e_1}{\xi_1;\inr~v} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}
+\and
 %
 %\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2; v_2}}					{\sub [1] & \red [\Gamma,\dom{\xi_1}] {[v_1/x]e_2}{\xi_2;v_2}}											\and
 %\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\tt true}  & \red {e_2}{\xi_2;v}} 							\and
 %\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
 %
 \inferdiaone[\mu I]
-{\red {\roll~e}{\xi;\roll~v}}
+{\red {\roll/~e}{\xi;\roll/~v}}
 {\sub}
 \and
 \inferdiaone[\mu E]
@@ -78,25 +108,60 @@
 \inferdiaone 
 [\fut I]
 {\red {\next~e}{\hat y \mapsto q,\next~\hat y}}
-{\diatwo e q}															
+{\diatwo e q & \hat{y}~\mbox{\tt fresh}}															
 \end{mathpar}
 \hrule
 \begin{mathpar}
 \fbox{2-Evaluation}
 \and
-\inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
-\inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
-%\inferdiaspc [bool]			{\red {b}{b}}													{\cdot} 									\and
-\inferdiaspc [hyp]			{\red {x}{x}}													{\cdot}										\and
-\inferdiaspc [\to I]			{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}						{\diatwo [\Gamma,x] e q} 				\and
-\inferdiaspc [\to E]			{\red {e_1~e_2}{q_1~q_2}}									{\sub [1] & \sub [2]}						\and		
-\inferdiaspc [\times I]		{\red {(e_1,e_2)}{(q_1,q_2)}}								{\sub [1] & \sub [2]} 					\and
-\inferdiaspc [\times E_1]	{\red {\pio~e}{\pio~q}}										{\sub} 										\and
-%\inferdiaspc [\times E_2]	{\red {\pit~e}{\pit~q}}										{\sub} 										\and
-%\inferdiaspc [+ I_1]			{\red {\inl~e}{\inl~q}}										{\sub} 										\and
-%\inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
-\inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
-									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		
+\inferdiaspc[\rmunit]
+{\red {()}{()}}
+{\cdot}
+\and
+\inferdiaspc[int]
+{\red {i}{i}}
+{\cdot}
+\and
+%% %\inferdiaspc [bool]{\red {b}{b}}
+%% {\cdot}
+%% \and
+\inferdiaspc[hyp]
+{\red {x}{x}}
+{\cdot}
+\and
+\inferdiaspc[\to I]			
+{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}
+{\diatwo [\Gamma,x] e q} 				
+\and
+\inferdiaspc [\to E]			
+{\red {e_1~e_2}{q_1~q_2}}
+{\sub [1] & \sub [2]}						
+\and		
+\inferdiaspc [\times I]		
+{\red {(e_1,e_2)}{(q_1,q_2)}}
+{\sub [1] & \sub [2]} 					
+\and
+\inferdiaspc [\times E]	
+{\red {\pio/\pit~e}{\pio/\pit~q}}
+{\sub}
+\and
+\inferdiaspc [+ I]			
+{\red {\inl/\inr~e}{\inl/\inr~q}}
+{\sub}
+\and
+%\inferdiaspc[+ I_2]
+%{\red {\inr~e}{\inr~q}}
+%{\sub}
+\and
+\inferdiaspc[+ E_1]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
+{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}
+{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		
+\and
+\inferdiaspc[\mu I]   		
+{\red {\roll/\unroll~e}{\roll/\unroll~q}}
+{\sub}
+\and
 \inferdiaspc[\fut E]
 {\red {\prev~e} q}
 {\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}
@@ -104,13 +169,13 @@
 \inferdiaspc[hold]
 {\red {\pause~e} q}
 {\diaone e {\xi; i} & \reify \xi i q}
+%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
+%	{\sub}										\and
 
 %\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
 %\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
 %
-%\inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
-%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
-%	{\sub}										\and
+
 
 \end{mathpar}
 \hrule
