@@ -119,11 +119,12 @@ fun testProgram verbose name programType p t =
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Typechecking *)
-		val _ = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
+		val ty1 = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
 		
 		(* Splitting *)
-		val (split1, (l,split2)) = StageSplit.coerce1 (StageSplit.stageSplit1 propegated)
+		val (ty2, res) = StageSplit.stageSplit1 Typecheck12.emptyContext propegated
+		val (split1, (l,split2)) = StageSplit.coerce1 res
 		
 		(* Printing Split Results *)
 		val _ = printTerm (PrintPSF.convertPSF split1);

@@ -87,7 +87,7 @@ functor TypeChecker
 	(C : Context where type t = T.ty)
 = struct
   
-fun typeCheck (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty) (exp : ('e,C.var,T.ty) exprF) = 
+fun typeCheckSpecial (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty * 'o) (exp : ('e,C.var,T.ty) exprF) = 
 	let
 		val check = checkrec gamma
 		val checkbranch = typeCheckBranch gamma checkrec
@@ -98,28 +98,87 @@ fun typeCheck (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty) (exp : ('e,C.va
 		fun assertAllSame [] = raise (TypeError "no branches in case")
 		  | assertAllSame (t::[]) = t
 		  | assertAllSame (t::ts) = assertSame (t,assertAllSame ts)
-		val checkOpArg = F.unprim o check
 	in
 		case exp of 
-		  Fvar v => C.lookup gamma v
-		| Flam (t,b) => F.makearr (t, checkbranch (t,b))
-		| Fapp (e1,e2) => checkFun (F.unarr (check e1), check e2)
-		| FprimVal pv => F.makeprim (Prims.getValType pv)
-		| Ftuple es => F.makeprod (map check es)
-		| Fpi (i, e) => List.nth(F.unprod (check e), i)
-		| Finj (ts, us, e) => F.makesum (ts @ (check e :: us))
-		| Fcase (e1,bs) => assertAllSame 
-				(zip checkbranch (F.unsum (check e1)) bs (TypeError "wrong number of branches")) 
-		| Fif (e1,e2,e3) => (Prims.assertBool (F.unprim (check e1)); assertSame (check e2, check e3))
-		| Flet (e,b) => checkbranch (check e, b)
-		| Ferror t => t
-		| Froll (t, e) => if T.teq (selfSubst t) (check e) then F.makerec t else raise (TypeError "")
-		| Funroll e => selfSubst (F.unrec (check e))
-		| Fbinop (bo, e1, e2) => F.makeprim (binSame (checkOpArg e1, checkOpArg e2) (Prims.getBinopType bo))
+		  Fvar v => (C.lookup gamma v, Fvar v)
+		| Flam (t,b as (x,_)) => 
+			let
+				val o2 as (t2,_) = checkbranch (t,b)
+			in
+				(F.makearr (t, t2), Flam (t,(x,o2)))
+			end
+		| Fapp (e1,e2) => 
+			let
+				val (o1 as (t1,_),o2 as (t2,_)) = (check e1, check e2)
+			in
+				(checkFun (F.unarr t1, t2), Fapp (o1,o2))
+			end
+		| FprimVal pv => (F.makeprim (Prims.getValType pv), FprimVal pv)
+		| Ftuple es => 
+			let
+				val tos = map check es
+			in
+				(F.makeprod (map #1 tos), Ftuple tos)
+			end
+		| Fpi (i, e) => 
+			let
+				val o1 as (t,_) = check e
+			in
+				(List.nth(F.unprod t, i), Fpi (i, o1))
+			end
+		| Finj (ts, us, e) =>
+			let
+				val o1 as (t,_) = check e
+			in
+				(F.makesum (ts @ (t :: us)), Finj (ts, us, o1))
+			end
+		| Fcase (e1,bs) =>
+			let
+				val o1 as (t1,_) = check e1
+				val tos = zip checkbranch (F.unsum t1) bs (TypeError "wrong number of branches")
+				val (ts,_) = unzip tos
+			in
+				(assertAllSame ts, Fcase (o1,zip (fn ((x,_),to1) => (x,to1)) bs tos (TypeError "")))
+			end
+		| Fif (e1,e2,e3) => 
+			let
+				val (o1 as (t1,_),o2 as (t2,_),o3 as (t3,_)) = (check e1, check e2, check e3)
+			in
+				Prims.assertBool (F.unprim t1);
+				(assertSame (t2, t3), Fif (o1,o2,o3))
+			end
+		| Flet (e,b) =>
+			let
+				val o1 as (t1,_) = check e
+				val o2 as (t2,_) = checkbranch (t1,b)
+			in
+				(t2, Flet (o1, (#1 b, o2)))
+			end
+		| Ferror t => (t, Ferror t)
+		| Froll (t, e) => 
+			let
+				val o1 as (t1,_) = check e
+			in
+				(if T.teq (selfSubst t) t1 then F.makerec t else raise (TypeError ""), Froll (t, o1))
+			end
+		| Funroll e =>
+			let
+				val o1 as (t,_) = check e
+			in
+				(selfSubst (F.unrec t), Funroll o1)
+			end
+		| Fbinop (bo, e1, e2) => 
+			let
+				val (o1 as (t1,_),o2 as (t2,_)) = (check e1, check e2)
+			in
+				(F.makeprim (binSame (F.unprim t1, F.unprim t2) (Prims.getBinopType bo)), Fbinop (bo, o1, o2))
+			end
 	end
 
 and typeCheckBranch gamma checkrec (t,(patt,e)) = 
 		checkrec (forPattern (C.extend, F.unprod, TypeError "pattern") gamma patt t) e
+		
+fun typeCheck gamma checkrec exp = #1 (typeCheckSpecial gamma (fn c => fn e => (checkrec c e, ())) exp)
 end
 
 functor Evaluator (F : SourceValues where type r = var pattern) = 
