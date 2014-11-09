@@ -1,13 +1,36 @@
 \begin{figure}
 \begin{mathpar}
-\infertypeswor [\rmunit] 	{() \pval}										{\cdot} 																		\and
-\infertypeswor [int]			{i \pval}										{\cdot} 																		\and
-\infertypeswor [bool]			{b \pval}										{\cdot} 																		\and
-\infertypeswor [\times]		{(v_1, v_2) \pval}							{v_1 \pval & v_2 \pval} 														\and
-\infertypeswor [+_1]			{\inl~v \pval}									{v \pval} 																		\and
-\infertypeswor [+_2]			{\inr~v \pval}									{v \pval} 																		\and
-\infertypeswor [\to]			{\lam x A e \pval}							{\cdot} 																		\and
-\infertypeswor [\fut]			{(\next~\hat y) \pval}						{\cdot} 													
+\infertypeswor[\rmunit]
+{() \pval}
+{\cdot}
+\and
+\infertypeswor[int]
+{i \pval}
+{\cdot}
+\and
+\infertypeswor[bool]
+{b \pval}
+{\cdot}
+\and
+\infertypeswor[\times]
+{(v_1, v_2) \pval}
+{v_1 \pval & v_2 \pval}
+\and
+\infertypeswor[+_1]
+{\inl~v \pval}
+{v \pval}
+\and
+\infertypeswor[+_2]
+{\inr~v \pval}
+{v \pval}
+\and
+\infertypeswor[\to]
+{\lam x A e \pval}
+{\cdot}
+\and
+\infertypeswor[\fut]
+{(\next~\hat y) \pval}
+{\cdot} 													
 \end{mathpar}
 \caption{\lang~Valid Partial Values}
 \label{fig:validPvalues}
@@ -15,7 +38,7 @@
 
 \begin{figure*}
 \begin{mathpar}
-\fbox{Evaluation}
+\fbox{1-Evaluation}
 \and
 \inferdiaone [\rmunit]   	{\red {()}{\cdot;()}}												{\cdot} 																					\and
 \inferdiaone [int]			{\red {i}{\cdot;i}}												{\cdot} 																					\and
@@ -38,10 +61,17 @@
 %
 \inferdiaone [\mu I]   		{\red {\roll~e}{\xi;\roll~v}}									{\sub}												\and
 \inferdiaone [\mu E]   		{\red {\unroll~e}{\xi; v}}										{\red {e}{\xi; \roll~v}}							
+
+\and
+\inferdiaone 
+[\fut I]
+{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}
+{\diatwo e q}															
+
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Specialization}
+\fbox{2-Evaluation}
 \and
 \inferdiaspc [\rmunit]		{\red {()}{()}}												{\cdot} 									\and
 \inferdiaspc [int]			{\red {i}{i}}													{\cdot} 									\and
@@ -56,21 +86,35 @@
 %\inferdiaspc [+ I_2]			{\red {\inr~e}{\inr~q}}										{\sub} 										\and
 \inferdiaspc [+ E_1]			{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
 									{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}						{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		
+\inferdiaspc[\fut E]
+{\red {\prev~e} q}
+{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}
+\and
+\inferdiaspc[hold]
+{\red {\pause~e} q}
+{\diaone e {\xi; i} & \reify \xi i q}
+
+
 %\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
 %\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
 %
 %\inferdiaspc [\mu I]   		{\red {\roll~e}{\roll~v}}									{\sub}										\and
-%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}								{\sub}										\and
+%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
+%	{\sub}										\and
+
+
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Staging features}
+\fbox{Reification}
 \and
-\inferdiaone [\fut I]			{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}								{\diatwo e q}															\and
-\inferdiaspc [\fut E]			{\red {\prev~e} q}													{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}							\and
-\inferdiaspc [hold]			{\red {\pause~e} q}													{\diaone e {\xi; i} & \reify \xi i q}								\and
-\infer							{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
-\infer							{\reify{\cdot}{q}{q}}													{\cdot}												
+\infer
+{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}
+{\reify{\xi}{q_2}{q'}}
+\and
+\infer
+{\reify{\cdot}{q}{q}}
+{\cdot}												
 \end{mathpar}
 \caption{\lang~Dynamic Semantics.  Specialization rules for \texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll} follow same pattern as \texttt{pi1}.}
 \label{fig:diaSemantics}
