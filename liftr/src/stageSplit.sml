@@ -45,8 +45,31 @@ fun terminates (E e) = (case e of
   | S.Funroll e => terminates e
   | S.Ferror _ => false)
   | terminates Edummy = true
+ 
+fun unusedAnswer (e as E exp) = (case exp of
+	S.Fvar _ => []
+  | S.FprimVal _ => []
+  | S.Flam _ => []
+  | S.Fapp (e1,e2) => [e]
+  | S.Ftuple es => List.concat (map unusedAnswer es)
+  | S.Fpi (_,e) => unusedAnswer e
+  | S.Finj (_,_,e) => unusedAnswer e
+  | S.Fcase (e1,bs) => [E (S.Fcase (e1,map (fn (x,e) => (x,chain2 (e, Eunit))) bs))]
+  | S.Fif (e1,e2,e3) => [E (S.Fif (e1,chain2 (e2, Eunit),chain2 (e3, Eunit)))]
+  | S.Flet (e1,(x,e2)) => [E (S.Flet (e1,(x,chain2 (e2, Eunit))))]
+  | S.Fbinop (_,e1,e2) => (unusedAnswer e1) @ (unusedAnswer e2)
+  | S.Froll (_,e) => unusedAnswer e
+  | S.Funroll e => unusedAnswer e
+  | S.Ferror _ => [e])
+  | unusedAnswer Edummy = []
 
-fun chain2 (e1,e2) = if terminates e1 then e2 else Epi (1, Etuple [e1,e2])
+and chain2 (e1,e2) = 
+	let
+		val es = unusedAnswer e1
+		val len = List.length es
+	in
+		if len = 0 then e2 else Epi (len, Etuple (es@[e2]))
+	end
 fun chain3 (e1,e2,e3) = 
 	case (terminates e1, terminates e2) of
 	  (true,  true ) => e3
@@ -213,9 +236,9 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
 						val (c,(l,r)) = coerce1 (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
-						val resumerX = if valHasNoStage2 (getType e1) then PPvar (Variable.newvar "unused") else x
+						val rBranch = if valHasNoStage2 (getType e1) then r else Elet(Evar z,(x,r))
 					in
-						((x,branch)::branches, (l, Elet(Evar z,(resumerX,r)))::residuals, ()::suffixes)
+						((x,branch)::branches, (l, rBranch)::residuals, ()::suffixes)
 					end
 					
 				val (branches, residuals, _) = processBranches bs []
@@ -240,9 +263,11 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.Flet (e1, (x,e2)) => 
 			let
 				val (res1,res2) = (split e1, split e2)
-				val resumerX = if valHasNoStage2 (getType e1) then PPvar (Variable.newvar "unused") else x
-				fun makeLet e1 e2 = Elet (e1, (x,e2))
-				fun makeLetR e1 e2 = Elet (e1, (resumerX,e2))
+				fun makeLet a b = Elet (a, (x,b))
+				val makeLetR = 
+					if valHasNoStage2 (getType e1)
+					then fn a => fn b => chain2 (a,b)
+					else fn a => fn b => Elet (a, (x,b))
 			in
 				case mapSplitResult toOpaque res1 of 
 				  NoPrec1 (e1,r1) => (
