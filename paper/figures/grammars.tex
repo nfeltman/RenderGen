@@ -3,13 +3,19 @@
 $\begin{aligned}
 \text{Stages}\ \ 
 \world &::= \bbone \gbar \bbtwo \\
-\text{Types}\ \ 
-\type &::= \text{unit}~|~\text{int}%~|~\text{bool}
- \gbar \type \times \type 
- \gbar \type + \type \\
-&\gbar \type \to \type
- \gbar \fut \type
- \gbar \alpha \gbar \mu \alpha.\tau \\
+\text{\bbone-Types}\ \ 
+\type_1 &::= \text{unit}~|~\text{int}%~|~\text{bool}
+ \gbar \type_1 \times \type_1
+ \gbar \type_1 + \type_1 \\
+&\gbar \type_1 \to \type_1
+ \gbar \alpha \gbar \mu \alpha.\tau_1
+ \gbar \fut \type_2 \\
+\text{\bbtwo-Types}\ \ 
+\type_2 &::= \text{unit}~|~\text{int}%~|~\text{bool}
+ \gbar \type_2 \times \type_2
+ \gbar \type_2 + \type_2 \\
+&\gbar \type_2 \to \type_2
+ \gbar \alpha \gbar \mu \alpha.\tau_2 \\
 \text{Expressions}\ \ 
 \expr &::= ()\gbar\inte\gbar\var%\bool
  \gbar \lam{\var}{\type}{\expr} 
