@@ -3,9 +3,9 @@
 \input{figures/splitting-overview}
 
 We present an overview of the formal development along with our
-terminology, as summarized in \figref{terminology}.
+terminology, as summarized in \ref{fig:termSplitSummary}.
 
-\figref{terminology}
+\ref{fig:termSplitSummary}
 
 Our starting point is a two-staged lambda calculus, whose syntax and
 types are very similar to the multi-stage languages considered in the
@@ -99,7 +99,7 @@ stage-2 terms may be nested inside stage-1 terms, 1-evaluation cannot
 reduce \lang\ terms to values.  Instead 1-evaluation yields a {\em
   partial value}, which which is a stage~\bbone\ term that have been
 evaluated except for its stage-2 subterms, which can only
-be~\bbtwo\ variables wrapped in $\next$ blocks.  \figref{validPvalues}
+be~\bbtwo\ variables wrapped in $\next$ blocks.  \ref{fig:validPvalues}
 defines partial values.
 
 In order to avoid duplication of stage-2 computations, 1-evaluation
@@ -125,7 +125,7 @@ residual $q$ and returns a residual table that maps a freshly
 generated variable to the residual. 
 
 The relation 2-evaluation, defined by $\redtwosym$ judgment, as shows
-in \figref{diaSemantics}, takes a stage \bbtwo\ term and reduces it to
+in \ref{fig:diaSemantics}, takes a stage \bbtwo\ term and reduces it to
 a residual.  Apart from the evaluation of \prev\ and \pause, the
 evaluation is straightforward. To reduce a \prev term, 2-evaluation
 reduces the body by 1-evaluation to obtain a residual table and a
