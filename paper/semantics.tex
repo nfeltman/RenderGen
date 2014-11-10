@@ -120,15 +120,15 @@ features of \lang, $\redonesym$ is essentially standard call-by-value
 evaluation but in addition gathers the subterms' residual tables into
 a single table. \ur{The syntax of residual tables should be defined in
   the terminology figure} Residual table entries are created by the
-evaluation of \next: 1-evaluation reduces a \next expression by
-reducing the body of the \next with 2-evaluation to obtain a
+evaluation of \next: 1-evaluation reduces a \next\ expression by
+reducing the body of the \next\ with 2-evaluation to obtain a
 residual $q$ and returns a residual table that maps a freshly
 generated variable to the residual. 
 
 The relation 2-evaluation, defined by $\redtwosym$ judgment, as shows
 in \ref{fig:diaSemantics}, takes a stage \bbtwo\ term and reduces it to
 a residual.  Apart from the evaluation of \prev\ and \pause, the
-evaluation is straightforward. To reduce a \prev term, 2-evaluation
+evaluation is straightforward. To reduce a \prev\ term, 2-evaluation
 reduces the body by 1-evaluation to obtain a residual table and a
 partial value.  It then reifies the residual table and the partial
 value into an residual term, by creating for each variable-residual
