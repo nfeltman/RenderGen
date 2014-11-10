@@ -27,7 +27,7 @@ fun j (name,prog,t) = [(name,Literal,prog,t)]
 fun k (name,prog,t) = [
 		(name^"-first",Literal,prog,t), 
 		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (holdGeneral v) | _ => t)]
-val programs = [
+val programs = [(*
 k("stringlit", 			"\"fourplussix\"",SAME),
 k("concat", 			"\"four\" ^ \"six\"",ansS "foursix"),
 k("fourPlusSix", 		"4 + 6",ansI 10),
@@ -86,8 +86,8 @@ i("fastexp",			"fastexp",ansNI 243),
 i("prefixtree",			"prefixtree", ansNB true),
 i("quickselect",		"quickselect", ansNI 4),
 i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
-i("iota",				"iota", ansI 5)(*,
-i("stress",				"stress", SAME)*)
+i("iota",				"iota", ansI 5),*)
+i("stress",				"stress", SAME)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
@@ -155,6 +155,8 @@ fun testProgram verbose name programType p t =
 		(* Evaluating Split Part *)
 		val _ = debug "Running split term, part 1.\n"
 		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
+		val _ = debug "Value = \n"
+		val _ = printTerm (PrintPSF.convertPSFVal pSplit)
 		val _ = debug "Running split term, part 2.\n"
 		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
 		

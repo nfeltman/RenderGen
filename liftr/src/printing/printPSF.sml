@@ -22,6 +22,7 @@ fun opToString bo = (
 		| O2or => "or"
 		| O2cat => "^")
 
+structure V = ValuesBase
 structure S = TypesBase
 fun convertSourceTypes convert ty = 
 		case ty of
@@ -97,6 +98,18 @@ and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 e
 fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") e
 fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") e
   | convertPSFv G (LambdaPSF.Edummy) = Eatom "dummy"
+  
+fun convertPSFVal (PSFSemantics.V exp) = (
+		case exp of
+		  V.VFprim (Prims.Vint i) => Eatom (Int.toString i)
+		| V.VFprim (Prims.Vbool b) => Eatom (if b then "true" else "false")
+		| V.VFprim (Prims.Vstr s) => Eatom ("\""^s^"\"")
+		| V.VFroll e => EprimApp ("roll", convertPSFVal e)
+		| V.VFtuple es => Etuple (map convertPSFVal es)
+		| V.VFinj (i,e) => Eapp (EprimApp ("inj", Eatom (Int.toString i)), convertPSFVal e)
+		| V.VFlam _ => Eatom "[FUNC]"
+		)
+  | convertPSFVal (PSFSemantics.Vdummy) = Eatom "dummy"
 
 fun convertPSFBranch (x,e) = 
 	let 

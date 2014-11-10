@@ -1,4 +1,36 @@
-let a = next{1+prev{hold (1+1)}} in
-let b = next{2+prev{hold (2+2)}} in
-let c = next{3+prev{hold (3+3)}} in 
-next{prev{a}+prev{b}+prev{c}}
+datatype iota	= Arg
+				| Int of int 
+				| Plus of iota * iota
+%%				| If of iota * iota * iota
+in
+datatype result	= Now of int | Later of $int in 
+
+letfun forceLater (r : result) = 
+	case unroll r of
+	  i => hold i
+	| i => i
+in
+
+letrec eval ((e,a) : iota * $int) : result = 
+	case unroll e of
+	  arg => Later a
+	| i => Now i
+	| (e1,e2) => (
+		case unroll (eval (e1,a)) of
+		  i1 => (
+			case unroll (eval (e2,a)) of 
+			  i2 => Now (i1 + i2)
+			| n2 => Later next{prev{hold i1}+prev{n2}})
+		| n1 => Later next{prev{n1}+ prev{forceLater (eval (e2, a))}})
+%%	| (e1,e2,e3) => 
+%%		case unroll (eval (e1,a)) of
+%%		  i1 => if i1 > 0 then eval (e1,a) else eval (e2,a)
+%%		| n1 => Later
+%%			next {
+%%				if prev{n1} > 0 
+%%				then prev{forceLater (eval (e2,a))}
+%%				else prev{forceLater (eval (e3,a))}
+%%			}
+in
+
+eval (Plus(Arg, Arg), next{2})

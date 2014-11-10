@@ -191,29 +191,54 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[resumerX,l], r)))
 			end
 		| S.Fapp (e1, e2) => 
-			let
-				val (link, pi) = freshPi ()					
+			let				
 			in
 				case (split e1, split e2) of
 					  (NoPrec1 (v1,r1), NoPrec1 (v2,r2)) =>
 						let 
-							val link = Variable.newvar "l"
+							val l3 = Variable.newvar "l"
 						in
-							WithPrec1 (Opaque`Eapp (v1,v2), (PPvar link,Eapp (r1, Etuple [r2, Evar link])))
+							WithPrec1 (Opaque`Eapp (v1,v2), (PPvar l3,Eapp (r1, Etuple [r2, Evar l3])))
 						end
-					| (res1, res2) => 
+					| (NoPrec1 (v1,r1), WithPrec1 (c2, (l2,r2))) => 
 						let
-							val ((c1,lr1),(c2,lr2)) = (coerce1 res1, coerce1 res2) 
-							val (v1,p1) = (Variable.newvar "v", Variable.newvar "p")
-							val (v2,p2) = (Variable.newvar "v", Variable.newvar "p")
+							val (c2,v2,p2) = toSplit c2
 							val (v3,p3) = (Variable.newvar "v", Variable.newvar "p")
+							val l3 = Variable.newvar "l"
 						in
 							WithPrec1
-							( Opaque `
-							Elet (Etuple[c1,c2], (PPtuple [PPtuple[PPvar v1, PPvar p1], PPtuple[PPvar v2, PPvar p2]],
-								Elet (Eapp (Evar v1,Evar v2), (PPtuple [PPvar v3, PPvar p3], 
-									Etuple[Evar v3,Etuple[Evar p1,Evar p2,Evar p3]])))),
-							(PPvar link,Eapp(Elet (pi 0, lr1),Etuple[Elet (pi 1, lr2), pi 2]))
+							( Splittable 
+								(c2 @ [(PPtuple [PPvar v3, PPvar p3], Eapp (v1, v2))],
+								Evar v3, Etuple[p2, Evar p3]),
+							(PPtuple [l2, PPvar l3], Eapp(r1,Etuple[r2, Evar l3]))
+							)
+						end
+					| (WithPrec1 (c1,(l1,r1)), NoPrec1 (v2,r2)) => 
+						let
+							val (c1,v1,p1) = toSplit c1
+							val (v3,p3) = (Variable.newvar "v", Variable.newvar "p")
+							val l3 = Variable.newvar "l"
+						in
+							WithPrec1
+							( Splittable
+								(c1 @ [(PPtuple [PPvar v3, PPvar p3],Eapp (v1, v2))],
+								Evar v3, Etuple[p1,Evar p3]),
+							(PPtuple [l1, PPvar l3], Eapp(r1,Etuple[r2, Evar l3]))
+							)
+						end
+					| (WithPrec1 (c1,(l1,r1)), WithPrec1 (c2,(l2,r2))) => 
+						let
+							val (c1,v1,p1) = toSplit c1
+							val (c2,v2,p2) = toSplit c2
+							
+							val (v3,p3) = (Variable.newvar "v", Variable.newvar "p")
+							val l3 = Variable.newvar "l"
+						in
+							WithPrec1
+							( Splittable 
+								( c1 @ c2 @ [(PPtuple [PPvar v3, PPvar p3],Eapp (v1,v2))], 
+								Evar v3, Etuple[p1,p2,Evar p3]),
+							(PPtuple [l1, l2, PPvar l3], Eapp(r1,Etuple[r2, Evar l3]))
 							)
 						end
 			end
