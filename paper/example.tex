@@ -9,27 +9,10 @@ I find it hard to distinguish between blue and black on printed paper.
 $\pause$ should be called ``promote'' or something like that. I
   believe this is what Taha calls cross stage persistence.  THat work should
   be cited.
-\item the splitting example should shed more light to the techniques
-  and try to give more insight.
 \end{itemize}
 }
 
-\crem{
-Outline:
-\begin{enumerate}
-\item Say we want to run a bunch of quickselect queries on a single list.
-\item We observe that some of the code depends only on the list.
-\item We can write this code in \lang\ to make that dependency clear.
-\item We can intuitively split into two functions.
-\item This is asymptotically better.
-\end{enumerate}
-}
-
 \input{figures/quickselect}
-
-Staging is a technique for using language constructs and types to
-explicitly divide a computation according to the frequency or the
-arrival time of data.  
 
 Suppose that we wish to issue order statistics queries on a collection of items
 represented as a list \texttt{l}. We can use quickselect \cite{quickselect}, an
@@ -40,121 +23,143 @@ Quickselect, which we define in \ref{fig:qs-unstaged}, first partitions the list
 by using the first element as a pivot%
 \footnote{We assume that the list is prepermuted to guarantee the expected
 linear time behavior.}
-and then recurs on one of the two resulting sides to find the desired element. The
-side chosen is determined by the relationship of \texttt{k} to the size of the
-first half \texttt{n}, which is returned by the \texttt{partition} function
-along with the two sides.
+and then recurs on one of the two resulting sides to find the desired element.
+The side chosen is determined by the relationship of \texttt{k} to the size of
+the first half \texttt{n}, which is returned by the \texttt{partition} function
+along with the two sides themselves.
 
-Now, consider an application where we perform many order statistics queries
-on the same collection \texttt{l}, but with $m$ different ranks \texttt{k}:
+Now, consider an application where we perform many order statistics queries on
+the same collection \texttt{l}, but with $m$ different ranks \texttt{k}.
+Certainly, it is possible to implement this with $m$ calls to
+\texttt{quickselect}:
 %
 \begin{lstlisting}
-quickselect l 1
-quickselect l 2
- @$\ldots$@ 
-quickselect l @$m$@.
+quickselect l @$k_1$@
+quickselect l @$k_2$@
+ @$\vdots$@ 
+quickselect l @$k_m$@.
 \end{lstlisting}
 %
-To take advantage of this, we can \emph{stage} quickselect so that the parts of
-the computation that depend on the collection~\texttt{l} is performed once, and
-the desired result is computed by using~\texttt{k} and the results from this
-prior stage.
+Can we do better?
 
-%% There has been the extensive research into the question of how to
-%% automatically add staging annotations to unstaged code.  This process
-%% is known as {\em binding time analysis}, and we do not consider it
-%% here.  Instead, we assume that all input programs are properly staged
-%% according to some programmer's intent.
+\subsection{Staging}
 
-\crem{missing text}
+An astute programmer might notice that much of the code in \texttt{quickselect}
+does \emph{not} depend on the rank \texttt{k}---for example, the list is
+partitioned before \texttt{k} is ever used. Moreover, while the recursive calls
+to \texttt{qSelect} are guarded by a comparison to \texttt{k}, the lists passed
+in to those recursive calls also don't depend on \texttt{k}. Thus, if we are
+willing to change the evaluation order of the language (and evaluate under the
+\texttt{case} statement), it should be possible to set things up so that
+\emph{all} the computation involving \texttt{l} is performed before \emph{any}
+of the computation involving \texttt{k}.
 
-Using techniques essentially the same as
-prior work, we can stage our quickselect code by using staged typing
-and inserting three keywords~\texttt{next, prev, hold} into the
-appropriate places in the code as shown in \ref{fig:qs-staged}. To
-write the staged version, the programmer first observes that the
-rank~\texttt{k} has now the type $\fut\rmint$ (read ``circle int'')
-rather than $\rmint$, indicating that it will be available in the
-second stage.  All types that are not of circle type are available in
-the first stage.  Naturally the output type, representing the $k$th
-largest element of the list, is also $\fut\rmint$, since it is not
-computed until the second stage. 
+We can formalize this intuition by writing quickselect in \lang\
+(\ref{sec:semantics}), a \emph{staged}, typed lambda calculus. In \lang, we can
+directly express the idea that the argument \texttt{l} is known at the
+\emph{first} stage of the computation, while the argument \texttt{k} is only
+known at the \emph{second}, and all purely-stage-\bbone\ computation occurs
+before any stage \bbtwo\ computation.
 
-\crem{explain circle types}
+A staged version of quickselect is written in \ref{fig:qs-staged}, where stage
+\bbone\ code is red, and stage \bbtwo\ code is blue. Whereas before
+\texttt{qSelect} took a \textrm{list} and \rmint\ and returned an \rmint, now we
+must be more careful---at stage \bbone, \texttt{qsStaged} takes a \textrm{list}
+and a $\fut\rmint$ (an $\rmint$ \emph{in the future}), and returns a
+$\fut\rmint$. 
 
-The construct $\next$ occurs in a stage \bbone\ context and indicates that the
-contents of its block are stage \bbtwo, whereas $\prev$ occurs in a stage
-\bbtwo\ context and indicates that the contents of its block is stage \bbone.
-(We adopt the convention that the top-level context is stage \bbone.) 
+At stage \bbone, all terms of non-circle type are available for
+immediate use. Indeed, we are able to case on \texttt{l} as usual, and in the
+\texttt{Cons} branch, pass it to the stage \bbone\ function \texttt{partition}.
 
-Informally speaking, the $\next$ construct enables operating on second stage
-computations in the first stage essentially by treating them as boxes that can
-be moved around, stored in data structures, and passed to functions, and the
-$\prev$ construct enables unwrapping the contents of such a box to use in the
-second stage. 
+\crem{Very rough text for the remainder of the section. Be a bit more explicit.}
 
-For convenience, the code also uses $\pause$ blocks.  This construct
-has same stage signature as $\prev$, but instead of ``unwrapping''
-$\fut$ types it simply promotes integers from stage~\bbone\ to
-stage~\bbtwo.%
+However, \texttt{k} has type $\fut\rmint$, so we cannot use it as part of a
+stage \bbone\ computation. Luckily, we are trying to produce a $\fut\rmint$. To
+create one of these, we can wrap $\next$ around a stage \bbtwo\ computation of
+an integer; in that computation, we can wrap $\prev$ around the $\fut\rmint$
+\texttt{k} in order to use it as a stage \bbtwo\ integer.
+
+(There's a subtle difference here between an \emph{int later} at the first
+stage, and an int at the second stage.)
+
+Essentially, $\next$ allows us to pass around opaque stage \bbtwo\ computations
+at stage \bbone, and the $\prev$ construct lets us unwrap those computations for
+use at stage \bbtwo.
+
+For convenience, the code also uses $\pause$ blocks. This construct has same
+stage signature as $\prev$, but instead of ``unwrapping'' $\fut$ types it simply
+promotes integers from stage \bbone\ to stage \bbtwo.%
 \footnote{$\pause$ can be implemented from our other language features, with
 some effort. We provide it as a primitive to shorten examples. Furthermore, it
 would be wise to extend $\pause$ to other base types, if we had them, and to
 products and sums thereof.  This is related to the notion of {\em mobility} in
 \cite{murphy05} and {\em stability} in \cite{krishnaswami13}.}
 
-We note that given the type signature of staged quickselect, there are several
-ways to insert the staging annotations.  The version we presented here maximizes
-the work done at stage~\bbone.
+The process of adding staging annotations to unstaged code has been the subject
+of extensive research under the name of \emph{binding time analysis}. In this
+paper, we assume that these annotations have been provided by the programmer (or
+perhaps a binding time analysis tool), and do not consider the problem of
+generating such annotations. There are many ways to annotate any program,
+including \texttt{qselect}; the version presented here matches the intuition for
+the maximal amount of work that can be performed at stage \bbone.
 
-The type system guarantees that all first-stage computations depend only on the
-first stage values and can indeed be computed in the absence of second-stage
-values.  
+The purpose of writing quickselect in \lang\ is that, because \texttt{qsStaged}
+typechecks, it is a valid way of dividing the program into two stages, where the
+stage \bbone\ computations can all be performed prior to the stage \bbtwo\
+computations. In \ref{sec:semantics} we provide an evaluation strategy for
+\lang\ which validates that claim.
 
-\crem{partial evaluation requires compile-time access to first stage, whereas we
-don't}
+%The construct $\next$ occurs in a stage \bbone\ context and indicates that the
+%contents of its block are stage \bbtwo, whereas $\prev$ occurs in a stage
+%\bbtwo\ context and indicates that the contents of its block is stage \bbone.
+
+%(We adopt the convention that the top-level context is stage \bbone.) 
+
+\subsection{Splitting Staged Programs}
+
+\input{figures/quickselect-split}
+
+Because we have found a valid staging \texttt{qsStaged}, one might ask what
+happens if we split this function into \emph{two} functions, one of which
+performs all the stage \bbone\ computations given \texttt{l}, and the second
+which performs all the stage \bbtwo\ computations given \texttt{k} and the
+results of the previous.
+
+Intuitively, what should this be? All calls to \texttt{partition} are in stage
+\bbone, so this means we build a binary search tree from \texttt{l}. All
+decisions on which side to recur down happen in stage \bbtwo, so this means we
+traverse the tree once we have the rank \texttt{k}.
+
+(There are two kinds of things we must pass to the second function---which stage
+\bbtwo\ computations to use, and also anything that was held.)
 
 \crem{introduce boundary terminology}
 
-Here, we wish to derive two functions, \texttt{quickselect1} and
-\texttt{quickselect2}, that are semantically equivalent to quickselect in
-the sense that:
+Formally, we wish to derive two functions, \texttt{qSelect1} and
+\texttt{qSelect2}, which respectively contain all the stage \bbone\ and stage
+\bbtwo\ content of \texttt{qSelect}, and are moreover semantically equivalent to
+\texttt{qSelect} in the sense that:
 \\
-\texttt{quickselect l k = quickselect2 (quickselect1 l) k}.
+\texttt{qSelect l k = qSelect2 (qSelect1 l) k}.
 \\
-\crem{and moreover they correspond to the stages}
 
 Since \texttt{quickselect1} requires only on a first stage
-argument~\texttt{l}, we can run it once to produce a boundary data
-structure that can be used for all subsequent queries on~\texttt{l},
-e.g.,  the code consisting of $m$ calls 
-\begin{lstlisting}
-quickselect l 1
-quickselect l 2
- @$\ldots$@ 
-quickselect l @$m$@
-\end{lstlisting}
-%
-can be replaced by 
+argument \texttt{l}, we can run it once to produce a boundary data
+structure that can be used for all subsequent queries on \texttt{l},
+e.g., we can perform $m$ queries by simply running:
 %
 \begin{lstlisting}
-b = quickselect1 l
-quickselect2 b 1
-quickselect b 2
-@$\ldots$@ 
-quickselect b @$m$@.
+let b = qSelect1 l in
+  qSelect2 b @$k_1$@
+  qSelect2 b @$k_2$@
+   @$\vdots$@ 
+  qSelect2 b @$k_m$@.
 \end{lstlisting}
 
-In this paper, we show that it is possible to generalize data
-specialization to a fully general language with recursion and
-recursive types.  The key ideas behind our approach are: ...
-
-\crem{walk through manual example here}
-
-The final version, cleaned up and given better datatype names, is shown in
-\ref{fig:qssplit}.  Observe that \texttt{qSelect1} essentially builds a binary
-search tree from the input list, and \texttt{qSelect2} searches that tree for
-the correct index.
+Indeed, in \ref{sec:splitting,sec:implementation} we describe an algorithm for
+splitting staged terms, which on \texttt{qsStaged} actually emits the algorithm
+in \ref{fig:qssplit}.
 
 Assuming that the list~\texttt{l} contains $n$ elements, this optimization
 changes the asymptotic complexity from expected (randomized) $\Theta(n \cdot m)$
@@ -162,19 +167,16 @@ to $\Theta(n\log{n} + m\log{n})$, which for any $m \approx n$ reduces the
 complexity from $\Theta (n^2)$ to $\Theta(n\log{n})$---a near linear time
 improvement. 
 
-Note that the desired optimized code shows above is intellectually more
-sophisticated than the code that we have started with: the optimized code is
-able to create a data structure, a balanced binary tree augmented with indexing
-information, and use a binary search technique over this tree to compute the
-result asymptotically more efficiently.
+%Note that the desired optimized code shows above is intellectually more
+%sophisticated than the code that we have started with: the optimized code is
+%able to create a data structure, a balanced binary tree augmented with indexing
+%information, and use a binary search technique over this tree to compute the
+%result asymptotically more efficiently.
 %In fact, based our teaching experience, we can imagine this kind of problem to
 %be a moderately difficult exam question in an undergraduate algorithms class, as
 %it not only requires understanding of data structures such as binary search
 %trees but also requires modifying them to augment with indexing information to
 %support rank-based search.
 
-This paper formally describes and analyzes the splitting transformation
-exemplified above.  (I also want to make it clear that recognizing \lang's
-appropriateness for this is itself is a contribution.)
-
-\input{figures/quickselect-split}
+%(I also want to make it clear that recognizing \lang's appropriateness for this
+%is itself is a contribution.)
