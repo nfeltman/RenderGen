@@ -1,31 +1,39 @@
 \begin{figure}
-\centering
-$\begin{aligned}
+\[\begin{aligned}
 \text{Stages}\ \ 
 \world &::= \bbone \gbar \bbtwo \\
+%
 \text{\bbone-Types}\ \ 
-\type_1 &::= \text{unit}~|~\text{int}%~|~\text{bool}
+\type_1 &::= \text{unit}\gbar\text{int}%~|~\text{bool}
  \gbar \type_1 \times \type_1
  \gbar \type_1 + \type_1 \\
 &\gbar \type_1 \to \type_1
  \gbar \alpha \gbar \mu \alpha.\tau_1
  \gbar \fut \type_2 \\
+%
 \text{\bbtwo-Types}\ \ 
-\type_2 &::= \text{unit}~|~\text{int}%~|~\text{bool}
+\type_2 &::= \text{unit}\gbar\text{int}%~|~\text{bool}
  \gbar \type_2 \times \type_2
  \gbar \type_2 + \type_2 \\
 &\gbar \type_2 \to \type_2
  \gbar \alpha \gbar \mu \alpha.\tau_2 \\
+%
+\text{Contexts}\ \ 
+\context &::=\emptyC
+ \gbar \context, x:\tau_1~@~\bbone
+ \gbar \context, x:\tau_2~@~\bbtwo \\
+%\context &::=\emptyC \gbar \context, \colwor \var \type \\
+%
 \text{Expressions}\ \ 
 \expr &::= ()\gbar\inte\gbar\var%\bool
  \gbar \lam{\var}{\type}{\expr} 
- \gbar \expr_1~\expr_2 \\
-&\gbar (\expr_1, \expr_2) 
+ \gbar \expr~\expr \\
+&\gbar (\expr, \expr) 
  \gbar \pio~\expr 
  \gbar \pit~\expr
  \gbar \inl~\expr 
  \gbar \inr~\expr \\
-&\gbar (\caseof {\expr_1}{\var_2.\expr_2}{\var_3.\expr_3})
+&\gbar (\caseof {\expr}{\var.\expr}{\var.\expr})
 \\ %\gbar \ifthen {\expr_1}{\expr_2}{\expr_3} \\
 &\gbar \roll_{\mu \alpha.\tau}~e
  \gbar \unroll~e\\
@@ -33,9 +41,15 @@ $\begin{aligned}
 &\gbar \next~\expr 
  \gbar \prev~\expr 
  \gbar \pause~\expr \\
-\text{Contexts}\ \ 
-\context &::=\emptyC \gbar \context, \colwor \var \type
-\end{aligned} $
+%
+\text{Partial values}\ \ 
+v &::= ()\gbar\inte%\gbar\bool
+ \gbar \lam{\var}{\type}{\expr} 
+ \gbar (v,v) \\
+&\gbar \inl~v
+ \gbar \inr~v
+ \gbar \next~{\hat y} 
+\end{aligned}\]
 \caption{\lang~Syntax}
 \label{fig:grammar}
 \end{figure}
