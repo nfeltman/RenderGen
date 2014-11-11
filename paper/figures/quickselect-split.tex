@@ -15,7 +15,7 @@ datatype tree = Branch of int * int * tree * tree
       Branch (n, h, qSelect1 left, qSelect1 right)`
 
 2`fun qSelect2 (p : tree, k : int) : int = 
-  case unroll p of
+  case p of
     Leaf => 0
   | Branch (n,h,p1,p2) => 
       case compare k n of
