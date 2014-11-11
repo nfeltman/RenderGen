@@ -164,3 +164,48 @@ Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbt
 
 \input{figures/splitting-term}
 \input{figures/splitting-misc}
+
+\subsection{Improved Definition}
+\label{sec:resumers}
+
+The definitions of masking and splitting can be augmented to better handle special cases.
+One such special case is the behavior of stage \bbone\ splitting at stage \bbone\ types that contain no $\fut$s or $\to$s.
+We call such types {\em monostage} (judgmentally, $A~mono$), because a partial value $v$ with a monostage type can contain no $\next$s.
+
+Intuitively, for $[\xi;v] : A$ and $A~mono$, we would expect that $\maskt{\xi;v}$ only reduce to something ``trivial."
+There are two reasonable definitions of trivial here: 
+\begin{enumerate}
+\item a value is trivial if it is exactly \texttt{()},
+\item a value is trivial if it is in the closure of \texttt{()} and \texttt{(-,-)}
+\end{enumerate}
+Indeed, as $\maskt{-;-}$ is currently defined, this property holds for the latter definition of trivial,
+but we can make it hold for the former definition by adjusting just the tuple rule:
+\[
+\maskt{\cdot;(v_1,v_2)} = \left\{ \begin{array}{ll} 
+\mathtt{()} &\text{if } (v_1,v_2):A~mono\\ 
+(\maskt{\cdot;v_1},\maskt{\cdot;v_2}) &\text{otherwise} \end{array} \right.
+\]
+From here, the splitting rules can be made to comport with this new 
+definition adding special-case tuple, projection, and application 
+rules\footnote{The old tuple, projection, and application rules 
+must also be augmented to apply only when the $mono$ premises don't hold.
+Also, all splitting rules need to be augmented to carry types, though
+we omit the contexts here.}:
+\begin{mathpar}
+\infer
+	{(e_1,e_2):A\times B\splitonesym [\ldots,(l_1,l_2).(r_1;r_2;())]}
+	{e_1 : A \splitonesym [c_1,l_1.r_1] 
+	& e_2 : B \splitonesym [c_2,l_2.r_2] 
+	& A \times B~mono} 
+\and
+\infer
+	{\pio~e:A\splitonesym [\ldots,l.(r;())]}
+	{e : A\times B \splitonesym [c,l.r] 
+	& A \times B~mono} 
+\and
+\infer
+	{e_1~e_2: B\splitonesym [\ldots,(l_1,l_2,l_3).(r_1 (r_2,l_3); ())]}
+	{e_1 : A \to B \splitonesym [c_1,l_1.r_1] 
+	& e_2 : A \splitonesym [c_2,l_2.r_2] 
+	& B~mono} 
+\end{mathpar}
