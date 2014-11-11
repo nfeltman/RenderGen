@@ -82,11 +82,11 @@ k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1)
 k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
-i("fastexp",			"fastexp",ansNI 243),
 i("prefixtree",			"prefixtree", ansNB true),
 i("quickselect",		"quickselect", ansNI 4),
 i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
 i("iota",				"iota", ansI 5),*)
+i("fastexp",			"fastexp",ansNI 243),
 i("stress",				"stress", SAME)
 ]
 

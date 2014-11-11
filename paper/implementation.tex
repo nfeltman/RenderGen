@@ -10,6 +10,7 @@ For instance, trivial subterm precomputations needn't be saved at tuples:
 \[
 \infer {\splittwo {(e_1,e_2)} A {p,l.(r_1,r_2)}}{\splittwo {e_1} A {(),\_.r_1} & \splittwo {e_2} A {p,l.r_2}}
 \]
+
 This sort of optimization does not affect the contract of splitting at all,
 because the contract only requires that there be a precomputation that the residual can accept,
 with no restrictions on the form of that precomputation.

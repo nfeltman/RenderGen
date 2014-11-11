@@ -3,66 +3,100 @@
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
 
-We investigate two applications of our splitting algorithm.
+We investigate the behavior of our splitting algorithm on several examples.
 
 In the first application, we split a staged search algorithm where the data comes at stage \bbone\ and the search index comes at stage \bbtwo.  
-In the second application, we split a staged interpreter where the source program comes at stage \bbone, and some input to the program comes at stage \bbtwo.
  
 We urge the reader to pay attention to how partial evaluation (\lang's dynamic semantics) and stage splitting compare for these examples.
 The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
 essentially embed that data structure in the residual. 
 
-%\subsection{Fast Exponent}
-%
-%Here is a staged version of the fast-exponent example from before.
-%\begin{lstlisting} 
-%fun fexp (b : $int, e : int) : $int =
-%	if e == 0 then
-%		next{1}
-%	else if (e mod 2) == 0 then
-%		next{let x = prev{fexp(b,e/2)} in x*x}
-%	else
-%		next{prev{b} * prev{fexp (b,e-1)}}		
-%\end{lstlisting}
-%
-%\noindent
-%{\tt fexp} splits into the following two functions:
-%
-%\begin{lstlisting} 
-%fun fexp1 (b, e) =
-%  ((), roll (
-%    if e == 0 then inj1 ()
-%    else
-%      inj2 (
-%        if (e mod 2) == 0
-%        then inj1 (#2 (fexp1 (b,e/2)))
-%        else inj2 (#2 (fexp1 (b,e-1)))
-%      )
-%  ))
-%
-%fun fexp2 ((b, e), p) =
-%	case unroll p of
-%	  inj1 () => 1
-%	| inj2 d =>
-%		case d of
-%		  inj1 r => let x = fexp2 ((b,()),r) in x*x
-%		| inj2 r => b * fexp2 ((b,()),r)
-%\end{lstlisting}
-%
-%Although split programs are not typed, we'll recognize the intermediate data structure 
-%above as being as isomorphic to the recursive datatype definitions:
-%\begin{lstlisting} 
-%datatype binaryList = Empty 
-%                      | NotEmpty of neList
-%withtype neList = Zero of binaryList 
-%                  | One of binaryList
-%\end{lstlisting}
-%Which is all to say that the split code precomputes a binary representation of the exponent.
-%Since integers are usually stored in a binary format anyways, this isn't practically useful,
-%but it's still an interesting exposition of the technique.
-%
-%Partially evaluating the code here might actually be useful, since the residual wouldn't have branches,
-%and exponents tend to be small enough that the code size would be reasonable.
+\subsection {Y-Combinator}
+
+split the ycomb
+
+\begin{lstlisting} 
+fn f : _ =>
+let r =
+    fn y : _ =>
+    (fn n : _ =>
+     let (v,p) =
+         f
+         (fn v : _ =>
+          let (v_0,p) = unroll y y in let (v_1,p_0) = v_0 v in (v_1,(p,p_0)))
+     in
+     let (v_0,p_0) = v n in (v_0,(p,p_0)),())
+in
+r (roll _ r)
+\end{lstlisting}
+
+
+\begin{lstlisting} 
+fn (f,l_1) : _ =>
+let r =
+    fn (y,()) : _ =>
+    fn (unused,(l_3,l_2)) : _ =>
+    #2 (f
+        (fn (unused_0,(l_5,l_4)) : _ => #2 (y (y,l_5) ((),l_4),()),l_3)
+        ((),l_2),())
+in
+r (r,l_1)
+\end{lstlisting}
+
+
+\subsection{Fast Exponent}
+
+Here is a staged version of the fast-exponent example from before.
+\begin{lstlisting} 
+fun exp (b : $int, e : int) : $int =
+	if e == 0 then
+		next{1}
+	else if (e mod 2) == 0 then
+		next{let x = prev{exp(b,e/2)} in x*x}
+	else
+		next{prev{b} * prev{exp (b,e-1)}}
+\end{lstlisting}
+
+\noindent
+{\tt fexp} splits into the following two functions:
+
+
+\begin{lstlisting} 
+fn (b,e) : _ =>
+if e==0 then
+    ((),injL ())
+else
+    let (v,p) =
+        if e mod 2 == 0 then
+            ((),injL (#2 (exp (b,e/2))))
+        else
+            ((),injR (#2 (exp (b,e-1))))
+    in
+    (v,injR p)
+
+fn ((b,e),l_1) : _ =>
+case l_1 of
+  injL () => 1
+| injR l_2 =>
+      case l_2 of
+        injL l_3 => let x = fexp ((b,()),l_3) in x*x
+      | injR l_3 => b*fexp ((b,()),l_3)
+\end{lstlisting}
+
+Although split programs are not typed, we'll recognize the intermediate data structure 
+above as being as isomorphic to the recursive datatype definitions:
+\begin{lstlisting} 
+datatype binaryList = Empty 
+                      | NotEmpty of neList
+withtype neList = Zero of binaryList 
+                  | One of binaryList
+\end{lstlisting}
+Which is all to say that the split code precomputes a binary representation of the exponent.
+Since integers are usually stored in a binary format anyways, this isn't practically useful,
+but it's still an interesting exposition of the technique.
+
+Partially evaluating the code here might actually be useful, since the residual wouldn't have branches,
+and exponents tend to be small enough that the code size would be reasonable.
 
 \subsection{Quickselect}
 
