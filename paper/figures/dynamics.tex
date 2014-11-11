@@ -1,40 +1,40 @@
-\begin{figure}
-\begin{mathpar}
-\infertypeswor[\rmunit]
-{() \pval}
-{\cdot}
-\and
-\infertypeswor[int]
-{i \pval}
-{\cdot}
-\and
-\infertypeswor[bool]
-{b \pval}
-{\cdot}
-\and
-\infertypeswor[\times]
-{(v_1, v_2) \pval}
-{v_1 \pval & v_2 \pval}
-\and
-\infertypeswor[+_1]
-{\inl~v \pval}
-{v \pval}
-\and
-\infertypeswor[+_2]
-{\inr~v \pval}
-{v \pval}
-\and
-\infertypeswor[\to]
-{\lam x A e \pval}
-{\cdot}
-\and
-\infertypeswor[\fut]
-{(\next~\hat y) \pval}
-{\cdot} 													
-\end{mathpar}
-\caption{\lang~Valid Partial Values}
-\label{fig:validPvalues}
-\end{figure}
+%\begin{figure}
+%\begin{mathpar}
+%\infertypeswor[\rmunit]
+%{() \pval}
+%{\cdot}
+%\and
+%\infertypeswor[int]
+%{i \pval}
+%{\cdot}
+%%\and
+%%\infertypeswor[bool]
+%%{b \pval}
+%%{\cdot}
+%\and
+%\infertypeswor[\times]
+%{(v_1, v_2) \pval}
+%{v_1 \pval & v_2 \pval}
+%\and
+%\infertypeswor[+_1]
+%{\inl~v \pval}
+%{v \pval}
+%\and
+%\infertypeswor[+_2]
+%{\inr~v \pval}
+%{v \pval}
+%\and
+%\infertypeswor[\to]
+%{\lam x A e \pval}
+%{\cdot}
+%\and
+%\infertypeswor[\fut]
+%{(\next~\hat y) \pval}
+%{\cdot}
+%\end{mathpar}
+%\caption{\lang~Valid Partial Values}
+%\label{fig:validPvalues}
+%\end{figure}
 
 \begin{figure*}
 \begin{mathpar}
@@ -52,43 +52,43 @@
 %{\red {b}{\cdot;b}}
 %{\cdot}
 %
-\inferdiaone [\to I]  		
-{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}					
+\inferdiaone [\to I]
+{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}
 {\cdot}
 \and
-\inferdiaone [\to E]  		
+\inferdiaone [\to E]
 {\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}
-{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}	
+{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}
 \and
 %
-\inferdiaone [\times I]  	
+\inferdiaone [\times I]
 {\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}
 {\sub [1] & \sub [2]}
 \and
-\inferdiaone [\times E_1]	
+\inferdiaone [\times E_1]
 {\red {\pio~e}{\xi;v_1}}
 {\red{e}{\xi;\valprod{v_1}{v_2}}}
 \and
-\inferdiaone [\times E_2]	
+\inferdiaone [\times E_2]
 {\red {\pit~e}{\xi;v_2}}
 {\red{e}{\xi;\valprod{v_1}{v_2}}}
 \and
-\inferdiaone [+ I_1]  		
+\inferdiaone [+ I_1]
 {\red {\inl~e} {\xi;\inl~v}}
 {\sub}
 \and
-\inferdiaone [+ I_2]  		
+\inferdiaone [+ I_2]
 {\red {\inr~e} {\xi;\inr~v}}
 {\sub}
 \and
 %
-\inferdiaone [+ E_1]  		
-{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		
+\inferdiaone [+ E_1]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}
 {\red {e_1}{\xi_1;\inl~v} & \red
   [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}}
 \and
-\inferdiaone [+ E_2]  		
-{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		
+\inferdiaone [+ E_2]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}
 {\red {e_1}{\xi_1;\inr~v} & \red
   [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}
 \and
@@ -103,12 +103,12 @@
 \and
 \inferdiaone[\mu E]
 {\red {\unroll~e}{\xi; v}}
-{\red {e}{\xi; \roll~v}}							
+{\red {e}{\xi; \roll~v}}
 \and
 \inferdiaone 
 [\fut I]
 {\red {\next~e}{\hat y \mapsto q,\next~\hat y}}
-{\diatwo e q & \hat{y}~\mbox{\tt fresh}}															
+{\diatwo e q & \hat{y}~\mbox{\tt fresh}}
 \end{mathpar}
 \hrule
 \begin{mathpar}
@@ -129,23 +129,23 @@
 {\red {x}{x}}
 {\cdot}
 \and
-\inferdiaspc[\to I]			
+\inferdiaspc[\to I]
 {\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}
-{\diatwo [\Gamma,x] e q} 				
+{\diatwo [\Gamma,x] e q} 
 \and
-\inferdiaspc [\to E]			
+\inferdiaspc [\to E]
 {\red {e_1~e_2}{q_1~q_2}}
-{\sub [1] & \sub [2]}						
-\and		
-\inferdiaspc [\times I]		
-{\red {(e_1,e_2)}{(q_1,q_2)}}
-{\sub [1] & \sub [2]} 					
+{\sub [1] & \sub [2]}
 \and
-\inferdiaspc [\times E]	
+\inferdiaspc [\times I]
+{\red {(e_1,e_2)}{(q_1,q_2)}}
+{\sub [1] & \sub [2]} 
+\and
+\inferdiaspc [\times E]
 {\red {\pio/\pit~e}{\pio/\pit~q}}
 {\sub}
 \and
-\inferdiaspc [+ I]			
+\inferdiaspc [+ I]
 {\red {\inl/\inr~e}{\inl/\inr~q}}
 {\sub}
 \and
@@ -156,9 +156,9 @@
 \inferdiaspc[+ E_1]
 {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
 {\caseof{q_1}{x_2.q_2}{x_3.q_3}}}
-{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 		
+{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 
 \and
-\inferdiaspc[\mu I]   		
+\inferdiaspc[\mu I]   
 {\red {\roll/\unroll~e}{\roll/\unroll~q}}
 {\sub}
 \and
@@ -173,9 +173,8 @@
 %	{\sub}										\and
 
 %\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
-%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and	
+%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and
 %
-
 
 \end{mathpar}
 \hrule
@@ -183,12 +182,12 @@
 \fbox{Reification}
 \and
 \infer
-{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}
-{\reify{\xi}{q_2}{q'}}
+{\reify{\cdot}{q}{q}}
+{\cdot}
 \and
 \infer
-{\reify{\cdot}{q}{q}}
-{\cdot}												
+{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}
+{\reify{\xi}{q_2}{q'}}
 \end{mathpar}
 \caption{\lang~Dynamic Semantics.  Specialization rules for \texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll} follow same pattern as \texttt{pi1}.}
 \label{fig:diaSemantics}
