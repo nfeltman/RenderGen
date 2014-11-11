@@ -1,5 +1,63 @@
 \section{Introduction}
 
+\crem{This text was lifted from section 2.}
+
+Prior work on metaprogramming allows us to evaluate such staged code
+in a staged fashion by first providing the first-stage arguments and
+generating a piece of code that is specialized for the arguments.  For
+example, we can evaluate the staged quickselect by providing a
+list~\texttt{l} to obtain a piece of code that then can be used with
+different ranks (\texttt{k} values) in the second stage.  Such a
+specialized code essentially performs all the first-stage computations
+first and uses their results to improve the efficiency in the second
+stage, where we issue many queries.  
+
+This staged evaluation technique corresponds to {\em partial
+  evaluation} or {\em program specialization} and can bring out
+dramatic improvements in the efficiency of programs.  It has however
+one major limitation: since it requires the first stage arguments to
+be available, it cannot be performed at compile time, except of course
+when the first-stage values are available at compile time.  Since the
+evaluation in the first stage produces a piece of code that must also
+be compiled or interpreted to execute in the second stage, the
+approach can lead to code blowup and tends to be relatively expensive
+in practice.  Due to these reasons, the applications of partial
+evaluation are limited.  For example, in our quickselect example, it
+is unlikely to know the list~\texttt{l} that we will be operation on
+at compile time. Partial evaluation dynamically at run time is
+difficult because the first stage generates code that is linear in the
+size of the list, whose generation, dynamic compilation or
+interpretation can be excruciatingly slow.
+
+\cite{knoblock96} proposed the {\em data specialization}
+technique to overcome some of these limitations of program
+specialization.  The idea behind this technique is to take a staged
+program and split it into a stage-1 and a stage-2 program without
+knowledge of any of the arguments.  Unlike program specialization,
+data specialization does not require knowledge of the first-stage
+arguments to produce fast code for the second stage.  Instead it yield
+a first stage program that maps the first stage arguments to an
+intermediate or {\em boundary data structure}, which is used by the
+second stage program along with the second stage arguments to produce
+the final results.  Knoblock and Ruf's observation is that the
+information required by the second stage can be represented solely as
+a data structure, making it unnecessary to generate and compile or
+interpret code dynamically at run time.  Data specialization can
+therefore be applied statically at compile time, leading to
+drastically improved run-time performance without any significant
+run-time overheads.
+
+It is thus perhaps no surprise that the prior art in data
+specialization is not able to perform such ``optimizations''.
+Knoblock and Ruf's paper takes a very important step by formulating
+the problem and proposing a solution.  But their work applies to
+program fragments that don't involve sophisticated data types such as
+as sums and recursive types, and don't involve recursion. For example,
+their work would not apply to our quickselect example and similar ones
+involving recursion and/or  recursive types.
+
+\subsection{Old intro}
+
 It is a common observation that some computations can be performed efficiently by using {\em staging}, wherein the execution of a program is split over two or more discrete points in time ({\em i.e.} stages).  This most often arises when we want to evaluate a multivariate function several times, with some inputs dynamic (varying across invocations) and some static (constant across invocations).  Examples include:
 \begin{itemize}
 \item Computing $b^e$, where $b$ varies and $e$ is constant.

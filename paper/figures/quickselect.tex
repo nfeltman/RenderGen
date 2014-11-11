@@ -1,0 +1,55 @@
+\begin{figure*}
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) 
+  : (int*list*list) =
+  case unroll l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) =>
+      let (s,left,right) = partition (p,t) in
+      if h<p 
+      then (s+1,Cons(h,left),right)
+      else (s,left,Cons(h,right))
+
+fun qSelect (l : list, k : int) : int = 
+  case l of
+    Empty => 0
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+        case compare k n of
+          LT => qSelect (left, k)
+        | EQ => h
+        | GT => qSelect (right, k-n-1)
+\end{lstlisting}
+\caption{Unstaged implementation of quickselect.}
+\label{fig:quickselect}
+\label{fig:qs-unstaged}
+\end{subfigure}%
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+1`datatype list = Empty | Cons of int * list
+fun partition (p : int, l : list) = ...
+
+fun qsStaged (l : list, k : $`2`int`1`) : $`2`int`1` = 
+  case l of
+    Empty => next {`2`0`1`}
+  | Cons (h,t) => 
+      let (left,right,n) = partition h t in
+      next{
+        `2`let n = hold{`1`n`2`} in
+          case compare prev{`1`k`2`} n of
+            LT => prev {`1`qsStaged (left k)`2`}
+          | EQ => hold {`1`h`2`}
+          | GT => prev {`1`qsStaged (right, 
+                             next{prev{k}-n-1)}`2`}`1`
+      }`
+\end{lstlisting}
+\caption{Staged implementation of quickselect in \lang.}
+\label{fig:qsstaged}
+\label{fig:qs-staged}
+\end{subfigure}
+\caption{Quickselect: traditional and staged.}
+\end{figure*}
+
+
