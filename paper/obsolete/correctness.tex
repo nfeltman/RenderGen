@@ -1,3 +1,60 @@
+\subsection{Metatheory}
+
+Recall that residuals live in \langTwo; we will indicate typing judgments in
+\langTwo\ with $\vdash_\bbtwo$.
+
+%\begin{definition}
+%Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
+%contains only stage-2 variables.
+%\end{definition}
+
+\begin{definition}
+An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
+\begin{enumerate}
+\item $\xi = \cdot$; or
+\item $\xi = \xi',x:B\mapsto e$ where
+$\Gamma\vdash\xi'\wf$ and
+$\typeslangTwo[\Gamma,\dom{\xi'}] e B$
+%$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
+%$\Gamma,\dom{\xi'}\vdash e \res$.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}
+If $\typeswor e A$ then $\Gamma\wf$ and $A\istypewor$.
+\end{theorem}
+
+\begin{theorem}
+If $\diaonesub$ and $\typesone e A$ then
+\begin{enumerate}
+\item $\Gamma\vdash\xi\wf$;
+\item $\Gamma,\dom\xi\vdash \colone{v}{A}$; and
+\item $\Gamma,\dom\xi\vdash v\pval$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}
+If $\diatwosub$ and $\typestwo e A$ then
+\begin{enumerate}
+\item $\typeslangTwo q A$; and
+\item $\Gamma\vdash_\bbtwo q\val$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}\label{thm:reify-type}
+If $\Gamma\vdash\xi\wf$ and
+$\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
+then 
+$\reify{\xi}{\hat y}{q}$ and
+$\typeslangTwo q A$.
+\end{theorem}
+
+\TODO
+Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one
+integer term is guaranteed not to depend on the table, although one might be
+produced. One may either discard the table, or evaluate everything in the table
+(and terminating with the partial value iff everything in the table terminates).
+
 \subsection{Correctness of Splitting}
 
 We can now develop an notion of what it means for splitting to be correct.  

@@ -1,12 +1,13 @@
-\begin{figure}
+\begin{figure*}
 \textbf{Languages:}
 \begin{itemize}
-\item \lang: two-staged lambda calculus with product, sum, and
+\item \lang: two-staged typed lambda calculus with product, sum, and
   recursive types
-\item \langmono: an unstaged lambda calculus with products.
+\item \langTwo: monostaged typed lambda calculus
+\item \langmono: an unstaged lambda calculus
 \end{itemize}
 
-\textbf{\lang\ Evaluation Relations:}
+\textbf{\lang\ Dynamic Semantics:}
 \begin{itemize}
 \item 
 \bbone-Evaluation: $e\mathbin{\redonesym}[\xi;v]$, where $\xi$ is a \emph{residual table} and $v$ is a \emph{partial value}. 
@@ -15,40 +16,56 @@
 \bbtwo-Evaluation: $e\mathbin{\redtwosym}q$, where $q$ is a \emph{residual} in the unstaged language \langTwo
 
 \item 
-Table reification: \ur{Fill in...}
+Table reification: $[\xi;q]\mathbin{\reifysym} q'$, where $q,q'$ are residuals,
+$\xi$ is a residual table.
+
+\item
+Residual evaluation: $q\mathbin{\redsym} v$, where $q$ is a residual, $v$ is a
+value.
 \end{itemize}
 
-
-
-% $red_2$: 2-eval,  which we think of as being identical to specialization. 
-
-\vspace{.75em}
 \textbf{\lang\ Splitting:}
 
 \hspace{2em}\bbone-Splitting Structure: $e \splitonesym [c,l.r]$, where:
 
-\hspace{4em}$c$ is the \emph{combined term} (representing all stage~\bbone\ subcomputations in $e$)
+\hspace{4em}$c$ is the \emph{combined term}
+(representing all stage~\bbone\ subcomputations in $e$)
+in \langmono
 
-\hspace{4em}$l.r$ is the \emph{resumer} (representating all stage~\bbtwo\ subcomputations in $e$)
+\hspace{4em}$l.r$ is the \emph{resumer}
+(representing all stage~\bbtwo\ subcomputations in $e$)
+in \langmono
 
-\hspace{4em}$c~\redsym~(y,b)$, where $y$ is the \emph{\bbone-result} of $e$, and $b$ is the \emph{boundary value} of $e$
+\hspace{4em}$c~\redsym~(y,b)$, where 
+$y$ is the \emph{\bbone-result} of $e$, and
+$b$ is the \emph{boundary value} of $e$
 
- 
 \hspace{2em}\bbone-Splitting Correctness: If $e\mathbin{\redonesym}[\xi;v]$, then:
 
 \hspace{4em}$y$ is identical to $\masko{\xi;v}$
 
-\hspace{4em}$\maskt{\xi;v}$ and \texttt{(let l=b in r)} reduce (via $\redsym$) to identical values.  
+\hspace{4em}$\maskt{\xi;v}$ and \texttt{(let l=b in r)} 
+reduce (via $\redsym$) to equivalent values.  
 
 \hspace{2em}\bbtwo-Splitting Structure: $e \splittwosym [p,l.r]$, where:
 
-\hspace{4em}$p$ is the \emph{precomputation} (representing all stage~\bbone\ subcomputations in $e$)
+\hspace{4em}$p$ is the \emph{precomputation}
+(representing all stage~\bbone\ subcomputations in $e$)
+in \langmono
 
-\hspace{4em}$l.r$ is the \emph{resumer} (representating all stage~\bbtwo\ subcomputations in $e$)
+\hspace{4em}$l.r$ is the \emph{resumer}
+(representing all stage~\bbtwo\ subcomputations in $e$)
+in \langmono
 
-\hspace{2em}\bbtwo-Splitting Correctness: If $e~\redtwosym~q$, and $q~\redsym~v$, then \texttt{(let l=p in r)}~$\redsym~v$
+\hspace{2em}\bbtwo-Splitting Correctness:
+If $e~\redtwosym~q$, and $q~\redsym~v$, then
+\texttt{(let l=p in r)}~$\redsym~v'$ and $v,v'$ are equivalent.
+% TODO: FIX THIS
+% if e reduces to q, then p reduces to u
+% and q == [u/l]r
+% that is, stage 1 reduces, even if stage 2 doesn't
 
 \caption{Summary of \lang\ evaluation and splitting.}
 \label{fig:termSplitSummary}
-\end{figure}
+\end{figure*}
 

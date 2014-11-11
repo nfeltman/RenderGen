@@ -2,23 +2,18 @@
 
 \input{figures/splitting-overview}
 
-We present an overview of the formal development along with our
-terminology, as summarized in \ref{fig:termSplitSummary}.
+%We present an overview of the formal development along with our
+%terminology, as summarized in \ref{fig:termSplitSummary}.
 
-Our starting point is a two-staged lambda calculus, whose syntax and
-types are very similar to the multi-stage languages considered in the
-literature on partial evaluation and meta programming.  Specifically,
-we consider a two-stage, which we call \lang\, which is variant of
-Davies`s multi-stage language.  Apart from the restriction to two
-stages instead of multiple stages, there are no significant
-differences between our syntax and the static semantics and those of
-Davies'. We restrict our attention to two stages, because it
-simplifies the (many) details of the splitting problem, without
-altering the essence of the problem.  We expect that the techniques
-presented here can be extended to multi-stage languages.
+Our starting point is \lang, a typed, two-stage lambda calculus with products,
+sums, and isorecursive types. This language is adapted from \cite{davies96}, and
+is very similar to the staged languages considered in the partial evaluation and
+metaprogramming literature. In this paper, we restrict our attention to a
+two-stage language to simplify our presentation of the splitting algorithm, but
+we expect that the techniques presented here extend to more stages.
 
 The dynamic semantics of \lang\ differs from Davies's approach and
-similar approaches in meta programming literature, because it avoids
+similar approaches in metaprogramming literature, because it avoids
 duplication of staged work. Duplication takes place in meta
 programming when a second-stage computation is silently duplicated by
 the semantics.  In addition to leading to increases in run time, a
@@ -26,7 +21,6 @@ duplicating semantics makes it harder to reason about the splitting
 algorithm, whose development and exposition is our main goal.  Apart
 from the non-duplication, the dynamic semantics of \lang\ is
 essentially identical to  Davies'. 
-
 
 We define the dynamics semantics of \lang\ not as an explicit
 evaluation relation but as a relation that produces a term in an
@@ -39,29 +33,25 @@ reification, followed by one application of stage-2 evaluation.
 
 \ur{Splitting...}
 
-
-
 \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
 \label{sec:semantics}
 
+\crem{Fold previous section in here.}
+
 \input {figures/grammars}
-\input {figures/statics}
 
 \subsection{Statics}
+
+\input {figures/statics}
 
 In \lang, the $\next$ constructor includes a stage \bbtwo\ term in a
 stage~\bbone\ term. To ensure that the staging features are only applied to
 valid terms, we index our judgments not only by a type, but also a stage $w$.
 
-\crem{Cut references to type validity.}
-The type validity judgment $\Delta \vdash A \istypewor$, defined in
-\cref{fig:validTypes}, ensures that a type $A$ exists at stage $w$; for
-example, any type $\fut A$ only exists at stage \bbone.  The typing judgment
-$\typeswor e A$ says that $e$ has type $A$ at stage $w$, in the context
-$\Gamma$, and is defined in \cref{fig:statics}.  As one would expect, the
-typing judgment only produces valid types.
-%(by induction on the derivation of the typing judgment).
-% under the assumptions in $\Delta$. This context is only augmented by recursive types.
+The typing judgment $\typeswor e A$ says that $e$ has type $A$ at stage $w$, in
+the context $\Gamma$, and is defined in \cref{fig:statics}.
+
+\crem{Notice that certain types are impossible.}
 
 Except for the staging features $\next$, $\prev$, and $\pause$, the ordinary
 language features (i.e., the introductory and eliminatory forms for product,
@@ -79,9 +69,9 @@ from stage \bbtwo\ to stage \bbone, and what makes splitting possible.
 \subsection{Dynamics}
 \label{sec:stagedsemantics}
 
-As is the case in essentially all staged language, the dynamic
-semantics evaluates a term to a residual (a term in the target
-language \langmono) in two stages. In the first stage, all stage-1
+As is the case in essentially all staged languages, the dynamic
+semantics evaluate a term to a residual (a term in the target
+language \langTwo) in two stages. In the first stage, all stage-1
 terms are evaluated by a relation, called {\em 1-evaluation}; in the
 second stage all stage-2 terms are evaluated by a relation
 $\redtwosym$, called {\em 2-evaluation}.  To eliminate duplication,
@@ -98,14 +88,13 @@ stage-2 terms may be nested inside stage-1 terms, 1-evaluation cannot
 reduce \lang\ terms to values.  Instead 1-evaluation yields a {\em
   partial value}, which which is a stage~\bbone\ term that have been
 evaluated except for its stage-2 subterms, which can only
-be~\bbtwo\ variables wrapped in $\next$ blocks.  \ref{fig:validPvalues}
+be~\bbtwo\ variables wrapped in $\next$ blocks.  \ref{fig:grammar}
 defines partial values.
 
 In order to avoid duplication of stage-2 computations, 1-evaluation
 labels stage-2 computations by generating variable symbols for them as
 needed and stores their residuals in a {\em residual table} keyed by
 the variable.
-
 
 The relation 1-evaluation, defined by $\redonesym$ judgment as shown
 in \ref{fig:diaSemantics}, takes an stage \bbone\ term%
@@ -116,8 +105,7 @@ $\redonesym$ will never directly encounter a variable.}
 to a residual table $\xi$ and a partial value $v$.  For non-staging
 features of \lang, $\redonesym$ is essentially standard call-by-value
 evaluation but in addition gathers the subterms' residual tables into
-a single table. \ur{The syntax of residual tables should be defined in
-  the terminology figure} Residual table entries are created by the
+a single table. Residual table entries are created by the
 evaluation of \next: 1-evaluation reduces a \next\ expression by
 reducing the body of the \next\ with 2-evaluation to obtain a
 residual $q$ and returns a residual table that maps a freshly
@@ -144,53 +132,9 @@ standard evaluation relation for \langmono.
 
 %% Umut: superseded by what is above.
 %% Version Nov 7, 2014
-%% \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
-%% \label{sec:semantics}
-
-%% \input {figures/grammars}
-%% \input {figures/statics}
-
-%% \lang\ is a typed two-stage lambda calculus with products, sums, and
-%% isorecursive types.  Its statics are adapted from the linear temporal
-%% logic given by \cite{davies96}, restricted to two stages and extended
-%% with general sums and recursion.%
-%% \footnote{This restriction to two stages is made primarily for simplicity of
-%% presentation. All of these techniques could feasibly be extended to more
-%% complicated stage systems.} 
-%% Although \cite{davies96} was mostly interested in describing partial evaluation,
-%% the system is equally apt as an input to splitting.
-
-%% \subsection{Statics}
-
-%% In \lang, the $\next$ constructor includes a stage \bbtwo\ term in a
-%% stage~\bbone\ term. To ensure that the staging features are only applied to
-%% valid terms, we index our judgments not only by a type, but also a stage $w$.
-
-%% The type validity judgment $\Delta \vdash A \istypewor$, defined in
-%% \cref{fig:validTypes}, ensures that a type $A$ exists at stage $w$; for
-%% example, any type $\fut A$ only exists at stage \bbone.  The typing judgment
-%% $\typeswor e A$ says that $e$ has type $A$ at stage $w$, in the context
-%% $\Gamma$, and is defined in \cref{fig:statics}.  As one would expect, the
-%% typing judgment only produces valid types.
-%% %(by induction on the derivation of the typing judgment).
-%% % under the assumptions in $\Delta$. This context is only augmented by recursive types.
-
-%% Except for the staging features $\next$, $\prev$, and $\pause$, the ordinary
-%% language features (i.e., the introductory and eliminatory forms for product,
-%% sum, and function types) preserve the stage of their subterms, and work at both
-%% stages \bbone\ and \bbtwo. Thus, if we were to remove the staging features,
-%% \lang\ would simply consist of two non-interacting copies of a standard lambda
-%% calculus. Variables in the context are annotated with the stage at which they
-%% were introduced and can only be used at the same stage.
-
-%% Note that there is no way to eliminate a term of type $\fut A$ into a stage
-%% \bbone\ term---the only elimination form is $\prev$, which results in a stage
-%% \bbtwo\ term. This is why well-typed terms cannot have any information flow
-%% from stage \bbtwo\ to stage \bbone, and what makes splitting possible.
 
 %% \subsection{Dynamics}
 %% \label{sec:stagedsemantics}
-
 
 %% Specifically, the dynamic semantics consist of two evaluation
 %% relations $\redonesym$ and $\redtwosym$, called {\em 1-evaluation} and
@@ -403,9 +347,6 @@ standard evaluation relation for \langmono.
 %% standard call-by-value evaluation, and gathers the subterms' residual tables
 %% into a single one.
 
-%% \crem{Can we cut \ref{fig:diaSemanticsSpec} from the paper? Perhaps just put a
-%% few representative rules into \ref{fig:diaSemantics}?}
-
 %% At $\next~e$, in contrast, $\redonesym$ specializes into $e$ for stage~\bbone\ 
 %% subexpressions to evaluate.  This is implemented by the $\redtwosym$ judgment,
 %% which takes a stage \bbtwo\ term to a residual. 
@@ -488,70 +429,3 @@ standard evaluation relation for \langmono.
 %% qsStaged [5,2,7,4,1]
 %% \end{lstlisting}
 %% \TODO finish example
-
-
-%\begin{remark}
-%For any $\colone{e}{A}$ containing no $\next$ subexpressions, $\redonesym$ will
-%always compute an empty environment, and a partial value identical to the result
-%of call-by-value evaluation of $e$.
-%%derivationally equivalent to standard call-by-value evaluation.
-%\end{remark}
-
-%\subsection{Metatheory}
-%
-%Recall that residuals live in \langTwo; we will indicate typing judgments in
-%\langTwo\ with $\vdash_\bbtwo$.
-%
-%%\begin{definition}
-%%Context $\Gamma$ is well-formed ($\Gamma\wf$) if it
-%%contains only stage-2 variables.
-%%\end{definition}
-%
-%\begin{definition}
-%An environment $\xi$ is well-formed ($\Gamma\vdash\xi\wf$) if either:
-%\begin{enumerate}
-%\item $\xi = \cdot$; or
-%\item $\xi = \xi',x:B\mapsto e$ where
-%$\Gamma\vdash\xi'\wf$ and
-%$\typeslangTwo[\Gamma,\dom{\xi'}] e B$
-%%$\Gamma,\dom{\xi'}\vdash \coltwo{e}{B}$ and
-%%$\Gamma,\dom{\xi'}\vdash e \res$.
-%\end{enumerate}
-%\end{definition}
-%
-%\begin{theorem}
-%If $\typeswor e A$ then $\Gamma\wf$ and $A\istypewor$.
-%\end{theorem}
-%
-%\begin{theorem}
-%If $\diaonesub$ and $\typesone e A$ then
-%\begin{enumerate}
-%\item $\Gamma\vdash\xi\wf$;
-%\item $\Gamma,\dom\xi\vdash \colone{v}{A}$; and
-%\item $\Gamma,\dom\xi\vdash v\pval$.
-%\end{enumerate}
-%\end{theorem}
-%
-%\begin{theorem}
-%If $\diatwosub$ and $\typestwo e A$ then
-%\begin{enumerate}
-%\item $\typeslangTwo q A$; and
-%\item $\Gamma\vdash_\bbtwo q\val$.
-%\end{enumerate}
-%\end{theorem}
-%
-%\begin{theorem}\label{thm:reify-type}
-%If $\Gamma\vdash\xi\wf$ and
-%$\Gamma,\dom\xi\vdash \colone{\next\ \hat y}{\fut A}$
-%then 
-%$\reify{\xi}{\hat y}{q}$ and
-%$\typeslangTwo q A$.
-%\end{theorem}
-
-%\TODO
-%Note somewhere how to run stage-one non-$\fut A$ terms. For example, a stage-one
-%integer term is guaranteed not to depend on the table, although one might be
-%produced. One may either discard the table, or evaluate everything in the table
-%(and terminating with the partial value iff everything in the table terminates).
-
-
