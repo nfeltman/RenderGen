@@ -151,8 +151,9 @@ improvement.
 In this paper, we develop a splitting algorithm
 (\ref{sec:splitting,sec:implementation}) which, for any term $e$ in \lang,
 produces a pair of terms $e_1,e_2$ containing respectively all the stage \bbone\
-and stage \bbtwo\ content of $e$, such that $e_2~e_1$ is equivalent to $e$. In
-the case of \texttt{qsStaged}, our splitting algorithm produces the algorithm
+and stage \bbtwo\ content of $e$, such that $e_2~e_1$ is equivalent to $e$.
+(Such a splitting is always possible because $e$ is well-typed in \lang.) In the
+case of \texttt{qsStaged}, our splitting algorithm produces the algorithm
 described above.
 
 %\texttt{qSelect l k = qSelect2 (qSelect1 l) k}.

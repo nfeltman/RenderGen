@@ -1,62 +1,26 @@
-\section{Terminology and Overview}
-
-\input{figures/splitting-overview}
-
-%We present an overview of the formal development along with our
-%terminology, as summarized in \ref{fig:termSplitSummary}.
-
-\crem{Fold in the next paragraph:}
-
-We start by defining a simple staged language, called \lang, to express the
-input to our splitting algorithm.  \lang\ unambiguously specifies how its terms
-should be split
-% and features a type system that ensures valid splittings exist.
-% only minimal refactoring should be required to write terms within this language,
-%and from there, the type system should be enough to prove that a valid splitting exists.
-by identifying each with one of two {\em stages}, namely \bbone\ or \bbtwo.
-Intuitively, the stage of a \lang\ term expresses \emph{when} to evaluate
-it---all stage-\bbone\ subexpressions are evaluated before stage-\bbtwo\ ones.
-After splitting, those parts of the \lang\ term that were identified with stage
-\bbone\ will end up in the stage \bbone\ function ({\tt qSelect1}), and those
-parts identified with stage \bbtwo\ will end up in the stage \bbtwo\ function
-({\tt qSelect2}).  Typing rules for \lang\ ensure a valid splitting exists.
-That is, within well-typed terms, information can flow from stage \bbone\ to
-stage \bbtwo\ portions, but never from \bbtwo\ to \bbone.
-
-Our starting point is \lang, a typed, two-stage lambda calculus with products,
-sums, and isorecursive types. This language is adapted from \cite{davies96}, and
-is very similar to the staged languages considered in the partial evaluation and
-metaprogramming literature. In this paper, we restrict our attention to a
-two-stage language to simplify our presentation of the splitting algorithm, but
-we expect that the techniques presented here extend to more stages.
-
-The dynamic semantics of \lang\ differs from Davies's approach and
-similar approaches in metaprogramming literature, because it avoids
-duplication of staged work. Duplication takes place in meta
-programming when a second-stage computation is silently duplicated by
-the semantics.  In addition to leading to increases in run time, a
-duplicating semantics makes it harder to reason about the splitting
-algorithm, whose development and exposition is our main goal.  Apart
-from the non-duplication, the dynamic semantics of \lang\ is
-essentially identical to  Davies'. 
-
-We define the dynamics semantics of \lang\ not as an explicit
-evaluation relation but as a relation that produces a term in an
-unstaged, completely standard language, which we refer to as
-\langmono\, because it is essentially lambda calculus extended with
-product types. Given a \lang\ term, the dynamic semantics can be used
-to reduce the term to a \langmono\ program, called {\em residual} by
-using one application of stage-1 evaluation, one application of
-reification, followed by one application of stage-2 evaluation.
-
-\ur{Splitting...}
-
 \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
 \label{sec:semantics}
 
-\crem{Fold previous section in here.}
+\input{figures/splitting-overview}
 
 \input {figures/grammars}
+
+The input to our splitting algorithm is given in \lang, a typed, two-stage
+lambda calculus with products, sums, and isorecursive types. This language is
+adapted from \cite{davies96}, and is very similar to the staged languages
+considered in the partial evaluation and metaprogramming literature. In this
+paper, we restrict our attention to a two-stage language to simplify our
+presentation of the splitting algorithm, but we expect that the techniques
+presented here extend to more stages.
+
+Our dynamic semantics of \lang\ differ from those given in \cite{davies96} and
+the metaprogramming literature, because we avoid duplicating stage \bbtwo\
+computations. In addition to being more efficient, our non-duplicating semantics
+are easier to compare with our splitting algorithm, whose development and
+exposition is our main goal.
+
+%Apart from the non-duplication, the dynamic semantics of \lang\ is essentially
+%identical to Davies'.
 
 \subsection{Statics}
 
@@ -86,6 +50,13 @@ from stage \bbtwo\ to stage \bbone, and what makes splitting possible.
 
 \subsection{Dynamics}
 \label{sec:stagedsemantics}
+
+\crem{fold in the next paragraph}
+
+Given a \lang\ term, the dynamic semantics can be used
+to reduce the term to a \langmono\ program, called {\em residual} by
+using one application of stage-1 evaluation, one application of
+reification, followed by one application of stage-2 evaluation.
 
 As is the case in essentially all staged languages, the dynamic
 semantics evaluate a term to a residual (a term in the target
