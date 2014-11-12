@@ -23,7 +23,6 @@ fun qSelect (l : list, k : int) : int =
         | GT => qSelect (right, k-n-1)
 \end{lstlisting}
 \caption{Unstaged implementation of quickselect.}
-\label{fig:quickselect}
 \label{fig:qs-unstaged}
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
@@ -46,7 +45,7 @@ fun qsStaged (l : list, k : $`2`int`1`) : $`2`int`1` =
       }`
 \end{lstlisting}
 \caption{Staged implementation of quickselect in \lang.}
-\label{fig:qsstaged}
+\vspace{4.8em}
 \label{fig:qs-staged}
 \end{subfigure}
 \caption{Quickselect: traditional and staged.}

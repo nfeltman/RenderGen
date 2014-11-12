@@ -46,7 +46,7 @@ r (r,l_1)
 
 \subsection{Fast Exponent}
 
-Here is a staged version of the fast-exponent example from before.
+Here is a staged version of the fast-exponent example.
 \begin{lstlisting} 
 fun exp (b : $int, e : int) : $int =
 	if e == 0 then
@@ -99,6 +99,8 @@ Partially evaluating the code here might actually be useful, since the residual 
 and exponents tend to be small enough that the code size would be reasonable.
 
 \subsection{Quickselect}
+
+\crem{Revise to take section 2 into account.}
 
 We have observed that stage splitting can be used to transform \lang\ programs into two step algorithms where the precomputation generates a data-structure, and the residual uses the precomputed structure to accelerate repeated computation.  
 
