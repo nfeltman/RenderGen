@@ -63,7 +63,7 @@ semantics evaluate a term to a residual (a term in the target
 language \langTwo) in two stages. In the first stage, all stage-1
 terms are evaluated by a relation, called {\em 1-evaluation}; in the
 second stage all stage-2 terms are evaluated by a relation
-$\redtwosym$, called {\em 2-evaluation}.  To eliminate duplication,
+$\redtwosym$, called {\em residualization}.  To eliminate duplication,
 our semantics lifts out each stage-2 term nested inside of a stage-1
 expressions, into a table which makes it possible for the stage-2
 term---more precisely the corresponding residual obtained by reducing
@@ -96,14 +96,14 @@ features of \lang, $\redonesym$ is essentially standard call-by-value
 evaluation but in addition gathers the subterms' residual tables into
 a single table. Residual table entries are created by the
 evaluation of \next: 1-evaluation reduces a \next\ expression by
-reducing the body of the \next\ with 2-evaluation to obtain a
+reducing the body of the \next\ with residualization to obtain a
 residual $q$ and returns a residual table that maps a freshly
 generated variable to the residual. 
 
-The relation 2-evaluation, defined by $\redtwosym$ judgment, as shows
+The relation residualization, defined by $\redtwosym$ judgment, as shows
 in \ref{fig:diaSemantics}, takes a stage \bbtwo\ term and reduces it to
 a residual.  Apart from the evaluation of \prev\ and \pause, the
-evaluation is straightforward. To reduce a \prev\ term, 2-evaluation
+evaluation is straightforward. To reduce a \prev\ term, residualization
 reduces the body by 1-evaluation to obtain a residual table and a
 partial value.  It then reifies the residual table and the partial
 value into an residual term, by creating for each variable-residual
@@ -115,7 +115,7 @@ evaluate a term to evaluate a \lang\ term as follows. We first apply
 1-evaluation to obtain a partial value and a residual table. We then
 construct a 2-term from the partial value and the residual table by
 using reification, and then reduce this term to a residual via
-2-evaluation.  Finally, we evaluate the residual, which is a term in a
+residualization.  Finally, we evaluate the residual, which is a term in a
 our monostaged target language \langmono, to a value by using  a
 standard evaluation relation for \langmono.
 
@@ -127,12 +127,12 @@ standard evaluation relation for \langmono.
 
 %% Specifically, the dynamic semantics consist of two evaluation
 %% relations $\redonesym$ and $\redtwosym$, called {\em 1-evaluation} and
-%% {\em 2-evaluation}, that respectively evaluates stage-1 and stage-2
+%% {\em residualization}, that respectively evaluates stage-1 and stage-2
 %% expressions. The relation 1-evaluation maps a stage-1 term to a
 %% partial value and a residual table. A {\em partial value}, can be
 %% thought as a value except that it might include references to stage-2
 %% code stored in the {\em residual table}, which maps variables to
-%% residuals.  The relation 2-evaluation takes a stage-2 term and maps to
+%% residuals.  The relation residualization takes a stage-2 term and maps to
 %% a residual.  To generate the residual table, the dynamics semantics
 %% relies on a {\em reification} relation, $\reifysym$, that maps a table
 %% to a residual, essentially generating a target expression representing
@@ -140,7 +140,7 @@ standard evaluation relation for \langmono.
 %% follows: we first apply 1-evaluation to obtain a partial value and a
 %% residual table, we then construct a 2-term from the partial value and
 %% the residual table by using reification, and then reduce this term to
-%% a residual via 2-evaluation.
+%% a residual via residualization.
 
 
 %% In the quickselect example, stage~\bbone\ terms are contained within
