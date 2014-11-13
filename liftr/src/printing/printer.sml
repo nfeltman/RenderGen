@@ -4,6 +4,7 @@ struct
 
 datatype patt	= Pvar of string
 				| Ptuple of patt list
+				| Pbrace of string * patt 
 datatype expr	= Eatom of string
 				| Elam of expr * (patt * expr)
 				| Eapp of expr * expr
@@ -42,6 +43,7 @@ end
 				
 fun pat2string (Pvar x) = x
   | pat2string (Ptuple xs) = "("^(String.concatWith "," (map pat2string xs))^")"
+  | pat2string (Pbrace (s,x)) = s ^ "{" ^ (pat2string x) ^ "}"
 fun convertToLayout ex = 
 	let
 		val c = convertToLayout
@@ -55,8 +57,15 @@ fun convertToLayout ex =
 		  Eatom s => $ s
 		| Elam (t, (v,e)) => % [& [$ "fn ", $ (pat2string v), $ " : ", c t, $ " =>"], c e]
 		| Eapp (e1, e2) => % [c e1, c e2]
-		| Etuple [] => $ "()"
-		| Etuple (e0::es) => & ($ "(" :: c e0 :: foldr (fn (e,prev) => $ "," :: c e :: prev) [$ ")"] es)
+		| Etuple es => Layout.tuple (map c es)
+	(*	| Etuple [] => $ "()"
+		| Etuple (e::es) => 
+			let
+				fun render (e::es) acc = render (es) (% [&[acc, $ ","], c e])
+				  | render [] acc = (&[acc, $ ")"])
+			in
+				render es (& [$ "(", c e])
+			end *)
 		| Ecase (_,[]) => $ "ZERO_BRANCH_CASE"
 		| Ecase (e,(b::bs)) => % (&[$"case ", c e, $ " of"] :: >> 2 (convertBranch b) :: map (fn b => &[$"| ", convertBranch b]) bs)
 		| Eif (e1,e2,e3) => % [&[$ "if ", c e1, $ " then"], >> 4 (c e2), $ "else", >> 4 (c e3)]
@@ -66,6 +75,6 @@ fun convertToLayout ex =
 		| EprimApp (f, e) => & [$ f, $" ", c e]
 		| EbraceApp (f, e) => % [& [$ f, $ " {"], >> 4 (c e), $ "}"]
 	end
-fun printExp p e = p (Layout.tostringex 80 (convertToLayout (resolvePresedence e)))
+fun printExp p e = p (Layout.tostringex 115 (convertToLayout (resolvePresedence e)))
 				
 end

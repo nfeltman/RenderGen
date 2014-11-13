@@ -14,33 +14,50 @@ fun a ` b = a b
 
 fun map1 f (a,b) = (f a, b)
 fun map2 f (a,b) = (a, f b)
+fun comp1 f (g, h) = (f o g, h)
+
 in
 
 (* first stage values *)				
 datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
 				| V1hat of var
-withtype   cont = (var, value1) Contexts.context
+				| V1mono of valueM
+				
+and 	 valueM = VM of (valueM,cont,var pattern,exprM) valueF
+				
+withtype   cont = (var, (value1,valueM) Contexts.DoubleContext.doubleEntry) Contexts.context
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,unit) exprF
 datatype value2	= V2 of (value2,(var, value2) context,var pattern,expr) valueF
 
-
 fun unV1 (V1 v) = v
   | unV1 _ = raise Stuck
+fun unVM (VM v) = v
 fun unhat (V1hat y) = y
   | unhat _ = raise Stuck
+fun unmono (V1mono v) = v
+  | unmono _ = raise Stuck
 fun unV2 (V2 v) = v
+
+structure ValuesM = EmbedValues (struct
+	type v = valueM
+	type c = cont
+	type r = var pattern
+	type e = exprM
+	fun outof (VM v) = v
+	val into = VM
+end)
+structure EvaluatorM = Evaluator (ValuesM)
+fun ext2 z = forPattern (DoubleContext.extendContext2, ValuesM.untuple, Stuck) z
 
 fun eval1 env (E1 exp) = 
 	let
-		fun comp1 f (g, h) = (f o g, h)
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch env (g,v) (x,e) = 
-			comp1 g ` eval1 (forPattern (extendContext, untuple o unV1,Stuck) env x v) e 
+		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (forPattern (DoubleContext.extendContext1, untuple o unV1,Stuck) env x v) e 
 	in
 		case exp of 
-		  Fvar v => (id, lookup env v)
+		  Fvar v => (id, DoubleContext.lookup1 env v)
 		| FprimVal pv => (id, V ` VFprim pv)
 		| Flam (_, b) => (id, V ` VFlam (env,b))
 		| Fapp (e1,e2) => 
@@ -64,7 +81,7 @@ fun eval1 env (E1 exp) =
 			in
 				comp1 g ` eval (if b then e2 else e3)
 			end
-		| Flet (e1,(x,e2)) => evalBranch env (eval e1) (x,e2)
+		| Flet (e,b) => evalBranch env (eval e) b
 		| Fbinop (bo,e1,e2) => 
 			let
 				val (g1,v1) = eval e1
@@ -94,9 +111,36 @@ fun eval1 env (E1 exp) =
 			fun promoteType (T2 t) = T1 (TypesBase.mapType promoteType t)
 			fun promoteToE1 (EM e) = E1 (SourceLang.mapExpr promoteToE1 promoteType e)
 		in
-			eval1 env (promoteToE1 e)
+			(id, V1mono ` evalM env e)
 		end
-	
+  | eval1 env (E1letMono (e1,(x,e2))) = 
+		let
+			val (g1, v1) = eval1 env e1
+			val (g2, v2) = eval1 (DoubleContext.extendContext2 env x ` unmono v1) e2
+		in
+			(g1 o g2, v2)
+		end
+  | eval1 env (E1pushPrim e) = map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
+  | eval1 env (E1pushProd e) = map2 (V1 o VFtuple o (map V1mono) o untuple o unVM o unmono) (eval1 env e)
+  | eval1 env (E1pushSum e) = 
+		let 
+			val (g,(i,v)) = map2 (uninj o unVM o unmono) (eval1 env e)
+		in
+			(g, V1 (VFinj (i, V1mono v)))
+		end
+  | eval1 env (E1pushArr e) = 
+		let 
+			val (g,(c,b)) = map2 (unlam o unVM o unmono) (eval1 env e)
+			val y1 = Variable.newvar "y"
+			val y2 = Variable.newvar "y"
+		in
+			(g,
+			V1 (VFlam (c, (Pvar y1, 
+				E1letMono (E1 (Fvar y1), (y2, 
+					E1mono ( EM (Flet (EM (Fvar y2),b)))))))))
+		end
+		
+and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, DoubleContext.lookup2) exp
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
   

@@ -10,15 +10,21 @@ in
 
 datatype ty		= Tstandard of ty typeF
 				| Tfut of ty
+				| Tnow of ty
 				| Tref of string
 
-datatype stage	= ThisStage | NextStage
+datatype stage	= ThisStage | NextStage | MonoStage
 type patt		= string S.pattern
 datatype expr	= Estandard of (expr,string,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Emono of expr
+				| EletMono of (expr * (string * expr))
 				| Ehold of expr
+				| EpushPrim of expr
+				| EpushSum of expr
+				| EpushArr of expr
+				| EpushProd of expr
 				| Eletty of stage * string * ty * expr
 				| Eletdata of stage * string * (string * ty option) list * expr
 				| Eletr of string * ty * ty * (patt * expr) * expr

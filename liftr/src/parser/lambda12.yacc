@@ -23,6 +23,7 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ | LETTY | LETDT | STR | 
+	  PUSH | PUSHA | PUSHP | PUSHS |
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
@@ -64,6 +65,10 @@ open LangCommon
 		  | ROLL TY	AEXP				(Eroll (TY, AEXP))
 		  | UNROLL AEXP					(Eunroll (AEXP))
 		  | HOLD AEXP 					(Ehold(AEXP))
+		  | PUSH AEXP					(EpushPrim(AEXP))
+		  | PUSHA AEXP					(EpushArr(AEXP))
+		  | PUSHP AEXP					(EpushProd(AEXP))
+		  | PUSHS AEXP					(EpushSum(AEXP))
 		  | AEXP						(AEXP)
 
 	 AEXP : NUM          												(Eint NUM)
@@ -79,6 +84,7 @@ open LangCommon
 		  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
 		  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
+		  | LET MONO LBRACE ID RBRACE EQ EXP IN EXP						(EletMono(EXP1,(ID,EXP2)))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
 		  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
@@ -87,6 +93,7 @@ open LangCommon
 		  | LETTY DOLLAR ID EQ TY IN EXP								(Eletty (NextStage,ID,TY,EXP))
 		  | LETDT ID EQ DTARML IN EXP									(Eletdata (ThisStage,ID,DTARML,EXP))
 		  | LETDT DOLLAR ID EQ DTARML IN EXP							(Eletdata (NextStage,ID,DTARML,EXP))
+		  | LETDT CARAT ID EQ DTARML IN EXP								(Eletdata (MonoStage,ID,DTARML,EXP))
 
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)
@@ -124,5 +131,6 @@ open LangCommon
 		  | NUM							(Tvar NUM)
 		  | ID							(Tref ID)
 		  | DOLLAR ATY					(Tfut ATY)
+		  | CARAT ATY					(Tnow ATY)
 		  | LPAR TY RPAR				(TY)
 	  

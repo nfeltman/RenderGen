@@ -78,10 +78,11 @@ fun chain3 (e1,e2,e3) =
 	| (false, false) => Epi (2, Etuple [e1,e2,e3])
 	
 fun valHasNoStage2 (T1fut _) = false
+  | valHasNoStage2 (T1now _) = false
   | valHasNoStage2 (T1 t) = 
 		case t of
-		  T.TFprim _ => true
-		| T.TFvar _ => true
+		  T.TFprim _ => false
+		| T.TFvar _ => false
 		| T.TFrec t => valHasNoStage2 t
 		| T.TFprod ts => List.all valHasNoStage2 ts
 		| T.TFsum ts => List.all valHasNoStage2 ts
@@ -120,6 +121,9 @@ fun coerce (WithPrec1 (c, lr)) = (toOpaque c, lr)
 fun merge1 (NoPrec1 (v,r)) f g = NoPrec1 (f v, g r)
   | merge1 (WithPrec1 (e,(l,r))) f g = 
 		case toSplit e of (c,v,p) => WithPrec1 (Splittable (c,f v,p),(l, g r))
+
+fun mapResumer1 f (NoPrec1 (v, r)) = NoPrec1 (v, f r)
+  | mapResumer1 f (WithPrec1 (a, (l,r))) = WithPrec1 (a, (l,f r))
 		
 fun simpleMerge2 (res1,res2) f g = 
 		case (mapSplitResult toSplit res1, mapSplitResult toSplit res2) of 
@@ -341,7 +345,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
   | stageSplit1 gamma (E1hold e) =
 		let
 			val (link, pi) = freshPi ()
-			val (t,res) = (stageSplit1 gamma e) : type1 * stage1Part splitResult1
+			val (t,res) = (stageSplit1 gamma e)
 			val splitAnswer = 
 			case mapSplitResult toOpaque res of
 			  NoPrec1 (i, r) => WithPrec1 (Splittable ([], Eunit,i), (PPvar link, chain2 (r, Evar link)))
@@ -352,18 +356,74 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		end
   | stageSplit1 gamma (E1mono e) = 
 		let
-			fun promoteToPSF (EM e) =
-				case e of 
-				  S.Flam (_,(x,e)) => Elam ((), (x,Etuple[promoteToPSF e, Eunit]))
-				| S.Fapp (e1, e2) => Epi(0,Eapp(promoteToPSF e1, promoteToPSF e2))
-				| other => E(S.mapExpr promoteToPSF (fn _ => ()) other)
-				
-			fun makeResumerFunc (T2 (T.TFarr (_,t))) = Elam ((),(PPvar (Variable.newvar "unused"), makeResumerFunc t))
-			  | makeResumerFunc (T2 _) = Eunit
-			  
+			fun promoteToPSF (EM e) = E(S.mapExpr promoteToPSF (fn _ => ()) e)
 			val ty = Typecheck12.typeCheckM gamma e
 		in
-			(Typecheck12.promoteType ty, NoPrec1(promoteToPSF e, makeResumerFunc ty))
+			(T1now ty, NoPrec1(promoteToPSF e, Eunit))
+		end
+  | stageSplit1 gamma (E1letMono (e1,(x,e2))) = 
+		let
+			val (t1,res1) = stageSplit1 gamma e1
+			val (t2,res2) = stageSplit1 (Typecheck12.MyContext.C3.extend gamma x ` Typecheck12.unnow t1) e2
+			fun makeLet a b = Elet (a, (PPvar x,b))
+			val splitResult = 
+				case mapSplitResult toOpaque res1 of 
+				  NoPrec1 (e1,r1) => (
+						case mapSplitResult toOpaque res2 of
+						  NoPrec1 (e2, r2) => 
+							NoPrec1 (makeLet e1 e2, chain2 (r1,r2))
+						| WithPrec1 (e2,(l2,r2)) => 
+							WithPrec1 (Opaque ` makeLet e1 e2, (l2,chain2 (r1,r2)))
+					)
+				| WithPrec1 (c1, (l1,r1)) =>
+					let
+						val y = Variable.newvar "y"
+						val pat = PPtuple [PPvar x,PPvar y]
+					in
+						case mapSplitResult toSplit res2 of
+						  NoPrec1 (e2, r2) => 
+							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,chain2 (r1,r2)))
+						| WithPrec1 ((c2,v2,p2),(l2,r2)) => 
+							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), 
+								(PPtuple[l1,l2],chain2 (r1,r2)))
+					end
+		in
+			(t2, splitResult)
+		end
+  | stageSplit1 gamma (E1pushPrim e) = 
+		let
+			val (t, res) = stageSplit1 gamma e
+			val newT = Typecheck12.TypeFeatures1.makeprim ` Typecheck12.TypeFeatures2.unprim ` Typecheck12.unnow ` t
+		in 
+			(newT, res)
+		end
+  | stageSplit1 gamma (E1pushProd e) = 
+		let
+			val (t, res) = stageSplit1 gamma e
+			val ts = Typecheck12.TypeFeatures2.unprod ` Typecheck12.unnow ` t
+			
+			val splitAnswer = mapResumer1 (fn r => chain2 (r, Etuple ` map (fn _ => Eunit) ts)) res
+		in 
+			(Typecheck12.TypeFeatures1.makeprod ` map T1now ts, splitAnswer)
+		end
+  | stageSplit1 gamma (E1pushSum e) = 
+		let
+			val (t, res) = stageSplit1 gamma e
+			val newT = Typecheck12.TypeFeatures1.makesum ` map T1now ` Typecheck12.TypeFeatures2.unsum ` Typecheck12.unnow ` t
+		in
+			(newT, res)
+		end
+  | stageSplit1 gamma (E1pushArr e) = 
+		let
+			val (t, res) = stageSplit1 gamma e
+			fun mapboth f (a,b) = (f a, f b)
+			val newT = Typecheck12.TypeFeatures1.makearr ` mapboth T1now ` Typecheck12.TypeFeatures2.unarr ` Typecheck12.unnow ` t
+			val x = Variable.newvar "x"
+		in
+			(newT, merge1 res
+				(fn v => Elam((),(PPvar x, Etuple [Eapp (v, Evar x), Eunit])))
+				(fn r => chain2 (r, Elam ((),(PPtuple [PPtuple[], PPtuple[]], Eunit))))
+			)
 		end
 
 and stageSplit2 gamma (E2 exp) : type2 * splitResult2 = 
