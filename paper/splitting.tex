@@ -165,18 +165,20 @@ Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbt
 \subsection{Improved Definition}
 \label{sec:resumers}
 
-The definitions of masking and splitting can be augmented to better handle special cases.
+The definitions of masking and splitting can be augmented to better handle special cases,
+particularly ones that depend on the type of the term we're splitting.
 One such special case is the behavior of stage \bbone\ splitting at stage \bbone\ types that contain no $\fut$s or $\to$s.
-We call such types {\em monostage} (judgmentally, $A~mono$), because a partial value $v$ with a monostage type can contain no $\next$s.
+We call such types {\em monostage} (judgmentally, $A~mono$), 
+because a partial value $v$ with a monostage type can contain no $\next$s,
+and so must comprise only stage \bbone\ information.
 
-Intuitively, for $[\xi;v] : A$ and $A~mono$, we would expect that $\maskt{\xi;v}$ only reduce to something ``trivial."
-There are two reasonable definitions of trivial here: 
-\begin{enumerate}
-\item a value is trivial if it is exactly \texttt{()},
-\item a value is trivial if it is in the closure of \texttt{()} and \texttt{(-,-)}
-\end{enumerate}
-Indeed, as $\maskt{-;-}$ is currently defined, this property holds for the latter definition of trivial,
-but we can make it hold for the former definition by adjusting just the tuple rule:
+Intuitively, for $[\xi;v] : A$ and $A~mono$, 
+we would expect that $\maskt{\xi;v}$ only reduce to something that carries no information.
+This indeed happens: for example, $\maskt {\cdot;\mathtt{(inl~3,5)}}$ reduces to \texttt{((),())}.
+But while \texttt{((),())} technically ``carries no information," it still has non-trivial structure.
+This is not only unintuitive, but potentially expensive.
+Instead, we desire a stronger property, that $\maskt{\xi;v}$ only reduce to exactly \texttt{()}. 
+We can achieve this by adjusting just the tuple rule:
 \[
 \maskt{\cdot;(v_1,v_2)} = \left\{ \begin{array}{ll} 
 \mathtt{()} &\text{if } (v_1,v_2):A~mono\\ 
@@ -184,10 +186,7 @@ but we can make it hold for the former definition by adjusting just the tuple ru
 \]
 From here, the splitting rules can be made to comport with this new 
 definition adding special-case tuple, projection, and application 
-rules\footnote{The old tuple, projection, and application rules 
-must also be augmented to apply only when the $mono$ premises don't hold.
-Also, all splitting rules need to be augmented to carry types, though
-we omit the contexts here.}:
+rules:
 \begin{mathpar}
 \infer
 	{(e_1,e_2):A\times B\splitonesym [\ldots,(l_1,l_2).(r_1;r_2;())]}
@@ -206,3 +205,7 @@ we omit the contexts here.}:
 	& e_2 : A \splitonesym [c_2,l_2.r_2] 
 	& B~mono} 
 \end{mathpar}
+The old tuple, projection, and application rules 
+must also be augmented to apply only when the $mono$ premises don't hold.
+Also, all splitting rules need to be augmented to carry types, though
+we omit the contexts here.
