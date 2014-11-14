@@ -27,7 +27,7 @@ fun j (name,prog,t) = [(name,Literal,prog,t)]
 fun k (name,prog,t) = [
 		(name^"-first",Literal,prog,t), 
 		(name^"-second",Literal,"next{"^prog^"}", case t of EXACT v => EXACT (holdGeneral v) | _ => t)]
-val programs = [(*
+val programs = [
 k("stringlit", 			"\"fourplussix\"",SAME),
 k("concat", 			"\"four\" ^ \"six\"",ansS "foursix"),
 k("fourPlusSix", 		"4 + 6",ansI 10),
@@ -85,9 +85,9 @@ k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
 i("fastexp",			"fastexp",ansNI 243),
-i("stress",				"stress", SAME),*)
 i("quickselect",		"quickselect", ansNI 4),
-i("quickselect_fixed",	"quickselect_fixed", ansNI 4)
+i("quickselect_fixed",	"quickselect_fixed", ansNI 4)(*,
+i("stress",				"stress", SAME)*)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))

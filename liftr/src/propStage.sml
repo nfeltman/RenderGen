@@ -31,18 +31,17 @@ fun Eroll x = IL1standard (Froll x)
 fun Eunroll x = IL1standard (Funroll x)
 fun bind v e1 e2 = Elet (e1,(Pvar v,e2))
 
-fun elabLetRec (f,t1,t2,b,e) = 
+fun elabLetRec (f,t1,t2,(x,body),e) = 
 	let
-		val tY = C.Tarr(C.Tvar 0,C.Tarr(t1,t2))
+		val tY = C.Tarr(C.Tprod[C.Tvar 0,t1],t2)
 	in
-	bind f 
+	bind f
 		(bind "r" 
-			(Elam(C.Trec tY, (Pvar "y", 
-				bind f
-					(Elam (t1,(Pvar "v", Eapp (Eapp (Eunroll (Evar "y"), Evar "y"), Evar "v"))))
-					(Elam (t1,b))
+			(Elam(C.Tprod [C.Trec tY, t1], (Ptuple [Pvar "y", x], 
+				Elet (Elam (t1,(Pvar "v", Eapp (Eunroll (Evar "y"), Etuple[Evar "y", Evar "v"]))),
+					(Pvar f, body))
 			)))
-			(Eapp(Evar "r", Eroll(tY, Evar "r")))
+			(Elam (t1, (Pvar "v", Eapp(Evar "r", Etuple[Eroll(tY, Evar "r"), Evar "v"]))))
 		)
 		e
 	end

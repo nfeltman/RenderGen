@@ -76,17 +76,6 @@ fun chain3 (e1,e2,e3) =
 	| (true,  false) => Epi (1, Etuple [e2,e3])
 	| (false, true ) => Epi (1, Etuple [e1,e3])
 	| (false, false) => Epi (2, Etuple [e1,e2,e3])
-	
-fun valHasNoStage2 (T1fut _) = false
-  | valHasNoStage2 (T1now _) = false
-  | valHasNoStage2 (T1 t) = 
-		case t of
-		  T.TFprim _ => false
-		| T.TFvar _ => false
-		| T.TFrec t => valHasNoStage2 t
-		| T.TFprod ts => List.all valHasNoStage2 ts
-		| T.TFsum ts => List.all valHasNoStage2 ts
-		| T.TFarr _ => false
 in
 
 type ppatt	= var S.pattern
@@ -124,7 +113,15 @@ fun merge1 (NoPrec1 (v,r)) f g = NoPrec1 (f v, g r)
 
 fun mapResumer1 f (NoPrec1 (v, r)) = NoPrec1 (v, f r)
   | mapResumer1 f (WithPrec1 (a, (l,r))) = WithPrec1 (a, (l,f r))
-		
+
+fun flattenPrecomps pls =
+	let
+		fun toArray (E (S.Ftuple ps), S.Ptuple ls) = ListPair.zip (ps,ls)
+		  | toArray (p,l) = ([(p,l)])
+	in
+		List.concat ` map toArray pls
+	end
+  
 fun simpleMerge2 (res1,res2) f g = 
 		case (mapSplitResult toSplit res1, mapSplitResult toSplit res2) of 
 		  (NoPrec1 (e1,r1), NoPrec1 (e2,r2)) => 
@@ -134,7 +131,11 @@ fun simpleMerge2 (res1,res2) f g =
 		| (WithPrec1 ((c1,v1,p1), (l1,r1)), NoPrec1 (e2,r2)) => 
 			WithPrec1 (Splittable (c1, f (v1,e2), p1), (l1, g (r1,r2)))
 		| (WithPrec1 ((c1,v1,p1), (l1,r1)), WithPrec1 ((c2,v2,p2), (l2,r2))) => 
-			WithPrec1 (Splittable (List.concat[c1, c2], f (v1,v2), Etuple[p1,p2]), (PPtuple[l1,l2], g (r1,r2)))
+			let
+				val (p,l) = unzip ` flattenPrecomps [(p1,l1), (p2,l2)]
+			in
+				WithPrec1 (Splittable (List.concat[c1, c2], f (v1,v2), Etuple p), (PPtuple l, g (r1,r2)))
+			end
 
 fun simpleMerge results f g = 
 		let
@@ -142,7 +143,7 @@ fun simpleMerge results f g =
 			  | h (WithPrec1 ((c,v,p), (l,r)), (cs,vs,pls,rs)) = (c::cs, v::vs, (p,l)::pls,r::rs)
 			val (cs,vs,pls,rs) = foldr h ([],[],[],[]) (map (mapSplitResult toSplit) results)
 		in
-			case pls of
+			case flattenPrecomps pls of
 			  [] => NoPrec1 (f vs, g rs)
 			| [(p,l)] => WithPrec1 (Splittable (List.concat cs, f vs, p), (l, g rs))
 			| many =>	
@@ -190,9 +191,8 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce1 (split e)
-				val resumerX = if valHasNoStage2 t then PPvar (Variable.newvar "unused") else x
 			in
-				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[resumerX,l], r)))
+				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[x,l], r)))
 			end
 		| S.Fapp (e1, e2) => 
 			let				
@@ -265,9 +265,8 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
 						val (c,(l,r)) = coerce1 (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
-						val rBranch = if valHasNoStage2 (getType e1) then r else Elet(Evar z,(x,r))
 					in
-						((x,branch)::branches, (l, rBranch)::residuals, ()::suffixes)
+						((x,branch)::branches, (l, Elet(Evar z,(x,r)))::residuals, ()::suffixes)
 					end
 					
 				val (branches, residuals, _) = processBranches bs []
@@ -293,18 +292,14 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 			let
 				val (res1,res2) = (split e1, split e2)
 				fun makeLet a b = Elet (a, (x,b))
-				val makeLetR = 
-					if valHasNoStage2 (getType e1)
-					then fn a => fn b => chain2 (a,b)
-					else fn a => fn b => Elet (a, (x,b))
 			in
 				case mapSplitResult toOpaque res1 of 
 				  NoPrec1 (e1,r1) => (
 						case mapSplitResult toOpaque res2 of
 						  NoPrec1 (e2, r2) => 
-							NoPrec1 (makeLet e1 e2, makeLetR r1 r2)
+							NoPrec1 (makeLet e1 e2, makeLet r1 r2)
 						| WithPrec1 (e2,(l2,r2)) => 
-							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLetR r1 r2))
+							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLet r1 r2))
 					)
 				| WithPrec1 (c1, (l1,r1)) =>
 					let
@@ -313,10 +308,10 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 					in
 						case mapSplitResult toSplit res2 of
 						  NoPrec1 (e2, r2) => 
-							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,makeLetR r1 r2))
+							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,makeLet r1 r2))
 						| WithPrec1 ((c2,v2,p2),(l2,r2)) => 
 							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), 
-								(PPtuple[l1,l2],makeLetR r1 r2))
+								(PPtuple[l1,l2],makeLet r1 r2))
 					end
 			end
 		| S.Fbinop (bo,e1,e2) =>
@@ -324,13 +319,11 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.Froll (_,e) => merge1 (split e) roll id
 		| S.Funroll e => merge1 (split e) Eunroll id
 		| S.Ferror t => NoPrec1 (Eerror (), Eerror ())
-		
-		fun optimizeResidual t r = if (valHasNoStage2 t) then chain2 (r, Eunit) else r
 	in
 		(t,
 		case answer of
-		  NoPrec1 (e,r) => NoPrec1 (e, optimizeResidual t r)
-		| WithPrec1 (e, (x, r)) => WithPrec1 (e, (x, optimizeResidual t r)) )
+		  NoPrec1 (e,r) => NoPrec1 (e, r)
+		| WithPrec1 (e, (x, r)) => WithPrec1 (e, (x, r)) )
 	end
   | stageSplit1 gamma (E1next e) =
 		let
@@ -435,17 +428,25 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 		fun merge2 (NoPrec2 e1, res) f = merge1 res (fn x => f (e1, x))
 		  | merge2 (res, NoPrec2 e2) f = merge1 res (fn x => f (x, e2))
 		  | merge2 (WithPrec2 (p1,(l1,r1)), WithPrec2 (p2,(l2,r2))) f =
-					WithPrec2 (Etuple [p1,p2], (PPtuple[l1,l2], f (r1, r2)))
+				let 
+					val (p,l) = unzip ` flattenPrecomps [(p1,l1), (p2,l2)]
+				in
+					WithPrec2 (Etuple p, (PPtuple l, f (r1, r2)))
+				end
 		fun merge3 (NoPrec2 e1, res2, res3) f = merge2 (res2, res3) (fn (x,y) => f (e1, x, y))
 		  | merge3 (res1, NoPrec2 e2, res3) f = merge2 (res1, res3) (fn (x,y) => f (x, e2, y))
 		  | merge3 (res1, res2, NoPrec2 e3) f = merge2 (res1, res2) (fn (x,y) => f (x, y, e3))
 		  | merge3 (WithPrec2 (p1,(l1,r1)), WithPrec2 (p2,(l2,r2)), WithPrec2 (p3,(l3,r3))) f = 
-					WithPrec2 (Etuple [p1,p2,p3], (PPtuple [l1,l2,l3], f (r1, r2, r3)))
+				let 
+					val (p,l) = unzip ` flattenPrecomps [(p1,l1), (p2,l2), (p3,l3)]
+				in
+					WithPrec2 (Etuple p, (PPtuple l, f (r1, r2, r3)))
+				end
 				
 		fun h (NoPrec2 r, (pls,rs)) = (pls,r::rs)
 		  | h (WithPrec2 (p, (l,r)), (pls,rs)) = ((p,l)::pls,r::rs)	
 		fun finalize f (pls,rs) = (
-			case pls of
+			case flattenPrecomps pls of
 			  [] => NoPrec2 (f rs)
 			| [(p,l)] => WithPrec2 (p, (l, f rs))
 			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs)) )

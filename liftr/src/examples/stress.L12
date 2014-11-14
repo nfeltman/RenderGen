@@ -1,9 +1,24 @@
-let fpc = 
-	fn f : ((int -> int) -> int -> int) =>
-	let r =
-		fn (y,n) : ((mu (0 * int->int)) * int) =>
-		f (fn v : int => unroll y (y,v)) n
-	in
-	fn v : int => r (roll (0*int->int) r, v)
-	
-in fpc (fn f : int->int => fn x : int => if x <=1 then 1 else (f (x-1))*x) 5
+datatype ^list = Empty | Cons of int * list in 
+let mono {partition} =
+mono{
+	letrec partition ((p,l) : int*list) : (int*list*list) = 
+		case unroll l of em => (0,Empty, Empty) | (h,t) => 
+			let (s,left,right) = partition (p,t) in 
+			if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
+	in partition
+} in
+letrec qs ((l,i) : ^list * $int) : $int = 
+	let mono {l} = l in
+	case pushS mono{unroll l} of 
+	  em => next {0} 
+	| ht => let (n,left,right) = pushP (let mono {ht} = ht in mono {partition ht}) in 
+		next { 
+			let n = prev {hold (push n)} in 
+			if prev{i} < n then prev{qs (left,i)}
+			else if prev{i} == n then prev{hold (push (#1 (pushP ht)))}
+			else prev{qs (right,next{(prev{i}-n)-1})}
+		}
+in 
+let testlist = 
+	mono{let c = Cons in c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
+in qs (testlist, next{2})

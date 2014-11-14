@@ -1,5 +1,5 @@
 datatype ^list = Empty | Cons of int * list in 
-let partition = pushA
+let mono {partition} =
 mono{
 	letrec partition ((p,l) : int*list) : (int*list*list) = 
 		case unroll l of em => (0,Empty, Empty) | (h,t) => 
@@ -11,7 +11,7 @@ letrec qs ((l,i) : ^list * $int) : $int =
 	let mono {l} = l in
 	case pushS mono{unroll l} of 
 	  em => next {0} 
-	| ht => let (n,left,right) = pushP (partition ht) in 
+	| ht => let (n,left,right) = pushP (let mono {ht} = ht in mono {partition ht}) in 
 		next { 
 			let n = prev {hold (push n)} in 
 			if prev{i} < n then prev{qs (left,i)}
