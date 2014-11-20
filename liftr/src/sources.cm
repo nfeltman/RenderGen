@@ -18,7 +18,7 @@ Group is
 	  lambdaPSF/lambdaPSF.sml
 	  
 	  (* transformations *)
-	  propstage.sml
+	  propStage.sml
 	  stageSplit.sml 
 	  
 	  (* semantics *)
