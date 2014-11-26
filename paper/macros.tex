@@ -4,9 +4,9 @@
 \newcommand{\needsfix}[1]{{\color{needsfixcolor}\textbf{#1}}}
 
 % core conventions and language names
-\newcommand {\bbone} {\ensuremath{ 1}}
-\newcommand {\bbtwo} {\ensuremath{ 2}}
-\newcommand {\bbmono} {\ensuremath{ M}}
+\newcommand {\bbone} {\ensuremath{\mathbbm{1}}}
+\newcommand {\bbtwo} {\ensuremath{\mathbbm{2}}}
+\newcommand {\bbmono} {\ensuremath{\mathbb{M}}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
 \newcommand {\ellResid} {$\mathrm{L^R}$}
 \newcommand {\ellTarget} {$\mathrm{L^T}$}
@@ -61,7 +61,8 @@
 \newcommand {\pause} {{\tt hold}}
 \renewcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
-\newcommand {\monoSt} {{\tt mono}}
+\newcommand {\monoTerm} {{\tt mono}}
+\newcommand {\monoType} {\nabla}
 \newcommand {\fut} {\bigcirc}
 \newcommand {\inl} {{\tt inl}}
 \newcommand {\inr} {{\tt inr}}
@@ -69,8 +70,11 @@
 \newcommand {\pit} {{\tt pi2}}
 \newcommand {\roll} {{\tt roll}}
 \newcommand {\unroll} {{\tt unroll}}
+\newcommand {\lifttag} {{\tt liftTag}}
+\newcommand {\push} {{\tt unroll}}
 \newcommand {\letin} [3] {{\tt let}~{#1} = {#2}~{\tt in}~{#3}}
-\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} {\tt let}~{#1} = {#2}~{\tt in} \\ {#3}\end{array}}
+\newcommand {\letmono} [3] {{\tt let~mono~\{}{#1}{\tt \} =~}{#2}~{\tt in}~{#3}}
+\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} {\tt let}~{#1} ={#2}~{\tt in} \\ {#3}\end{array}}
 \newcommand {\caseof} [3] {{\tt case}~{#1} ~{\tt of}~{#2}~{\tt |}~{#3}}
 \newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} {\tt case}~{#1} ~{\tt of}\\~~{#2}\\{\tt |}~{#3} \end{array}}
 \newcommand {\ifthen} [3] {{\tt if}~{#1} ~{\tt then}~{#2}~{\tt else}~{#3}}

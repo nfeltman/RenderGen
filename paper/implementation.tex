@@ -15,67 +15,45 @@ For instance, trivial subterm precomputations needn't be saved at tuples:
 This sort of optimization does not affect the contract of splitting at all,
 because the contract only requires that there be a precomputation that the residual can accept,
 with no restrictions on the form of that precomputation.
-Further gains can be realized by changing the contract of splitting itself.
 
-Let a type be {\em present} if it has no $\to$s or $\fut$s in its type.
-Observe that for any $v$ with a present type, $\maskt{v}$ will always be a nested bunch of \texttt{()}s,
-which is to say that it carries no information.
-
-\nr{We probably need an example of this.}
-
-Of course, \texttt{()} is a more compact representation that carries no information.
-Thus, we can change the definition of masking so that $\maskt{v}$ is always \texttt{()},
-and change the splitting rules accordingly.
-
-Back to the boundary type problem.
-The problem becomes more difficult when trying to optimize across functions, including recursive calls.
+The problem becomes more difficult when trying to optimize across function boundaries.
 For example, consider the stage \bbtwo\ term,
 \begin{lstlisting}
 2`prev{
-  1`letfun fact (n : int) : int = 
-    if n <= 0 then 1 else fact(n-1)*n
-  in next{`2`hold {`1`fact 5`2`}-100`1`}`2`
+  1`letfun double (n : int) = n + n
+  in next{`2`hold {`1`double 5`2`}-7`1`}`2`
 }`
 \end{lstlisting}
-Noting that the precomputation of the body of \texttt{fact} could be given the type,
+Using the rules above, this term splits into:
 \begin{lstlisting}
-datatype prec = L | R of prec
-\end{lstlisting}
-the whole expression splits into:
-\begin{lstlisting}
-1`letfun fact (n : int) : int * prec = 
-  if n <= 0 then (1,L) 
-  else let (y,z) = fact(n-1) in (y*n,R z)
-in fact 5`
+1`letfun double (n : int) = (n+n, ())
+in double 5`
 
 2`l => 
-letfun fact (n : unit, l0 : prec) : unit = 
-  case l0 of L => () | R l1 => fact ((),l0)
-in (fact (pi2 l); pi1 l)-100`
+letfun double (n : unit, l0 : unit) = ()
+in (double (pi2 l); pi1 l)-100`
 \end{lstlisting}
 
-Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{fact}, since it
-always returns \texttt{()}; worse yet, it has linear runtime!
-But recognizing and optimizing this away is in general a global operation,
-so we instead solve this issue by adding a new staging annotation to \lang, called
-\texttt{mono}. The term $\monoSt~e$ is stage \bbone, and requires that $e$ contains
-no stage \bbtwo\ subexpressions. This adds a new stage \bbmono\ and two new
-rules to \lang:
-\begin{mathpar}
-\infer{\typesone{\monoSt~e}A}{\typesmono e A & A~\mathrm{safe}} \and
-\infer{A\to B~\mathrm{safe}}{A~\mathrm{present} & B~\mathrm{safe}} \and
-\infer{A~\mathrm{safe}}{A~\mathrm{present}} \and
-\infer{\diaone{\monoSt~e}{\cdot;v}}{\diaone{e}{\cdot;v}} \and
-\infer{\splitone{\monoSt~e}A {(e',()), \_.r} }{e \overset{C}{\rightarrow} e' & A \overset{G}{\rightarrow} r} \and
-\infer{A \overset{G}{\rightarrow} ()}{A ~\mathrm{present}} \and
-\infer{(A \to B)\overset{G}{\rightarrow} r}{B \overset{G}{\rightarrow} \lambda \_.r }
-\end{mathpar}
-Here, $\overset{C}{\rightarrow}$ translates functions to the signature expected for stage \bbone\ splitting outputs
-by performing the two rewrites in place:
-\begin{align*}
-\lam x A e &\overset{C}{\rightarrow} \lambda x.(e,())\\
-e_1~e_2 &\overset{C}{\rightarrow} \pio~(e_1~e_2)
-\end{align*}
-And then $\overset{G}{\rightarrow}$ generates a resumer that corresponds to the type $A$.
-It operates inductively on the safety judgement of $A$.
-At the safe $A$ base case, we make use of the prior optimization that says all safe $A$s have a resumer that evaluates to \texttt{()}.
+Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{double}, since it always returns \texttt{()}. 
+In this case, the wasted work is small, but if \texttt{double} were a recursive function,
+then it's runtime may be unbounded.
+
+There are two ways plausible ways to solve this problem:
+either we could define an optimization step that comes 
+after splitting and show that it tends to fix the inefficiencies that splitting creates; 
+or we could give more structure to the input language so that splitting can generate more efficient code directly.
+
+We choose to investigate the latter approach.
+Specifically, we add new staging features to \lang\ which allow us to indicate that a piece of code is {\em strictly} 
+stage \bbone---{\em i.e.} that it contains no $\next$ blocks.
+At the type level, this manifests as a constructor called $\monoType$.
+So for instance, $\rmint \to \rmint$ is a stage \bbone\ function from one integer to another,
+which might fail to terminate at stage \bbtwo.  
+Alternatively $\monoType (\rmint \to \rmint)$ is a stage \bbone\ function from one integer to another
+which {\em cannot} have any content at stage \bbtwo.
+Naturally, the well-formedness of $\monoType A$ requires that $A$ contain no $\fut$s.
+
+At the term level, we add the $\monoTerm$, $\lifttag$, \texttt{let mono} constructs to move information
+in and out of $\monoType$.
+
+\input{figures/mono.tex}

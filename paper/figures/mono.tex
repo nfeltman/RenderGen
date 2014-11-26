@@ -1,0 +1,14 @@
+
+\begin{figure*}
+\begin{mathpar}
+\infer	{\typesone {\monoTerm~e} {\monoType A}}					{\typesmono e A} 																\and
+\infer	{\typesone {\letmono x {e_1} {e_2}} B}					{\typesone {e_1} {\monoType A} & \typesone [\Gamma,\colmono x A] {e_2} B} 		\and
+\infer	{\typesone {\lifttag~e} {\monoType A + \monoType B}}	{\typesone e {\monoType (A+B)}} 												\and
+\inferdiaone	{\red {\monoTerm~e} {\cdot; \monoTerm~v}}				{\reduce e v} 															\and
+\inferdiaone	{\red {\letmono x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}		{\red {e_1} {\xi_1;\monoTerm~v_1} & \red {[v_1/x]e_2} {\xi_2;v_2}} 		\and
+\inferdiaone	{\red {\lifttag~e} {\xi;\inl(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inl~v)}} 										\and
+\inferdiaone	{\red {\lifttag~e} {\xi;\inr(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inr~v)}} 										\and
+\end{mathpar}
+\caption{Mono Statics and Dynamics}
+\label{fig:monoRules}
+\end{figure*}
