@@ -27,6 +27,11 @@ ered-letn : ered (letn E M) V2
 			<- ered (M V1) V2.
 ered-prev : ered (prev E) V
 			<- ered E (next V).
+ered-mono : ered (mono E) (mono V)
+			<- ered E V.
+ered-letm : ered (letm E M) V2
+			<- ered E (mono V1)
+			<- ered (M V1) V2.
 
 %% VALUE JUDGMENT
 pval : term -> type. %name pval Dpval.
@@ -36,6 +41,8 @@ pval-tup	: pval (tup E1 E2)
 				<- pval E1.
 pval-lam	: pval (lam _ _).
 pval-next	: pval (next E)
+				<- pval E.
+pval-mono	: pval (mono E)
 				<- pval E.
 
 %% PRESERVATION AND EVALUATION
@@ -76,6 +83,13 @@ pres : ered E V -> of E A W -> pval V -> of V A W -> type.
 		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
 - : pres (ered-prev Dred) (of-prev DofE) DvalV DofV 
 		<- pres Dred DofE (pval-next DvalV) (of-next DofV).
+- : pres (ered-mono Dred) (of-mono Dof) (pval-mono Dval) (of-mono DofV) 
+		<- pres Dred Dof Dval DofV.
+- : pres 	(ered-letm DredM DredE) 
+			(of-letm (DofM : {x:term} of x A worM -> of (E2 x) B wor1) DofE) 
+			Dval DofV2
+		<- pres DredE DofE _ (of-mono DofV1)
+		<- pres DredM (DofM V1 DofV1) Dval DofV2.
         
 %worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
@@ -104,6 +118,10 @@ idem : ered E V -> ered V V -> type.
 	<- idem DredM Dself.
 - : idem (ered-prev Dred) Dself
 	<- idem Dred (ered-next Dself).
+- : idem (ered-mono Dred) (ered-mono Dself)
+	<- idem Dred Dself.
+- : idem (ered-letm DredM _) Dself
+	<- idem DredM Dself.
 %worlds () (idem _ _).
 %total Dred (idem Dred _).
 
