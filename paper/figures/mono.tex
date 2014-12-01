@@ -4,10 +4,25 @@
 \infer	{\typesone {\monoTerm~e} {\monoType A}}					{\typesmono e A} 																\and
 \infer	{\typesone {\letmono x {e_1} {e_2}} B}					{\typesone {e_1} {\monoType A} & \typesone [\Gamma,\colmono x A] {e_2} B} 		\and
 \infer	{\typesone {\lifttag~e} {\monoType A + \monoType B}}	{\typesone e {\monoType (A+B)}} 												\and
+\infer	{\typesone {\liftint~e} \rmint}							{\typesone e {\monoType \rmint}} 												
+\end{mathpar}
+\hrule
+\begin{mathpar}
 \inferdiaone	{\red {\monoTerm~e} {\cdot; \monoTerm~v}}				{\reduce e v} 															\and
 \inferdiaone	{\red {\letmono x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}		{\red {e_1} {\xi_1;\monoTerm~v_1} & \red {[v_1/x]e_2} {\xi_2;v_2}} 		\and
 \inferdiaone	{\red {\lifttag~e} {\xi;\inl(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inl~v)}} 										\and
 \inferdiaone	{\red {\lifttag~e} {\xi;\inr(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inr~v)}} 										\and
+\inferdiaone	{\red {\liftint~e} {\xi;i}}								{\red e {\xi; \monoTerm~i}} 										
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\infersplitone	{\spl {\monoTerm~e} {\monoType A} {(e,()),\_.()}}						{\cdot}						\and
+\infersplitone	{\spl {\letmono x{e_1}{e_2}} {?} 
+				{\left(\talllet {(x,z_1)} {c_1} {
+				 \talllet {(y_2,z_2)} {c_2} {(y_2,(z_1,z_2))}}\right),
+					(l_1,l_2).(r_1;r_2)}}												{\sub 1 ? & \sub 2 ?}		\and
+\infersplitone	{\spl {\lifttag~e} ? {c,l.r}}											{\sub {} ?}					\and
+\infersplitone	{\spl {\liftint~e} ? {c,l.r}}											{\sub {} ?}					
 \end{mathpar}
 \caption{Mono Statics and Dynamics}
 \label{fig:monoRules}
