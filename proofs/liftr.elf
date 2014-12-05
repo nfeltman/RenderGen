@@ -68,16 +68,16 @@ of-let  : of (let E ([x] M x)) B W
 			<- ({x:term} of x A W -> of (M x) B W).
 of-next	: of (next E) (fut A) wor1
 			<- of E A wor2.
-of-letn : of (letn E M) B wor1
+%{of-letn : of (letn E M) B wor1
 			<- of E (fut A) wor1
-			<- ({x:term} of x A wor2 -> of (M x) B wor1). 
+			<- ({x:term} of x A wor2 -> of (M x) B wor1).}% 
 of-prev	: of (prev E) A wor2
 			<- of E (fut A) wor1.
-of-mono : of (mono E) (curr T) wor1
+%{of-mono : of (mono E) (curr T) wor1
 			<- of E T worM.
 of-letm : of (letm E M) T2 wor1
 			<- of E (curr T1) wor1
-			<- ({x:term} of x T1 worM -> of (M x) T2 wor1).
+			<- ({x:term} of x T1 worM -> of (M x) T2 wor1).}%
 
 %block var-of : some {A : ty} {W : wor} block {x:term} {_ : of x A W}.
 %worlds (var-of) (of _ _ _).
@@ -102,16 +102,16 @@ of-wf : of E T W -> ty-wf T W -> type.
 	<- ({x:term} {Dof : of x A W} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).
 - : of-wf (of-next Dof) (ty-wf-fut Dwf)
 	<- of-wf Dof Dwf.
-- : of-wf (of-letn DofM DofE) Dwf2
+%{- : of-wf (of-letn DofM DofE) Dwf2
 	<- of-wf DofE (ty-wf-fut Dwf1)
-	<- ({x:term} {Dof : of x A wor2} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).
+	<- ({x:term} {Dof : of x A wor2} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).}%
 - : of-wf (of-prev Dof) Dwf
 	<- of-wf Dof (ty-wf-fut Dwf).
-- : of-wf (of-mono Dof) (ty-wf-curr Dwf)
+%{- : of-wf (of-mono Dof) (ty-wf-curr Dwf)
 	<- of-wf Dof Dwf.
 - : of-wf (of-letm DofM DofE) DwfM
 	<- of-wf DofE (ty-wf-curr DwfE)
-	<- ({x:term} {Dof : of x A worM} of-wf Dof DwfE -> of-wf (DofM x Dof) DwfM).
+	<- ({x:term} {Dof : of x A worM} of-wf Dof DwfE -> of-wf (DofM x Dof) DwfM).}%
 %block var-of-wf : 
 	some {A : ty} {W : wor} {Dwf : ty-wf A W} 
 	block {x:term} {Dof : of x A W} {_ : of-wf Dof Dwf}.
