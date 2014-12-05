@@ -1,62 +1,64 @@
 %{ monostage.elf }%
 
 %% VALUE
-val : term -> type. %name val Dval.
-%mode val +E.
-val-ztup	: val ztup.
-val-tup	: val (tup E1 E2)
-				<- val E2
-				<- val E1.
-val-lam	: val (lam _ _).
-
-%% RESIDUAL
-res : term -> type. %name val Dres.
-%mode res +E.
-res-ztup	: res ztup.
-res-tup		: res (tup E1 E2)
-				<- res E2
-				<- res E1.
-res-pi1		: res (pi1 E)
-				<- res E.
-res-pi2		: res (pi2 E)
-				<- res E.
-res-lam		: res (lam _ M)
-				<- {x : term} res x -> res (M x).
-res-app		: res (app E1 E2)
-				<- res E2
-				<- res E1.
-res-let		: res (let E M)
-				<- res E
-				<- {x:term} res x -> res (M x).
+done : wor -> term -> type. %name done Ddone.
+%mode done +W +E.
+done-ztup	: done W ztup.
+done-tup	: done W (tup E1 E2)
+				<- done W E2
+				<- done W E1.
+val-lam		: done wor1 (lam _ _).
+val-next	: done wor1 (next E)
+				<- done wor2 E. %% needs stricter criterion
+res-pi1		: done wor2 (pi1 E)
+				<- done wor2 E.
+res-pi2		: done wor2 (pi2 E)
+				<- done wor2 E.
+res-lam		: done wor2 (lam _ M)
+				<- {x : term} done wor2 x -> done wor2 (M x).
+res-app		: done wor2 (app E1 E2)
+				<- done wor2 E2
+				<- done wor2 E1.
+res-let		: done wor2 (let E M)
+				<- done wor2 E
+				<- {x:term} done wor2 x -> done wor2 (M x).
 
 
-%% M STEP
-mstep : term -> term -> type.
-%mode mstep +E -E'.
-ms-tup-s1	: mstep (tup E1 E2) (tup E1' E2)
-			<- mstep E1 E1'.
-ms-tup-s2	: mstep (tup E1 E2) (tup E1 E2')
-			<- val E1
-			<- mstep E2 E2'.
-ms-pi1-s	: mstep (pi1 E) (pi1 E')
-			<- mstep E E'.
-ms-pi1-r	: mstep (pi1 (tup E1 E2)) E1
-			<- val (tup E1 E2).
-ms-pi2-s	: mstep (pi2 E) (pi2 E')
-			<- mstep E E'.
-ms-pi2-r	: mstep (pi2 (tup E1 E2)) E2
-			<- val (tup E1 E2).
-ms-app-s1	: mstep (app E1 E2) (app E1' E2)
-			<- mstep E1 E1'.
-ms-app-s2	: mstep (app E1 E2) (app E1 E2')
-			<- val E1
-			<- mstep E2 E2'.
-ms-app-r	: mstep (app (lam _ M) E) (M E)
-			<- val E.
-ms-let-s	: mstep (let E M) (let E' M)
-			<- mstep E E'.
-ms-let-r	: mstep (let E M) (M E)
-			<- val E.
+%% M STEP - SUBSTEP RULES
+mstep : wor -> term -> term -> type.
+%mode mstep +W +E -E'.
+ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
+			<- mstep W E1 E1'.
+ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+ms-pi1-s	: mstep W (pi1 E) (pi1 E')
+			<- mstep W E E'.
+ms-pi2-s	: mstep W (pi2 E) (pi2 E')
+			<- mstep W E E'.
+ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
+			<- mstep W E1 E1'.
+ms-app-s2	: mstep W (app E1 E2) (app E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+ms-let-s1	: mstep W (let E M) (let E' M)
+			<- mstep W E E'.
+ms-lam-s	: mstep wor2 (lam T M) (lam T M')
+			<- {x:term} done wor2 x -> mstep wor2 (M x) (M' x).
+ms-let-s2	: mstep wor2 (let E M) (let E M')
+			<- done wor2 E
+			<- {x:term} done wor2 x -> mstep wor2 (M x) (M' x).
+
+%% M STEP - REDUCTION RULES
+ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
+			<- done wor1 (tup E1 E2).
+ms-pi2-r	: mstep wor1 (pi2 (tup E1 E2)) E2
+			<- done wor1 (tup E1 E2).
+ms-app-r	: mstep wor1 (app (lam _ M) E) (M E)
+			<- done wor1 E.
+ms-let-r	: mstep wor1 (let E M) (M E)
+			<- done wor1 E.
+
 			
 %% M* STEP
 mstep* : term -> term -> (term -> term) -> type.
@@ -64,7 +66,7 @@ mstep* : term -> term -> (term -> term) -> type.
 ms*-tup-s1	: mstep* (tup E1 E2) Q ([x] tup (E1' x) E2)
 			<- mstep* E1 Q E1'.
 ms*-tup-s2	: mstep* (tup E1 E2) Q ([x] tup E1 (E2' x))
-			<- val E1
+			<- done wor1 E1
 			<- mstep* E2 Q E2'.
 ms*-pi1-s	: mstep* (pi1 E) Q ([x] pi1 (E' x))
 			<- mstep* E Q E'.
@@ -73,117 +75,24 @@ ms*-pi2-s	: mstep* (pi2 E) Q ([x] pi2 (E' x))
 ms*-app-s1	: mstep* (app E1 E2) Q ([x] app (E1' x) E2)
 			<- mstep* E1 Q E1'.
 ms*-app-s2	: mstep* (app E1 E2) Q ([x] app E1 (E2' x))
-			<- val E1
+			<- done wor1 E1
 			<- mstep* E2 Q E2'.
-ms*-let-s	: mstep* (let E M) Q ([x] let (E' x) M)
+ms*-let-s1	: mstep* (let E M) Q ([x] let (E' x) M)
 			<- mstep* E Q E'.
-			
-%% R STEP
-rstep : term -> term -> type.
-%mode rstep +E -E'.
-rs-tup-s1	: rstep (tup E1 E2) (tup E1' E2)
-			<- rstep E1 E1'.
-rs-tup-s2	: rstep (tup E1 E2) (tup E1 E2')
-			<- res E1
-			<- rstep E2 E2'.
-rs-pi1-s	: rstep (pi1 E) (pi1 E')
-			<- rstep E E'.
-rs-pi2-s	: rstep (pi2 E) (pi2 E')
-			<- rstep E E'.
-rs-lam-s	: rstep (lam T M) (lam T M')
-			<- {x:term} rstep (M x) (M' x).
-rs-app-s1	: rstep (app E1 E2) (app E1' E2)
-			<- rstep E1 E1'.
-rs-app-s2	: rstep (app E1 E2) (app E1 E2')
-			<- res E1
-			<- rstep E2 E2'.
-rs-let-s1	: rstep (let E M) (let E' M)
-			<- rstep E E'.
-rs-let-s2	: rstep (let E M) (let E M')
-			<- {x:term} rstep (M x) (M' x).
+
 			
 %% STAGING FEATURES
-ms-next-s	: mstep (next E) (next E')
-			<- rstep E E'.
+ms-next-s	: mstep wor1 (next E) (next E')
+			<- mstep wor2 E E'.
 ms*-next-r	: mstep* (next E) E ([x:term] next x)
-			<- res E.
-rs-prev-s	: rstep (prev E) (prev E')
-			<- mstep E E'.
-rs-prev-s*	: rstep (prev E) (let Q ([x] prev (E' x)))
+			<- done wor2 E.
+ms-prev-s	: mstep wor2 (prev E) (prev E')
+			<- mstep wor1 E E'.
+ms-prev-s*	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
 			<- mstep* E Q E'.
-rs-prev-r	: rstep (prev (next E)) E
-			<- res E.
-
+ms-prev-r	: mstep wor2 (prev (next E)) E
+			<- done wor2 E. %% should be a stricter criterion
 			
-%% PRESERVATION
-pres : mstep E E' -> of E T W -> of E' T W -> type.
-%mode pres +Dstep +Dof -Dof'.
-- : pres (ms-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
-	<- pres Dstep Dof1 Dof1'.
-- : pres (ms-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
-	<- pres Dstep Dof2 Dof2'. 
-- : pres (ms-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ms-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
-- : pres (ms-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ms-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
-- : pres (ms-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
-	<- pres Dstep Dof1 Dof1'.
-- : pres (ms-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
-	<- pres Dstep Dof2 Dof2'.
-- : pres (ms-app-r (_ : val E)) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
-- : pres (ms-let-s Dstep) (of-let DofM DofE) (of-let DofM DofE') 
-	<- pres Dstep DofE DofE'.
-- : pres (ms-let-r (_ : val E)) (of-let DofM DofE) (DofM E DofE).
-
-pres* : mstep* E Q E' -> of E T wor1 -> of Q TQ wor2 -> ({x:term} of x TQ wor2 -> of (E' x) T wor1) -> type.
-%mode pres* +Dstep +Dof -DofQ -Dof'.
-- : pres* (ms*-tup-s1 Dstep) (of-tup Dof1 Dof2) DofQ ([x] [dof] of-tup (Dof1' x dof) Dof2)
-	<- pres* Dstep Dof1 DofQ Dof1'.
-- : pres* (ms*-tup-s2 Dstep _) (of-tup Dof1 Dof2) DofQ ([x] [dof] of-tup Dof1 (Dof2' x dof))
-	<- pres* Dstep Dof2 DofQ Dof2'.
-- : pres* (ms*-pi1-s Dstep) (of-pi1 Dof) DofQ ([x] [dof] of-pi1 (Dof' x dof))
-	<- pres* Dstep Dof DofQ Dof'.
-- : pres* (ms*-pi2-s Dstep) (of-pi2 Dof) DofQ ([x] [dof] of-pi2 (Dof' x dof))
-	<- pres* Dstep Dof DofQ Dof'.
-- : pres* (ms*-app-s1 Dstep) (of-app Dof1 Dof2) DofQ ([x] [dof] of-app (Dof1' x dof) Dof2)
-	<- pres* Dstep Dof1 DofQ Dof1'.
-- : pres* (ms*-app-s2 Dstep _) (of-app Dof1 Dof2) DofQ ([x] [dof] of-app Dof1 (Dof2' x dof))
-	<- pres* Dstep Dof2 DofQ Dof2'.
-- : pres* (ms*-let-s Dstep) (of-let DofM DofE) DofQ ([x] [dof] of-let DofM (DofE' x dof))
-	<- pres* Dstep DofE DofQ DofE'.
-
-presR : rstep E E' -> of E T wor2 -> of E' T wor2 -> type.
-%mode presR +Dstep +Dof -Dof'.
-- : presR (rs-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
-	<- presR Dstep Dof1 Dof1'.
-- : presR (rs-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
-	<- presR Dstep Dof2 Dof2'. 
-- : presR (rs-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
-	<- presR Dstep Dof Dof'.
-- : presR (rs-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
-	<- presR Dstep Dof Dof'.
-- : presR (rs-lam-s Dstep) (of-lam Dwf DofM) (of-lam Dwf DofM') 
-	<- {x:term} {dof : of x T wor2} presR (Dstep x) (DofM x dof) (DofM' x dof).
-- : presR (rs-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
-	<- presR Dstep Dof1 Dof1'.
-- : presR (rs-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
-	<- presR Dstep Dof2 Dof2'.
-- : presR (rs-let-s1 Dstep) (of-let DofM DofE) (of-let DofM DofE') 
-	<- presR Dstep DofE DofE'.
-- : presR (rs-let-s2 Dstep) (of-let DofM DofE) (of-let DofM' DofE) 
-	<- {x:term} {dof : of x T wor2} presR (Dstep x) (DofM x dof) (DofM' x dof).
-
-%% staging rules
-- : pres (ms-next-s Dstep) (of-next Dof) (of-next Dof')
-	<- presR Dstep Dof Dof'.
-- : pres* (ms*-next-r _) (of-next Dof) Dof ([x] [dof] of-next dof).
-- : presR (rs-prev-s Dstep) (of-prev Dof) (of-prev Dof')
-	<- pres Dstep Dof Dof'.
-- : presR (rs-prev-s* Dstep) (of-prev Dof) (of-let ([x] [dof] of-prev (Dof' x dof)) DofQ)
-	<- pres* Dstep Dof DofQ Dof'.
-- : presR (rs-prev-r _) (of-prev (of-next Dof)) Dof.
-
-%worlds (ofs-block) (pres _ _ _) (presR _ _ _) (pres* _ _ _ _).
-%total (Dstep1 Dstep2 Dstep3) (pres Dstep1 _ _) (presR Dstep2 _ _) (pres* Dstep3 _ _ _).
+			
+%%  USEFUL BLOCKS
+%block spec-block : some {A : ty} block {x:term} {dof : of x A wor2} {ddone : done wor2 x}.

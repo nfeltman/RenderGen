@@ -4,7 +4,7 @@
 wor : type. %name wor W.
 wor1 : wor.
 wor2 : wor.
-worM : wor.
+%%worM : wor.
 
 %% TYPES
 ty : type. %name ty T.
@@ -42,8 +42,8 @@ ty-wf-arr	: ty-wf (arr A B) W
 				<- ty-wf A W.
 ty-wf-fut	: ty-wf (fut A) wor1
 				<- ty-wf A wor2.
-ty-wf-curr	: ty-wf (curr T) wor1
-				<- ty-wf T worM.
+%{ty-wf-curr	: ty-wf (curr T) wor1
+				<- ty-wf T worM.}%
 %worlds () (ty-wf _ _).
 
 %% TYPING JUDGMENT

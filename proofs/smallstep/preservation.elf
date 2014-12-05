@@ -1,0 +1,61 @@
+%% NORMAL STEP PRESERVATION (SUBSTEP RULES)
+pres : mstep W E E' -> of E T W -> of E' T W -> type.
+%mode pres +Dstep +Dof -Dof'.
+- : pres (ms-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
+	<- pres Dstep Dof1 Dof1'.
+- : pres (ms-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
+	<- pres Dstep Dof2 Dof2'. 
+- : pres (ms-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
+	<- pres Dstep Dof Dof'.
+- : pres (ms-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
+	<- pres Dstep Dof Dof'.
+- : pres (ms-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
+	<- pres Dstep Dof1 Dof1'.
+- : pres (ms-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
+	<- pres Dstep Dof2 Dof2'.
+- : pres (ms-let-s1 Dstep) (of-let DofM DofE) (of-let DofM DofE') 
+	<- pres Dstep DofE DofE'.
+- : pres (ms-lam-s Dstep) (of-lam Dwf DofM) (of-lam Dwf DofM') 
+	<- {x:term} {dof : of x T wor2} {ddone : done wor2 x} 
+		pres (Dstep x ddone) (DofM x dof) (DofM' x dof).
+- : pres (ms-let-s2 Dstep _) (of-let DofM DofE) (of-let DofM' DofE) 
+	<- {x:term} {dof : of x T wor2} {ddone : done wor2 x} 
+		pres (Dstep x ddone) (DofM x dof) (DofM' x dof).
+
+%% NORMAL STEP PRESERVATION (REDUCTION RULES)
+- : pres (ms-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
+- : pres (ms-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
+- : pres (ms-app-r _) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
+- : pres (ms-let-r _) (of-let DofM DofE) (DofM E DofE).
+
+%% STARRED STEP PRESERVATION
+pres* : mstep* E Q E' -> of E T wor1 -> of Q TQ wor2 -> ({x:term} of x TQ wor2 -> of (E' x) T wor1) -> type.
+%mode pres* +Dstep +Dof -DofQ -Dof'.
+- : pres* (ms*-tup-s1 Dstep) (of-tup Dof1 Dof2) DofQ ([x] [dof] of-tup (Dof1' x dof) Dof2)
+	<- pres* Dstep Dof1 DofQ Dof1'.
+- : pres* (ms*-tup-s2 Dstep _) (of-tup Dof1 Dof2) DofQ ([x] [dof] of-tup Dof1 (Dof2' x dof))
+	<- pres* Dstep Dof2 DofQ Dof2'.
+- : pres* (ms*-pi1-s Dstep) (of-pi1 Dof) DofQ ([x] [dof] of-pi1 (Dof' x dof))
+	<- pres* Dstep Dof DofQ Dof'.
+- : pres* (ms*-pi2-s Dstep) (of-pi2 Dof) DofQ ([x] [dof] of-pi2 (Dof' x dof))
+	<- pres* Dstep Dof DofQ Dof'.
+- : pres* (ms*-app-s1 Dstep) (of-app Dof1 Dof2) DofQ ([x] [dof] of-app (Dof1' x dof) Dof2)
+	<- pres* Dstep Dof1 DofQ Dof1'.
+- : pres* (ms*-app-s2 Dstep _) (of-app Dof1 Dof2) DofQ ([x] [dof] of-app Dof1 (Dof2' x dof))
+	<- pres* Dstep Dof2 DofQ Dof2'.
+- : pres* (ms*-let-s1 Dstep) (of-let DofM DofE) DofQ ([x] [dof] of-let DofM (DofE' x dof))
+	<- pres* Dstep DofE DofQ DofE'.
+
+
+%% STAGING FEATURE PRESERVATION
+- : pres (ms-next-s Dstep) (of-next Dof) (of-next Dof')
+	<- pres Dstep Dof Dof'.
+- : pres* (ms*-next-r _) (of-next Dof) Dof ([x] [dof] of-next dof).
+- : pres (ms-prev-s Dstep) (of-prev Dof) (of-prev Dof')
+	<- pres Dstep Dof Dof'.
+- : pres (ms-prev-s* Dstep) (of-prev Dof) (of-let ([x] [dof] of-prev (Dof' x dof)) DofQ)
+	<- pres* Dstep Dof DofQ Dof'.
+- : pres (ms-prev-r _) (of-prev (of-next Dof)) Dof.
+
+%worlds (spec-block) (pres _ _ _) (pres* _ _ _ _).
+%total (Dstep1 Dstep2) (pres Dstep1 _ _) (pres* Dstep2 _ _ _).
