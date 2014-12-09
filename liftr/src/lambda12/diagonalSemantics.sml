@@ -18,18 +18,19 @@ fun comp1 f (g, h) = (f o g, h)
 
 in
 
+
 (* first stage values *)				
-datatype value1	= V1 of (value1,cont,var pattern,expr1) valueF
+datatype value1	= V1 of (value1,cont,pattern12,expr1) valueF
 				| V1hat of var
 				| V1mono of valueM
 				
-and 	 valueM = VM of (valueM,cont,var pattern,exprM) valueF
+and 	 valueM = VM of (valueM,cont,patternM,exprM) valueF
 				
 withtype   cont = (var, (value1,valueM) Contexts.DoubleContext.doubleEntry) Contexts.context
 
 (* second stage values/expressions *)
-datatype expr	= E of (expr,var,pattern12,unit) exprF
-datatype value2	= V2 of (value2,(var, value2) context,var pattern,expr) valueF
+datatype expr	= E of (expr,var,patternM,unit) exprF
+datatype value2	= V2 of (value2,(var, value2) context,patternM,expr) valueF
 
 fun unV1 (V1 v) = v
   | unV1 _ = raise Stuck
@@ -43,18 +44,19 @@ fun unV2 (V2 v) = v
 structure ValuesM = EmbedValues (struct
 	type v = valueM
 	type c = cont
-	type r = var pattern
+	type r = patternM
 	type e = exprM
 	fun outof (VM v) = v
 	val into = VM
 end)
 structure EvaluatorM = Evaluator (ValuesM)
-fun ext2 z = foldPattern (DoubleContext.extendContext2, ValuesM.untuple, Stuck) z
+fun ext1 g (P p) t = foldPattern (DoubleContext.extendContext1, ext1, untuple o unV1, Stuck) g p t
+fun ext2 g (PM p) t = foldPattern (DoubleContext.extendContext2, ext2, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = 
 	let
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (foldPattern (DoubleContext.extendContext1, untuple o unV1,Stuck) env x v) e 
+		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (ext1 env x v) e 
 	in
 		case exp of 
 		  Fvar v => (id, DoubleContext.lookup1 env v)
@@ -97,19 +99,20 @@ fun eval1 env (E1 exp) =
 		let
 			val y = Variable.newvar "y" 
 		in 
-			(fn r => E ` Flet (trace2 env e,(Pvar y,r)), V1hat y) 
+			(fn r => E ` Flet (trace2 env e,(PM (Pvar y),r)), V1hat y) 
 		end
   | eval1 env (E1hold e) =
 		let
 			val (g,v) = eval1 env e
 			val y = Variable.newvar "y" 
 		in
-			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unV1 v, (Pvar y, r)), V1hat y)
+			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unV1 v, (PM (Pvar y), r)), V1hat y)
 		end
   | eval1 env (E1mono e) = 
 		let
 			fun promoteType (T2 t) = T1 (TypesBase.mapType promoteType t)
-			fun promoteToE1 (EM e) = E1 (SourceLang.mapExpr promoteToE1 promoteType e)
+			fun promotePattern (PM p) = P ` mapPattern promotePattern p
+			fun promoteToE1 (EM e) = E1 (SourceLang.mapExpr promoteToE1 promoteType promotePattern e)
 		in
 			(id, V1mono ` evalM env e)
 		end
@@ -135,25 +138,25 @@ fun eval1 env (E1 exp) =
 			val y2 = Variable.newvar "y"
 		in
 			(g,
-			V1 (VFlam (c, (Pvar y1, 
+			V1 (VFlam (c, (P (Pvar y1), 
 				E1letMono (E1 (Fvar y1), (y2, 
 					E1mono ( EM (Flet (EM (Fvar y2),b)))))))))
 		end
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, DoubleContext.lookup2) exp
-and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) exp)
+and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
   
   
 structure Values2 = EmbedValues (struct
 	type v = value2
 	type c = (var, value2) context
-	type r = var pattern
+	type r = patternM
 	type e = expr
 	fun outof (V2 v) = v
 	val into = V2
 end)
-fun ext z = foldPattern (extendContext, Values2.untuple, Stuck) z
+fun ext g (PM p) t = foldPattern (extendContext, ext, Values2.untuple, Stuck) g p t
 
 structure Evaluator2 = Evaluator (Values2)
 

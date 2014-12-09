@@ -37,7 +37,7 @@ fun convertSourceTypes convert ty =
 		| S.TFarr (t1, t2) => Einfix ("->", [convert t1, convert t2])
 		
 structure S = SourceLang
-fun convertSourcePatternv (Gnum,Gname) (S.Pvar x) = 
+fun convertSourcePatternv _ (Gnum,Gname) (S.Pvar x) = 
 		let
 			val (_,desiredName) = x
 			val (n, s) =
@@ -50,18 +50,18 @@ fun convertSourcePatternv (Gnum,Gname) (S.Pvar x) =
 		in
 			(Pvar s, (Contexts.extendContext Gnum desiredName n, Contexts.extendContext Gname x s))
 		end
-  | convertSourcePatternv G (S.Ptuple xs) = 
+  | convertSourcePatternv convRec G (S.Ptuple xs) = 
 		let
-			fun f (x,(Gin,ps)) = let val (p,Gout) = convertSourcePatternv Gin x in (Gout,p::ps) end
+			fun f (x,(Gin,ps)) = let val (p,Gout) = convRec Gin x in (Gout,p::ps) end
 			val (Gfinal,ps) = foldr f (G,[]) xs
 		in
 			(Ptuple ps, Gfinal)
 		end
-fun convertSource (Gnum,Gname) convertRec convertTy ex = 
+fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex = 
 	let
 		val convert = convertRec (Gnum,Gname)
 		fun convertBranch (x,e) = 
-			let val (p, G2) = convertSourcePatternv (Gnum,Gname) x 
+			let val (p, G2) = convertPatt (Gnum,Gname) x 
 			in (p,convertRec G2 e) end
 	in
 		case ex of 
@@ -84,15 +84,17 @@ fun convertSource (Gnum,Gname) convertRec convertTy ex =
 	end
 	
 structure S = Lambda12
+fun convertPattern12 G (S.P p) = convertSourcePatternv convertPattern12 G p
+fun convertPatternM G (S.PM p) = convertSourcePatternv convertPatternM G p
 fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
   | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
   | convertTyStage1 (S.T1now t) = EprimApp("^", convertTyStage2 t)
 and convertTyStage2 (S.T2 t) = convertSourceTypes convertTyStage2 t
-fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 e
+fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 convertPattern12 e
   | convertStage1v G (S.E1mono e) = EbraceApp("mono", convertStageMv G e)
   | convertStage1v G (S.E1letMono (e1,(x,e2))) = 
 		let
-			val (p,G2) = convertSourcePatternv G (SourceLang.Pvar x)
+			val (p,G2) = convertPattern12 G (S.P (SourceLang.Pvar x))
 		in
 			Elet (convertStage1v G e1, (Pbrace ("mono",p),convertStage1v G2 e2))
 		end
@@ -102,12 +104,14 @@ fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 e
   | convertStage1v G (S.E1pushProd e) = EprimApp("pushP", convertStage1v G e)
   | convertStage1v G (S.E1pushSum e) = EprimApp("pushS", convertStage1v G e)
   | convertStage1v G (S.E1pushArr e) = EprimApp("pushA", convertStage1v G e)
-and convertStage2v G (S.E2 e) = convertSource G convertStage2v convertTyStage2 e
+and convertStage2v G (S.E2 e) = convertSource G convertStage2v convertTyStage2 convertPatternM e
   | convertStage2v G (S.E2prev e) = EbraceApp("prev", convertStage1v G e)
-and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 e
+and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 convertPatternM e
   
-fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") e
-fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") e
+fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") convertPatternM e
+
+fun convertPatternPSF G (LambdaPSF.P p) = convertSourcePatternv convertPatternPSF G p
+fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") convertPatternPSF e
   | convertPSFv G (LambdaPSF.Edummy) = Eatom "dummy"
   
 fun convertPSFVal (PSFSemantics.V exp) = (
@@ -124,7 +128,7 @@ fun convertPSFVal (PSFSemantics.V exp) = (
 
 fun convertPSFBranch (x,e) = 
 	let 
-		val (p, G) = convertSourcePatternv (Contexts.empty, Contexts.empty) x 
+		val (p, G) = convertPatternPSF (Contexts.empty, Contexts.empty) x 
 	in
 		(p,convertPSFv G e) 
 	end

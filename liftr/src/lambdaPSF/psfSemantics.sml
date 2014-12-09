@@ -7,14 +7,14 @@ open Contexts
 open LambdaPSF
 structure S = SourceLang
 
-datatype value	= V of (value,(var, value) context,var S.pattern,expr) ValuesBase.valueF
+datatype value	= V of (value,(var, value) context,pattern,expr) ValuesBase.valueF
 				| Vdummy
 
 structure Values = EmbedValues 
 (struct
 	type v = value
 	type c = (var, value) context
-	type r = var S.pattern
+	type r = pattern
 	type e = expr
 	fun outof (V v) = v | outof Vdummy = raise Stuck
 	val into = V
@@ -22,10 +22,10 @@ end)
 
 structure EvaluatorPSF = S.Evaluator (Values)
 
-fun forPattern g (S.Pvar x) t = extendContext g x t
-  | forPattern g (S.Ptuple xs) (V (ValuesBase.VFtuple ts)) = forPattList g xs ts
-  | forPattern g (S.Ptuple xs) (V _) = raise Stuck
-  | forPattern g (S.Ptuple xs) Vdummy = forPattList g xs (map (fn _ => Vdummy) xs)
+fun forPattern g (P (S.Pvar x)) t = extendContext g x t
+  | forPattern g (P (S.Ptuple xs)) (V (ValuesBase.VFtuple ts)) = forPattList g xs ts
+  | forPattern g (P (S.Ptuple xs)) (V _) = raise Stuck
+  | forPattern g (P (S.Ptuple xs)) Vdummy = forPattList g xs (map (fn _ => Vdummy) xs)
 and forPattList g [] [] = g
   | forPattList g (x::xs) (t::ts) = forPattern (forPattList g xs ts) x t
   | forPattList _ _ _ = raise Stuck

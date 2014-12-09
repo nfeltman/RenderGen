@@ -8,8 +8,8 @@ open Contexts
 open ValuesBase
 
 in
-datatype ('r) pattern 	= Pvar of 'r
-						| Ptuple of ('r pattern) list
+datatype ('r,'p) pattern 	= Pvar of 'r
+							| Ptuple of 'p list
 							
 datatype ('e,'r,'p,'t) exprF	= Fvar of 'r
 								| FprimVal of Prims.primValue
@@ -25,37 +25,41 @@ datatype ('e,'r,'p,'t) exprF	= Fvar of 'r
 								| Funroll of 'e
 								| Ferror of 't
 								| Fbinop of Prims.binops * 'e * 'e
-						
-fun mapExpr fe ft exp =
+
+fun mapPattern _ (Pvar v) = Pvar v
+  | mapPattern f (Ptuple ps) = Ptuple (map f ps)
+								
+fun mapExpr fe ft fp exp =
 	case exp of
 	  Fvar v => Fvar v
 	| FprimVal pv => FprimVal pv
-	| Flam (t, (x,e)) => Flam (ft t, (x, fe e))
+	| Flam (t, (x,e)) => Flam (ft t, (fp x, fe e))
 	| Fapp (e1,e2) => Fapp (fe e1, fe e2)
 	| Ftuple es => Ftuple (map fe es)
 	| Fpi (lr, e) => Fpi (lr, fe e)
 	| Finj (ts, us, e) => Finj (map ft ts, map ft us, fe e)
-	| Fcase (e1,xes) => Fcase (fe e1, map (fn (x,e) => (x, fe e)) xes)
+	| Fcase (e1,xes) => Fcase (fe e1, map (fn (x,e) => (fp x, fe e)) xes)
 	| Fif (e1,e2,e3) => Fif (fe e1, fe e2, fe e3)
-	| Flet (e1, (x,e2)) => Flet (fe e1, (x, fe e2))
+	| Flet (e1, (x,e2)) => Flet (fe e1, (fp x, fe e2))
 	| Ferror (t) => Ferror (ft t)
 	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
 	| Froll (t, e) => Froll (ft t, fe e)
 	| Funroll e => Funroll (fe e)
 
-fun replaceVars recRep G f exp =
+fun recastPattern (_,f) g (Pvar x) = let val y = f x in (Pvar y,extendContext g x y) end
+  | recastPattern (rpRec,_) g (Ptuple xs) =
+		let 
+			fun f (x,(ys,g2)) = 
+				let val (y,g3) = rpRec g2 x in (y::ys,g3) end
+			val (ys, g2) = foldr f ([],g) xs
+		in 
+			(Ptuple ys, g2)
+		end
+	
+fun replaceVars recRep G recastPattern exp =
 	let
 		val rep = recRep G
-		fun forPattern g (Pvar x) = let val y = f x in (Pvar y,extendContext g x y) end
-		  | forPattern g (Ptuple xs) =
-				let 
-					fun f (x,(ys,g2)) = 
-						let val (y,g3) = forPattern g2 x in (y::ys,g3) end
-					val (ys, g2) = foldr f ([],g) xs
-				in 
-					(Ptuple ys, g2)
-				end
-		fun forBranch (x,e) = let val (y,g) = forPattern G x in (y, recRep g e) end
+		fun forBranch (x,e) = let val (y,g) = recastPattern G x in (y, recRep g e) end
 	in
 		case exp of
 		  Fvar v => Fvar (lookup G v)
@@ -74,13 +78,13 @@ fun replaceVars recRep G f exp =
 		| Funroll e => Funroll (rep e)
 	end
 
-fun foldPattern (f,unpack,ex) g p t =
+fun foldPattern (f,foldRec,unpack,ex) g p t =
 	let
 		fun fold g (Pvar x) t = f g x t
 		  | fold g (Ptuple xs) t = foldList g xs (unpack t)
 		  
 		and foldList g [] [] = g
-		  | foldList g (x::xs) (t::ts) = fold (foldList g xs ts) x t
+		  | foldList g (x::xs) (t::ts) = foldRec (foldList g xs ts) x t
 		  | foldList _ _ _ = raise ex
 	in
 		fold g p t
@@ -188,7 +192,7 @@ and typeCheckBranch gamma checkrec (t,(patt,e)) =
 fun typeCheck gamma checkrec exp = #1 (typeCheckSpecial gamma (fn c => fn e => (checkrec c e, ())) exp)
 end
 
-functor Evaluator (F : SourceValues where type r = var pattern) = 
+functor Evaluator (F : SourceValues) = 
 struct
 fun evalF env evalRec (extendPatt,lookupC) exp = 
 	let

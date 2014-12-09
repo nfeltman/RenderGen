@@ -8,7 +8,8 @@ fun a ` b = a b
 open LangCommon
 structure S = SourceLang
 
-datatype expr 	= E of (expr,var,var S.pattern,unit) S.exprF
+datatype pattern = P of (var,pattern) S.pattern
+datatype expr 	= E of (expr,var,pattern,unit) S.exprF
 				| Edummy
 
 fun Evar x = E ` S.Fvar x

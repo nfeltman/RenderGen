@@ -78,21 +78,21 @@ struct
 	type p = pattern12
 	type c = MyContext.C1.cont
 	type t = type1
-	val fold = foldPattern (MyContext.C1.extend, TypeFeatures1.unprod, TypeError "pattern")
+	fun fold g (P p) v = foldPattern (MyContext.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
 end
 structure Pattern2 = 
 struct
-	type p = pattern12
+	type p = patternM
 	type c = MyContext.C2.cont
 	type t = type2
-	val fold = foldPattern (MyContext.C2.extend, TypeFeatures2.unprod, TypeError "pattern")
+	fun fold g (PM p) v = foldPattern (MyContext.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
 structure Pattern3 = 
 struct
-	type p = pattern12
+	type p = patternM
 	type c = MyContext.C3.cont
 	type t = type2
-	val fold = foldPattern (MyContext.C3.extend, TypeFeatures2.unprod, TypeError "pattern")
+	fun fold g (PM p) v = foldPattern (MyContext.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
 
 fun unfut (T1fut t) = t

@@ -14,7 +14,7 @@ datatype ty		= Tstandard of ty typeF
 				| Tref of string
 
 datatype stage	= ThisStage | NextStage | MonoStage
-type patt		= string S.pattern
+datatype patt	= P of (string,patt) S.pattern
 datatype expr	= Estandard of (expr,string,patt,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
@@ -58,8 +58,8 @@ val Elet = Estandard o S.Flet
 val Eerror = Estandard o S.Ferror
 val Ebinop = Estandard o S.Fbinop
 
-val Ptuple = S.Ptuple
-val Pvar = S.Pvar
+val Ptuple = P o S.Ptuple
+val Pvar = P o S.Pvar
 end
 	
 end

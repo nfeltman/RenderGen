@@ -14,13 +14,11 @@ structure T = TypesBase
 infixr 9 `
 fun a ` b = a b
 
-val PPtuple = S.Ptuple
-val PPvar = S.Pvar
+val PPtuple = LambdaPSF.P o S.Ptuple
+val PPvar = LambdaPSF.P o S.Pvar
+fun splitPattern (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern p
   
 val Eunit = Etuple []
-
-fun makeUnitForPattern (S.Pvar v) = Eunit
-  | makeUnitForPattern (S.Ptuple ps) = Etuple (map makeUnitForPattern ps)
 
 fun freshPi () = 
 	let
@@ -78,7 +76,7 @@ fun chain3 (e1,e2,e3) =
 	| (false, false) => Epi (2, Etuple [e1,e2,e3])
 in
 
-type ppatt	= var S.pattern
+type ppatt	= LambdaPSF.pattern
 datatype stage1Part			= Splittable of (ppatt * expr) list * expr * expr
 							| Opaque of expr
 datatype 's1 splitResult1	= NoPrec1 of expr * expr 
@@ -116,7 +114,7 @@ fun mapResumer1 f (NoPrec1 (v, r)) = NoPrec1 (v, f r)
 
 fun flattenPrecomps pls =
 	let
-		fun toArray (E (S.Ftuple ps), S.Ptuple ls) = ListPair.zip (ps,ls)
+		fun toArray (E (S.Ftuple ps), LambdaPSF.P (S.Ptuple ls)) = ListPair.zip (ps,ls)
 		  | toArray (p,l) = ([(p,l)])
 	in
 		List.concat ` map toArray pls
@@ -191,6 +189,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce1 (split e)
+				val x = splitPattern x
 			in
 				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[x,l], r)))
 			end
@@ -262,6 +261,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 				fun processBranches [] prefixes = ([],[],[])
 				  | processBranches ((x,e)::xes) prefixes = 
 					let
+						val x = splitPattern x
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
 						val (c,(l,r)) = coerce1 (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
@@ -290,6 +290,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 			end
 		| S.Flet (e1, (x,e2)) => 
 			let
+				val x = splitPattern x
 				val (res1,res2) = (split e1, split e2)
 				fun makeLet a b = Elet (a, (x,b))
 			in
@@ -349,7 +350,8 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		end
   | stageSplit1 gamma (E1mono e) = 
 		let
-			fun promoteToPSF (EM e) = E(S.mapExpr promoteToPSF (fn _ => ()) e)
+			fun promotePattern (PM p) = LambdaPSF.P ` S.mapPattern promotePattern p
+			fun promoteToPSF (EM e) = E(S.mapExpr promoteToPSF (fn _ => ()) promotePattern e)
 			val ty = Typecheck12.typeCheckM gamma e
 		in
 			(T1now ty, NoPrec1(promoteToPSF e, Eunit))
@@ -452,12 +454,13 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs)) )
 		
 		fun mergeList results f = finalize f (foldr h ([],[]) results)
+		fun promotePattern (PM p) = LambdaPSF.P ` S.mapPattern promotePattern p
 	in
 		(t,
 		case exp2 of 
 		  S.Fvar v => NoPrec2 (Evar v)
 		| S.FprimVal p => NoPrec2 (Eprim p)
-		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (x,r)))
+		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (promotePattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| S.Ftuple es => mergeList (map split es) Etuple
 		| S.Fpi (i, e) => merge1 (split e) (fn r => Epi (i, r))
@@ -466,13 +469,14 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 		| S.Fcase (e,bs) => 
 			let
 				val (xs, es) = unzip bs
+				val xs = map promotePattern xs
 				fun f (r::rs) = Ecase (r, zip id xs rs Oops)
 				  | f [] = raise Oops
 			in
 				mergeList (map split (e :: es)) f
 			end
 		| S.Fbinop (bo,e1,e2) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
-		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(x,b)))
+		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(promotePattern x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
 		| S.Ferror t => NoPrec2 (Eerror ())

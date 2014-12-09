@@ -13,8 +13,8 @@ datatype value1	= V1 of (value1,cont,pattern12,expr1) V.valueF
 				| V1next of value2
 				| V1mono of valueM
 				
-and		value2	= V2 of (value2,cont,pattern12,expr2) V.valueF
-and		valueM	= VM of (valueM,cont,pattern12,exprM) V.valueF
+and		value2	= V2 of (value2,cont,patternM,expr2) V.valueF
+and		valueM	= VM of (valueM,cont,patternM,exprM) V.valueF
 withtype   cont = (var, (value1,value2,valueM) Contexts.TripleContext.tripleEntry) Contexts.context
 
 fun holdGeneral (V1 (V.VFprim i)) = V1next (V2 (V.VFprim i))
@@ -30,7 +30,7 @@ fun unmono (V1mono v) = v
 structure Values1 = EmbedValues (struct
 	type v = value1
 	type c = cont
-	type r = var pattern
+	type r = pattern12
 	type e = expr1
 	val outof = V1unwrap
 	val into = V1
@@ -38,7 +38,7 @@ end)
 structure Values2 = EmbedValues (struct
 	type v = value2
 	type c = cont
-	type r = var pattern
+	type r = patternM
 	type e = expr2
 	fun outof (V2 v) = v
 	val into = V2
@@ -46,7 +46,7 @@ end)
 structure ValuesM = EmbedValues (struct
 	type v = valueM
 	type c = cont
-	type r = var pattern
+	type r = patternM
 	type e = exprM
 	fun outof (VM v) = v
 	val into = VM
@@ -58,9 +58,9 @@ structure EvaluatorM = Evaluator (ValuesM)
 
 structure TC = Contexts.TripleContext
 
-fun ext1 z = foldPattern (TC.extendContext1, Values1.untuple, Stuck) z
-fun ext2 z = foldPattern (TC.extendContext2, Values2.untuple, Stuck) z
-fun ext3 z = foldPattern (TC.extendContext3, ValuesM.untuple, Stuck) z
+fun ext1 g (P p) t = foldPattern (TC.extendContext1, ext1, Values1.untuple, Stuck) g p t
+fun ext2 g (PM p) t = foldPattern (TC.extendContext2, ext2, Values2.untuple, Stuck) g p t
+fun ext3 g (PM p) t = foldPattern (TC.extendContext3, ext3, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.lookup1) exp
   | eval1 env (E1next e) = V1next (eval2 env e)
@@ -81,7 +81,7 @@ fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.lookup1) exp
 			val y1 = Variable.newvar "y"
 			val y2 = Variable.newvar "y"
 		in
-			Values1.makelam (c, (Pvar y1, 
+			Values1.makelam (c, (P (Pvar y1), 
 				E1letMono (E1 (Fvar y1), (y2, 
 					E1mono ( EM (Flet (EM (Fvar y2),b)))))))
 		end
