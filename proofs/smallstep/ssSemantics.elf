@@ -43,6 +43,8 @@ ms-app-s2	: mstep W (app E1 E2) (app E1 E2')
 			<- mstep W E2 E2'.
 ms-let-s1	: mstep W (let E M) (let E' M)
 			<- mstep W E E'.
+ms-lett-s1	: mstep W (lett E M) (lett E' M)
+			<- mstep W E E'.
 ms-lam-s	: mstep wor2 (lam T M) (lam T M')
 			<- {x:term} done wor2 x -> mstep wor2 (M x) (M' x).
 ms-let-s2	: mstep wor2 (let E M) (let E M')
@@ -60,7 +62,7 @@ ms-let-r	: mstep wor1 (let E M) (M E)
 			<- done wor1 E.
 
 			
-%% M* STEP
+%% SECOND-STAGE VARIABLE STEP
 mstep* : term -> term -> (term -> term) -> type.
 %mode mstep* +E -Q -E'.
 ms*-tup-s1	: mstep* (tup E1 E2) Q ([x] tup (E1' x) E2)

@@ -1,0 +1,40 @@
+%{ ssCorrectness.elf }%
+
+sc1 : split1 E C R -> mstep wor1 E E' -> split1 E' C' R' -> mstep wor1 C C' -> type.
+%mode sc1 +Dspl +DstepE -Dspl' -DstepP.
+
+- : sc1 (spl1-tup Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+- : sc1 (spl1-pi1 Dspl) (ms-pi1-s Dstep) (spl1-pi1 Dspl') (ms-lett-s1 Dstep')
+	<- sc1 Dspl Dstep Dspl' Dstep'.
+- : sc1 (spl1-pi2 Dspl) (ms-pi2-s Dstep) (spl1-pi2 Dspl') (ms-lett-s1 Dstep')
+	<- sc1 Dspl Dstep Dspl' Dstep'.
+- : sc1 (spl1-app Dspl1 Dspl2) (ms-app-s1 Dstep) (spl1-app Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+- : sc1 (spl1-let Dspl1 Dspl2) (ms-let-s1 Dstep) (spl1-let Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+
+%{
+%% M STEP - SUBSTEP RULES
+mstep : wor -> term -> term -> type.
+%mode mstep +W +E -E'.
+ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+ms-app-s2	: mstep W (app E1 E2) (app E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+}%
+
+%{
+
+%% M STEP - REDUCTION RULES
+ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
+			<- done wor1 (tup E1 E2).
+ms-pi2-r	: mstep wor1 (pi2 (tup E1 E2)) E2
+			<- done wor1 (tup E1 E2).
+ms-app-r	: mstep wor1 (app (lam _ M) E) (M E)
+			<- done wor1 E.
+ms-let-r	: mstep wor1 (let E M) (M E)
+			<- done wor1 E.
+}%

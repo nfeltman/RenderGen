@@ -1,58 +1,3 @@
-%{ splitting.elf }%
-
-split1 : term -> term -> (term -> term) -> type.
-split2 : term -> term -> (term -> term) -> type.
-%mode split1 +E -C -R.
-%mode split2 +E -P -R.
-
-split1-ztup	: split1 ztup (tup ztup ztup) ([x:term] ztup). 
-split1-tup	: split1 (tup E1 E2) 
-				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
-			<- split1 E2 C2 R2
-			<- split1 E1 C1 R1.
-split1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l))
-			<- split1 E C R.
-split1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l))
-			<- split1 E C R.
-split1-lam	: split1 (lam _ M) (tup (lam unit C) ztup) ([_] lam unit ([xl] lett xl R))
-			<- {x : term} split1 x x ([_:term] x) -> split1 (M x) (C x) ([l:term] R x l).
-split1-app	: split1 (app E1 E2) 
-				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3))))) 
-				([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
-			<- split1 E2 C2 R2
-			<- split1 E1 C1 R1.
-split1-let	: split1 (let E M) 
-				(lett C1 ([x] [z1] lett (C2 x) ([y] [z2] tup y (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- split1 E C1 R1
-			<- {x : term} split1 x x ([_] x) -> split1 (M x) (C2 x) ([l] R2 x l).
-split1-next : split1 (next E) (tup ztup P) R
-			<- split2 E P R. 
-%{split1-letn : split1 (letn E M) 
-				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- split1 E C1 R1
-			<- {x : term} split2 x ztup ([_] x) -> split1 (M x) C2 ([l] R2 x l).}%
-			
-split2-ztup : split2 ztup ztup ([_] ztup).
-split2-tup	: split2 (tup E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
-			<- split2 E2 P2 R2
-			<- split2 E1 P1 R1.
-split2-pi1  : split2 (pi1 E) P ([l] pi1 (R l))
-			<- split2 E P R.
-split2-pi2  : split2 (pi2 E) P ([l] pi2 (R l))
-			<- split2 E P R.
-split2-lam  : split2 (lam _ M) P ([l] lam unit ([x] R x l))
-			<- {x : term} split2 x ztup ([_] x) -> split2 (M x) P ([l] R x l).
-split2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2)))
-			<- split2 E2 P2 R2
-			<- split2 E1 P1 R1.
-split2-let	: split2 (let E M) (tup P1 P2) ([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- split2 E P1 R1
-			<- {x : term} split2 x ztup ([_] x) -> split2 (M x) P2 ([l] R2 x l).
-split2-prev : split2 (prev E) (pi2 C) R
-			<- split1 E C R.
 
 vsplit : term -> term -> term -> type.
 %mode vsplit +V -V1 -V2.
@@ -71,7 +16,7 @@ cpvsplit-e : cpvsplit (empty V) V1 V2
 cpvsplit-l : cpvsplit (layer Q C) V1 (let Q V2)
 			<- {x:term} cpvsplit (C x) V1 (V2 x).
 
-%% EQUIVALENCE
+%%% EQUIVALENCE
 eqv : term -> term -> type.
 eqv-refl	: eqv E E.
 eqv-sym		: eqv E1 E2
@@ -245,16 +190,3 @@ rofsc-let : rof-let V M W -> ({x:term} split1 x x ([_:term] x) -> split1 (M x) (
 		(ered-tup ered-ztup DredP)
 		(eqv-trans (eqv-sym (eqv-letsub eqv-refl)) Deqv)
 	<- eesc2 Dspl Dspc (DredP : ered P U) (Deqv : eqv Q (R U)).
-
-%{
-ztup  : term.
-tup : term -> term -> term.
-pi1 : term -> term.
-pi2 : term -> term.
-lam   : ty -> (term -> term) -> term.
-app   : term -> term -> term.
-let   : term -> (term -> term) -> term.
-next  : term -> term.
-letn  : term -> (term -> term) -> term.
-prev  : term -> term.
-}%
