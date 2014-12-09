@@ -8,23 +8,23 @@ open Contexts
 open ValuesBase
 
 in
-datatype 'r pattern 		= Pvar of 'r
-							| Ptuple of ('r pattern) list
+datatype ('r) pattern 	= Pvar of 'r
+						| Ptuple of ('r pattern) list
 							
-datatype ('e,'r,'t) exprF	= Fvar of 'r
-							| FprimVal of Prims.primValue
-							| Flam of 't * ('r pattern * 'e)
-							| Fapp of 'e * 'e
-							| Ftuple of 'e list
-							| Fpi of int * 'e
-							| Finj of 't list * 't list * 'e
-							| Fcase of 'e * ('r pattern * 'e) list
-							| Fif of 'e * 'e * 'e
-							| Flet of 'e * ('r pattern * 'e)
-							| Froll of 't * 'e
-							| Funroll of 'e
-							| Ferror of 't
-							| Fbinop of Prims.binops * 'e * 'e
+datatype ('e,'r,'p,'t) exprF	= Fvar of 'r
+								| FprimVal of Prims.primValue
+								| Flam of 't * ('p * 'e)
+								| Fapp of 'e * 'e
+								| Ftuple of 'e list
+								| Fpi of int * 'e
+								| Finj of 't list * 't list * 'e
+								| Fcase of 'e * ('p * 'e) list
+								| Fif of 'e * 'e * 'e
+								| Flet of 'e * ('p * 'e)
+								| Froll of 't * 'e
+								| Funroll of 'e
+								| Ferror of 't
+								| Fbinop of Prims.binops * 'e * 'e
 						
 fun mapExpr fe ft exp =
 	case exp of
@@ -42,7 +42,7 @@ fun mapExpr fe ft exp =
 	| Fbinop (bo,e1,e2) => Fbinop(bo, fe e1, fe e2)
 	| Froll (t, e) => Froll (ft t, fe e)
 	| Funroll e => Funroll (fe e)
-	
+
 fun replaceVars recRep G f exp =
 	let
 		val rep = recRep G
@@ -74,20 +74,27 @@ fun replaceVars recRep G f exp =
 		| Funroll e => Funroll (rep e)
 	end
 
-fun forPattern (f,unpack,_) g (Pvar x) t = f g x t
-  | forPattern (fu as (f,unpack,_)) g (Ptuple xs) t = forPattList fu g xs (unpack t)
-and forPattList fu g [] [] = g
-  | forPattList fu g (x::xs) (t::ts) = forPattern fu (forPattList fu g xs ts) x t
-  | forPattList (_,_,ex) _ _ _ = raise ex
+fun foldPattern (f,unpack,ex) g p t =
+	let
+		fun fold g (Pvar x) t = f g x t
+		  | fold g (Ptuple xs) t = foldList g xs (unpack t)
+		  
+		and foldList g [] [] = g
+		  | foldList g (x::xs) (t::ts) = fold (foldList g xs ts) x t
+		  | foldList _ _ _ = raise ex
+	in
+		fold g p t
+	end
 
 
 functor TypeChecker 
 	(T : TypeSystem)
 	(F : SourceTypes where type t = T.ty)
 	(C : Context where type t = T.ty)
+	(P : sig type p type c  type t val fold : c -> p -> t -> c end where type c = C.cont and type t = T.ty)
 = struct
   
-fun typeCheckSpecial (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty * 'o) (exp : ('e,C.var,T.ty) exprF) = 
+fun typeCheckSpecial (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty * 'o) (exp : ('e,C.var,P.p,T.ty) exprF) = 
 	let
 		val check = checkrec gamma
 		val checkbranch = typeCheckBranch gamma checkrec
@@ -176,7 +183,7 @@ fun typeCheckSpecial (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty * 'o) (ex
 	end
 
 and typeCheckBranch gamma checkrec (t,(patt,e)) = 
-		checkrec (forPattern (C.extend, F.unprod, TypeError "pattern") gamma patt t) e
+		checkrec (P.fold gamma patt t) e
 		
 fun typeCheck gamma checkrec exp = #1 (typeCheckSpecial gamma (fn c => fn e => (checkrec c e, ())) exp)
 end

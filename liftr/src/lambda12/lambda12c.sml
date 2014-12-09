@@ -15,7 +15,7 @@ datatype ty		= Tstandard of ty typeF
 
 datatype stage	= ThisStage | NextStage | MonoStage
 type patt		= string S.pattern
-datatype expr	= Estandard of (expr,string,ty) S.exprF
+datatype expr	= Estandard of (expr,string,patt,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Emono of expr

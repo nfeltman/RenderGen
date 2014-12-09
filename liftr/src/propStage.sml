@@ -10,7 +10,7 @@ open SourceLang
 open TypesBase
 open Contexts
 
-datatype 'v il1	= IL1standard of ('v il1,'v,C.ty) exprF
+datatype 'v il1	= IL1standard of ('v il1,'v,'v pattern, C.ty) exprF
 				| IL1next of 'v il1
 				| IL1prev of 'v il1
 				| IL1mono of 'v il1

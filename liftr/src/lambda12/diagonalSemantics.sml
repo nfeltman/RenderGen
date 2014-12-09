@@ -28,7 +28,7 @@ and 	 valueM = VM of (valueM,cont,var pattern,exprM) valueF
 withtype   cont = (var, (value1,valueM) Contexts.DoubleContext.doubleEntry) Contexts.context
 
 (* second stage values/expressions *)
-datatype expr	= E of (expr,var,unit) exprF
+datatype expr	= E of (expr,var,pattern12,unit) exprF
 datatype value2	= V2 of (value2,(var, value2) context,var pattern,expr) valueF
 
 fun unV1 (V1 v) = v
@@ -49,12 +49,12 @@ structure ValuesM = EmbedValues (struct
 	val into = VM
 end)
 structure EvaluatorM = Evaluator (ValuesM)
-fun ext2 z = forPattern (DoubleContext.extendContext2, ValuesM.untuple, Stuck) z
+fun ext2 z = foldPattern (DoubleContext.extendContext2, ValuesM.untuple, Stuck) z
 
 fun eval1 env (E1 exp) = 
 	let
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (forPattern (DoubleContext.extendContext1, untuple o unV1,Stuck) env x v) e 
+		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (foldPattern (DoubleContext.extendContext1, untuple o unV1,Stuck) env x v) e 
 	in
 		case exp of 
 		  Fvar v => (id, DoubleContext.lookup1 env v)
@@ -153,7 +153,7 @@ structure Values2 = EmbedValues (struct
 	fun outof (V2 v) = v
 	val into = V2
 end)
-fun ext z = forPattern (extendContext, Values2.untuple, Stuck) z
+fun ext z = foldPattern (extendContext, Values2.untuple, Stuck) z
 
 structure Evaluator2 = Evaluator (Values2)
 

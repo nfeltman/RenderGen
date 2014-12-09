@@ -8,7 +8,9 @@ datatype type1	= T1 of type1 TypesBase.typeF
 
 and type2		= T2 of type2 TypesBase.typeF
 
-datatype expr1	= E1 of (expr1,LangCommon.var,type1) SourceLang.exprF
+type pattern12 = LangCommon.var SourceLang.pattern
+
+datatype expr1	= E1 of (expr1,LangCommon.var,pattern12,type1) SourceLang.exprF
 				| E1next of expr2
 				| E1hold of expr1
 				| E1mono of exprM
@@ -18,9 +20,9 @@ datatype expr1	= E1 of (expr1,LangCommon.var,type1) SourceLang.exprF
 				| E1pushSum of expr1
 				| E1pushArr of expr1
 
-and expr2		= E2 of (expr2,LangCommon.var,type2) SourceLang.exprF
+and expr2		= E2 of (expr2,LangCommon.var,pattern12,type2) SourceLang.exprF
 				| E2prev of expr1
 
-and exprM		= EM of (exprM,LangCommon.var,type2) SourceLang.exprF
+and exprM		= EM of (exprM,LangCommon.var,pattern12,type2) SourceLang.exprF
 
 end

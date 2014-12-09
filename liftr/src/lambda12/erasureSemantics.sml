@@ -9,12 +9,12 @@ open SourceLang
 structure V = ValuesBase
 in
 
-datatype value1	= V1 of (value1,cont,var pattern,expr1) V.valueF
+datatype value1	= V1 of (value1,cont,pattern12,expr1) V.valueF
 				| V1next of value2
 				| V1mono of valueM
 				
-and		value2	= V2 of (value2,cont,var pattern,expr2) V.valueF
-and		valueM	= VM of (valueM,cont,var pattern,exprM) V.valueF
+and		value2	= V2 of (value2,cont,pattern12,expr2) V.valueF
+and		valueM	= VM of (valueM,cont,pattern12,exprM) V.valueF
 withtype   cont = (var, (value1,value2,valueM) Contexts.TripleContext.tripleEntry) Contexts.context
 
 fun holdGeneral (V1 (V.VFprim i)) = V1next (V2 (V.VFprim i))
@@ -58,9 +58,9 @@ structure EvaluatorM = Evaluator (ValuesM)
 
 structure TC = Contexts.TripleContext
 
-fun ext1 z = forPattern (TC.extendContext1, Values1.untuple, Stuck) z
-fun ext2 z = forPattern (TC.extendContext2, Values2.untuple, Stuck) z
-fun ext3 z = forPattern (TC.extendContext3, ValuesM.untuple, Stuck) z
+fun ext1 z = foldPattern (TC.extendContext1, Values1.untuple, Stuck) z
+fun ext2 z = foldPattern (TC.extendContext2, Values2.untuple, Stuck) z
+fun ext3 z = foldPattern (TC.extendContext3, ValuesM.untuple, Stuck) z
 
 fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.lookup1) exp
   | eval1 env (E1next e) = V1next (eval2 env e)
