@@ -10,7 +10,6 @@ structure S = SourceLang
 
 datatype pattern = P of (var,pattern) S.pattern
 datatype expr 	= E of (expr,var,pattern,unit) S.exprF
-				| Edummy
 
 fun Evar x = E ` S.Fvar x
 fun Eprim x = E ` S.FprimVal x

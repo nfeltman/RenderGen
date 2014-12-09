@@ -27,7 +27,7 @@ fun freshPi () =
 		(l, fn i => Epi (i, Evar l))
 	end
 
-fun terminates (E e) = (case e of
+fun terminates (E e) = case e of
 	S.Fvar _ => true
   | S.FprimVal _ => true
   | S.Flam _ => true
@@ -41,10 +41,9 @@ fun terminates (E e) = (case e of
   | S.Fbinop (_,e1,e2) => (terminates e1) andalso (terminates e2)
   | S.Froll (_,e) => terminates e
   | S.Funroll e => terminates e
-  | S.Ferror _ => false)
-  | terminates Edummy = true
+  | S.Ferror _ => false
  
-fun unusedAnswer (e as E exp) = (case exp of
+fun unusedAnswer (e as E exp) = case exp of
 	S.Fvar _ => []
   | S.FprimVal _ => []
   | S.Flam _ => []
@@ -58,8 +57,7 @@ fun unusedAnswer (e as E exp) = (case exp of
   | S.Fbinop (_,e1,e2) => (unusedAnswer e1) @ (unusedAnswer e2)
   | S.Froll (_,e) => unusedAnswer e
   | S.Funroll e => unusedAnswer e
-  | S.Ferror _ => [e])
-  | unusedAnswer Edummy = []
+  | S.Ferror _ => [e]
 
 and chain2 (e1,e2) = 
 	let

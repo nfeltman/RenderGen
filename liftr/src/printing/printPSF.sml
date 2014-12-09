@@ -112,9 +112,8 @@ fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ 
 
 fun convertPatternPSF G (LambdaPSF.P p) = convertSourcePatternv convertPatternPSF G p
 fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") convertPatternPSF e
-  | convertPSFv G (LambdaPSF.Edummy) = Eatom "dummy"
   
-fun convertPSFVal (PSFSemantics.V exp) = (
+fun convertPSFVal (PSFSemantics.V exp) =
 		case exp of
 		  V.VFprim (Prims.Vint i) => Eatom (Int.toString i)
 		| V.VFprim (Prims.Vbool b) => Eatom (if b then "true" else "false")
@@ -123,8 +122,6 @@ fun convertPSFVal (PSFSemantics.V exp) = (
 		| V.VFtuple es => Etuple (map convertPSFVal es)
 		| V.VFinj (i,e) => Eapp (EprimApp ("inj", Eatom (Int.toString i)), convertPSFVal e)
 		| V.VFlam _ => Eatom "[FUNC]"
-		)
-  | convertPSFVal (PSFSemantics.Vdummy) = Eatom "dummy"
 
 fun convertPSFBranch (x,e) = 
 	let 
