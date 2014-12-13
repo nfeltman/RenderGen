@@ -84,20 +84,15 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 	end
 	
 structure S = Lambda12
-fun convertPattern12 G (S.P p) = convertSourcePatternv convertPattern12 G p
 fun convertPatternM G (S.PM p) = convertSourcePatternv convertPatternM G p
+fun convertPattern12 G (S.P p) = convertSourcePatternv convertPattern12 G p
+  | convertPattern12 G (S.Pmono p) = let val (p,G) = convertPatternM G p in (Pbrace ("mono", p), G) end
 fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
   | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
   | convertTyStage1 (S.T1now t) = EprimApp("^", convertTyStage2 t)
 and convertTyStage2 (S.T2 t) = convertSourceTypes convertTyStage2 t
 fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 convertPattern12 e
   | convertStage1v G (S.E1mono e) = EbraceApp("mono", convertStageMv G e)
-  | convertStage1v G (S.E1letMono (e1,(x,e2))) = 
-		let
-			val (p,G2) = convertPattern12 G (S.P (SourceLang.Pvar x))
-		in
-			Elet (convertStage1v G e1, (Pbrace ("mono",p),convertStage1v G2 e2))
-		end
   | convertStage1v G (S.E1next e) = EbraceApp("next", convertStage2v G e)
   | convertStage1v G (S.E1hold e) = EprimApp("holdInt", convertStage1v G e)
   | convertStage1v G (S.E1pushPrim e) = EprimApp("push", convertStage1v G e)

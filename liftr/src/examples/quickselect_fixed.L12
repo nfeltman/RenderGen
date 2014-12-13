@@ -7,15 +7,14 @@ mono{
 			if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
 	in partition
 } in
-letrec qs ((l,i) : ^list * $int) : $int = 
-	let mono {l} = l in
+letrec qs ((mono {l},i) : ^list * $int) : $int = 
 	case pushS mono{unroll l} of 
 	  em => next {0} 
-	| ht => let (n,left,right) = pushP (let mono {ht} = ht in mono {partition ht}) in 
+	| mono{ht} => let (n,left,right) = pushP (mono {partition ht}) in 
 		next { 
 			let n = prev {hold (push n)} in 
 			if prev{i} < n then prev{qs (left,i)}
-			else if prev{i} == n then prev{hold (push (#1 (pushP ht)))}
+			else if prev{i} == n then prev{hold (push (mono{#1 ht}))}
 			else prev{qs (right,next{(prev{i}-n)-1})}
 		}
 in 

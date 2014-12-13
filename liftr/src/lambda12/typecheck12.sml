@@ -57,6 +57,11 @@ fun mapboth f (a,b) = (f a, f b)
 
 
 in
+	
+fun unfut (T1fut t) = t
+  | unfut _ = raise (TypeError "expected $")
+fun unnow (T1now t) = t
+  | unnow _ = raise (TypeError "expected ^")
 
 structure TypeFeatures1 = EmbedTypes(struct 
 	type u = type1 
@@ -73,12 +78,20 @@ end)
 
 structure MyContext = TripleContext (ListDict (type var = var)) (type t1=type1) (type t2=type2) (type t3=type2)
 
+structure Pattern3 = 
+struct
+	type p = patternM
+	type c = MyContext.C3.cont
+	type t = type2
+	fun fold g (PM p) v = foldPattern (MyContext.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
+end
 structure Pattern1 = 
 struct
 	type p = pattern12
 	type c = MyContext.C1.cont
 	type t = type1
 	fun fold g (P p) v = foldPattern (MyContext.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
+	  | fold g (Pmono p) v = Pattern3.fold g p (unnow v)
 end
 structure Pattern2 = 
 struct
@@ -87,18 +100,7 @@ struct
 	type t = type2
 	fun fold g (PM p) v = foldPattern (MyContext.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
-structure Pattern3 = 
-struct
-	type p = patternM
-	type c = MyContext.C3.cont
-	type t = type2
-	fun fold g (PM p) v = foldPattern (MyContext.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
-end
 
-fun unfut (T1fut t) = t
-  | unfut _ = raise (TypeError "expected $")
-fun unnow (T1now t) = t
-  | unnow _ = raise (TypeError "expected ^")
 
 fun handleHold (T1 (TFprim t)) = T1fut (T2 (TFprim t))
   | handleHold _ = raise (TypeError "expected any primitive type")
@@ -115,7 +117,6 @@ fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 exp
   | typeCheck1 gamma (E1next e) = T1fut (typeCheck2 gamma e)
   | typeCheck1 gamma (E1hold e) = handleHold (typeCheck1 gamma e)
   | typeCheck1 gamma (E1mono e) = T1now (typeCheckM gamma e)
-  | typeCheck1 gamma (E1letMono (e1,(x,e2))) = typeCheck1 (MyContext.C3.extend gamma x ` unnow ` typeCheck1 gamma e1) e2
   | typeCheck1 gamma (E1pushPrim e) = TypeFeatures1.makeprim ` TypeFeatures2.unprim ` unnow ` typeCheck1 gamma e
   | typeCheck1 gamma (E1pushProd e) = TypeFeatures1.makeprod ` map T1now ` TypeFeatures2.unprod ` unnow ` typeCheck1 gamma e
   | typeCheck1 gamma (E1pushSum e) = TypeFeatures1.makesum ` map T1now ` TypeFeatures2.unsum ` unnow ` typeCheck1 gamma e

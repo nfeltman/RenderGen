@@ -84,7 +84,6 @@ open LangCommon
 		  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
 		  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
-		  | LET MONO LBRACE ID RBRACE EQ EXP IN EXP						(EletMono(EXP1,(ID,EXP2)))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
 		  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
@@ -109,6 +108,7 @@ open LangCommon
 
 	 PATT : ID									(Pvar (ID))
 		  | LPAR PATT COMMA PATT PATTL RPAR 	(Ptuple (PATT1 :: PATT2 :: PATTL))
+		  | MONO LBRACE PATT RBRACE 			(Pmono (PATT))
 
 	PATTL : 							([])
 		  | COMMA PATT PATTL			(PATT :: PATTL)

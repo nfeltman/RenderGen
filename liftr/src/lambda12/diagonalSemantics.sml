@@ -51,7 +51,8 @@ structure ValuesM = EmbedValues (struct
 end)
 structure EvaluatorM = Evaluator (ValuesM)
 fun ext1 g (P p) t = foldPattern (DoubleContext.extendContext1, ext1, untuple o unV1, Stuck) g p t
-fun ext2 g (PM p) t = foldPattern (DoubleContext.extendContext2, ext2, ValuesM.untuple, Stuck) g p t
+  | ext1 g (Pmono p) t = ext2 g p (unmono t)
+and ext2 g (PM p) t = foldPattern (DoubleContext.extendContext2, ext2, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = 
 	let
@@ -116,13 +117,6 @@ fun eval1 env (E1 exp) =
 		in
 			(id, V1mono ` evalM env e)
 		end
-  | eval1 env (E1letMono (e1,(x,e2))) = 
-		let
-			val (g1, v1) = eval1 env e1
-			val (g2, v2) = eval1 (DoubleContext.extendContext2 env x ` unmono v1) e2
-		in
-			(g1 o g2, v2)
-		end
   | eval1 env (E1pushPrim e) = map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
   | eval1 env (E1pushProd e) = map2 (V1 o VFtuple o (map V1mono) o untuple o unVM o unmono) (eval1 env e)
   | eval1 env (E1pushSum e) = 
@@ -134,13 +128,11 @@ fun eval1 env (E1 exp) =
   | eval1 env (E1pushArr e) = 
 		let 
 			val (g,(c,b)) = map2 (unlam o unVM o unmono) (eval1 env e)
-			val y1 = Variable.newvar "y"
-			val y2 = Variable.newvar "y"
+			val y = Variable.newvar "y"
 		in
 			(g,
-			V1 (VFlam (c, (P (Pvar y1), 
-				E1letMono (E1 (Fvar y1), (y2, 
-					E1mono ( EM (Flet (EM (Fvar y2),b)))))))))
+			V1 (VFlam (c, (Pmono (PM (Pvar y)), 
+					E1mono ( EM (Flet (EM (Fvar y),b)))))))
 		end
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, DoubleContext.lookup2) exp

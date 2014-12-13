@@ -15,11 +15,11 @@ datatype ty		= Tstandard of ty typeF
 
 datatype stage	= ThisStage | NextStage | MonoStage
 datatype patt	= P of (string,patt) S.pattern
+				| Pmono of patt
 datatype expr	= Estandard of (expr,string,patt,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Emono of expr
-				| EletMono of (expr * (string * expr))
 				| Ehold of expr
 				| EpushPrim of expr
 				| EpushSum of expr

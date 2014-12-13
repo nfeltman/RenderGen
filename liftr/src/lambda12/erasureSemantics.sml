@@ -59,14 +59,14 @@ structure EvaluatorM = Evaluator (ValuesM)
 structure TC = Contexts.TripleContext
 
 fun ext1 g (P p) t = foldPattern (TC.extendContext1, ext1, Values1.untuple, Stuck) g p t
-fun ext2 g (PM p) t = foldPattern (TC.extendContext2, ext2, Values2.untuple, Stuck) g p t
-fun ext3 g (PM p) t = foldPattern (TC.extendContext3, ext3, ValuesM.untuple, Stuck) g p t
+  | ext1 g (Pmono p) t = ext3 g p (unmono t)
+and ext2 g (PM p) t = foldPattern (TC.extendContext2, ext2, Values2.untuple, Stuck) g p t
+and ext3 g (PM p) t = foldPattern (TC.extendContext3, ext3, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.lookup1) exp
   | eval1 env (E1next e) = V1next (eval2 env e)
   | eval1 env (E1hold e) = holdGeneral (eval1 env e)
   | eval1 env (E1mono e) = V1mono (evalM env e)
-  | eval1 env (E1letMono (e1,(x,e2))) = eval1 (TC.extendContext3 env x (unmono (eval1 env e1))) e2
   | eval1 env (E1pushPrim e) = Values1.makeprim (ValuesM.unprim (unmono (eval1 env e)))
   | eval1 env (E1pushProd e) = Values1.maketuple (map V1mono (ValuesM.untuple (unmono (eval1 env e))))
   | eval1 env (E1pushSum e) = 
@@ -78,12 +78,10 @@ fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.lookup1) exp
   | eval1 env (E1pushArr e) = 
 		let 
 			val (c,b) = ValuesM.unlam (unmono (eval1 env e))
-			val y1 = Variable.newvar "y"
-			val y2 = Variable.newvar "y"
+			val y = Variable.newvar "y"
 		in
-			Values1.makelam (c, (P (Pvar y1), 
-				E1letMono (E1 (Fvar y1), (y2, 
-					E1mono ( EM (Flet (EM (Fvar y2),b)))))))
+			Values1.makelam (c, (Pmono (PM (Pvar y)), 
+					E1mono ( EM (Flet (EM (Fvar y),b)))))
 		end
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext3,TC.lookup3) exp

@@ -14,7 +14,6 @@ datatype 'v il1	= IL1standard of ('v il1,'v,'v patt, C.ty) exprF
 				| IL1next of 'v il1
 				| IL1prev of 'v il1
 				| IL1mono of 'v il1
-				| IL1letMono of 'v il1 * ('v * 'v il1)
 				| IL1pushArr of 'v il1
 				| IL1pushProd of 'v il1
 				| IL1pushSum of 'v il1
@@ -22,6 +21,7 @@ datatype 'v il1	= IL1standard of ('v il1,'v,'v patt, C.ty) exprF
 				| IL1hold of 'v il1
 				| IL1letty of C.stage * string * C.ty * 'v il1
 and 'v patt = IL1P of ('v, 'v patt) pattern
+            | IL1Pmono of 'v patt
 
 fun Eapp x = IL1standard (Fapp x)
 fun Elam x = IL1standard (Flam x)
@@ -75,7 +75,7 @@ fun elabDataType (stage,ty,cts,e) =
 			case stage of 
 			  C.ThisStage => Elet (e1,(var x,e2))
 			| C.NextStage => Elet (IL1next e1,(var x,e2))
-			| C.MonoStage => IL1letMono (IL1mono e1,(x,e2))
+			| C.MonoStage => Elet (IL1mono e1,(IL1Pmono (var x),e2))
 	in
 		IL1letty(
 			stage, 
@@ -89,6 +89,7 @@ exception ElaborationException
 exception StagePropException
 
 fun elabPatt (Lambda12c.P p) = IL1P (mapPattern elabPatt p)
+  | elabPatt (Lambda12c.Pmono p) = IL1Pmono (elabPatt p)
 
 fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.Eletty (s,x,t,e)) = IL1letty (s,x,t,elab e)
@@ -96,7 +97,6 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.Eletdata (stage,ty,cts,e)) = elabDataType (stage,ty,cts, elab e)
   | elab (C.Eprev e) = IL1prev (elab e)
   | elab (C.Emono e) = IL1mono (elab e)
-  | elab (C.EletMono (e1,(x,e2))) = IL1letMono (elab e1, (x, elab e2))
   | elab (C.Enext e) = IL1next (elab e)
   | elab (C.Ehold e) = IL1hold (elab e)
   | elab (C.EpushPrim e) = IL1pushPrim (elab e)
@@ -105,17 +105,12 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.EpushSum e) = IL1pushSum (elab e)
 
 fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Variable.newvar) G p in (IL1P p, G) end
+  | recast G (IL1Pmono p) = let val (p,G) = recast G p in (IL1Pmono p, G) end
   
 fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G recast exp)
   | fixVars G (IL1letty (s,x,t,e)) = IL1letty (s,x,t,fixVars G e)
   | fixVars G (IL1prev e) = IL1prev (fixVars G e)
   | fixVars G (IL1mono e) = IL1mono (fixVars G e)
-  | fixVars G (IL1letMono (e1,(x,e2))) = 
-		let 
-			val newX = Variable.newvar x
-		in
-			IL1letMono (fixVars G e1, (newX, fixVars (extendContext G x newX) e2))
-		end
   | fixVars G (IL1next e) = IL1next (fixVars G e)
   | fixVars G (IL1hold e) = IL1hold (fixVars G e)
   | fixVars G (IL1pushPrim e) = IL1pushPrim (fixVars G e)
@@ -126,7 +121,9 @@ fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G recast exp)
 open TripleContext
 
 fun propPatt12 (IL1P p) = P (mapPattern propPatt12 p)
-fun propPattM (IL1P p) = PM (mapPattern propPattM p)
+  | propPatt12 (IL1Pmono p) = Pmono (propPattM p)
+and propPattM (IL1P p) = PM (mapPattern propPattM p)
+  | propPattM (IL1Pmono _) = raise StagePropException
   
 fun propTy1 D (C.Tstandard t) = T1 (mapType (propTy1 D) t)
   | propTy1 D (C.Tfut t) = T1fut (propTy2 D t)
@@ -149,7 +146,6 @@ and prop1r D (IL1standard exp) = E1 (mapExpr (prop1r D) (propTy1 D) propPatt12 e
   | prop1r D (IL1letty (C.MonoStage,x,t,e)) = prop1r (extendContext3 D x (propTyM D t)) e
   | prop1r _ (IL1prev _) = raise StagePropException
   | prop1r D (IL1mono e) = E1mono (propM D e)
-  | prop1r D (IL1letMono (e1,(x,e2))) = E1letMono (prop1r D e1,(x,prop1r D e2))
   | prop1r D (IL1next e) = E1next (prop2r D e)
   | prop1r D (IL1hold e) = E1hold (prop1r D e)
   | prop1r D (IL1pushPrim e) = E1pushPrim (prop1r D e)
@@ -163,7 +159,6 @@ and prop2r D (IL1standard exp) = E2 (mapExpr (prop2r D) (propTy2 D) propPattM ex
   | prop2r _ (IL1letty (C.MonoStage,x,t,e)) = raise StagePropException
   | prop2r D (IL1prev e) = E2prev (prop1r D e)
   | prop2r _ (IL1mono _) = raise StagePropException
-  | prop2r _ (IL1letMono _) = raise StagePropException
   | prop2r _ (IL1next _) = raise StagePropException
   | prop2r _ (IL1hold _) = raise StagePropException
   | prop2r _ (IL1pushPrim _) = raise StagePropException
@@ -177,7 +172,6 @@ and propM D (IL1standard exp) = EM (mapExpr (propM D) (propTyM D) propPattM exp)
   | propM _ (IL1letty (C.MonoStage,x,t,e)) = raise StagePropException
   | propM D (IL1prev e) = raise StagePropException
   | propM _ (IL1mono _) = raise StagePropException
-  | propM _ (IL1letMono _) = raise StagePropException
   | propM _ (IL1next _) = raise StagePropException
   | propM _ (IL1hold _) = raise StagePropException
   | propM _ (IL1pushPrim _) = raise StagePropException

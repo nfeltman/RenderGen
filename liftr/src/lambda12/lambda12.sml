@@ -9,13 +9,13 @@ datatype type1	= T1 of type1 TypesBase.typeF
 and type2		= T2 of type2 TypesBase.typeF
 
 datatype patternM = PM of (LangCommon.var, patternM) SourceLang.pattern
-datatype pattern12 = P of (LangCommon.var,pattern12) SourceLang.pattern
+datatype pattern12	= P of (LangCommon.var, pattern12) SourceLang.pattern
+					| Pmono of patternM
 
 datatype expr1	= E1 of (expr1,LangCommon.var,pattern12,type1) SourceLang.exprF
 				| E1next of expr2
 				| E1hold of expr1
 				| E1mono of exprM
-				| E1letMono of expr1 * (LangCommon.var * expr1)
 				| E1pushPrim of expr1
 				| E1pushProd of expr1
 				| E1pushSum of expr1
