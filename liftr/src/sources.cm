@@ -35,7 +35,7 @@ Group is
 	  examples.sml
 	  
 	  (* parser *)
-	  lambda12.lex             (* Lexer rules. Cannot put in subdirectory because bug.  *)
+	  parser/lambda12.lex             (* Lexer rules. *)
       parser/lambda12.yacc:MLYacc     (* Parser rules. *)
       parser/glue.sml           (* Build the parser *)
       $/ml-yacc-lib.cm   (* ML-Lex and ML-Yacc library *)
