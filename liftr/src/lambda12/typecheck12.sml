@@ -76,29 +76,30 @@ structure TypeFeatures2 = EmbedTypes(struct
 	val subst = subst2 0
 end)
 
-structure MyContext = TripleContext (ListDict (type var = var)) (type t1=type1) (type t2=type2) (type t3=type2)
+structure MyContext = TripleContext (MainDict) (type t1=type1) (type t2=type2) (type t3=type2)
+structure Projections = ProjectTripleContext (MyContext)
 
 structure Pattern3 = 
 struct
 	type p = patternM
-	type c = MyContext.C3.cont
+	type c = Projections.C3.cont
 	type t = type2
-	fun fold g (PM p) v = foldPattern (MyContext.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
+	fun fold g (PM p) v = foldPattern (Projections.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
 structure Pattern1 = 
 struct
 	type p = pattern12
-	type c = MyContext.C1.cont
+	type c = Projections.C1.cont
 	type t = type1
-	fun fold g (P p) v = foldPattern (MyContext.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
+	fun fold g (P p) v = foldPattern (Projections.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
 	  | fold g (Pmono p) v = Pattern3.fold g p (unnow v)
 end
 structure Pattern2 = 
 struct
 	type p = patternM
-	type c = MyContext.C2.cont
+	type c = Projections.C2.cont
 	type t = type2
-	fun fold g (PM p) v = foldPattern (MyContext.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
+	fun fold g (PM p) v = foldPattern (Projections.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
 
 
@@ -107,9 +108,9 @@ fun handleHold (T1 (TFprim t)) = T1fut (T2 (TFprim t))
 
 fun promoteType (T2 t) = T1 (mapType promoteType t)
 
-structure Checker1 = TypeChecker (TS1) (TypeFeatures1) (MyContext.C1) (Pattern1)
-structure Checker2 = TypeChecker (TS2) (TypeFeatures2) (MyContext.C2) (Pattern2)
-structure CheckerM = TypeChecker (TS2) (TypeFeatures2) (MyContext.C3) (Pattern3)
+structure Checker1 = TypeChecker (TS1) (TypeFeatures1) (Projections.C1) (Pattern1)
+structure Checker2 = TypeChecker (TS2) (TypeFeatures2) (Projections.C2) (Pattern2)
+structure CheckerM = TypeChecker (TS2) (TypeFeatures2) (Projections.C3) (Pattern3)
 
 fun typeCheckM gamma (EM e) = CheckerM.typeCheck gamma typeCheckM e
 

@@ -7,7 +7,6 @@ open LangCommon
 open Lambda12
 open SourceLang
 open ValuesBase
-open Contexts
 
 infixr 9 `
 fun a ` b = a b
@@ -19,18 +18,25 @@ fun comp1 f (g, h) = (f o g, h)
 in
 
 
-(* first stage values *)				
-datatype value1	= V1 of (value1,cont,pattern12,expr1) valueF
-				| V1hat of var
-				| V1mono of valueM
-				
-and 	 valueM = VM of (valueM,cont,patternM,exprM) valueF
-				
-withtype   cont = (var, (value1,valueM) Contexts.DoubleContext.doubleEntry) Contexts.context
+(* first stage values *)
+structure FirstStageValues = 
+struct
+	datatype value1	= V1 of (value1,cont,pattern12,expr1) valueF
+					| V1hat of var
+					| V1mono of valueM
+	and 	 valueM = VM of (valueM,cont,patternM,exprM) valueF
+	and		  entry = Bind1 of value1 | Bind2 of valueM
+	withtype   cont = entry MainDict.cont
+
+	type t1 = value1 type t2 = valueM
+	structure Base = BasicContext (MainDict) (type t = entry)
+end
+structure Contexts1 = ProjectDoubleContext (FirstStageValues)
+open FirstStageValues
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,patternM,unit) exprF
-datatype value2	= V2 of (value2,(var, value2) context,patternM,expr) valueF
+datatype value2	= V2 of (value2,value2 MainDict.cont,patternM,expr) valueF
 
 fun unV1 (V1 v) = v
   | unV1 _ = raise Stuck
@@ -50,9 +56,9 @@ structure ValuesM = EmbedValues (struct
 	val into = VM
 end)
 structure EvaluatorM = Evaluator (ValuesM)
-fun ext1 g (P p) t = foldPattern (DoubleContext.extendContext1, ext1, untuple o unV1, Stuck) g p t
+fun ext1 g (P p) t = foldPattern (Contexts1.C1.extend, ext1, untuple o unV1, Stuck) g p t
   | ext1 g (Pmono p) t = ext2 g p (unmono t)
-and ext2 g (PM p) t = foldPattern (DoubleContext.extendContext2, ext2, ValuesM.untuple, Stuck) g p t
+and ext2 g (PM p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = 
 	let
@@ -60,7 +66,7 @@ fun eval1 env (E1 exp) =
 		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (ext1 env x v) e 
 	in
 		case exp of 
-		  Fvar v => (id, DoubleContext.lookup1 env v)
+		  Fvar v => (id, Contexts1.C1.lookup env v)
 		| FprimVal pv => (id, V ` VFprim pv)
 		| Flam (_, b) => (id, V ` VFlam (env,b))
 		| Fapp (e1,e2) => 
@@ -135,24 +141,24 @@ fun eval1 env (E1 exp) =
 					E1mono ( EM (Flet (EM (Fvar y),b)))))))
 		end
 		
-and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, DoubleContext.lookup2) exp
+and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) exp
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
   
-  
+structure Context2 = BasicContext (MainDict) (type t = value2) 
 structure Values2 = EmbedValues (struct
 	type v = value2
-	type c = (var, value2) context
+	type c = Context2.cont
 	type r = patternM
 	type e = expr
 	fun outof (V2 v) = v
 	val into = V2
 end)
-fun ext g (PM p) t = foldPattern (extendContext, ext, Values2.untuple, Stuck) g p t
+fun ext g (PM p) t = foldPattern (Context2.extend, ext, Values2.untuple, Stuck) g p t
 
 structure Evaluator2 = Evaluator (Values2)
 
-fun eval2 env (E exp) = Evaluator2.evalF env eval2 (ext,lookup) exp
+fun eval2 env (E exp) = Evaluator2.evalF env eval2 (ext,Context2.lookup) exp
 end
 
 end

@@ -3,6 +3,7 @@ structure LangCommon =
 struct
 
 type var = Variable.variable
+structure MainDict = ListDict (type var = var)
 
 exception TypeError of string
 exception ParseError

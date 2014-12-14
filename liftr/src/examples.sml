@@ -6,7 +6,6 @@ open SourceLang
 open Lambda12c
 open LangCommon
 open ErasureSemantics
-open Contexts
 structure Comp = ValueComparison
 
 datatype progSource = Literal | FileName
@@ -121,12 +120,12 @@ fun testProgram verbose name programType p t =
 		(* Typechecking *)
 		val ty1 = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
-			handle Typecheck12.MyContext.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
+			handle Typecheck12.MyContext.Base.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
 		
 		(* Splitting *)
 		val (ty2, res) = StageSplit.stageSplit1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
-			handle Typecheck12.MyContext.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
+			handle Typecheck12.MyContext.Base.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
 		val (split1, (l,split2)) = StageSplit.coerce1 res
 		
 		(* Printing Split Results *)
@@ -140,15 +139,15 @@ fun testProgram verbose name programType p t =
 		
 		(* Erasure Semantics *)
 		val _ = debug "Running erasure semantics.\n";
-		val valErasure = ErasureSemantics.eval1 Contexts.empty propegated
+		val valErasure = ErasureSemantics.eval1 MainDict.empty propegated
 				
 		(* Diagonal Semantics *)
 		val _ = debug "Running diagonal semantics, part 1.\n"
-		val (xiDiag, v1Diag) = DiagonalSemantics.eval1 empty propegated
+		val (xiDiag, v1Diag) = DiagonalSemantics.eval1 MainDict.empty propegated
 		val (v1DiagC, diagBody) = Comp.splitDiagValue1 v1Diag
 		val diagResidual = xiDiag diagBody
 		val _ = debug "Running diagonal semantics, part 2.\n";
-		val v2Diag = DiagonalSemantics.eval2 empty diagResidual
+		val v2Diag = DiagonalSemantics.eval2 DiagonalSemantics.Context2.empty diagResidual
 		val v2DiagC = Comp.convertDiagValue2 v2Diag
 		
 		(* Printing Diagonal Semantics *)
@@ -157,11 +156,11 @@ fun testProgram verbose name programType p t =
 		
 		(* Evaluating Split Part *)
 		val _ = debug "Running split term, part 1.\n"
-		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate Contexts.empty split1
+		val (PSFSemantics.V (ValuesBase.VFtuple [v1Split,pSplit])) = PSFSemantics.evaluate PSFSemantics.Context.empty split1
 		val _ = debug "Value = \n"
 		val _ = printTerm (PrintPSF.convertPSFVal pSplit)
 		val _ = debug "Running split term, part 2.\n"
-		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern Contexts.empty l pSplit) split2
+		val v2Split = PSFSemantics.evaluate (PSFSemantics.extendPattern PSFSemantics.Context.empty l pSplit) split2
 		
 		
 		(* Comparing *)

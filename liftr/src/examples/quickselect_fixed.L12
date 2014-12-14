@@ -1,4 +1,4 @@
-datatype ^list = Empty | Cons of int * list in 
+datatype ^list = Empty | Cons of int * list in
 let mono {partition} =
 mono{
 	letrec partition ((p,l) : int*list) : (int*list*list) = 

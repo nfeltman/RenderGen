@@ -8,7 +8,6 @@ structure C = Lambda12c
 open Lambda12
 open SourceLang
 open TypesBase
-open Contexts
 
 datatype 'v il1	= IL1standard of ('v il1,'v,'v patt, C.ty) exprF
 				| IL1next of 'v il1
@@ -104,10 +103,11 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.EpushProd e) = IL1pushProd (elab e)
   | elab (C.EpushSum e) = IL1pushSum (elab e)
 
-fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Variable.newvar) G p in (IL1P p, G) end
+structure Cont = BasicContext (ListDict (type var = string)) (type t = var)
+fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Cont.extend,Variable.newvar) G p in (IL1P p, G) end
   | recast G (IL1Pmono p) = let val (p,G) = recast G p in (IL1Pmono p, G) end
   
-fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G recast exp)
+fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G (recast,Cont.lookup) exp)
   | fixVars G (IL1letty (s,x,t,e)) = IL1letty (s,x,t,fixVars G e)
   | fixVars G (IL1prev e) = IL1prev (fixVars G e)
   | fixVars G (IL1mono e) = IL1mono (fixVars G e)
@@ -118,7 +118,8 @@ fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G recast exp)
   | fixVars G (IL1pushProd e) = IL1pushProd (fixVars G e)
   | fixVars G (IL1pushSum e) = IL1pushSum (fixVars G e)
 
-open TripleContext
+structure MyContext = TripleContext (ListDict (type var = string)) (type t1=type1) (type t2=type2) (type t3=type2)
+structure TC = ProjectTripleContext (MyContext)
 
 fun propPatt12 (IL1P p) = P (mapPattern propPatt12 p)
   | propPatt12 (IL1Pmono p) = Pmono (propPattM p)
@@ -128,22 +129,22 @@ and propPattM (IL1P p) = PM (mapPattern propPattM p)
 fun propTy1 D (C.Tstandard t) = T1 (mapType (propTy1 D) t)
   | propTy1 D (C.Tfut t) = T1fut (propTy2 D t)
   | propTy1 D (C.Tnow t) = T1now (propTyM D t)
-  | propTy1 D (C.Tref x) = lookup1 D x
+  | propTy1 D (C.Tref x) = TC.C1.lookup D x
   
 and propTy2 D (C.Tstandard t) = T2 (mapType (propTy2 D) t)
   | propTy2 D (C.Tfut t) = raise StagePropException
   | propTy2 D (C.Tnow t) = raise StagePropException
-  | propTy2 D (C.Tref x) = lookup2 D x
+  | propTy2 D (C.Tref x) = TC.C2.lookup D x
   
 and propTyM D (C.Tstandard t) = T2 (mapType (propTyM D) t)
   | propTyM D (C.Tfut t) = raise StagePropException
   | propTyM D (C.Tnow t) = raise StagePropException
-  | propTyM D (C.Tref x) = lookup3 D x
+  | propTyM D (C.Tref x) = TC.C3.lookup D x
 
 and prop1r D (IL1standard exp) = E1 (mapExpr (prop1r D) (propTy1 D) propPatt12 exp)
-  | prop1r D (IL1letty (C.ThisStage,x,t,e)) = prop1r (extendContext1 D x (propTy1 D t)) e
-  | prop1r D (IL1letty (C.NextStage,x,t,e)) = prop1r (extendContext2 D x (propTy2 D t)) e
-  | prop1r D (IL1letty (C.MonoStage,x,t,e)) = prop1r (extendContext3 D x (propTyM D t)) e
+  | prop1r D (IL1letty (C.ThisStage,x,t,e)) = prop1r (TC.C1.extend D x (propTy1 D t)) e
+  | prop1r D (IL1letty (C.NextStage,x,t,e)) = prop1r (TC.C2.extend D x (propTy2 D t)) e
+  | prop1r D (IL1letty (C.MonoStage,x,t,e)) = prop1r (TC.C3.extend D x (propTyM D t)) e
   | prop1r _ (IL1prev _) = raise StagePropException
   | prop1r D (IL1mono e) = E1mono (propM D e)
   | prop1r D (IL1next e) = E1next (prop2r D e)
@@ -154,7 +155,7 @@ and prop1r D (IL1standard exp) = E1 (mapExpr (prop1r D) (propTy1 D) propPatt12 e
   | prop1r D (IL1pushSum e) = E1pushSum (prop1r D e)
 
 and prop2r D (IL1standard exp) = E2 (mapExpr (prop2r D) (propTy2 D) propPattM exp)
-  | prop2r D (IL1letty (C.ThisStage,x,t,e)) = prop2r (extendContext2 D x (propTy2 D t)) e
+  | prop2r D (IL1letty (C.ThisStage,x,t,e)) = prop2r (TC.C2.extend D x (propTy2 D t)) e
   | prop2r _ (IL1letty (C.NextStage,x,t,e)) = raise StagePropException
   | prop2r _ (IL1letty (C.MonoStage,x,t,e)) = raise StagePropException
   | prop2r D (IL1prev e) = E2prev (prop1r D e)
@@ -167,7 +168,7 @@ and prop2r D (IL1standard exp) = E2 (mapExpr (prop2r D) (propTy2 D) propPattM ex
   | prop2r _ (IL1pushSum _) = raise StagePropException
 
 and propM D (IL1standard exp) = EM (mapExpr (propM D) (propTyM D) propPattM exp)
-  | propM D (IL1letty (C.ThisStage,x,t,e)) = propM (extendContext3 D x (propTyM D t)) e
+  | propM D (IL1letty (C.ThisStage,x,t,e)) = propM (TC.C3.extend D x (propTyM D t)) e
   | propM _ (IL1letty (C.NextStage,x,t,e)) = raise StagePropException
   | propM _ (IL1letty (C.MonoStage,x,t,e)) = raise StagePropException
   | propM D (IL1prev e) = raise StagePropException
@@ -181,8 +182,8 @@ and propM D (IL1standard exp) = EM (mapExpr (propM D) (propTyM D) propPattM exp)
   
 in
   
-val prop1 = (prop1r empty) o (fixVars empty) o elab
-val prop2 = (prop2r empty) o (fixVars empty) o elab
+val prop1 = (prop1r MyContext.Base.empty) o (fixVars Cont.empty) o elab
+val prop2 = (prop2r MyContext.Base.empty) o (fixVars Cont.empty) o elab
 
 end
 	

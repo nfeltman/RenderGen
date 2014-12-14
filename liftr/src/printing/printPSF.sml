@@ -37,18 +37,19 @@ fun convertSourceTypes convert ty =
 		| S.TFarr (t1, t2) => Einfix ("->", [convert t1, convert t2])
 		
 structure S = SourceLang
+structure NumDict = ListDict (type var = string)
 fun convertSourcePatternv _ (Gnum,Gname) (S.Pvar x) = 
 		let
 			val (_,desiredName) = x
 			val (n, s) =
 				let	
-					val n = Contexts.lookup Gnum desiredName
+					val n = NumDict.lookup Gnum desiredName
 				in
 					(n+1, desiredName^"_"^(Int.toString n))
 				end
-				handle Contexts.UnboundVar _ => (0,desiredName)
+				handle NumDict.UnboundVar _ => (0,desiredName)
 		in
-			(Pvar s, (Contexts.extendContext Gnum desiredName n, Contexts.extendContext Gname x s))
+			(Pvar s, (NumDict.extend Gnum desiredName n, MainDict.extend Gname x s))
 		end
   | convertSourcePatternv convRec G (S.Ptuple xs) = 
 		let
@@ -66,7 +67,7 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 			in (p,convertRec G2 e) end
 	in
 		case ex of 
-		  S.Fvar v => Eatom (Contexts.lookup Gname v)
+		  S.Fvar v => Eatom (MainDict.lookup Gname v)
 		| S.FprimVal (Prims.Vint i) => Eatom (Int.toString i)
 		| S.FprimVal (Prims.Vbool b) => Eatom (if b then "true" else "false")
 		| S.FprimVal (Prims.Vstr s) => Eatom ("\""^s^"\"")
@@ -121,14 +122,14 @@ fun convertPSFVal (PSFSemantics.V exp) =
 
 fun convertPSFBranch (x,e) = 
 	let 
-		val (p, G) = convertPatternPSF (Contexts.empty, Contexts.empty) x 
+		val (p, G) = convertPatternPSF (NumDict.empty, MainDict.empty) x 
 	in
 		(p,convertPSFv G e) 
 	end
 
-val convertStage1 = convertStage1v (Contexts.empty, Contexts.empty)
-val convertStage2 = convertStage2v (Contexts.empty, Contexts.empty)
-val convertDiag = convertDiagv (Contexts.empty, Contexts.empty)
-val convertPSF = convertPSFv (Contexts.empty, Contexts.empty)
+val convertStage1 = convertStage1v (NumDict.empty, MainDict.empty)
+val convertStage2 = convertStage2v (NumDict.empty, MainDict.empty)
+val convertDiag = convertDiagv (NumDict.empty, MainDict.empty)
+val convertPSF = convertPSFv (NumDict.empty, MainDict.empty)
 
 end

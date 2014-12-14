@@ -4,7 +4,6 @@ struct
 
 local
 open LangCommon
-open Contexts
 open ValuesBase
 
 in
@@ -48,8 +47,8 @@ fun mapExpr fe ft fp exp =
 	| Froll (t, e) => Froll (ft t, fe e)
 	| Funroll e => Funroll (fe e)
 
-fun recastPattern (_,f) g (Pvar x) = let val y = f x in (Pvar y,extendContext g x y) end
-  | recastPattern (rpRec,_) g (Ptuple xs) =
+fun recastPattern (_,ext,f) g (Pvar x) = let val y = f x in (Pvar y,ext g x y) end
+  | recastPattern (rpRec,ext,_) g (Ptuple xs) =
 		let 
 			fun f (x,(ys,g2)) = 
 				let val (y,g3) = rpRec g2 x in (y::ys,g3) end
@@ -59,7 +58,7 @@ fun recastPattern (_,f) g (Pvar x) = let val y = f x in (Pvar y,extendContext g 
 		end
   | recastPattern _ g Punused = (Punused, g)
 	
-fun replaceVars recRep G recastPattern exp =
+fun replaceVars recRep G (recastPattern,lookup) exp =
 	let
 		val rep = recRep G
 		fun forBranch (x,e) = let val (y,g) = recastPattern G x in (y, recRep g e) end
