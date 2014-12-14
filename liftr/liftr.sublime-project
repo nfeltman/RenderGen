@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"path": "src",
+            "folder_exclude_patterns": [".cm"]			
+		}
+	],
+	
+	"build_systems":
+    [
+        {
+            "name": "LiftrProj",
+            "cmd": ["sml.bat","-m","sources.cm"],
+
+			"working_dir": "$project_path/src",
+			"file_regex": "(.+):([0-9]+)\\.([0-9]+)(?:\\-[0-9]+\\.[0-9]+)? (.+)"
+        }
+    ]
+}
