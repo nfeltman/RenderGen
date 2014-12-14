@@ -181,7 +181,7 @@ and propM D (IL1standard exp) = EM (mapExpr (propM D) (propTyM D) propPattM exp)
   | propM _ (IL1pushSum _) = raise StagePropException
   
 in
-  
+structure Cont = Cont
 val prop1 = (prop1r MyContext.Base.empty) o (fixVars Cont.empty) o elab
 val prop2 = (prop2r MyContext.Base.empty) o (fixVars Cont.empty) o elab
 

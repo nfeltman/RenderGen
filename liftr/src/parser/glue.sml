@@ -15,6 +15,7 @@ structure L12Parser =
 struct
 
 open LangCommon
+exception Parser
 
 fun parseStream s = 
     let val inStream = s;
@@ -23,17 +24,15 @@ fun parseStream s =
                  then ""
                  else TextIO.inputN (inStream,n);
 
-        val printError : string * int * int -> unit = fn 
-            (msg,line,col) =>
-             print ((*"["^Int.toString line^":"
-                                ^Int.toString col^"] "^*)msg^"\n");
+        fun printError (msg,line,col) =
+             print ("["^Int.toString line^":"^Int.toString col^"] "^msg^"\n");
 
         val (tree,rem) = L12GeneralParser.parse 
                      (15,
                      (L12GeneralParser.makeLexer grab),
                      printError,
                      ())
-            handle L12GeneralParser.ParseError => raise ParseError;
+            handle L12GeneralParser.ParseError => raise Parser;
         (* Close the source program file *)
         val _ = TextIO.closeIn inStream;
     in 

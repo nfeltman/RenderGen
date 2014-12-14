@@ -42,7 +42,7 @@ functor BasicContext
 	(type t) 
 	: Context = 
 struct
-	exception UnboundVar of D.var
+	exception UnboundVar = D.UnboundVar
 
 	type cont = t D.cont
 	type var = D.var
@@ -80,7 +80,7 @@ struct
 	type cont = M.C.cont
 	type var = M.C.var
 	type t = M.t
-	exception UnboundVar of var
+	exception UnboundVar = M.C.UnboundVar
 
 	val empty = M.C.empty
 	fun extend g x v = M.C.extend g x (M.into v)

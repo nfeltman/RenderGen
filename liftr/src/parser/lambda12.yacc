@@ -37,8 +37,8 @@ open LangCommon
 %name L12Parse
 
 %noshift EOF
+%keyword LET LETR LETF IN CASE OF LPAR RPAR LBRACE RBRACE
 %nodefault
-%verbose
 %%
 
 (* the parser returns the value associated with the expression *)

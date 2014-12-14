@@ -111,6 +111,7 @@ fun testProgram verbose name programType p t =
 		
 		(* Stage Propegating *)
 		val propegated = PropStage.prop1 parsed
+			handle PropStage.Cont.UnboundVar s => (emit "Unbound Variable: "; emit s; raise Problem)
 	
 		(* Printing Input *)
 		val _ = debug "\n\n";
