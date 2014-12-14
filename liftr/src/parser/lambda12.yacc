@@ -23,7 +23,7 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
 	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ | LETTY | LETDT | STR | 
-	  PUSH | PUSHA | PUSHP | PUSHS |
+	  PUSH | PUSHA | PUSHP | PUSHS | USCORE |
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
@@ -107,6 +107,7 @@ open LangCommon
 	MATCH : PATT DARROW EXP				(PATT, EXP)
 
 	 PATT : ID									(Pvar (ID))
+	 	  | USCORE								(Punused)
 		  | LPAR PATT COMMA PATT PATTL RPAR 	(Ptuple (PATT1 :: PATT2 :: PATTL))
 		  | MONO LBRACE PATT RBRACE 			(Pmono (PATT))
 

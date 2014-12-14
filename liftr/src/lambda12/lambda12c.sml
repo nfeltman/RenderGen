@@ -58,6 +58,7 @@ val Elet = Estandard o S.Flet
 val Eerror = Estandard o S.Ferror
 val Ebinop = Estandard o S.Fbinop
 
+val Punused = P S.Punused
 val Ptuple = P o S.Ptuple
 val Pvar = P o S.Pvar
 end

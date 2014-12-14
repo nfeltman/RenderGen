@@ -57,6 +57,7 @@ fun convertSourcePatternv _ (Gnum,Gname) (S.Pvar x) =
 		in
 			(Ptuple ps, Gfinal)
 		end
+  | convertSourcePatternv _ G S.Punused = (Pvar "_", G)
 fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex = 
 	let
 		val convert = convertRec (Gnum,Gname)

@@ -93,6 +93,7 @@ eol = ("\013\010"|"\010"|"\013");
 <L12>"}"      => (Tokens.RBRACE(!pos,!pos));
 <L12>"("      => (Tokens.LPAR(!pos,!pos));
 <L12>")"      => (Tokens.RPAR(!pos,!pos));
+<L12>"_"      => (Tokens.USCORE(!pos,!pos));
 <L12>"|"      => (Tokens.BAR(!pos,!pos));
 <L12>"."      => (error ("ignoring bad character "^yytext,!pos,!pos); lex());
 <L12>\"(\\.|[^\\"])*\" => (Tokens.STRLIT (yytext,!pos,!pos));

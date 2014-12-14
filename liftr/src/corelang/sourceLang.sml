@@ -10,6 +10,7 @@ open ValuesBase
 in
 datatype ('r,'p) pattern 	= Pvar of 'r
 							| Ptuple of 'p list
+							| Punused
 							
 datatype ('e,'r,'p,'t) exprF	= Fvar of 'r
 								| FprimVal of Prims.primValue
@@ -28,6 +29,7 @@ datatype ('e,'r,'p,'t) exprF	= Fvar of 'r
 
 fun mapPattern _ (Pvar v) = Pvar v
   | mapPattern f (Ptuple ps) = Ptuple (map f ps)
+  | mapPattern _ Punused = Punused
 								
 fun mapExpr fe ft fp exp =
 	case exp of
@@ -55,6 +57,7 @@ fun recastPattern (_,f) g (Pvar x) = let val y = f x in (Pvar y,extendContext g 
 		in 
 			(Ptuple ys, g2)
 		end
+  | recastPattern _ g Punused = (Punused, g)
 	
 fun replaceVars recRep G recastPattern exp =
 	let
@@ -82,6 +85,7 @@ fun foldPattern (f,foldRec,unpack,ex) g p t =
 	let
 		fun fold g (Pvar x) t = f g x t
 		  | fold g (Ptuple xs) t = foldList g xs (unpack t)
+		  | fold g Punused _ = g
 		  
 		and foldList g [] [] = g
 		  | foldList g (x::xs) (t::ts) = foldRec (foldList g xs ts) x t
