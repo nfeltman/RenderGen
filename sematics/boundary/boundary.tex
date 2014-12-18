@@ -8,7 +8,7 @@
 % authoryear    To obtain author/year citation style instead of numeric.
 
 \usepackage{amsmath}
-%\usepackage{amssymb}
+\usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{stmaryrd}
 \usepackage{proof}
@@ -16,58 +16,159 @@
 \usepackage{mathabx}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage[usenames,dvipsnames]{color}
 
 \title{Boundary Types}
 \author{Nico}
 
 \newcommand {\next}{asdlfkj}
-\input {../../paper/macros}
+\input{../../paper/macros}
 
 \begin{document}
 \maketitle
 
+\newcommand {\ibksym} {\rotatebox[origin=c]{270}{$\therefore$}}
+\newcommand {\btsym} {\rotatebox[origin=c]{270}{$\triangle$}}
 \newcommand {\ktype} {\rm Type}
-\newcommand {\ibk} [2] {{#1}~\rotatebox[origin=c]{270}{$\therefore$}~{#2}}
-\newcommand {\btcont} [3] {{#1}~\triangleright~[{#2},{#3}]}
-\newcommand {\bty} [4] [\Gamma] {{#1}\vdash {#2}\triangleright[{#3},{#4}]}
+\newcommand {\ibk} [2] {{#1}~\ibksym~{#2}}
+\newcommand {\btj} [4] {{#1}:{#2}~@~{#3}~\btsym~{#4}}
+\newcommand {\btyo} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbone{#4}}
+\newcommand {\btyt} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbtwo{#4}}
+\newcommand {\btyw} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}w{#4}}
 \newcommand {\btysub} [2] [] {\bty{e_{#1}:{#2}}{\tau_{#1}}{\sigma_{#1}}}
 
-Consider a language with products and functions.  The internal boundary kind is given by:
+\section{Goals}
+
+The purpose of this document is to explain how to type the boundary produced by our splitting algorithm.
+We'll start with a very simple input language, the boundary of which can be typed in an easy way.
+We'll then start adding features to the language, thereby inducing complexity in the boundary type system.
+
+For the most part, we'll do all of our work with a single new judgement $\btj e A w \tau$, 
+which indicates that the expression $e$ (which has type $A$ at world $w$) has the boundary type $\tau$.
+Ideally, the splitting rules will agree with the boundary type given to us by this judgment.
+That is, if $\btj e A \bbtwo \tau$ and $\splitone{e}{A}{p,l.r}$, 
+then $p:\tau$ and $l:\tau \vdash r:A$ (and a similar relationship at stage \bbone, covered later).
+Mind you, we don't actually bother checking that property in this document.
+
+\section{Straight-line Code}
+
+We first consider an input language which has no functions or divergence.
+At either stage, the boundary type of any expression is 
+just the product of the boundary types of its subexpressions
+(unit in the nullary case).
+The only exception to this pattern is the $\pause$ rule,
+which also multiplies an int into the boundary type.
 
 \begin{mathpar}
-\infer {\ibk {\rm int}{\rm Unit}} {\cdot} \and 
-\infer {\ibk {\rm bool}{\rm Unit}} {\cdot} \and 
-\infer {\ibk {A \times B}{\kappa_A \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} \and 
-\infer {\ibk {A \to B}{\kappa_A \to \ktype \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} 
+\infer {\btyw i {\rm int}\rmunit} {\cdot} \and
+\infer {\btyw b {\rm bool}\rmunit} {\cdot} \and
+\infer {\btyw {(e_1,e_2)} {A \times B} {\tau_1 \times \tau_2}} 
+	{\btyw {e_1} A {\tau_1} 
+	&\btyw {e_2} B {\tau_2}} \and
+\infer {\btyw {\pio~e} A \tau} 
+	{\btyw {e} {A \times B} {\tau}} \and
+\infer {\btyw {\pit~e} B \tau} 
+	{\btyw {e} {A \times B} {\tau}} \and
+\infer {\btyo {\next~e} B \tau} 
+	{\btyt {e} {A \times B} {\tau}} \and
+\infer {\btyt {\prev~e} B \tau} 
+	{\btyo {e} {A \times B} {\tau}} \and
+\infer {\btyt {\pause~e} \rmint \tau} 
+	{\btyo e \rmint {\tau \times \rmint}}
 \end{mathpar}
 
-For a statement $e$, the judgment $\btcont {e:A} \tau \sigma$ means that $e$ has the internal boundary type $\tau$ and the external boundary type-constructor $\sigma$.  Invariant: for $\ibk A \kappa$, if $\btcont {e:A} \tau \sigma$ then $\sigma : \kappa$.
+Finally, we look at the let and var rules.
 
 \begin{mathpar}
-\infer {\bty {i:\rm int}\rmunit {()}} {\cdot} \and
-\infer {\bty {b:\rm bool}\rmunit {()}} {\cdot} \and
-\infer {\bty {\pause~e:\fut\rm int}{\tau\times{\rm int}} {()}} {\bty {e:\rm int}\tau {()}} \and
-\infer {\bty [\Gamma,\btcont {x:A} \rmunit \sigma] {x:A}\rmunit\sigma} {\cdot} \and
-\infer 
-	{\bty {(e_1,e_2):A\times B} {\tau_1 \times \tau_2} {(\sigma_1, \sigma_2)}} 
-	{\btysub [1] A & \btysub [2] B} 
-	\\
-\infer 
-	{\bty {\pio~e:A} \tau {(\pi_1\sigma)}} 
-	{\btysub {A\times B}} \and
-\infer 
-	{\bty {\pit~e:B} \tau {(\pi_2\sigma)}} 
-	{\btysub {A\times B}} 
-	\\
-\infer 
-	{\bty {\lam x A e : A \to B} \rmunit {(\lambda \alpha:\kappa.(\tau,\sigma))}} 
-	{\ibk A \kappa & \bty [\Gamma, \btcont {x:A} \rmunit \alpha] {e:B} \tau \sigma} 
-	\and
-\infer 
-	{\bty {e_1~e_2 : B}
-		{\tau_1 \times \tau_2 \times \pi_1 (\sigma_1~\sigma_2)} 
-		{(\pi_2(\sigma_1~\sigma_2))} }
-	{\btysub [1] {A \to B} & \btysub [2] A } 
+\infer [let] {\btyw {\letin x {e_1} {e_2}} {B} {\tau_1 \times \tau_2}} 
+	{\btyw {e_1} A {\tau_1} 
+	&\btyw [\Gamma,\btj x A w \rmunit] {e_2} B {\tau_2}} \and
+\infer [var] {\btyw [\Gamma,\btj x A w \rmunit] {x} A \rmunit} {\cdot}
 \end{mathpar}
+Notice that we've defined these two rules in a slightly different way than usual.
+Typically, we'd say that whenever some variable $x$ is in the context 
+(because it was put there at a binder site),
+we can form the judgment that $x$ reference sites have a unit boundary.
+Instead what we've done is put the whole boundary type judgment in context at the binding site,
+and then we pull it out of the context at the reference site.
+Strictly speaking, the var rule is merely a special case of the 
+general structural rule stating ``you can use what you assume,'' so we'll omit it from here on out.
+
+This is a pretty common technique  called {\em hypothetical judgments}.
+For now, the use of hypothetical judgments is merely a stylistic difference,
+but it will become important when things get more complicated.
+
+\section{Adding Functions and Fixed Points}
+
+Lets turn this language to 11.  
+In addition to straight-line code, we'll add \texttt{if}s, functions, and fixed points,
+which the astute reader will notice is enough to make the language Turing-complete.
+Before getting into the rules, consider the following example, 
+where $E$ is some purely stage \bbone\ expression:
+
+\[
+\left(
+\tallif {E}
+	{(\lam x \rmint {\next\{\pause\{x\}+1\})}}
+	{(\lam x \rmint {\next\{\pause\{x\}+\pause\{x*x\}\}})}
+\right ) 5
+\]
+
+What do we expect the boundary type to be for this whole piece of code?
+Well, it depends. 
+If $E$ evaluates to true, then we'd expect the boundary type to be $\rmint$,
+but if $E$ evaluates to false, we'd expect the boundary type to be $\rmint \times \rmint$.
+Ergo, figuring out the boundary type of this piece of code is at least as hard 
+as figuring out what any given expression evaluates to.
+Of course, that's not decidable. Yikes. 
+
+Fortunately for us, that's not really the end of it.  
+Just because we can't know the boundary type of a piece of code doesn't mean we can't say anything.  
+Maybe instead of giving the {\em exact} answer, we can give a list of possibilities.
+
+\section{Adding Just \texttt{if}-Expressions}
+
+So to explore what this means, lets dial back the language a bit.  
+In addition to straight-line from before, lets just add \texttt{if} expressions.
+It turns out this is easy to integrate into the existing framework:
+
+\begin{mathpar}
+\infer {\btyo {\ifthen {e_1}{e_2}{e_3}} {A} {\tau_1 \times (\tau_2 + \tau_3)}} 
+	{\btyo {e_1} \rmbool {\tau_1} 
+	&\btyo {e_2} A {\tau_2}
+	&\btyo {e_3} A {\tau_3}} \and
+\infer {\btyt {\ifthen {e_1}{e_2}{e_3}} {A} {\tau_1 \times \tau_2 \times \tau_3}} 
+	{\btyt {e_1} \rmbool {\tau_1} 
+	&\btyt {e_2} A {\tau_2}
+	&\btyt {e_3} A {\tau_3}}
+\end{mathpar}
+
+The only particular care we took here was to observe speculation in the stage \bbtwo\ case,
+which induces a product (whereas stage \bbone\ had a sum).
+We can rewrite the problematic example in our restricted language 
+by distributing the application into the if and applying the lambda in both branches:
+\[
+\tallif {E}
+	{(\next\{\pause\{5\}+1\})}
+	{(\next\{\pause\{5\}+\pause\{5*5\}\})}
+\]
+We our new rules, we can say that the boundary type of this expression is
+$\rmunit \times (\rmint + \rmint \times \rmint)$.
+Sure, this isn't the {\em exact} boundary type, 
+but it's as much as we can know without an oracle.
+
+\section{Adding Functions (But Not Ifs)}
+
+
+% Consider a language with products and functions.  The internal boundary kind is given by:
+
+% \begin{mathpar}
+% \infer {\ibk {\rm int}{\rm Unit}} {\cdot} \and 
+% \infer {\ibk {\rm bool}{\rm Unit}} {\cdot} \and 
+% \infer {\ibk {A \times B}{\kappa_A \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} \and 
+% %\infer {\ibk {A \to B}{\kappa_A \to \ktype \times \kappa_B}} {\ibk A {\kappa_A} & \ibk B {\kappa_B}} 
+% \end{mathpar}
+
+
 
 \end{document}
