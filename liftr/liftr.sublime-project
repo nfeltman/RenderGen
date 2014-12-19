@@ -11,7 +11,7 @@
     [
         {
             "name": "LiftrProj",
-            "cmd": ["sml.bat","-m","sources.cm"],
+            "cmd": ["sml","-m","sources.cm"],
 
 			"working_dir": "$project_path/src",
 			"file_regex": "(.+):([0-9]+)\\.([0-9]+)(?:\\-[0-9]+\\.[0-9]+)? (.+)"

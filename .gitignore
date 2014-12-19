@@ -192,6 +192,7 @@ pip-log.txt
 *.blg
 *.out
 *.cpt
+*.fdb_latexmk
 
 
 #############
