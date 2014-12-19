@@ -69,12 +69,12 @@ which also multiplies an int into the boundary type.
 	{\btyw {e} {A \times B} {\tau}} \and
 \infer {\btyw {\pit~e} B \tau} 
 	{\btyw {e} {A \times B} {\tau}} \and
-\infer {\btyo {\next~e} B \tau} 
-	{\btyt {e} {A \times B} {\tau}} \and
-\infer {\btyt {\prev~e} B \tau} 
-	{\btyo {e} {A \times B} {\tau}} \and
-\infer {\btyt {\pause~e} \rmint \tau} 
-	{\btyo e \rmint {\tau \times \rmint}}
+\infer {\btyo {\next~e} {\fut A} \tau} 
+	{\btyt {e} A {\tau}} \and
+\infer {\btyt {\prev~e} A \tau} 
+	{\btyo {e} {\fut A} {\tau}} \and
+\infer {\btyt {\pause~e} \rmint {\tau \times \rmint}} 
+	{\btyo e \rmint \tau}
 \end{mathpar}
 
 Finally, we look at the let and var rules.
@@ -157,8 +157,44 @@ $\rmunit \times (\rmint + \rmint \times \rmint)$.
 Sure, this isn't the {\em exact} boundary type, 
 but it's as much as we can know without an oracle.
 
-\section{Adding Functions (But Not Ifs)}
+\section{Adding Just Functions}
 
+Lets now take a different stab at this, by adding functions to our straight-line code,
+but leaving \texttt{if}s out for now.
+Again, lets consider an example:
+\[
+L1 := (\lam x \rmint {\next\{5\}})
+\]
+The boundary type of $L1$ is obviously unit, right?
+After all, lambdas are values, and values have unit boundary.
+So then what about this example:
+\[
+L2 := (\lam x \rmint {\next\{\pause\{x\}+1\}})
+\]
+I'd like to think it's the same story.
+But what if we apply a value to these functions?
+Consider
+\[
+(\lam x \rmint {\next\{5\}})~3
+\]
+versus
+\[
+(\lam x \rmint {\next\{\pause\{x\}+1\}})~3
+\]
+The boundary type of the first expression should still be unit 
+(even after substitution it has no $\pause$s),
+but the bound type of the second expression should definitely be int.
+
+There's a problem here: $L1$ and $L2$ had the same boundary type before application, but different ones after.
+This suggests that if we want the boundary type to be a compositional property (rather than global),
+then we'll need to keep track of more information.
+
+We do this by making a distinction between the {\em internal} boundary of an expression,
+and its {\em external} boundary.  
+$L1$ and $L2$ have the same external boundary, namely unit,
+but they have different internal boundaries.  
+In particular, the interal boundary of $L1$ should be int (or isomorphic to it), 
+whereas the internal boundary of $L2$ should be unit.
 
 % Consider a language with products and functions.  The internal boundary kind is given by:
 
