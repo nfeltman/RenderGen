@@ -16,9 +16,10 @@
 \usepackage{mathabx}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{bbm}
 \usepackage[usenames,dvipsnames]{color}
 
-\title{Boundary Types}
+\title{Mixed Worlds}
 \author{Nico}
 
 \newcommand {\next}{asdlfkj}
@@ -69,18 +70,113 @@ We'll start by adding a new world \bbem\ (for {\em mixed}) which encapsulates an
 We'll then proceed by adding features, one at a time, to the \bbem-level language,
 starting with structure constructs, then moving on to products, functions, and sums.
 
-All along the way, we'll be keeping track of how well the language admits temporal interpretation.
+All along the way, we'll be keeping track of how well the language admits a temporal interpretation.
+In particular, we do this by defining a partial evaluation semantics and a stage-splitter [pretend I explain what these mean].
 
 \section{Structural Constructs}
 
 We start with a few structural constructs to get us off the ground,
-the most important being {\em encapsulation} rules, at the type and term level.
+the most important being {\em encapsulation} rules at the type and term level.
 These rules allow us to encapsulate computations of world \bbone\ or \bbtwo,
 and pass around their result at the mixed level.
 
 \begin{mathpar}
-\infer {\typesm e {\curr A}}{\typesone e A} \and
-\infer {\typesm e {\fut A}}{\typestwo e A}
+\infer {\curr A \istypem}{A \istypeone} \and
+\infer {\fut A \istypem}{A \istypetwo} \\
+\infer {\typesm {\monoTerm~e} {\curr A}}{\typesone e A} \and
+\infer {\typesm {\next~e} {\fut A}}{\typestwo e A} 
 \end{mathpar}
+
+These are essentially the only base types at \bbem.
+We'll also add a general way to form let bindings at stage two:
+
+\begin{mathpar}
+\infer {\typesm {\letin x {e_1} {e_2}} B} {\typesm {e_1} A & \typesm [\Gamma,\colm x A] {e_2} B} 
+\end{mathpar}
+
+And some simple ways to eliminate $\curr$ and $\fut$:
+\begin{mathpar}
+\infer {\typesm {\letin {\monoTerm \{x\}} {e_1} {e_2}} B} {\typesm {e_1} {\curr A} & \typesm [\Gamma,\colone x A] {e_2} B} \and
+\infer {\typesm {\letin {\next \{x\}} {e_1} {e_2}} B} {\typesm {e_1} {\fut A} & \typesm [\Gamma,\coltwo x A] {e_2} B} 
+\end{mathpar}
+
+Finally, we need a way to move base types from \bbone\ to \bbtwo:
+\begin{mathpar}
+\infer {\typesm {\pause~e} {\fut \rmint}} {\typesm e {\curr \rmint}} 
+\end{mathpar}
+
+So far we have nothing that breaks a temporal interpretation, and our splitting rules can be given by:
+\begin{mathpar}
+\infer {\splitone {\pause~e} {\fut \rmint} {((),c),(y,l).(r;y)}} {\splitonesub {} A} \and
+\infer {\splitone {\monoTerm~e} {\curr A}  {(e,()),\_.()}}		{\cdot} \and
+\infer {\splitone {\next~e} {\curr A} {((),()),\_.e}}			{\cdot} \and
+\infer {\splitone {\letin x {e_1} {e_2}} B 
+			{\left(
+				\talllet{(x,z_1)}{c_1}{
+				\talllet{(y,z_2)}{c_2}{
+				(y, (z_1, z_2))}}
+			\right),
+			(l_1,l_2).\letin{x}{r_1}{r_2}}}
+		{\splitonesub 1 A & \splitonesub 2 A} \and
+\infer {\splitone {\letin {\monoTerm \{x\}} {e_1} {e_2}} B 
+			{\left(
+				\talllet{(x,z_1)}{c_1}{
+				\talllet{(y,z_2)}{c_2}{
+				(y, (z_1, z_2))}}
+			\right),
+			(l_1,l_2).(r_1;r_2)}}
+		{\splitonesub 1 A & \splitonesub 2 A} \and
+\infer {\splitone {\letin {\next \{x\}} {e_1} {e_2}} B 
+			{\left(
+				\talllet{(y,z)}{c_2}{
+				(y, (\pit~c_1, z_2))}
+			\right),
+			(l_1,l_2).\letin{x}{r_1}{r_2}}}
+		{\splitonesub 1 A & \splitonesub 2 A}
+\end{mathpar}
+
+\section{Adding Product and Functions}
+
+Adding mixed products and functions is straight-forward.
+
+
+\begin{mathpar}
+\infer {A \times B \istypem}{A \istypem & B \istypem} \and
+\infer {A \to B \istypem}{A \istypem & B \istypem} \and
+\infer [\times I]	{\typesm {(e_1,e_2)}{A\times B}}				{\typesm {e_1} A & \typesm {e_2} B} 														\and
+\infer [\times E_1]	{\typesm {\pio~e} A}							{\typesm e {A\times B}} 																\and
+\infer [\to I]		{\typesm {\lam{x}{A}{e}} {A \to B}}				{A \istypem & \typesm [\Gamma,\colm x A] e B} 										\and
+\infer [\to E]		{\typesm {e_1~e_2} {B}}							{\typesm {e_1} {A \to B} & \typesm {e_2} A} 											
+\end{mathpar}
+And the splitting rules:
+\begin{mathpar}
+\infersplitone [\to I]	{\spl {\lam{x}{A}{e}}{A \to B}{(\lambda x.c,()),\_.(\lambda (x,l).r)}}					{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplitone [\to E]	{\spl {e_1~e_2}{B}{\left(
+									\talllet{(y_1,z_1)}{c_1}{
+									\talllet{(y_2,z_2)}{c_2}{
+									\talllet{(y_3,z_3)}{y_1~y_2}{(y_3,(z_1,z_2,z_3))}}}\right),
+							\begin{aligned}
+									(l_1,&l_2,l_3).\\[-\baselineskip] % terrible hax
+									&(r_1~(r_2,l_3))\\
+							\end{aligned}
+							}}																									{\sub 1 {A \to B} & \sub 2 A}							\and
+\infersplitone [\times I] 	{\spl {(e_1,e_2)}{A\times B}
+									{\left(
+										\talllet{(y_1,z_1)}{c_1}{
+										\talllet{(y_2,z_2)}{c_2}{
+										((y_1, y_2),(z_1, z_2))}}
+									\right),
+									(l_1,l_2).(r_1,r_2)
+							}}																				{\sub 1 A & \sub 2 B} \and
+\infersplitone [\times E_1]	{\spl {\pio~e}{A}{\talllet{(y,z)}{c}{(\pio~y,z)},l.\pio~r}}								{\sub {} {A\times B}} \and
+\end{mathpar}
+
+\section{Adding Sums}
+
+So adding mixed sums is actually a bit more difficult.  It forces us to answer the question: when is the tag known?
+
+\section{Adding \prev}
+
+We can also add \prev, which is more expressive than the current $\fut$ elim form, but this requires changing all our rules.
 
 \end{document}
