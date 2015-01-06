@@ -1,0 +1,86 @@
+\documentclass[]{article}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{stmaryrd}
+\usepackage{proof}
+\usepackage{mathpartir}
+\usepackage{mathabx}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage[usenames,dvipsnames]{color}
+
+\title{Boundary Types}
+\author{Nico}
+
+\newcommand {\next}{asdlfkj}
+\input{../../paper/macros}
+
+\begin{document}
+\maketitle
+
+\section {Goals}
+
+The goal of this document is to motivate a three-world interpretation of two-staged languages.
+I'll be using some labels in a way that is completely opposite from previous formulations,
+so reader beware.  
+
+\section {Two Independent Languages}
+
+As our baseline, we start with two independent languages, called L\bbone\ and L\bbtwo.
+These languages can in general have any desired set of constructs.
+In this document, we'll assume that both languages have products, sums, functions, and some base types.
+
+The valid types of L\bbone\ and L\bbtwo\ are given by the judgements 
+$A \istypeone$ and $A \istypetwo$, respectively.
+Likewise, the typing judgements are given by
+$\colone e A$ and $\coltwo e A$.
+As it stands, these languages are completely independent.
+That is, the rules for the $@~\bbone$ judgements and $@~\bbtwo$ judgements never depend on each other.
+
+We call the thing after the $@$ sign a {\em world}.
+So far, this has only been either \bbone\ or \bbtwo.
+We can save space in our presentation by abstracting judgements over worlds,
+conventionally using the metavariable $w$.
+Thus, the valid type judgement becomes $A \istypewor$ 
+and the typing judgement becomes $\colwor e A$.  
+We can also define the rules parametrically over world, where appropriate.
+
+\section{Bridging the Languages: A Roadmap}
+
+Our goal in this project is to define some sort of linguistic superstructure that bridges L\bbone\ and L\bbtwo.
+In particular, we'll be looking for a way to do this that admits a {\em temporal interpretation},
+wherein the language L\bbone\ is thought to operate at one point in time, 
+the language L\bbtwo\ is thought to operate at a later point in time, 
+and information cannot pass from L\bbtwo\ to L\bbone, 
+lest there be a violation of causality.
+Strictly speaking, we should probably call this {\em directionality},
+but we go with a temporal metaphor, because time is the most accessable example of a directional process.
+
+We'll start by adding a new world \bbem\ (for {\em mixed}) which encapsulates and coordiantes the other two languages.
+We'll then proceed by adding features, one at a time, to the \bbem-level language,
+starting with structure constructs, then moving on to products, functions, and sums.
+
+All along the way, we'll be keeping track of how well the language admits temporal interpretation.
+
+\section{Structural Constructs}
+
+We start with a few structural constructs to get us off the ground,
+the most important being {\em encapsulation} rules, at the type and term level.
+These rules allow us to encapsulate computations of world \bbone\ or \bbtwo,
+and pass around their result at the mixed level.
+
+\begin{mathpar}
+\infer {\typesm e {\curr A}}{\typesone e A} \and
+\infer {\typesm e {\fut A}}{\typestwo e A}
+\end{mathpar}
+
+\end{document}

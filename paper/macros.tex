@@ -7,6 +7,7 @@
 \newcommand {\bbone} {\ensuremath{\mathbbm{1}}}
 \newcommand {\bbtwo} {\ensuremath{\mathbbm{2}}}
 \newcommand {\bbmono} {\ensuremath{\mathbb{M}}}
+\newcommand {\bbem} {\ensuremath{\mathbb{M}}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
 \newcommand {\ellResid} {$\mathrm{L^R}$}
 \newcommand {\ellTarget} {$\mathrm{L^T}$}
@@ -63,6 +64,7 @@
 \newcommand {\prev} {{\tt prev}}
 \newcommand {\monoTerm} {{\tt mono}}
 \newcommand {\monoType} {\nabla}
+\newcommand {\curr} {\nabla}
 \newcommand {\fut} {\bigcirc}
 \newcommand {\inl} {{\tt inl}}
 \newcommand {\inr} {{\tt inr}}
@@ -88,10 +90,12 @@
 \newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
 \newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
+\newcommand {\colm} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colwor} [2] {{#1}:{#2}~@~w}
 \newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
 \newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
 \newcommand {\typesmono} [3] [\Gamma] { {#1} \vdash \colmono{#2}{#3}}
+\newcommand {\typesm} [3] [\Gamma] { {#1} \vdash \colm{#2}{#3}}
 \newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
 \newcommand {\istypeone} {~{\rm type}~@~\bbone}
