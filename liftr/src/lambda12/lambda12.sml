@@ -11,6 +11,7 @@ and type2		= T2 of type2 TypesBase.typeF
 datatype patternM = PM of (LangCommon.var, patternM) SourceLang.pattern
 datatype pattern12	= P of (LangCommon.var, pattern12) SourceLang.pattern
 					| Pmono of patternM
+					| Pnext of patternM
 
 datatype expr1	= E1 of (expr1,LangCommon.var,pattern12,type1) SourceLang.exprF
 				| E1next of expr2

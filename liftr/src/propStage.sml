@@ -21,6 +21,7 @@ datatype 'v il1	= IL1standard of ('v il1,'v,'v patt, C.ty) exprF
 				| IL1letty of C.stage * string * C.ty * 'v il1
 and 'v patt = IL1P of ('v, 'v patt) pattern
             | IL1Pmono of 'v patt
+            | IL1Pnext of 'v patt
 
 fun Eapp x = IL1standard (Fapp x)
 fun Elam x = IL1standard (Flam x)
@@ -89,6 +90,7 @@ exception StagePropException
 
 fun elabPatt (Lambda12c.P p) = IL1P (mapPattern elabPatt p)
   | elabPatt (Lambda12c.Pmono p) = IL1Pmono (elabPatt p)
+  | elabPatt (Lambda12c.Pnext p) = IL1Pnext (elabPatt p)
 
 fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.Eletty (s,x,t,e)) = IL1letty (s,x,t,elab e)
@@ -106,6 +108,7 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
 structure Cont = BasicContext (ListDict (type var = string)) (type t = var)
 fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Cont.extend,Variable.newvar) G p in (IL1P p, G) end
   | recast G (IL1Pmono p) = let val (p,G) = recast G p in (IL1Pmono p, G) end
+  | recast G (IL1Pnext p) = let val (p,G) = recast G p in (IL1Pnext p, G) end
   
 fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G (recast,Cont.lookup) exp)
   | fixVars G (IL1letty (s,x,t,e)) = IL1letty (s,x,t,fixVars G e)
@@ -123,8 +126,10 @@ structure TC = ProjectTripleContext (MyContext)
 
 fun propPatt12 (IL1P p) = P (mapPattern propPatt12 p)
   | propPatt12 (IL1Pmono p) = Pmono (propPattM p)
+  | propPatt12 (IL1Pnext p) = Pnext (propPattM p)
 and propPattM (IL1P p) = PM (mapPattern propPattM p)
   | propPattM (IL1Pmono _) = raise StagePropException
+  | propPattM (IL1Pnext _) = raise StagePropException
   
 fun propTy1 D (C.Tstandard t) = T1 (mapType (propTy1 D) t)
   | propTy1 D (C.Tfut t) = T1fut (propTy2 D t)

@@ -186,7 +186,7 @@ fun testProgram verbose name programType p t =
 		fun printTestResult b = emit (if b then "P" else "F")
 		val _ = if List.all (fn b=>b) results 
 				then (debug "\n"; emit (case results of [] => "no tests!\n" | _ => "all pass!\n"); debug "\n") 
-				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n")
+				else (emit "SOME FAILED: "; List.app printTestResult results; emit "\n"; raise Problem)
 	in
 	(*	printTerm (PrintPSF.convertDiag rDiag);
 		print "\n~~~~~~~~~~~\n";*)

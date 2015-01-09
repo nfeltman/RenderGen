@@ -56,14 +56,22 @@ structure ValuesM = EmbedValues (struct
 	val into = VM
 end)
 structure EvaluatorM = Evaluator (ValuesM)
-fun ext1 g (P p) t = foldPattern (Contexts1.C1.extend, ext1, untuple o unV1, Stuck) g p t
-  | ext1 g (Pmono p) t = ext2 g p (unmono t)
+
+fun ext1helper (gNow,gNext) x t = (Contexts1.C1.extend gNow x t, gNext)
+fun ext1 g (P p) t = foldPattern (ext1helper, ext1, untuple o unV1, Stuck) g p t
+  | ext1 (gNow,gNext) (Pmono p) t = (ext2 gNow p (unmono t), gNext)
+  | ext1 (gNow,gNext) (Pnext p) t = (gNow, fn r => gNext ` E ` Flet (E ` Fvar (unhat t),(p,r)))
 and ext2 g (PM p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, Stuck) g p t
 
 fun eval1 env (E1 exp) = 
 	let
 		val (eval,V,unV) = (eval1 env, V1, unV1)
-		fun evalBranch env (g,v) (x,e) = comp1 g ` eval1 (ext1 env x v) e 
+		fun evalBranch env (gArg,v) (x,e) = 
+				let 
+					val (env, gPatt) = ext1 (env,id) x v
+				in
+					comp1 (gArg o gPatt) ` eval1 env e
+				end
 	in
 		case exp of 
 		  Fvar v => (id, Contexts1.C1.lookup env v)

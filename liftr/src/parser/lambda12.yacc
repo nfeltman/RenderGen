@@ -66,7 +66,6 @@ open LangCommon
 		  | UNROLL AEXP					(Eunroll (AEXP))
 		  | HOLD AEXP 					(Ehold(AEXP))
 		  | PUSH AEXP					(EpushPrim(AEXP))
-		  | PUSHA AEXP					(EpushArr(AEXP))
 		  | PUSHP AEXP					(EpushProd(AEXP))
 		  | PUSHS AEXP					(EpushSum(AEXP))
 		  | AEXP						(AEXP)
@@ -110,6 +109,7 @@ open LangCommon
 	 	  | USCORE								(Punused)
 		  | LPAR PATT COMMA PATT PATTL RPAR 	(Ptuple (PATT1 :: PATT2 :: PATTL))
 		  | MONO LBRACE PATT RBRACE 			(Pmono (PATT))
+		  | NEXT LBRACE PATT RBRACE 			(Pnext (PATT))
 
 	PATTL : 							([])
 		  | COMMA PATT PATTL			(PATT :: PATTL)

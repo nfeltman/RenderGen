@@ -86,6 +86,13 @@ struct
 	type t = type2
 	fun fold g (PM p) v = foldPattern (Projections.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
 end
+structure Pattern2 = 
+struct
+	type p = patternM
+	type c = Projections.C2.cont
+	type t = type2
+	fun fold g (PM p) v = foldPattern (Projections.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
+end
 structure Pattern1 = 
 struct
 	type p = pattern12
@@ -93,13 +100,7 @@ struct
 	type t = type1
 	fun fold g (P p) v = foldPattern (Projections.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
 	  | fold g (Pmono p) v = Pattern3.fold g p (unnow v)
-end
-structure Pattern2 = 
-struct
-	type p = patternM
-	type c = Projections.C2.cont
-	type t = type2
-	fun fold g (PM p) v = foldPattern (Projections.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
+	  | fold g (Pnext p) v = Pattern2.fold g p (unfut v)
 end
 
 

@@ -89,6 +89,7 @@ structure S = Lambda12
 fun convertPatternM G (S.PM p) = convertSourcePatternv convertPatternM G p
 fun convertPattern12 G (S.P p) = convertSourcePatternv convertPattern12 G p
   | convertPattern12 G (S.Pmono p) = let val (p,G) = convertPatternM G p in (Pbrace ("mono", p), G) end
+  | convertPattern12 G (S.Pnext p) = let val (p,G) = convertPatternM G p in (Pbrace ("next", p), G) end
 fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
   | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
   | convertTyStage1 (S.T1now t) = EprimApp("^", convertTyStage2 t)

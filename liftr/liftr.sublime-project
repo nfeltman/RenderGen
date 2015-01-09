@@ -11,8 +11,8 @@
     [
         {
             "name": "LiftrProj",
-            "cmd": ["sml","-m","sources.cm"],
-
+            "cmd": ["echo \"0;\\nExamples.runtests 1;\\n\" | CM_VERBOSE=false sml -m sources.cm"],
+            "shell" : "true",
 			"working_dir": "$project_path/src",
 			"file_regex": "(.+):([0-9]+)\\.([0-9]+)(?:\\-[0-9]+\\.[0-9]+)? (.+)"
         }

@@ -67,6 +67,7 @@ structure EvaluatorM = Evaluator (ValuesM)
 
 fun ext1 g (P p) t = foldPattern (TC.C1.extend, ext1, Values1.untuple, Stuck) g p t
   | ext1 g (Pmono p) t = ext3 g p (unmono t)
+  | ext1 g (Pnext p) t = ext2 g p (unnext t)
 and ext2 g (PM p) t = foldPattern (TC.C2.extend, ext2, Values2.untuple, Stuck) g p t
 and ext3 g (PM p) t = foldPattern (TC.C3.extend, ext3, ValuesM.untuple, Stuck) g p t
 

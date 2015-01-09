@@ -20,6 +20,7 @@ val PPvar = LambdaPSF.P o S.Pvar
 fun splitPatternM (Lambda12.PM p) = LambdaPSF.P ` S.mapPattern splitPatternM p
 fun splitPattern (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern p
   | splitPattern (Lambda12.Pmono p) = splitPatternM p
+  | splitPattern (Lambda12.Pnext p) = splitPatternM p
   
 val Eunit = Etuple []
 
