@@ -121,7 +121,7 @@ fun eval1 env (E1 exp) =
 			val (g,v) = eval1 env e
 			val y = Variable.newvar "y" 
 		in
-			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unV1 v, (PM (Pvar y), r)), V1hat y)
+			(fn r=> g ` E ` Flet (E ` FprimVal ` unprimV ` unVM ` unmono v, (PM (Pvar y), r)), V1hat y)
 		end
   | eval1 env (E1mono e) = 
 		let

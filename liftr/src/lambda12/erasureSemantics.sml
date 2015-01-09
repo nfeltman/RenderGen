@@ -26,7 +26,7 @@ end
 structure TC = ProjectTripleContext (Values)
 open Values
 
-fun holdGeneral (V1 (V.VFprim i)) = V1next (V2 (V.VFprim i))
+fun holdGeneral (V1mono (VM (V.VFprim i))) = V1next (V2 (V.VFprim i))
   | holdGeneral _ = raise Stuck
 
 fun V1unwrap (V1 v) = v

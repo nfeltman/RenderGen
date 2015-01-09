@@ -1,19 +1,24 @@
-datatype list = Empty | Cons of int * list in 
-letrec partition ((p,l) : int*list) : (int*list*list) = 
-	case unroll l of em => (0,Empty, Empty) | (h,t) => 
-		let (s,left,right) = partition (p,t) in 
-		if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right)) in 
-letrec qs ((l,i) : list * $int) : $int = 
-	case unroll l of 
-	  em => next {0} 
-	| (h,t) => let (n,left,right) = partition (h,t) in 
-		next { 
-			let n = prev {hold n} in 
-			if prev{i} < n then prev{qs (left,i)} 
-			else if prev{i} == n then prev{hold h} 
-			else prev{qs (right,next{(prev{i}-n)-1})}} 
+datatype ^list = Empty | Cons of int * list in 
+letrec partition (mono{(p,l)} : ^(int*list)) : ^(int*list*list) = 
+	case pushS mono{unroll l} of 
+	  em => mono{(0,Empty, Empty)}
+	| mono{(h,t)} => 
+		let mono{(s,left,right)} = partition mono{(p,t)} in 
+		if push mono{h<p} 
+		then mono{(s+1,Cons(h,left),right)}
+		else mono{(s,  left,Cons(h,right))} 
 in 
-let testlist = 
+letrec qs ((mono{l},i) : ^list * $int) : $int = 
+	case pushS mono{unroll l} of 
+	  em => next {0} 
+	| mono{(h,t)} => let mono{(n,left,right)} = partition mono{(h,t)} in 
+		next { 
+			let n = prev {hold mono{n}} in 
+			if prev{i} < n then prev{qs (mono{left},i)} 
+			else if prev{i} == n then prev{hold mono{h}} 
+			else prev{qs (mono{right},next{(prev{i}-n)-1})}} 
+in 
+let testlist = mono{
 	let c = Cons in 
-	c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))
+	c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))) }
 in qs (testlist, next{2})

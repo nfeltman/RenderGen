@@ -17,10 +17,14 @@ fun a ` b = a b
 val PPtuple = LambdaPSF.P o S.Ptuple
 val PPvar = LambdaPSF.P o S.Pvar
 
-fun splitPatternM (Lambda12.PM p) = LambdaPSF.P ` S.mapPattern splitPatternM p
-fun splitPattern (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern p
-  | splitPattern (Lambda12.Pmono p) = splitPatternM p
-  | splitPattern (Lambda12.Pnext p) = splitPatternM p
+fun convertMonoPattern (Lambda12.PM p) = LambdaPSF.P ` S.mapPattern convertMonoPattern p
+fun splitPattern1 (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern1 p
+  | splitPattern1 (Lambda12.Pmono p) = convertMonoPattern p
+  | splitPattern1 (Lambda12.Pnext p) = LambdaPSF.P (S.Ptuple [])
+fun splitPattern2 (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern2 p
+  | splitPattern2 (Lambda12.Pmono p) = LambdaPSF.P (S.Ptuple [])
+  | splitPattern2 (Lambda12.Pnext p) = convertMonoPattern p
+fun splitPattern x = (splitPattern1 x, splitPattern2 x)
   
 val Eunit = Etuple []
 
@@ -191,9 +195,9 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce1 (split e)
-				val x = splitPattern x
+				val (x1,x2) = splitPattern x
 			in
-				NoPrec1 (Elam ((), (x, c)), Elam ((),(PPtuple[x,l], r)))
+				NoPrec1 (Elam ((), (x1, c)), Elam ((),(PPtuple [x2,l], r)))
 			end
 		| S.Fapp (e1, e2) => 
 			let				
@@ -263,12 +267,12 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 				fun processBranches [] prefixes = ([],[],[])
 				  | processBranches ((x,e)::xes) prefixes = 
 					let
-						val x = splitPattern x
+						val (x1,x2) = splitPattern x
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
 						val (c,(l,r)) = coerce1 (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
 					in
-						((x,branch)::branches, (l, Elet(Evar z,(x,r)))::residuals, ()::suffixes)
+						((x1,branch)::branches, (l, Elet(Evar z,(x2,r)))::residuals, ()::suffixes)
 					end
 					
 				val (branches, residuals, _) = processBranches bs []
@@ -292,29 +296,30 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 			end
 		| S.Flet (e1, (x,e2)) => 
 			let
-				val x = splitPattern x
+				val (x1,x2) = splitPattern x
 				val (res1,res2) = (split e1, split e2)
-				fun makeLet a b = Elet (a, (x,b))
+				fun makeLet1 a b = Elet (a, (x1,b))
+				fun makeLet2 a b = Elet (a, (x2,b))
 			in
 				case mapSplitResult toOpaque res1 of 
 				  NoPrec1 (e1,r1) => (
 						case mapSplitResult toOpaque res2 of
 						  NoPrec1 (e2, r2) => 
-							NoPrec1 (makeLet e1 e2, makeLet r1 r2)
+							NoPrec1 (makeLet1 e1 e2, makeLet2 r1 r2)
 						| WithPrec1 (e2,(l2,r2)) => 
-							WithPrec1 (Opaque ` makeLet e1 e2, (l2,makeLet r1 r2))
+							WithPrec1 (Opaque ` makeLet1 e1 e2, (l2,makeLet2 r1 r2))
 					)
 				| WithPrec1 (c1, (l1,r1)) =>
 					let
 						val y = Variable.newvar "y"
-						val pat = PPtuple [x,PPvar y]
+						val pat = PPtuple [x1,PPvar y]
 					in
 						case mapSplitResult toSplit res2 of
 						  NoPrec1 (e2, r2) => 
-							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1,makeLet r1 r2))
+							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1, makeLet2 r1 r2))
 						| WithPrec1 ((c2,v2,p2),(l2,r2)) => 
 							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), 
-								(PPtuple[l1,l2],makeLet r1 r2))
+								(PPtuple [l1,l2],makeLet2 r1 r2))
 					end
 			end
 		| S.Fbinop (bo,e1,e2) =>

@@ -1,16 +1,16 @@
 datatype binop  = Plus | Minus in
 datatype iota	= Arg
-				| Int of int 
+				| Int of ^int 
 				| Binop of binop * iota * iota
 				| If of iota * iota * iota
 in 
 
 %% binary op evaluators
 
-letfun evalBinop ((op, i1, i2) : binop * int * int) = 
+letfun evalBinop ((op, mono{i1}, mono{i2}) : binop * ^int * ^int) = 
 	case unroll op of
-	  plus => i1 + i2
-	| minus => i1 - i2
+	  plus => mono{i1 + i2}
+	| minus => mono{i1 - i2}
 in
 letfun evalBinop2 ((op, i1, i2) : binop * $int * $int) = 
 	case unroll op of
@@ -22,19 +22,19 @@ in
 %% 2 = arg comes at stage 2
 %% K = continuation passing style
 
-letrec eval1 ((e,a) : iota * int) : int = 
+letrec eval1 ((e,a) : iota * ^int) : ^int = 
 	case unroll e of
 	  arg => a
 	| i => i
 	| (op, e1, e2) => evalBinop(op, eval1 (e1,a), eval1 (e2,a))
-	| (e1, e2, e3) => if eval1 (e1,a) > 0 then eval1 (e2,a) else eval1 (e3,a)
+	| (e1, e2, e3) => if let mono{i} = eval1 (e1,a) in push mono{i > 0} then eval1 (e2,a) else eval1 (e3,a)
 in
-letrec eval1K ((e,a,k) : iota * int * (int -> int)) : int = 
+letrec eval1K ((e,a,k) : iota * ^int * (^int -> ^int)) : ^int = 
 	case unroll e of
 	  arg => k a
 	| i => k i
-	| (op, e1, e2) => eval1K (e1,a, fn i:int => eval1K (e2,a, fn j:int => k (evalBinop(op,i,j)))) 
-	| (e1, e2, e3) => eval1K (e1,a, fn i:int => if i > 0 then eval1K (e2,a,k) else eval1K (e3,a,k)) 
+	| (op, e1, e2) => eval1K (e1,a, fn i:^int => eval1K (e2,a, fn j:^int => k (evalBinop(op,i,j)))) 
+	| (e1, e2, e3) => eval1K (e1,a, fn mono{i}:^int => if push(mono{i > 0}) then eval1K (e2,a,k) else eval1K (e3,a,k)) 
 in
 letrec eval2 ((e,a) : iota * $int) : $int = 
 	case unroll e of

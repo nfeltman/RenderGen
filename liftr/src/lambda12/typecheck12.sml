@@ -104,8 +104,8 @@ struct
 end
 
 
-fun handleHold (T1 (TFprim t)) = T1fut (T2 (TFprim t))
-  | handleHold _ = raise (TypeError "expected any primitive type")
+fun handleHold (T1now (T2 (TFprim t))) = T1fut (T2 (TFprim t))
+  | handleHold _ = raise (TypeError "expected ^prim")
 
 fun promoteType (T2 t) = T1 (mapType promoteType t)
 

@@ -10,11 +10,11 @@ structure Comp = ValueComparison
 
 datatype progSource = Literal | FileName
 datatype testLevel = NONE | SAME | EXACT of value1
-val ansI = EXACT o V1 o ValuesBase.VFprim o Prims.Vint
+val ansI = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vint
 val ansNI = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vint
-val ansB = EXACT o V1 o ValuesBase.VFprim o Prims.Vbool
+val ansB = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vbool
 val ansNB = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vbool
-val ansS = EXACT o V1 o ValuesBase.VFprim o Prims.Vstr
+val ansS = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vstr
 
 infixr 9 `
 fun a ` b = a b
@@ -39,20 +39,22 @@ k("proj4", 				"#1 (3,true) + 3",ansI 6),
 k("let1", 				"let x = 4 + 6 in x * x",ansI 100),
 k("let2", 				"let (x,b) = (4+6,false) in if b then x else x * x",ansI 100),
 j("letnext",			"let x = next{4 + 6} in next {prev{x} * prev{x}}",SAME),
+j("monopatt",			"let mono{(x,y)} = mono{(1,2)} in mono {x+y}",SAME),
+j("nextpatt",			"let next{(x,y)} = next{(1,2)} in next {x+y}",SAME),
 j("doubleBind", 		"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}",SAME),
 k("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3",ansI 10),
 j("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}",SAME),
-j("if2", 				"next{ if 2 > 3 then prev{hold (4 + 6)} else 2 * 3}",SAME),
-j("ifBothSides",		"next{ if 2 > 3 then prev{hold (4 + 6)} else prev{hold (2 * 3)}}",SAME),
-j("ifPred",				"next{ if 2 > prev{hold (2 + 4)} then prev{hold (4 + 6)} else prev{hold (2 * 3)}}",SAME),
-j("if7",				"if 3 > 2 then next{prev{hold (8 * 9)} + 6} else next{prev{hold (8 + 9)} * prev{hold (6 - 2)}}",SAME),
-j("holdif",				"hold (if 2 > 3 then 1 else 0)",SAME),
-j("holdif2",			"next {prev {hold (if 2 > 3 then 1 else 0)}}",SAME),
+j("if2", 				"next{ if 2 > 3 then prev{hold mono{4 + 6}} else 2 * 3}",SAME),
+j("ifBothSides",		"next{ if 2 > 3 then prev{hold mono{4 + 6}} else prev{hold mono{2 * 3}}}",SAME),
+j("ifPred",				"next{ if 2 > prev{hold mono{2 + 4}} then prev{hold mono{4 + 6}} else prev{hold mono{2 * 3}}}",SAME),
+j("if7",				"if 3 > 2 then next{prev{hold mono{8 * 9}} + 6} else next{prev{hold mono{8 + 9}} * prev{hold mono{6 - 2}}}",SAME),
+j("holdif",				"hold mono{if 2 > 3 then 1 else 0}",SAME),
+j("holdif2",			"next {prev {hold mono{if 2 > 3 then 1 else 0}}}",SAME),
 k("funcApp1", 			"(fn x : int => x + x) 45",ansI 90),
 k("funcApp2", 			"let f = fn x : int => x + x in f 45",ansI 90),
 k("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45",ansI 102),
 k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
-j("multiStageFunc", 	"(fn x : int => next{prev{hold (x * x)} + prev{hold x}}) 45",SAME),
+j("multiStageFunc", 	"(fn mono{x} : ^int => next{prev{hold mono{x * x}} + prev{hold mono{x}}}) mono{45}",SAME),
 k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y",ansI 1156),
 k("caseRight", 			"case inr int 34 of x => x * x | y => y + y",ansI 68),
 k("datatype3", 			"datatype t = A of int | B of int * int | C of int * int * int in " ^
@@ -60,16 +62,16 @@ k("datatype3", 			"datatype t = A of int | B of int * int | C of int * int * int
 k("highOrder1", 		"(fn f:int->int => f 5) (fn x:int=>x+x)",ansI 10),
 k("closure", 			"(let x = 3 in fn y:int=> x*y) 5",ansI 15),
 k("higherOrder1", 		"(fn f:int->int => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
-j("datastruct2", 		"letfun f (x:int) = next{prev{hold (x*x)}+4} in ((f 1,f 2),(f 3,f 4))",SAME),
-j("datastruct3", 		"letfun map (f : int -> $int) = " ^ 
-						"fn M:((int*int)*(int*int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
-						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))",SAME),
-j("datastruct4", 		"letfun map (f : int -> $int) = " ^ 
-						"fn ((M1,M2),(M3,M4)):((int*int)*(int*int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
-						"map (fn x:int => next{prev{hold (x*x)}+4}) ((1, 2), (3, 4))",SAME),
-j("datastruct5", 		"letfun map (f : int -> $int) = " ^ 
-						"fn (M1,M2,M3,M4):(int*int*int*int) => (f M1, f M2, f M3, f M4) in " ^ 
-						"map (fn x:int => next{prev{hold (x*x)}+4}) (1, 2, 3, 4)",SAME),
+j("datastruct2", 		"letfun f (mono{x}:^int) = next{prev{hold mono{x*x}}+4} in ((f mono{1},f mono{2}),(f mono{3},f mono{4}))",SAME),
+j("datastruct3", 		"letfun map (f : ^int -> $int) = " ^ 
+						"fn M:((^int*^int)*(^int*^int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
+						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) ((mono{1}, mono{2}), (mono{3}, mono{4}))",SAME),
+j("datastruct4", 		"letfun map (f : ^int -> $int) = " ^ 
+						"fn ((M1,M2),(M3,M4)):((^int*^int)*(^int*^int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
+						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) ((mono{1}, mono{2}), (mono{3}, mono{4}))",SAME),
+j("datastruct5", 		"letfun map (f : ^int -> $int) = " ^ 
+						"fn (M1,M2,M3,M4):(^int*^int*^int*^int) => (f M1, f M2, f M3, f M4) in " ^ 
+						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) (mono{1}, mono{2}, mono{3}, mono{4})",SAME),
 k("roll1",				"roll (int) 5",SAME),
 k("roll2",				"roll (int * bool) (234, true)",SAME),
 k("unroll1",			"#1 (unroll (roll (int * bool) (234, true)))",ansI 234),
@@ -85,8 +87,8 @@ i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
 i("fastexp",			"fastexp",ansNI 243),
 i("quickselect",		"quickselect", ansNI 4),
-i("quickselect_fixed",	"quickselect_fixed", ansNI 4)(*,
-i("stress",				"stress", SAME)*)
+i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
+i("stress",				"stress", SAME)
 ]
 
 fun pad s n = concat (s :: List.tabulate (n-(String.size s), fn _ => " "))
