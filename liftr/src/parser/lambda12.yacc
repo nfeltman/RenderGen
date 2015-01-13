@@ -60,8 +60,6 @@ open LangCommon
  
 	 BEXP : BEXP AEXP					(Eapp (BEXP, AEXP))
 		  | PROJ AEXP					(Epi(PROJ - 1,AEXP))
-		  | INL TY AEXP					(Einjl(TY,AEXP))
-		  | INR TY AEXP					(Einjr(TY,AEXP))
 		  | ROLL TY	AEXP				(Eroll (TY, AEXP))
 		  | UNROLL AEXP					(Eunroll (AEXP))
 		  | HOLD AEXP 					(Ehold(AEXP))

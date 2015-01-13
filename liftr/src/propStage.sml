@@ -9,7 +9,7 @@ open Lambda12
 open SourceLang
 open TypesBase
 
-datatype 'v il1	= IL1standard of ('v il1,'v,'v patt, C.ty) exprF
+datatype 'v il1	= IL1standard of ('v il1,'v,'v patt * 'v il1, C.ty) exprF
 				| IL1next of 'v il1
 				| IL1prev of 'v il1
 				| IL1mono of 'v il1
@@ -27,7 +27,8 @@ fun Eapp x = IL1standard (Fapp x)
 fun Elam x = IL1standard (Flam x)
 fun Evar x = IL1standard (Fvar x)
 fun Elet x = IL1standard (Flet x)
-fun Etuple x = IL1standard (Ftuple x)
+fun Etuple x = IL1standard (SEprod (BranchlessFrag.Etuple x))
+fun Einj x = IL1standard (SEdata (DataFrag.Einj x))
 fun Eroll x = IL1standard (Froll x)
 fun Eunroll x = IL1standard (Funroll x)
 
@@ -69,8 +70,8 @@ fun elabDataType (stage,ty,cts,e) =
 		val openSumType = C.Tstandard (TFsum (map nameToZero types))
 		fun buildInjector tyOpt prefixes suffixes =
 				case tyOpt of
-				  SOME ty => Elam (ty,(var "x",Eroll(openSumType,IL1standard (Finj (prefixes, suffixes, Evar "x")))))
-				| NONE => Eroll(openSumType,IL1standard (Finj (prefixes, suffixes, Etuple [])))
+				  SOME ty => Elam (ty,(var "x",Eroll(openSumType,Einj (prefixes, suffixes, Evar "x"))))
+				| NONE => Eroll(openSumType, Einj (prefixes, suffixes, Etuple []))
 		fun stageLet (e1,x,e2) = 
 			case stage of 
 			  C.ThisStage => Elet (e1,(var x,e2))

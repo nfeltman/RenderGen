@@ -68,21 +68,21 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 	in
 		case ex of 
 		  S.Fvar v => Eatom (MainDict.lookup Gname v)
-		| S.FprimVal (Prims.Vint i) => Eatom (Int.toString i)
-		| S.FprimVal (Prims.Vbool b) => Eatom (if b then "true" else "false")
-		| S.FprimVal (Prims.Vstr s) => Eatom ("\""^s^"\"")
+		| S.SEdata (DataFrag.EprimVal (Prims.Vint i)) => Eatom (Int.toString i)
+		| S.SEdata (DataFrag.EprimVal (Prims.Vbool b)) => Eatom (if b then "true" else "false")
+		| S.SEdata (DataFrag.EprimVal (Prims.Vstr s)) => Eatom ("\""^s^"\"")
 		| S.Flam (t,b) => Elam (convertTy t, convertBranch b)
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
-		| S.Ftuple es => Etuple (map convert es)
-		| S.Fpi (i, e) => EprimApp ("#" ^ (Int.toString (i+1)), convert e)
-		| S.Finj (ts, us, e) => Eapp (EprimApp("inj", Einfix ("+", (map convertTy ts) @ (Eatom "#" :: map convertTy us))), convert e)
-		| S.Fcase (e,bs) => Ecase (convert e, map convertBranch bs)
-		| S.Fif (e1,e2,e3) => Eif (convert e1, convert e2, convert e3)
+		| S.SEprod (BranchlessFrag.Etuple es) => Etuple (map convert es)
+		| S.SEprod (BranchlessFrag.Epi (i, e)) => EprimApp ("#" ^ (Int.toString (i+1)), convert e)
+		| S.SEdata (DataFrag.Einj (ts, us, e)) => Eapp (EprimApp("inj", Einfix ("+", (map convertTy ts) @ (Eatom "#" :: map convertTy us))), convert e)
+		| S.SEdata (DataFrag.Ecase (e,bs)) => Ecase (convert e, map convertBranch bs)
+		| S.SEdata (DataFrag.Eif (e1,e2,e3)) => Eif (convert e1, convert e2, convert e3)
 		| S.Flet (e, b) => Elet (convert e, convertBranch b)
-		| S.Fbinop (bo, e1, e2) => Einfix (opToString bo, [convert e1, convert e2])
+		| S.SEdata (DataFrag.Ebinop (bo, e1, e2)) => Einfix (opToString bo, [convert e1, convert e2])
 		| S.Froll (t,e) => Eapp (EprimApp ("roll", convertTy t), convert e)
 		| S.Funroll e => EprimApp ("unroll", convert e)
-		| S.Ferror t => EprimApp ("error", convertTy t)
+		| S.SEdata (DataFrag.Eerror t) => EprimApp ("error", convertTy t)
 	end
 	
 structure S = Lambda12

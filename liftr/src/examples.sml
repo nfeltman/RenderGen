@@ -55,8 +55,6 @@ k("funcApp2", 			"let f = fn x : int => x + x in f 45",ansI 90),
 k("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45",ansI 102),
 k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
 j("multiStageFunc", 	"(fn mono{x} : ^int => next{prev{hold mono{x * x}} + prev{hold mono{x}}}) mono{45}",SAME),
-k("caseLeft", 			"case inl int 34 of x => x * x | y => y + y",ansI 1156),
-k("caseRight", 			"case inr int 34 of x => x * x | y => y + y",ansI 68),
 k("datatype3", 			"datatype t = A of int | B of int * int | C of int * int * int in " ^
 						"case unroll (B (3,4)) of x => x | (x,y) => x+y | (x,y,z) => x+y+z",ansI 7),
 k("highOrder1", 		"(fn f:int->int => f 5) (fn x:int=>x+x)",ansI 10),
@@ -75,10 +73,6 @@ j("datastruct5", 		"letfun map (f : ^int -> $int) = " ^
 k("roll1",				"roll (int) 5",SAME),
 k("roll2",				"roll (int * bool) (234, true)",SAME),
 k("unroll1",			"#1 (unroll (roll (int * bool) (234, true)))",ansI 234),
-k("emptyList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in empty",SAME),
-k("makeList",			"let empty = roll (unit + (int * 0)) (inl (int * (mu unit + int * 0)) ()) in " ^
-						"letfun cons (ht : int * (mu unit + int * 0)) = roll (unit + (int * 0)) (inr unit ht) in "^
-						"cons (5, cons (3, empty))",SAME),
 k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
 k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
 						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^

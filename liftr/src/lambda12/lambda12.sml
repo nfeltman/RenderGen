@@ -13,7 +13,7 @@ datatype pattern12	= P of (LangCommon.var, pattern12) SourceLang.pattern
 					| Pmono of patternM
 					| Pnext of patternM
 
-datatype expr1	= E1 of (expr1,LangCommon.var,pattern12,type1) SourceLang.exprF
+datatype expr1	= E1 of (expr1,LangCommon.var,pattern12 * expr1,type1) SourceLang.exprF
 				| E1next of expr2
 				| E1hold of expr1
 				| E1mono of exprM
@@ -22,9 +22,9 @@ datatype expr1	= E1 of (expr1,LangCommon.var,pattern12,type1) SourceLang.exprF
 				| E1pushSum of expr1
 				| E1pushArr of expr1
 
-and expr2		= E2 of (expr2,LangCommon.var,patternM,type2) SourceLang.exprF
+and expr2		= E2 of (expr2,LangCommon.var,patternM * expr2,type2) SourceLang.exprF
 				| E2prev of expr1
 
-and exprM		= EM of (exprM,LangCommon.var,patternM,type2) SourceLang.exprF
+and exprM		= EM of (exprM,LangCommon.var,patternM * exprM,type2) SourceLang.exprF
 
 end

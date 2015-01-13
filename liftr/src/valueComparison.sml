@@ -17,6 +17,7 @@ val Vprim = V o VFprim
 val Vinj = V o VFinj
 val Vroll = V o VFroll
 val Vtuple = V o VFtuple
+fun Ftuple x = SEprod ` BranchlessFrag.Etuple x
 
 in
 
@@ -34,7 +35,7 @@ fun splitErasureValue1 v =
 		| E.V1 (VFinj (side,v)) => 
 			(case splitErasureValue1 v of 
 			(u,w) => (Vinj (side,u), w))
-		| E.V1 (VFlam (x,e)) => raise ConversionError
+		| E.V1 (VFlam _) => raise ConversionError
 		| E.V1next v => (Vtuple[], splitErasureValue2 v)
 		| E.V1mono v => (splitErasureValueM v, Vtuple[])
 
@@ -44,7 +45,7 @@ and splitErasureValueM v =
 		| E.VM (VFroll v) => Vroll (splitErasureValueM v)
 		| E.VM (VFtuple vs) => Vtuple (map splitErasureValueM vs)
 		| E.VM (VFinj (side,v)) => Vinj (side, splitErasureValueM v)
-		| E.VM (VFlam (x,e)) => raise ConversionError
+		| E.VM (VFlam _) => raise ConversionError
 		
 and splitErasureValue2 v = 
 		case v of 
@@ -52,7 +53,7 @@ and splitErasureValue2 v =
 		| E.V2 (VFroll v) => Vroll (splitErasureValue2 v)
 		| E.V2 (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
 		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
-		| E.V2 (VFlam (x,e)) => raise ConversionError
+		| E.V2 (VFlam _) => raise ConversionError
 		
 fun splitDiagValue1 v = 
 		case v of 
@@ -66,7 +67,7 @@ fun splitDiagValue1 v =
 		| D.V1 (VFinj (side,v)) => 
 			(case splitDiagValue1 v of 
 			(u,w) => (Vinj (side,u), w))
-		| D.V1 (VFlam (x,e)) => raise ConversionError
+		| D.V1 (VFlam _) => raise ConversionError
 		| D.V1mono v => (splitDiagValueM v, D.E ` Ftuple[])
 		| D.V1hat y => (Vtuple [], D.E ` Fvar y)
 		
@@ -76,7 +77,7 @@ and splitDiagValueM v =
 		| D.VM (VFroll v) => Vroll (splitDiagValueM v)
 		| D.VM (VFtuple vs) => Vtuple (map splitDiagValueM vs)
 		| D.VM (VFinj (side,v)) => Vinj (side, splitDiagValueM v)
-		| D.VM (VFlam (x,e)) => raise ConversionError
+		| D.VM (VFlam _) => raise ConversionError
 		
 fun convertDiagValue2 v = 
 		case v of 
@@ -84,7 +85,7 @@ fun convertDiagValue2 v =
 		| D.V2 (VFroll v) => Vroll (convertDiagValue2 v)
 		| D.V2 (VFtuple vs) => Vtuple (map convertDiagValue2 vs)
 		| D.V2 (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)
-		| D.V2 (VFlam (x,e)) => raise ConversionError
+		| D.V2 (VFlam _) => raise ConversionError
 		
 fun valueEq (V v1) (V v2) = 
 	case (v1,v2) of 

@@ -11,12 +11,12 @@ in
 
 structure Values = 
 struct
-	datatype value1	= V1 of (value1,cont,pattern12,expr1) V.valueF
+	datatype value1	= V1 of (value1,value1) V.valueF
 					| V1next of value2
 					| V1mono of valueM
 					
-	and		value2	= V2 of (value2,cont,patternM,expr2) V.valueF
-	and		valueM	= VM of (valueM,cont,patternM,exprM) V.valueF
+	and		value2	= V2 of (value2,value2) V.valueF
+	and		valueM	= VM of (valueM,valueM) V.valueF
 	and		  entry = Bind1 of value1 | Bind2 of value2 | Bind3 of valueM
 	withtype   cont = entry MainDict.cont
 
@@ -38,32 +38,26 @@ fun unmono (V1mono v) = v
   
 structure Values1 = EmbedValues (struct
 	type v = value1
-	type c = cont
-	type r = pattern12
-	type e = expr1
+	type f = value1
 	val outof = V1unwrap
 	val into = V1
 end)
 structure Values2 = EmbedValues (struct
 	type v = value2
-	type c = cont
-	type r = patternM
-	type e = expr2
+	type f = value2
 	fun outof (V2 v) = v
 	val into = V2
 end)
 structure ValuesM = EmbedValues (struct
 	type v = valueM
-	type c = cont
-	type r = patternM
-	type e = exprM
+	type f = valueM
 	fun outof (VM v) = v
 	val into = VM
 end)
 
-structure Evaluator1 = Evaluator (Values1)
-structure Evaluator2 = Evaluator (Values2)
-structure EvaluatorM = Evaluator (ValuesM)
+structure Evaluator1 = Evaluator (type t = value1) (Values1)
+structure Evaluator2 = Evaluator (type t = value2) (Values2)
+structure EvaluatorM = Evaluator (type t = valueM) (ValuesM)
 
 fun ext1 g (P p) t = foldPattern (TC.C1.extend, ext1, Values1.untuple, Stuck) g p t
   | ext1 g (Pmono p) t = ext3 g p (unmono t)
@@ -83,14 +77,7 @@ fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.C1.lookup) exp
 		in
 			Values1.makeinj (i, V1mono v)
 		end
-  | eval1 env (E1pushArr e) = 
-		let 
-			val (c,b) = ValuesM.unlam (unmono (eval1 env e))
-			val y = Variable.newvar "y"
-		in
-			Values1.makelam (c, (Pmono (PM (Pvar y)), 
-					E1mono ( EM (Flet (EM (Fvar y),b)))))
-		end
+  | eval1 env (E1pushArr e) = Values1.makelam (V1mono o (ValuesM.unlam (unmono (eval1 env e))) o unmono)
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext3,TC.C3.lookup) exp
 and eval2 env (E2 exp) = Evaluator2.evalF env eval2 (ext2,TC.C2.lookup) exp

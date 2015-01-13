@@ -17,7 +17,7 @@ datatype stage	= ThisStage | NextStage | MonoStage
 datatype patt	= P of (string,patt) S.pattern
 				| Pmono of patt
 				| Pnext of patt
-datatype expr	= Estandard of (expr,string,patt,ty) S.exprF
+datatype expr	= Estandard of (expr,string,patt * expr,ty) S.exprF
 				| Enext of expr
 				| Eprev of expr
 				| Emono of expr
@@ -42,22 +42,20 @@ fun Tsum (a,b) = Tstandard (TFsum [a,b])
 val Tarr = Tstandard o TFarr
 
 val Evar = Estandard o S.Fvar
-val Eint = Estandard o S.FprimVal o Prims.Vint
-val Ebool = Estandard o S.FprimVal o Prims.Vbool
-val Estr = Estandard o S.FprimVal o Prims.Vstr
-val Etuple = Estandard o S.Ftuple
-fun Einjl (t, e) = Estandard (S.Finj ([],[t],e))
-fun Einjr (t, e) = Estandard (S.Finj ([t],[],e))
+val Eint = Estandard o S.SEdata o DataFrag.EprimVal o Prims.Vint
+val Ebool = Estandard o S.SEdata o DataFrag.EprimVal o Prims.Vbool
+val Estr = Estandard o S.SEdata o DataFrag.EprimVal o Prims.Vstr
+val Etuple = Estandard o S.SEprod o BranchlessFrag.Etuple
 val Eroll = Estandard o S.Froll
 val Eunroll = Estandard o S.Funroll
-val Epi = Estandard o S.Fpi
-val Eif = Estandard o S.Fif
-fun Ecase (e,bs) = Estandard (S.Fcase (e,bs))
+val Epi = Estandard o S.SEprod o BranchlessFrag.Epi
+val Eif = Estandard o S.SEdata o DataFrag.Eif
+fun Ecase (e,bs) = Estandard (S.SEdata (DataFrag.Ecase (e,bs)))
 val Elam = Estandard o S.Flam
 val Eapp = Estandard o S.Fapp
 val Elet = Estandard o S.Flet
-val Eerror = Estandard o S.Ferror
-val Ebinop = Estandard o S.Fbinop
+val Eerror = Estandard o S.SEdata o DataFrag.Eerror
+val Ebinop = Estandard o S.SEdata o DataFrag.Ebinop
 
 val Punused = P S.Punused
 val Ptuple = P o S.Ptuple

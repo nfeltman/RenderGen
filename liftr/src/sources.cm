@@ -1,9 +1,13 @@
 Group is
 	  (* common stuff *)
 	  common/common.sml
+	  common/monad.sml
 	  common/variable.sig
 	  common/variable.sml
 	  common/context.sml
+	  (*corelang/fragment.sml*)
+	  corelang/products.sml
+	  corelang/dataFragment.sml
 	  corelang/prim.sml
 	  corelang/sourceLang.sml
 	  corelang/coreTypes.sml

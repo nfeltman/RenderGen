@@ -1,30 +1,28 @@
 signature SourceValues = 
 sig
 	type v (* value *)
-	type c (* context *)
-	type r (* variable *)
-	type e (* expr *)
+	type f (* output type *)
 	
 	val makeprim   : Prims.primValue -> v
 	val makeroll  : v -> v
 	val maketuple : v list -> v
 	val makeinj   : int * v -> v
-	val makelam   : c * (r * e) -> v
+	val makelam   : (v -> f) -> v
 	
 	val unprim  : v -> Prims.primValue
 	val unroll  : v -> v
 	val untuple : v -> v list
 	val uninj   : v -> int * v
-	val unlam   : v -> c * (r * e)
+	val unlam   : v -> (v -> f)
 end
 
 structure ValuesBase = 
 struct
-	datatype ('v,'c,'r,'e) valueF	= VFprim of Prims.primValue
-									| VFroll of 'v
-									| VFtuple of 'v list
-									| VFinj of int * 'v
-									| VFlam of 'c * ('r * 'e)
+	datatype ('v,'f) valueF	= VFprim of Prims.primValue
+							| VFroll of 'v
+							| VFtuple of 'v list
+							| VFinj of int * 'v
+							| VFlam of 'v -> 'f
 	
 	fun unroll (VFroll v) = v
 	  | unroll _ = raise LangCommon.Stuck
@@ -37,27 +35,23 @@ struct
 	fun unlam (VFlam e) = e
 	  | unlam _ = raise LangCommon.Stuck
 	  
-	fun mapValue f fe (VFprim p) = VFprim p 
-	  | mapValue f fe (VFroll v) = VFroll (f v)
-	  | mapValue f fe (VFtuple vs) = VFtuple (map f vs)
-	  | mapValue f fe (VFinj (i,v)) = VFinj (i, f v)
-	  | mapValue f fe (VFlam (c,(r,e))) = VFlam (c,(r,fe e))
+(*	fun mapValue f (VFprim p) = VFprim p 
+	  | mapValue f (VFroll v) = VFroll (f v)
+	  | mapValue f (VFtuple vs) = VFtuple (map f vs)
+	  | mapValue f (VFinj (i,v)) = VFinj (i, f v)
+	  | mapValue f (VFlam vf) = VFlam (c,(r,fe e)) *)
 end
 
 
 functor EmbedValues (V : sig 
 	type v 
-	type c
-	type r
-	type e
-	val outof : v -> (v,c,r,e) ValuesBase.valueF
-	val into : (v,c,r,e) ValuesBase.valueF -> v 
+	type f
+	val outof : v -> (v,f) ValuesBase.valueF
+	val into : (v,f) ValuesBase.valueF -> v 
 end) : SourceValues = 
 struct 
 	type v = V.v
-	type c = V.c 
-	type r = V.r 
-	type e = V.e
+	type f = V.f
 	
 	val makeprim	= V.into o ValuesBase.VFprim
 	val makeroll	= V.into o ValuesBase.VFroll
