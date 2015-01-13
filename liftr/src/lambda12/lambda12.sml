@@ -20,7 +20,6 @@ datatype expr1	= E1 of (expr1,LangCommon.var,pattern12 * expr1,type1) SourceLang
 				| E1pushPrim of expr1
 				| E1pushProd of expr1
 				| E1pushSum of expr1
-				| E1pushArr of expr1
 
 and expr2		= E2 of (expr2,LangCommon.var,patternM * expr2,type2) SourceLang.exprF
 				| E2prev of expr1

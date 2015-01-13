@@ -13,7 +13,6 @@ datatype 'v il1	= IL1standard of ('v il1,'v,'v patt * 'v il1, C.ty) exprF
 				| IL1next of 'v il1
 				| IL1prev of 'v il1
 				| IL1mono of 'v il1
-				| IL1pushArr of 'v il1
 				| IL1pushProd of 'v il1
 				| IL1pushSum of 'v il1
 				| IL1pushPrim of 'v il1
@@ -102,7 +101,6 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.Enext e) = IL1next (elab e)
   | elab (C.Ehold e) = IL1hold (elab e)
   | elab (C.EpushPrim e) = IL1pushPrim (elab e)
-  | elab (C.EpushArr e) = IL1pushArr (elab e)
   | elab (C.EpushProd e) = IL1pushProd (elab e)
   | elab (C.EpushSum e) = IL1pushSum (elab e)
 
@@ -118,7 +116,6 @@ fun fixVars G (IL1standard exp) = IL1standard (replaceVars fixVars G (recast,Con
   | fixVars G (IL1next e) = IL1next (fixVars G e)
   | fixVars G (IL1hold e) = IL1hold (fixVars G e)
   | fixVars G (IL1pushPrim e) = IL1pushPrim (fixVars G e)
-  | fixVars G (IL1pushArr e) = IL1pushArr (fixVars G e)
   | fixVars G (IL1pushProd e) = IL1pushProd (fixVars G e)
   | fixVars G (IL1pushSum e) = IL1pushSum (fixVars G e)
 
@@ -156,7 +153,6 @@ and prop1r D (IL1standard exp) = E1 (mapExpr (prop1r D) (propTy1 D) propPatt12 e
   | prop1r D (IL1next e) = E1next (prop2r D e)
   | prop1r D (IL1hold e) = E1hold (prop1r D e)
   | prop1r D (IL1pushPrim e) = E1pushPrim (prop1r D e)
-  | prop1r D (IL1pushArr e) = E1pushArr (prop1r D e)
   | prop1r D (IL1pushProd e) = E1pushProd (prop1r D e)
   | prop1r D (IL1pushSum e) = E1pushSum (prop1r D e)
 
@@ -169,7 +165,6 @@ and prop2r D (IL1standard exp) = E2 (mapExpr (prop2r D) (propTy2 D) propPattM ex
   | prop2r _ (IL1next _) = raise StagePropException
   | prop2r _ (IL1hold _) = raise StagePropException
   | prop2r _ (IL1pushPrim _) = raise StagePropException
-  | prop2r _ (IL1pushArr _) = raise StagePropException
   | prop2r _ (IL1pushProd _) = raise StagePropException
   | prop2r _ (IL1pushSum _) = raise StagePropException
 
@@ -182,7 +177,6 @@ and propM D (IL1standard exp) = EM (mapExpr (propM D) (propTyM D) propPattM exp)
   | propM _ (IL1next _) = raise StagePropException
   | propM _ (IL1hold _) = raise StagePropException
   | propM _ (IL1pushPrim _) = raise StagePropException
-  | propM _ (IL1pushArr _) = raise StagePropException
   | propM _ (IL1pushProd _) = raise StagePropException
   | propM _ (IL1pushSum _) = raise StagePropException
   

@@ -144,7 +144,6 @@ fun eval1 env (E1 exp) =
 		in
 			(g, V1 (VFinj (i, V1mono v)))
 		end
-  | eval1 env (E1pushArr e) = raise Stuck
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) exp
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)

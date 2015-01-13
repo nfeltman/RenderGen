@@ -122,7 +122,6 @@ fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 exp
   | typeCheck1 gamma (E1pushPrim e) = TypeFeatures1.makeprim ` TypeFeatures2.unprim ` unnow ` typeCheck1 gamma e
   | typeCheck1 gamma (E1pushProd e) = TypeFeatures1.makeprod ` map T1now ` TypeFeatures2.unprod ` unnow ` typeCheck1 gamma e
   | typeCheck1 gamma (E1pushSum e) = TypeFeatures1.makesum ` map T1now ` TypeFeatures2.unsum ` unnow ` typeCheck1 gamma e
-  | typeCheck1 gamma (E1pushArr e) = TypeFeatures1.makearr ` mapboth T1now ` TypeFeatures2.unarr ` unnow ` typeCheck1 gamma e
 	
 and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 exp
   | typeCheck2 gamma (E2prev e) = unfut (typeCheck1 gamma e)

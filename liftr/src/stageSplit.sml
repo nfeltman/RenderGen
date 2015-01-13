@@ -374,18 +374,6 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		in
 			(newT, res)
 		end
-  | stageSplit1 gamma (E1pushArr e) = 
-		let
-			val (t, res) = stageSplit1 gamma e
-			fun mapboth f (a,b) = (f a, f b)
-			val newT = Typecheck12.TypeFeatures1.makearr ` mapboth T1now ` Typecheck12.TypeFeatures2.unarr ` Typecheck12.unnow ` t
-			val x = Variable.newvar "x"
-		in
-			(newT, merge1 res
-				(fn v => Elam((),(PPvar x, Etuple [Eapp (v, Evar x), Eunit])))
-				(fn r => chain2 (r, Elam ((),(PPtuple [PPtuple[], PPtuple[]], Eunit))))
-			)
-		end
 
 and stageSplit2 gamma (E2 exp) : type2 * splitResult2 = 
 	let

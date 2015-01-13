@@ -77,7 +77,6 @@ fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.C1.lookup) exp
 		in
 			Values1.makeinj (i, V1mono v)
 		end
-  | eval1 env (E1pushArr e) = Values1.makelam (V1mono o (ValuesM.unlam (unmono (eval1 env e))) o unmono)
 		
 and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext3,TC.C3.lookup) exp
 and eval2 env (E2 exp) = Evaluator2.evalF env eval2 (ext2,TC.C2.lookup) exp

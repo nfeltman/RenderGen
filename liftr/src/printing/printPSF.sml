@@ -101,7 +101,6 @@ fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 c
   | convertStage1v G (S.E1pushPrim e) = EprimApp("push", convertStage1v G e)
   | convertStage1v G (S.E1pushProd e) = EprimApp("pushP", convertStage1v G e)
   | convertStage1v G (S.E1pushSum e) = EprimApp("pushS", convertStage1v G e)
-  | convertStage1v G (S.E1pushArr e) = EprimApp("pushA", convertStage1v G e)
 and convertStage2v G (S.E2 e) = convertSource G convertStage2v convertTyStage2 convertPatternM e
   | convertStage2v G (S.E2prev e) = EbraceApp("prev", convertStage1v G e)
 and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 convertPatternM e
