@@ -19,24 +19,15 @@ in
 
 (* second stage values/expressions *)
 datatype expr	= E of (expr,var,patternM * expr,unit) exprF
-datatype value2	= V2 of (value2,value2) valueF
+datatype valueMono = VM of (valueMono,valueMono) valueF
 
 (* first stage values *)
-structure FirstStageValues = 
-struct
-	datatype value1	= V1 of (value1, (expr -> expr) * value1) valueF
-					| V1hat of var
-					| V1mono of valueM
-	and 	 valueM = VM of (valueM,valueM) valueF
-	and		  entry = Bind1 of value1 | Bind2 of valueM
-	withtype   cont = entry MainDict.cont
+datatype value1	= V1 of (value1, (expr -> expr) * value1) valueF
+				| V1hat of var
+				| V1mono of valueMono
 
-	type t1 = value1 type t2 = valueM
-	structure Base = BasicContext (MainDict) (type t = entry)
-end
+structure FirstStageValues = DoubleContext (MainDict) (type t1 = value1) (type t2 = valueMono) 
 structure Contexts1 = ProjectDoubleContext (FirstStageValues)
-open FirstStageValues
-
 
 fun unV1 (V1 v) = v
   | unV1 _ = raise Stuck
@@ -45,15 +36,14 @@ fun unhat (V1hat y) = y
   | unhat _ = raise Stuck
 fun unmono (V1mono v) = v
   | unmono _ = raise Stuck
-fun unV2 (V2 v) = v
 
 structure ValuesM = EmbedValues (struct
-	type v = valueM
-	type f = valueM
+	type v = valueMono
+	type f = valueMono
 	fun outof (VM v) = v
 	val into = VM
 end)
-structure EvaluatorM = Evaluator (type t = valueM) (ValuesM)
+structure EvaluatorM = Evaluator (type t = valueMono) (ValuesM)
 
 fun ext1helper (gNow,gNext) x t = (Contexts1.C1.extend gNow x t, gNext)
 fun ext1 g (P p) t = foldPattern (ext1helper, ext1, untuple o unV1, Stuck) g p t
@@ -128,14 +118,7 @@ fun eval1 env (E1 exp) =
 		in
 			(fn r=> g ` E ` Flet (E ` SEdata ` DataFrag.EprimVal ` unprimV ` unVM ` unmono v, (PM (Pvar y), r)), V1hat y)
 		end
-  | eval1 env (E1mono e) = 
-		let
-			fun promoteType (T2 t) = T1 (TypesBase.mapType promoteType t)
-			fun promotePattern (PM p) = P ` mapPattern promotePattern p
-			fun promoteToE1 (EM e) = E1 (SourceLang.mapExpr promoteToE1 promoteType promotePattern e)
-		in
-			(id, V1mono ` evalM env e)
-		end
+  | eval1 env (E1mono e) = (id, V1mono ` evalM env e)
   | eval1 env (E1pushPrim e) = map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
   | eval1 env (E1pushProd e) = map2 (V1 o VFtuple o (map V1mono) o untuple o unVM o unmono) (eval1 env e)
   | eval1 env (E1pushSum e) = 
@@ -149,16 +132,11 @@ and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) 
 and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
   | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
   
-structure Context2 = BasicContext (MainDict) (type t = value2) 
-structure Values2 = EmbedValues (struct
-	type v = value2
-	type f  = value2
-	fun outof (V2 v) = v
-	val into = V2
-end)
-fun ext g (PM p) t = foldPattern (Context2.extend, ext, Values2.untuple, Stuck) g p t
+structure Context2 = BasicContext (MainDict) (type t = valueMono) 
 
-structure Evaluator2 = Evaluator (type t = value2) (Values2)
+fun ext g (PM p) t = foldPattern (Context2.extend, ext, ValuesM.untuple, Stuck) g p t
+
+structure Evaluator2 = Evaluator (type t = valueMono) (ValuesM)
 
 fun eval2 env (E exp) = Evaluator2.evalF env eval2 (ext,Context2.lookup) exp
 end

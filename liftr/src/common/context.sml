@@ -57,6 +57,7 @@ functor DoubleContext
 	(D : Dict) 
 	(type t1) (type t2) = 
 struct
+	type t1 = t1 type t2 = t2
 	datatype entry = Bind1 of t1 | Bind2 of t2
 	structure Base = BasicContext (D) (type t = entry)
 end

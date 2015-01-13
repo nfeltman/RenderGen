@@ -11,9 +11,9 @@ structure Comp = ValueComparison
 datatype progSource = Literal | FileName
 datatype testLevel = NONE | SAME | EXACT of value1
 val ansI = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vint
-val ansNI = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vint
+val ansNI = EXACT o V1next o VM o ValuesBase.VFprim o Prims.Vint
 val ansB = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vbool
-val ansNB = EXACT o V1next o V2 o ValuesBase.VFprim o Prims.Vbool
+val ansNB = EXACT o V1next o VM o ValuesBase.VFprim o Prims.Vbool
 val ansS = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vstr
 
 infixr 9 `

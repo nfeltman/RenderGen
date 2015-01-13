@@ -49,11 +49,11 @@ and splitErasureValueM v =
 		
 and splitErasureValue2 v = 
 		case v of 
-		  E.V2 (VFprim i) => Vprim i
-		| E.V2 (VFroll v) => Vroll (splitErasureValue2 v)
-		| E.V2 (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
-		| E.V2 (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
-		| E.V2 (VFlam _) => raise ConversionError
+		  E.VM (VFprim i) => Vprim i
+		| E.VM (VFroll v) => Vroll (splitErasureValue2 v)
+		| E.VM (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
+		| E.VM (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
+		| E.VM (VFlam _) => raise ConversionError
 		
 fun splitDiagValue1 v = 
 		case v of 
@@ -81,11 +81,11 @@ and splitDiagValueM v =
 		
 fun convertDiagValue2 v = 
 		case v of 
-		  D.V2 (VFprim i) => Vprim i
-		| D.V2 (VFroll v) => Vroll (convertDiagValue2 v)
-		| D.V2 (VFtuple vs) => Vtuple (map convertDiagValue2 vs)
-		| D.V2 (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)
-		| D.V2 (VFlam _) => raise ConversionError
+		  D.VM (VFprim i) => Vprim i
+		| D.VM (VFroll v) => Vroll (convertDiagValue2 v)
+		| D.VM (VFtuple vs) => Vtuple (map convertDiagValue2 vs)
+		| D.VM (VFinj (side,v)) => Vinj (side, convertDiagValue2 v)
+		| D.VM (VFlam _) => raise ConversionError
 		
 fun valueEq (V v1) (V v2) = 
 	case (v1,v2) of 
