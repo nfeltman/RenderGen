@@ -37,7 +37,10 @@
 									{[\mu \alpha.\tau / \alpha]\tau}}		{\ty e {\mu \alpha.\tau}} 														\and
 \infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
 \infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
-\infertypeswor [hold]			{\typestwo {\pause~e} \rmint}				{\typesone e {\rm int}}		 													\and
+\infertypeswor [\monoType I] {\typesone {\monoTerm~e} {\monoType A}}					{\typesmono e A} 																\and
+\infertypeswor [\monoType E] {\typesone {\letmono x {e_1} {e_2}} B}					{\typesone {e_1} {\monoType A} & \typesone [\Gamma,\colmono x A] {e_2} B} 		\and
+\infertypeswor [lift] {\typesone {\lifttag~e} {\monoType A + \monoType B}}	{\typesone e {\monoType (A+B)}} 												\and
+\infertypeswor [hold]			{\typesone {\pause~e} {\fut \rmint}}				{\typesone e {\monoType \rmint}}		 													\and
 \end{mathpar}
 \caption{\lang~Static Semantics}
 \label{fig:statics}
