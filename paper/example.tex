@@ -12,6 +12,20 @@ $\pause$ should be called ``promote'' or something like that. I
 \end{itemize}
 }
 
+\crem{
+Notes from 1/16:
+\begin{itemize}
+\item We are modeling computations where some inputs arrive at stage 1 and
+others arrive at stage 2. As a result, some subcomputations can be performed at
+stage 1, and others at stage 2.
+\item \emph{Statics}: M12 is a language with three worlds: 1, 2, and M.
+We model the computations described above as functions in world M.
+\item \emph{Dynamics}: We describe how to perform all of the stage 1
+subcomputations in an M12 program. Our semantics are mutually defined in terms
+of how to reduce terms in each of the three worlds.
+\end{itemize}
+}
+
 \input{figures/quickselect}
 
 Suppose that we wish to issue order statistics queries on a collection of items
