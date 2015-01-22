@@ -1,26 +1,60 @@
+%!TEX root = paper.tex
+
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-Given a term $e$ in the source language \lang, where terms of
-stage~\bbone\ and stage~\bbtwo\ may be interleaved, \emph{(stage)
-  splitting} separates the stage~\bbone\ and stage~\bbtwo\
-subcomputations into two terms,~$e_1$ and~$e_2$, in an unstaged target language \langmono\ 
-%each performing the
-%subcomputations corresponding to each stage.  More precisely, given a
-%\lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
-%unstaged target language \langmono\
-such that~$e_1$ performs all the
-stage~\bbone\ subcomputations in~$e$ and~$e_2$~performs all of the
-stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluating~$e$ in
-the staged language produces the same result as evaluating~$e_1$ in the target language,
-then further evaluating~$e_2$ in the target language with the result from~$e_1$.
+The primary strength of \lang\ is the expressive power afforded by
+its ability to syntactically inteleave work intended for stage \bbone\
+and work intended for stage \bbtwo, as well as it ability to form
+mixed-stage abstractions.
 
-In this section, we present a
-splitting algorithm for the source language \lang, specifying
-precisely the algorithm and its correctness conditions.  
-We begin by defining a masking relation that serves to extract stage~\bbone\ and
-stage~\bbtwo\ components of \lang\ partial values into \langmono\ terms that the outputs of splitting are designed to match. We then 
-move on to the specification of the splitting algorithm itself.
+But one could imagine a simpler multistage language, \langS,
+wherein the stages are syntactically separated {\em in the source}.
+That is, there is only one multistage construct, and it has the form:
+\[
+\dothen {e_1} x {e_2}
+\]
+where $e_1$ and $e_2$ are entirely monostage terms that
+encode the stage \bbone\ work and stage \bbtwo\ work, respectively,
+of the whole program.
+The type system for this language has only a single multistage type,
+$A \& B$ which means the program produces a value of type $A$ 
+as the output of stage \bbone\ and a value of type $B$ as the
+output of stage \bbtwo.  
+There is also only one typing rule:
+\[
+\infer {\dothen {e_1} x {e_2} : A \& B} {\types[\emptyC]{e_1}{A\times \tau} & \types[x : \tau]{e_2}{B}}
+\]
+Phase \bbone\ evaluation is given by
+\[
+\infer {\dothen {e_1} x {e_2} \Downarrow_\bbone^{S} [v_1; [u/x]e_2] } {\reduce{e_1}{(v_1,u)}}
+\]
+and phase \bbtwo\ evaluation is given by
+\[
+\infer {[v_1; e_2] \Downarrow_\bbtwo^{S} [v_1; v_2] } {\reduce{e_2}{v_2}}
+\]
+
+[Need to talk about the other flavor in \langS, which produces no first-stage output.]
+
+% Given a term $e$ in the source language \lang, where terms of
+% stage~\bbone\ and stage~\bbtwo\ may be interleaved, \emph{(stage)
+%   splitting} separates the stage~\bbone\ and stage~\bbtwo\
+% subcomputations into two terms,~$e_1$ and~$e_2$, in an unstaged target language \langmono\ 
+% %each performing the
+% %subcomputations corresponding to each stage.  More precisely, given a
+% %\lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
+% %unstaged target language \langmono\
+% such that~$e_1$ performs all the
+% stage~\bbone\ subcomputations in~$e$ and~$e_2$~performs all of the
+% stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluating~$e$ in
+% the staged language produces the same result as evaluating~$e_1$ in the target language,
+% then further evaluating~$e_2$ in the target language with the result from~$e_1$.
+
+The goal of stage splitting is to translate terms of \lang\ into equivalent terms of \langS.
+[Specifically, there are versions for each flavor.]
+
+We begin by defining {\em masking} operations that relate the full and partial values of \lang\ and \langS.
+With our end goal defined, we move on to the specification of the term splitting algorithm itself.
 
 
 \subsection{Masking}
