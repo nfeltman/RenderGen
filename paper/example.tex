@@ -74,13 +74,17 @@ language. In this paper, we choose \lang\ (\ref{sec:semantics}), a staged, typed
 lambda calculus. This allows us to directly express the idea that the argument
 \texttt{l} is known at the \emph{first} stage of the computation, while the
 argument \texttt{k} is only known at the \emph{second}, and all
-purely-stage-\bbone\ computation occurs before any stage \bbtwo\ computation.
+first-stage computation occurs before any second-stage computation.
 
-We define a staged version of quickselect in \ref{fig:qs-staged}, writing stage
-\bbone\ code in red, and stage \bbtwo\ code in blue. Whereas \texttt{qSelect}
-sends a \textrm{list} and \rmint\ to an \rmint, \texttt{qsStaged} is more
-precise---it is a stage \bbone\ function which takes a \textrm{list} and a
-$\fut\rmint$ (an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$. 
+We define a staged version of quickselect in \ref{fig:qs-staged}, writing
+first-stage computations in red, and second-stage computations in blue. While
+\texttt{qSelect} sends a \textrm{list} and \rmint\ to an \rmint,
+\texttt{qsStaged} has a more precise type---it is a first-stage function which
+takes a \textrm{list} and a $\fut\rmint$ (an $\rmint$ \emph{in the future}), and
+returns a $\fut\rmint$. 
+
+\crem{Next three paragraphs are waiting on exact code for \ref{fig:qs-staged}.
+Use three colors?}
 
 The stage \bbone\ portions of \texttt{qsStaged} look like \texttt{qSelect}: any
 term of non-circle type is available for immediate use. Indeed, we case on
@@ -110,7 +114,7 @@ name of \emph{binding time analysis}. In this paper, we assume that these
 annotations have been provided by the programmer (or perhaps a binding time
 analysis tool), and do not consider the problem of generating such annotations.
 There are many ways to annotate any program, including \texttt{qSelect}; we
-chose annotations which maximize the work performed at stage \bbone.
+chose annotations which maximize the work performed in the first stage.
 
 %The purpose of writing quickselect in \lang\ is that, because \texttt{qsStaged}
 %typechecks, it is a valid way of dividing the program into two stages, where the
@@ -128,7 +132,7 @@ chose annotations which maximize the work performed at stage \bbone.
 
 An astute programmer, having noticed that \texttt{quickselect} can be staged in
 this fashion, might try to split it into a pair of functions, one which performs
-all the work depending only on \texttt{l} (stage \bbone), and one which uses
+all the work depending only on \texttt{l} (the first stage), and one which uses
 \texttt{k} and the result of that work on \texttt{l} to compute the element with
 rank \texttt{k} in \texttt{l}. 
 
@@ -140,6 +144,8 @@ have \texttt{k}, we can recur on this tree, choosing whichever branch has the
 \texttt{k}${}^\textit{th}$ leftmost element until we reach a leaf. Crucially,
 because \texttt{partition} has no stage \bbtwo\ content, we need not perform any
 of its work at stage \bbtwo!
+
+\crem{Use $\bbonep$ to explain the above.}
 
 We have implemented this splitting of quickselect in \ref{fig:qs-split}.
 \texttt{qSelect1} builds a binary search tree from the list \texttt{l}, and
@@ -164,8 +170,8 @@ improvement.
 
 In this paper, we develop a splitting algorithm
 (\ref{sec:splitting,sec:implementation}) which, for any term $e$ in \lang,
-produces a pair of terms $e_1,e_2$ containing respectively all the stage \bbone\
-and stage \bbtwo\ content of $e$, such that $e_2~e_1$ is equivalent to $e$.
+produces a pair of terms $e_1,e_2$ containing respectively all the first- and
+second-stage content of $e$, such that $e_2~e_1$ is equivalent to $e$.
 (Such a splitting is always possible because $e$ is well-typed in \lang.) In the
 case of \texttt{qsStaged}, our splitting algorithm produces the algorithm
 described above.
