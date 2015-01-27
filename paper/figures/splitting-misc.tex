@@ -1,3 +1,5 @@
+%!TEX root = ../paper.tex
+
 %\begin{figure*}
 %\caption{Type Splitting}
 %\label{fig:typeSplit}
@@ -15,42 +17,83 @@
 %\end{figure*}
 %
 
-\begin{figure}
-\[\begin{array}{l|l|l}
-[\xi;v] & \masko{\xi;v} & \maskt{\xi;v} \\ \hline
-[\hat y \mapsto q,\xi;v]
-  & \masko{\cdot;v}
-  & \letin {\hat y} q {\maskt{\xi;v}} \\\relax
-[\cdot;()] 
-  & ()
-  & () \\\relax
-[\cdot;\monoTerm~v] 
-  & v
-  & () \\\relax
-[\cdot;\next~\hat y] 
-  & ()
-  & \hat y \\\relax
-[\cdot;(v_1,v_2)] 
-  & (\masko {\cdot;v_1},\masko {\cdot;v_2})
-  & (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\\relax
-[\cdot;\inl~v] 
-  & \inl~\masko{\cdot;v}
-  & \maskt {\cdot;v} \\\relax
-[\cdot;\inr~v] 
-  & \inr~\masko{\cdot;v}
-  & \maskt {\cdot;v} \\\relax
-[\cdot;\roll~v] 
-  & \roll~\masko{\cdot;v}
-  & \maskt {\cdot;v} \\\relax
-[\cdot;\lam xAe]
-  & \lambda x.c 
-  & \lambda (x,l).r \\
-& \text{ for } \splitone e A {c,l.r}
-& \text{ for } \splitone e A {c,l.r}
-\end{array}\]
+% \[\begin{array}{l|l|l}
+% [\xi;v] & \masko{\xi;v} & \maskt{\xi;v} \\ \hline
+% [\hat y \mapsto q,\xi;v]
+%   & \masko{\cdot;v}
+%   & \letin {\hat y} q {\maskt{\xi;v}} \\\relax
+% [\cdot;()] 
+%   & ()
+%   & () \\\relax
+% [\cdot;\monoTerm~v] 
+%   & v
+%   & () \\\relax
+% [\cdot;\next~\hat y] 
+%   & ()
+%   & \hat y \\\relax
+% [\cdot;(v_1,v_2)] 
+%   & (\masko {\cdot;v_1},\masko {\cdot;v_2})
+%   & (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\\relax
+% [\cdot;\inl~v] 
+%   & \inl~\masko{\cdot;v}
+%   & \maskt {\cdot;v} \\\relax
+% [\cdot;\inr~v] 
+%   & \inr~\masko{\cdot;v}
+%   & \maskt {\cdot;v} \\\relax
+% [\cdot;\roll~v] 
+%   & \roll~\masko{\cdot;v}
+%   & \maskt {\cdot;v} \\\relax
+% [\cdot;\lam xAe]
+%   & \lambda x.c 
+%   & \lambda (x,l).r \\
+% & \text{ for } \splitone e A {c,l.r}
+% & \text{ for } \splitone e A {c,l.r}
+% \end{array}\]
 
-\caption{The stage~\bbone\ and stage~\bbtwo\ masking functions take a \lang\ partial value and residual table as input
-and return a \langmono\ term that corresponds to only the input content belonging to the specified stage.}
+\begin{figure}
+\begin{abstrsyn}
+\[\begin{array}{rll}
+[\hat y \mapsto q,\xi;v]
+  &\vsplito& \mval 
+  {i}
+  {\letin {\hat y} q {r}} \\\relax
+[\cdot;()]
+  &\vsplito& \mval 
+  {()}
+  {()} \\\relax
+[\cdot;\monoTerm{m}]
+  &\vsplito& \mval 
+  {m}
+  {()} \\\relax
+[\cdot;\next{\hat y}]
+  &\vsplito& \mval 
+  {()}
+  {\hat y} \\\relax
+[\cdot;(v_1,v_2)]
+  &\vsplito& \mval 
+  {(i_1,i_2)}
+  {(r_1,r_2)} \\\relax
+[\cdot;\inl{v}]
+  &\vsplito& \mval 
+  {\inl{i}}
+  {r} \\\relax
+[\cdot;\inr{v}]
+  &\vsplito& \mval 
+  {\inr{i}}
+  {r} \\\relax
+[\cdot;\roll{v}]
+  &\vsplito& \mval 
+  {\roll{i}}
+  {r} \\\relax
+[\cdot;\lam xAe]
+  &\vsplito& \mval 
+  {\lambda (x.c)}
+  {\lambda (x,l).r}
+\end{array}\]
+\end{abstrsyn}
+\caption{The masking relations takes a \lang\ partial value a masked value
+comprising the seperated stage~\bbone\ and stage~\bbtwo\ parts. 
+[needs some where clauses above]}
 \label{fig:valMask}
 \end{figure}
 

@@ -1,3 +1,5 @@
+%!TEX root = ../paper.tex
+
 %\begin{figure}
 %\begin{mathpar}
 %\infertypeswor[\rmunit]
@@ -37,6 +39,7 @@
 %\end{figure}
 
 \begin{figure*}
+\begin{abstrsyn}
 \begin{mathpar}
 \fbox{1-Evaluation}
 \and
@@ -44,21 +47,13 @@
 {\red {()}{\cdot;()}}
 {\cdot}
 \and
-\inferdiaone[int]
-{\red {i}{\cdot;i}}
-{\cdot}
-\and
-%\inferdiaone [bool]
-%{\red {b}{\cdot;b}}
-%{\cdot}
-%
 \inferdiaone [\to I]
-{\red {\lam{x}{A}{e}} {\cdot;\lam{x}{A}{e}}}
+{\red {\lam{x}{e}} {\cdot;\lam{x}{e}}}
 {\cdot}
 \and
 \inferdiaone [\to E]
 {\red {e_1~e_2} {\gcomp 1 2, \xi';v'}}
-{\red {e_1} {\xi_1;\lam{x}{A}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}
+{\red {e_1} {\xi_1;\lam{x}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}
 \and
 %
 \inferdiaone [\times I]
@@ -66,50 +61,41 @@
 {\sub [1] & \sub [2]}
 \and
 \inferdiaone [\times E_1]
-{\red {\pio~e}{\xi;v_1}}
+{\red {\pio{e}}{\xi;v_1}}
 {\red{e}{\xi;\valprod{v_1}{v_2}}}
 \and
 \inferdiaone [\times E_2]
-{\red {\pit~e}{\xi;v_2}}
+{\red {\pit{e}}{\xi;v_2}}
 {\red{e}{\xi;\valprod{v_1}{v_2}}}
 \and
 \inferdiaone [+ I_1]
-{\red {\inl~e} {\xi;\inl~v}}
+{\red {\inl{e}} {\xi;\inl{v}}}
 {\sub}
 \and
 \inferdiaone [+ I_2]
-{\red {\inr~e} {\xi;\inr~v}}
+{\red {\inr{e}} {\xi;\inr{v}}}
 {\sub}
 \and
 %
 \inferdiaone [+ E_1]
 {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}
-{\red {e_1}{\xi_1;\inl~v} & \red
+{\red {e_1}{\xi_1;\inl{v}} & \red
   [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}}
 \and
 \inferdiaone [+ E_2]
 {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}
-{\red {e_1}{\xi_1;\inr~v} & \red
+{\red {e_1}{\xi_1;\inr{v}} & \red
   [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}
 \and
-%
-%\inferdiaone [let]			{\red {\letin{x}{e_1}{e_2}}{\gcomp 1 2; v_2}}					{\sub [1] & \red [\Gamma,\dom{\xi_1}] {[v_1/x]e_2}{\xi_2;v_2}}											\and
-%\inferdiaone [if_T]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 2;v}}					{\red {e_1}{\xi_1;\tt true}  & \red {e_2}{\xi_2;v}} 							\and
-%\inferdiaone [if_F]   		{\red {\ifthen{e_1}{e_2}{e_3}}{\gcomp 1 3;v}}					{\red {e_1}{\xi_1;\tt false} & \red {e_3}{\xi_3;v}}							\and
-%
 \inferdiaone[\mu I]
-{\red {\roll~e}{\xi;\roll~v}}
+{\red {\roll{e}}{\xi;\roll{v}}}
 {\sub}
 \and
 \inferdiaone[\mu E]
-{\red {\unroll~e}{\xi; v}}
-{\red {e}{\xi; \roll~v}}
-\and
-\inferdiaone 
-[\fut I]
-{\red {\next~e}{\hat y \mapsto q,\next~\hat y}}
-{\diatwo e q & \hat{y}~\mbox{\tt fresh}}
+{\red {\unroll{e}}{\xi; v}}
+{\red {e}{\xi; \roll{v}}}
 \end{mathpar}
+
 \hrule
 \begin{mathpar}
 \fbox{Residualization}
@@ -141,14 +127,9 @@
 {\red {(e_1,e_2)}{(q_1,q_2)}}
 {\sub [1] & \sub [2]} 
 \and
-\inferdiaspc [\times E]
-{\red {\pio/\pit~e}{\pio/\pit~q}}
+\inferdiaspc [C]
+{\red {\mathcal{C}(e)}{\mathcal{C}(q)}}
 {\sub}
-\and
-\inferdiaspc [+ I]
-{\red {\inl/\inr~e}{\inl/\inr~q}}
-{\sub}
-\and
 %\inferdiaspc[+ I_2]
 %{\red {\inr~e}{\inr~q}}
 %{\sub}
@@ -157,18 +138,6 @@
 {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
 {\caseof{q_1}{x_2.q_2}{x_3.q_3}}}
 {\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 
-\and
-\inferdiaspc[\mu I]   
-{\red {\roll/\unroll~e}{\roll/\unroll~q}}
-{\sub}
-\and
-\inferdiaspc[\fut E]
-{\red {\prev~e} q}
-{\diaone e {\xi; \next~\hat y} & \reify{\xi}{\hat y}q}
-\and
-\inferdiaspc[hold]
-{\red {\pause~e} q}
-{\diaone e {\xi; i} & \reify \xi i q}
 %\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
 %	{\sub}										\and
 
@@ -179,16 +148,20 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Reification}
+\fbox{Staging Features}
 \and
-\infer
-{\reify{\cdot}{q}{q}}
-{\cdot}
-\and
-\infer
-{\reify{(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}
-{\reify{\xi}{q_2}{q'}}
+\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}															\and
+\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}					\and
+\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \monoTerm i}}												\and
+\infer					{\reify {\cdot}{q}{q}}										{\cdot}																	\and
+\infer					{\reify {(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}	{\reify{\xi}{q_2}{q'}}													\and
+\inferdiaone			{\red {\monoTerm e} {\cdot; \monoTerm~v}}					{\reduce e v} 															\and
+\inferdiaone			{\red {\letmono x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\monoTerm {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
+\inferdiaone			{\red {\lifttag e} {\xi;\inl{\monoTerm v}}}					{\red e {\xi; \monoTerm{\inl v}}}										\and
+\inferdiaone			{\red {\lifttag e} {\xi;\inr{\monoTerm v}}}					{\red e {\xi; \monoTerm{\inr v}}}										
 \end{mathpar}
-\caption{\lang~Dynamic Semantics.  Specialization rules for \texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll} follow same pattern as \texttt{pi1}.}
+
+\end{abstrsyn}
+\caption{\lang~Dynamic Semantics.  In residualization rules, $\mathcal{C}$ can stand for \texttt{pi1}/\texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll}.}
 \label{fig:diaSemantics}
 \end{figure*}

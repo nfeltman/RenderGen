@@ -1,3 +1,5 @@
+%!TEX root = ../paper.tex
+
 %\begin{figure}
 %\begin{mathpar}
 %\infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																			\and
@@ -16,32 +18,31 @@
 
 
 \begin{figure*}
+\begin{abstrsyn}
 \begin{mathpar}
-\infertypeswor [\rmunit] 	{\ty {()}\rmunit}								{\cdot} 																			\and
-\infertypeswor [int]			{\ty {i}{\rm int}}							{\cdot} 																			\and
-%\infertypeswor [bool]			{\ty {b} \rmbool}								{\cdot} 																			\and
-\infertypeswor [hyp]			{\ty x A}										{\col x A \in \Gamma} 															\and
-\infertypeswor [\to I]		{\ty {\lam{x}{A}{e}} {A \to B}}				{A \istypewor & \ty [,\col x A] e B} 											\and
-\infertypeswor [\to E]		{\ty {e_1~e_2} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 											\and
-%\infertypeswor [let]			{\ty {\letin{x}{e_1}{e_2}}{B}}				{\ty {e_1} A & \ty [,\col x A] {e_2} B} 										\and
-\infertypeswor [\times I]	{\ty {(e_1,e_2)}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 														\and
-\infertypeswor [\times E_1]	{\ty {\pio~e} A}								{\ty e {A\times B}} 																\and
-\infertypeswor [\times E_2]	{\ty {\pit~e} B}								{\ty e {A\times B}} 																\and
-\infertypeswor [+ I_1]		{\ty {\inl_{A+B}~e} {A + B}}					{\ty e A} 																			\and
-\infertypeswor [+ I_2]		{\ty {\inr_{A+B}~e} {A + B}}					{\ty e B} 																			\and
-\infertypeswor [+ E]			{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}	{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C} 	\and
-%\infertypeswor [if] 			{\ty {\ifthen{e_1}{e_2}{e_3}} A}			{\ty {e_1} \rmbool & \ty {e_2} A & \ty {e_3} A} 								\and
-\infertypeswor [\mu I]		{\ty {\roll_{\mu \alpha.\tau}~e} 
-									{\mu \alpha.\tau}}						{\ty e {[\mu \alpha.\tau / \alpha]\tau}} 										\and
-\infertypeswor [\mu E]		{\ty {\unroll~e} 
-									{[\mu \alpha.\tau / \alpha]\tau}}		{\ty e {\mu \alpha.\tau}} 														\and
-\infertypeswor [\fut I]		{\typesone {\next~e}{\fut A}}				{\typestwo e A} 																	\and
-\infertypeswor [\fut E]		{\typestwo {\prev~e} A}						{\typesone e {\fut A}} 															\and
-\infertypeswor [\monoType I] {\typesone {\monoTerm~e} {\monoType A}}					{\typesmono e A} 																\and
-\infertypeswor [\monoType E] {\typesone {\letmono x {e_1} {e_2}} B}					{\typesone {e_1} {\monoType A} & \typesone [\Gamma,\colmono x A] {e_2} B} 		\and
-\infertypeswor [lift] {\typesone {\lifttag~e} {\monoType A + \monoType B}}	{\typesone e {\monoType (A+B)}} 												\and
-\infertypeswor [hold]			{\typesone {\pause~e} {\fut \rmint}}				{\typesone e {\monoType \rmint}}		 													\and
+\infertypeswor [\rmunit] 	{\ty {()}\rmunit}								{\cdot} 																		\and
+\infertypeswor [int]		{\ty {i} \rmint}								{\cdot} 																		\and
+\infertypeswor [hyp]		{\ty x A}										{\col x A \in \Gamma} 															\and
+\infertypeswor [\to I]		{\ty {\lam [A]{x}{e}} {A \to B}}					{A \istypewor & \ty [,\col x A] e B} 											\and
+\infertypeswor [\to E]		{\ty {e_1~e_2} {B}}								{\ty {e_1} {A \to B} & \ty {e_2} A} 											\and
+\infertypeswor [\times I]	{\ty {(e_1,e_2)}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 													\and
+\infertypeswor [\times E_1]	{\ty {\pio e} A}								{\ty e {A\times B}} 															\and
+\infertypeswor [\times E_2]	{\ty {\pit e} B}								{\ty e {A\times B}} 															\and
+\infertypeswor [+ I_1]		{\ty {\inl [A+B] e} {A + B}}					{\ty e A} 																		\and
+\infertypeswor [+ I_2]		{\ty {\inr [A+B] e} {A + B}}					{\ty e B} 																		\and
+\infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}		{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C} 		\and
+\infertypeswor [\mu I]		{\ty {\roll [\mu \alpha.\tau] e} 
+								{\mu \alpha.\tau}}							{\ty e {[\mu \alpha.\tau / \alpha]\tau}} 										\and
+\infertypeswor [\mu E]		{\ty {\unroll e} 
+								{[\mu \alpha.\tau / \alpha]\tau}}			{\ty e {\mu \alpha.\tau}} 														\and
+\infertypeswor [\fut I]		{\typesone {\next e}{\fut A}}					{\typestwo e A} 																\and
+\infertypeswor [\fut E]		{\typestwo {\prev e} A}							{\typesone e {\fut A}} 															\and
+\infertypeswor [\curr I]	{\typesone {\monoTerm e} {\curr A}}				{\typesmono e A} 																\and
+\infertypeswor [\curr E]	{\typesone {\letmono x {e_1} {e_2}} B}			{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colmono x A] {e_2} B} 			\and
+\infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}	{\typesone e {\curr (A+B)}} 													\and
+\infertypeswor [hold]		{\typesone {\pause e} {\fut \rmint}}			{\typesone e {\monoType \rmint}}		 										\and
 \end{mathpar}
+\end{abstrsyn}
 \caption{\lang~Static Semantics}
 \label{fig:statics}
 \end{figure*}

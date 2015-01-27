@@ -1,20 +1,18 @@
 
 \begin{figure*}
+\begin{concretesyntax}
 \begin{mathpar}
 %\infer	{\typesone {\liftint~e} \rmint}							{\typesone e {\monoType \rmint}} 												
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\inferdiaone	{\red {\monoTerm~e} {\cdot; \monoTerm~v}}				{\reduce e v} 															\and
-\inferdiaone	{\red {\letmono x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}		{\red {e_1} {\xi_1;\monoTerm~v_1} & \red {[v_1/x]e_2} {\xi_2;v_2}} 		\and
-\inferdiaone	{\red {\lifttag~e} {\xi;\inl(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inl~v)}} 										\and
-\inferdiaone	{\red {\lifttag~e} {\xi;\inr(\monoTerm~v)}}				{\red e {\xi; \monoTerm(\inr~v)}} 										\and
 %\inferdiaone	{\red {\liftint~e} {\xi;i}}								{\red e {\xi; \monoTerm~i}} 										
 \end{mathpar}
 \hrule
 \begin{mathpar}
 
 \end{mathpar}
+\end{concretesyntax}
 \caption{Mono Statics and Dynamics}
 \label{fig:monoRules}
 \end{figure*}

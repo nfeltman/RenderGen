@@ -3,64 +3,31 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
+\begin{concretesyntax}
+
 The primary strength of \lang\ is the expressive power afforded by
-its ability to syntactically inteleave work intended for stage \bbone\
+its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as it ability to form
 mixed-stage abstractions.
+[Sentence about how we actual want this in separated monostage form.]
+In this section, we introduce a {\em splitting transformation} whose job 
+is to translate \lang\ terms into a form where the stages are 
+seperated {\em at the top level}.
 
-But one could imagine a simpler multistage language, \langS,
-wherein the stages are syntactically separated {\em in the source}.
-That is, there is only one multistage construct, and it has the form:
-\[
-\dothen {e_1} x {e_2}
-\]
-where $e_1$ and $e_2$ are entirely monostage terms that
-encode the stage \bbone\ work and stage \bbtwo\ work, respectively,
-of the whole program.
-The type system for this language has only a single multistage type,
-$A \& B$ which means the program produces a value of type $A$ 
-as the output of stage \bbone\ and a value of type $B$ as the
-output of stage \bbtwo.  
-There is also only one typing rule:
-\[
-\infer {\dothen {e_1} x {e_2} : A \& B} {\types[\emptyC]{e_1}{A\times \tau} & \types[x : \tau]{e_2}{B}}
-\]
-Phase \bbone\ evaluation is given by
-\[
-\infer {\dothen {e_1} x {e_2} \Downarrow_\bbone^{S} [v_1; [u/x]e_2] } {\reduce{e_1}{(v_1,u)}}
-\]
-and phase \bbtwo\ evaluation is given by
-\[
-\infer {[v_1; e_2] \Downarrow_\bbtwo^{S} [v_1; v_2] } {\reduce{e_2}{v_2}}
-\]
-
-[Need to talk about the other flavor in \langS, which produces no first-stage output.]
-
-% Given a term $e$ in the source language \lang, where terms of
-% stage~\bbone\ and stage~\bbtwo\ may be interleaved, \emph{(stage)
-%   splitting} separates the stage~\bbone\ and stage~\bbtwo\
-% subcomputations into two terms,~$e_1$ and~$e_2$, in an unstaged target language \langmono\ 
-% %each performing the
-% %subcomputations corresponding to each stage.  More precisely, given a
-% %\lang\ term~$e$, splitting yields two terms $e_1$ and $e_2$ in a
-% %unstaged target language \langmono\
-% such that~$e_1$ performs all the
-% stage~\bbone\ subcomputations in~$e$ and~$e_2$~performs all of the
-% stage~\bbtwo\ subcomputations. Splitting preserves correctness in the sense that evaluating~$e$ in
-% the staged language produces the same result as evaluating~$e_1$ in the target language,
-% then further evaluating~$e_2$ in the target language with the result from~$e_1$.
-
-The goal of stage splitting is to translate terms of \lang\ into equivalent terms of \langS.
-[Specifically, there are versions for each flavor.]
-
-We begin by defining {\em masking} operations that relate the full and partial values of \lang\ and \langS.
-With our end goal defined, we move on to the specification of the term splitting algorithm itself.
-
+Recall that $\colmix {e_1}{A_1}$ represents multistage computations with multistage results,
+whereas $\coltwo {e_2}{A_2}$ represents multistage computions with stage \bbtwo\ results.
+Similarly, our splitting algorithm has two forms, 
+given by the judgements $\splitonesym$ and $\splittwosym$, 
+which respectively take these types of \lang\ terms as input.
+For the outputs, we introduce new constructs 
+to encode multistage values and computations that are syntactically separated at the top level.
 
 \subsection{Masking}
 
-Recall that partial values and residual tables produced by \bbone-evaluation may
-contain content at \emph{both} stages. For example the term:
+Recall that partial values (including residual tables) produced by \bbone-evaluation may
+contain content at \emph{both} stages. 
+In particular, partial values have the character of a value at stage~\bbone\ and of a term at stage~\bbtwo.
+For example, the term
 \begin{lstlisting}
 1`(1+2, next{`2`7 + 5`1`})`
 \end{lstlisting}
@@ -68,36 +35,36 @@ evaluates via $\redonesym$ to:
 \begin{lstlisting}
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
-To match the results of \bbone-evaluation,
-splitting the term should generate an~$e_1$ that reduces to the stage~\bbone\ content of the partial value, \texttt{3},
-and an~$e_2$ corresponding to the stage~\bbtwo\ computation: \\
-$\letin \yhat {\mathtt{7+5}} \yhat$.
 
-to precisely specific the stage~\bbone\ and stage~\bbtwo\ components of \bbone-evaluation results, we define 
-\emph{masking} functions, written $\masko{{-};{-}}$ and $\maskt{{-};{-}}$, 
-which take a residual table and partial value as input and emit a term in \langmono\
-that corresponds to only the content belonging to a single stage.
-\ref{fig:valMask} defines these masking functions.
+What we desire is a simple way to translate this partial value into a form that separates the stage~\bbone\ content (the value \texttt{3}) 
+from the stage~\bbtwo\ content (the term $\letin \yhat {\mathtt{7+5}} \yhat$),
+allowing us to later define a term translation that respects this value translation.
 
-\emph{Stage~\bbone\ masking} of the partial value~$v$ (written $\masko{v}$) produces a term in \langmono\ containing exactly
-the stage~\bbone\ content of~$v$. Since \next\ terms only contain stage~\bbtwo\
-content, $\masko{v}$ replaces all $\next$ subterms of~$v$ with \texttt{()}.  Since lambdas may represent multi-stage computations, stage~\bbone\ masking splits the body of lambdas as a general stage~\bbone\ term (as described in \ref{sec:split-one}), and returns
-the stage~\bbone\ component. $\masko{v}$ always produces a value in \langmono\ that has
-the same structure as~$v$.  For example, the stage~\bbone\ mask of the partial value given above is \texttt{(3,())}. 
+For this purpose, we define a relation called {\em masking}, written $\vsplito$, 
+which sends partial values to {\em masked values}.
+Masked values have only one form, written $\mval {i} {r}$, 
+where $i$ is a monostage value (the {\em immediate value}) and $r$ is a monostage term (the {\em resumer}).
+The masking relation is defined in \ref{fig:valMask}.
 
-\emph{Stage~\bbtwo\ masking} of the partial value $v$ and residual context~$\xi$ (written $\maskt{\xi;v}$) produces a term in \langmono\ containing
-exactly the stage~\bbtwo\ content of $[\xi;v]$. Unlike stage~\bbone\ masking, stage~\bbtwo\ masking 
-requires access to the residual table $\xi$ because after \bbone-evaluation, all stage~\bbtwo\
-has been lifted out of~$v$. Stage~\bbtwo\ masking discards
-stage~\bbone\ content in~$v$ by replacing base constants with~\texttt{()},
-replacing $\next~\hat{y}$ with~$\hat{y}$, and replacing all $n$-ary term
-constructors with an $n$-tuple of masked subterms. Like stage~\bbone\ masking, stage~\bbtwo\
-masking splits the bodies of lambdas as general stage~\bbone\ terms, and
-returns the stage~\bbtwo\ component. After discarding all stage~\bbone\ content from~$v$, stage~\bbtwo\ masking reifies $\xi$ around the result,
-producing a term in \langmono. This term reduces to a value that with the same structure as~$v$.
-For example, the stage~\bbtwo\ mask of the partial value and residual table given above is:
+Masking operates by first inducting on the entries of the residual table.  
+Being purely stage~\bbtwo\ content, these are reified into let statements at the top of the resumer.
+Once the table is empty, masking inducts on value itself.
+
+Masking assigns purely stage~\bbone\ values to the immediate value
+and likewise assign references into the residual table to the resumer.
+In both cases, the offside component is assigned to \texttt{()}, to represent trivial information.
+
+Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
+However, the tags of injections and rolls are replicated only in the immediate value, 
+since they represent stage~\bbone\ information.
+
+Since lambdas may represent multi-stage computations, 
+masking splits the body of lambdas as a general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
+and packages the resulting terms as functions.
+
+The exmaple above is masked into,
 \begin{lstlisting}
-let yhat=7+5 in ((),yhat)
+mv((3,()), let yhat=7+5 in ((),yhat))
 \end{lstlisting}
 
 \subsection{Stage \bbone\ Term Splitting}
@@ -193,8 +160,6 @@ and projects out the integer result in the resumer.
 but we have to include it here for termination purposes.} 
 Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
 
-\input{figures/splitting-term}
-\input{figures/splitting-misc}
 
 \subsection{Improved Definition}
 \label{sec:resumers}
@@ -243,3 +208,9 @@ The old tuple, projection, and application rules
 must also be augmented to apply only when the $mono$ premises don't hold.
 Also, all splitting rules need to be augmented to carry types, though
 we omit the contexts here.
+
+
+\end{concretesyntax}
+
+\input{figures/splitting-term}
+\input{figures/splitting-misc}

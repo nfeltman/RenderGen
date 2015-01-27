@@ -1,6 +1,7 @@
 \section {Implementation and Optimization}
 \label{sec:implementation}
 
+\begin{concretesyntax}
 We have implemented the semantics and splitting algorithm of \lang\ in Standard ML.
 In addition to the features shown here, our implementation includes more base types, 
 $n$-ary products and sums, if and let statements, and a basic elaboration step.
@@ -103,5 +104,6 @@ in (double 5,())`
 
 2`l => in (pi1 l)-7`
 \end{lstlisting}
+\end{concretesyntax}
 
 \input{figures/mono.tex}
