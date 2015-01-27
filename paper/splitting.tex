@@ -3,7 +3,7 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-\begin{concretesyntax}
+\begin{abstrsyn}
 
 The primary strength of \lang\ is the expressive power afforded by
 its ability to syntactically interleave work intended for stage \bbone\
@@ -70,26 +70,35 @@ mv((3,()), let yhat=7+5 in ((),yhat))
 \subsection{Stage \bbone\ Term Splitting}
 \label{sec:split-one}
 
-Splitting a stage~\bbone\ term $e$ in \lang\ yields a term 
-$e_1$ that performs all stage~\bbone\ subcomputations in $e$ and a \emph{resumer term} $e_2 = l.r$ that performs all stage~\bbtwo\ subcomputations.
-To ensure the results of splitting produce the same output as the evaluation $e\mathbin{\redonesym}[\xi;v]$,
-we require that $e_1$ reduce to the tuple $(y,b)$,
-where $y$, called the \emph{\bbone-result} of $e$, is identical to $\masko{\xi;v}$, and that
-$\letin l b r$ reduces to the same value as $\maskt{\xi;v}$. (We refer to $b$ as the \emph{boundary value} of the split since it carries information between stage~\bbone\ and stage~\bbtwo\ subcomputations.) Since~$e_1$ performs both stage~\bbone\ subcomputations needed to produce the \bbone-result and subcomputations (refered to as \emph{precomputations}) that produce the boundary value, we refer to this term as the \emph{combined term}, and hereafter denote it as~$c$.
+Recall that a term $\colone e A$ represents a multistage computation with a multistage result.
+To represent this in a separated form, we use the construct $\pipeM c l r$, 
+where $c$ is a monostage term and $r$ is a monostage term open on the variable $l$.
+This ``multi-output pipeline'' can be partially evaluated with the following rule:
+\[
+\infer {\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
+\]
+We require that $c$ (the \emph{combined term}) reduce to the tuple $(i,b)$,
+where $i$ becomes the immediate result of the masked value,
+and where $b$ is plugged into the open variable of the resumer.
+We refer to $b$ as the \emph{boundary value} of the split since it carries information between stage~\bbone\ and stage~\bbtwo\ subcomputations.
 
 The splitting algorithm for stage~\bbone\ terms, as specified by the
-judgment $e \splitonesym [c,l.r]$ in \cref{fig:termSplit}, proceeds
+judgment $e \splitonesym \pipeM c l r$ in \cref{fig:termSplit}, proceeds
 recursively on the structure of~$e$.
+Our goal for the transformation is that 
+if $\diaone e {\xi,v}$ and $[\xi,v] \vsplito \mval i r$, 
+then $\splitone e A {\pipeM c l {r'}}$ and $\sepredone {\pipeM c l {r'}} {\mval i {r''}}$,
+where $r \equiv r''$ in some standard equivalence.
+Intuitively, translation and evaluation should commute.
+
 When $e$ is a terminal (a variable or base constant)
 splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
-
-% Note the direct correspondence of these splitting outputs to the output of the stage~\bbone\ and~\bbtwo\ masking functions.
 
 For all non-terminals (except $\next$),
 splitting descends into $e$, recursively splitting its $n$ subterms
 to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
 The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
-to the patterns $(y_1,b_1),\ldots,(y_n,b_n)$
+to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
 to isolate \bbone-results from boundary values. Then,
 the \bbone-result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
 The resumer binds the boundary values $b_1,\ldots,b_n$ to an
@@ -160,57 +169,7 @@ and projects out the integer result in the resumer.
 but we have to include it here for termination purposes.} 
 Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
 
-
-\subsection{Improved Definition}
-\label{sec:resumers}
-
-The definitions of masking and splitting can be augmented to better handle special cases,
-particularly ones that depend on the type of the term we're splitting.
-One such special case is the behavior of stage \bbone\ splitting at stage \bbone\ types that contain no $\fut$s or $\to$s.
-We call such types {\em monostage} (judgmentally, $A~mono$), 
-because a partial value $v$ with a monostage type can contain no $\next$s,
-and so must comprise only stage \bbone\ information.
-
-Intuitively, for $[\xi;v] : A$ and $A~mono$, 
-we would expect that $\maskt{\xi;v}$ only reduce to something that carries no information.
-This indeed happens: for example, $\maskt {\cdot;\mathtt{(inl~3,5)}}$ reduces to \texttt{((),())}.
-But while \texttt{((),())} technically ``carries no information," it still has non-trivial structure.
-This is not only unintuitive, but potentially expensive.
-Instead, we desire a stronger property, that $\maskt{\xi;v}$ only reduce to exactly \texttt{()}. 
-We can achieve this by adjusting just the tuple rule:
-\[
-\maskt{\cdot;(v_1,v_2)} = \left\{ \begin{array}{ll} 
-\mathtt{()} &\text{if } (v_1,v_2):A~mono\\ 
-(\maskt{\cdot;v_1},\maskt{\cdot;v_2}) &\text{otherwise} \end{array} \right.
-\]
-From here, the splitting rules can be made to comport with this new 
-definition adding special-case tuple, projection, and application 
-rules:
-\begin{mathpar}
-\infer
-	{(e_1,e_2):A\times B\splitonesym [\ldots,(l_1,l_2).(r_1;r_2;())]}
-	{e_1 : A \splitonesym [c_1,l_1.r_1] 
-	& e_2 : B \splitonesym [c_2,l_2.r_2] 
-	& A \times B~mono} 
-\and
-\infer
-	{\pio~e:A\splitonesym [\ldots,l.(r;())]}
-	{e : A\times B \splitonesym [c,l.r] 
-	& A \times B~mono} 
-\and
-\infer
-	{e_1~e_2: B\splitonesym [\ldots,(l_1,l_2,l_3).(r_1 (r_2,l_3); ())]}
-	{e_1 : A \to B \splitonesym [c_1,l_1.r_1] 
-	& e_2 : A \splitonesym [c_2,l_2.r_2] 
-	& B~mono} 
-\end{mathpar}
-The old tuple, projection, and application rules 
-must also be augmented to apply only when the $mono$ premises don't hold.
-Also, all splitting rules need to be augmented to carry types, though
-we omit the contexts here.
-
-
-\end{concretesyntax}
+\end{abstrsyn}
 
 \input{figures/splitting-term}
 \input{figures/splitting-misc}

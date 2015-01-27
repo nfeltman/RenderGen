@@ -102,32 +102,29 @@
 
 \newenvironment{abstrsyn}
 { 
-	\renewcommand {\pause} [1] {{\tt hold(}##1{\tt )}}
-	\renewcommand {\next} [1] {{\tt next(}##1{\tt )}}
-	\renewcommand {\prev} [1] {{\tt prev(}##1{\tt )}}
-	\newcommand {\monoTerm} [1] {{\tt mono(}##1{\tt )}}
-	\newcommand {\inl} [2] [] {{\tt inl}_{##1}{\tt(}{##2}{\tt )}}
-	\newcommand {\inr} [2] [] {{\tt inr}_{##1}{\tt(}{##2}{\tt )}}
-	\newcommand {\pio} [1] {{\tt pi1(}##1{\tt )}}
-	\newcommand {\pit} [1] {{\tt pi2(}##1{\tt )}}
-	\newcommand {\roll} [2] [] {{\tt roll}_{##1}{\tt(}##2{\tt )}}
-	\newcommand {\unroll} [1] {{\tt unroll(}##1{\tt )}}
-	\newcommand {\lifttag} [1] {{\tt lifttag(}##1{\tt )}}
-	\newcommand {\push} {{\tt unroll}}
-	\newcommand {\letin} [3] {{\tt let(}{##2}{\tt ;}{##1}.{##3}{\tt )}}
-	\newcommand {\letmono} [3] {{\tt letm(}{##2}{\tt ;}{##1}.{##3}{\tt )}}
+	\newcommand {\mytt} [1] {\texttt{##1}}
+	\renewcommand {\pause} [1] {\mytt{hold(}##1\mytt{)}}
+	\renewcommand {\next} [1] {\mytt{next(}##1\mytt{)}}
+	\renewcommand {\prev} [1] {\mytt{prev(}##1\mytt{)}}
+	\newcommand {\monoTerm} [1] {\mytt{mono(}##1\mytt{)}}
+	\newcommand {\inl} [2] [] {\mytt{inl}_{##1}\mytt{(}{##2}\mytt{)}}
+	\newcommand {\inr} [2] [] {\mytt{inr}_{##1}\mytt{(}{##2}\mytt{)}}
+	\newcommand {\pio} [1] {\mytt{pi1(}##1\mytt{)}}
+	\newcommand {\pit} [1] {\mytt{pi2(}##1\mytt{)}}
+	\newcommand {\roll} [2] [] {\mytt{roll}_{##1}\mytt{(}##2\mytt{)}}
+	\newcommand {\unroll} [1] {\mytt{unroll(}##1\mytt{)}}
+	\newcommand {\lifttag} [1] {\mytt{lifttag(}##1\mytt{)}}
+	\newcommand {\push} {\mytt{unroll}}
+	\newcommand {\letin} [3] {\mytt{let(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
+	\newcommand {\letmono} [3] {\mytt{letm(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
 
-	\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} {\tt let}~{##1} ={##2}~{\tt in} \\ {##3}\end{array}}
-	\newcommand {\caseof} [3] {{\tt case(}{##1}{\tt ;}{##2}{\tt ;}{##3}{\tt )}}
-	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} {\tt case}~{##1} ~{\tt of}\\~~{##2}\\{\tt |}~{##3} \end{array}}
-	\newcommand {\ifthen} [3] {{\tt if}~{##1} ~{\tt then}~{##2}~{\tt else}~{##3}}
-	\newcommand {\tallif} [3] {\begin{array}{@{}l@{}} {\tt if}~{##1} \\{\tt then}~{##2}\\{\tt else}~{##3} \end{array}}
-	\newcommand {\dothen} [3] {{\tt do}~{##1} ~{\tt then}~{##2}~{\tt =>}~{##3}}
+	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\pipeM} [3] {\mytt{pipeM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 
-	\newcommand {\lam} [3] [] {{\tt \lambda}_{##1}{\tt (}{##2}{\tt .}{##3}{\tt )}}
+	\newcommand {\lam} [3] [] {\mytt{fn}_{##1}\mytt{(}{##2}\mytt{.}{##3}\mytt{)}}
 	\newcommand {\valprod} [2] {({##1},{##2})}
 	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
-	\newcommand {\mval} [2] {{\tt mv(}{##1}{\tt ;}{##2}{\tt )}}
+	\newcommand {\mval} [2] {\mytt{mv(}{##1}\mytt{;}{##2}\mytt{)}}
 }
 { }
 
@@ -168,6 +165,7 @@
 %\newcommand {\diatwo} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
 \newcommand {\diaone} [3] [\Gamma] {{#2} \Downarrow_\bbone [{#3}]}
 \newcommand {\diatwo} [3] [\Gamma] {{#2} \Downarrow_\bbtwo {#3}}
+\newcommand {\sepredone} [2] {{#1} \Downarrow_\bbone^S {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reifysym} {\overset{R}\Rightarrow}
 \newcommand {\redsym} {{\Downarrow}}
