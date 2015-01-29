@@ -1,20 +1,32 @@
 datatype ^list = Empty | Cons of int * list in
-let mono {partition} =
-mono{
-	letrec partition ((p,l) : int*list) : (int*list*list) = 
-		case unroll l of _ => (0,Empty, Empty) | (h,t) => 
-			let (s,left,right) = partition (p,t) in 
-			if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
-	in partition
-} in
-letrec qs ((mono {l},next{i}) : ^list * $int) : $int = 
+datatype listU = EmptyU | ConsU of ^int * ^list in
+letfun unwrap (mono{l} : ^list) =
 	case pushS mono{unroll l} of 
+	  _ => EmptyU 
+	| mono{(h,t)} => ConsU (mono{h}, mono{t})
+in
+letfun partition ((mono{p}, mono{l}) : ^int*^list) =
+	let mono {part} = 
+	mono{
+		letrec partition ((p,l) : int*list) : (int*list*list) = 
+			case unroll l of _ => (0,Empty, Empty) | (h,t) => 
+				let (s,left,right) = partition (p,t) in 
+				if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
+		in 
+		partition
+	} in
+	let mono{(n,left,right)} = mono{part (p,l)} in
+	(mono{n},mono{left},mono{right})
+in
+letrec qs ((l,next{i}) : ^list * $int) : $int = 
+	case unroll (unwrap l) of 
 	  _ => next {0} 
-	| mono{ht} => let (n,left,right) = pushP (mono {partition ht}) in 
+	| (h,t) => 
+		let (n,left,right) = partition (h,t) in 
 		let next{n} = hold n in 
 		next { 
 			if i < n then prev{qs (left,next{i})}
-			else if i == n then prev{hold (mono{#1 ht})}
+			else if i == n then prev{hold h}
 			else prev{qs (right,next{(i-n)-1})}
 		}
 in 
