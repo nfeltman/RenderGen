@@ -1,21 +1,21 @@
-datatype letter = A | B | C in  
-datatype $letter2 = A2 | B2 | C2 in  
-datatype string = EmptyS | ConsS of letter * string in 
-datatype $string2 = EmptyS2 | ConsS2 of letter2 * string2 in 
-datatype list = EmptyL | ConsL of string * list in 
-letrec partition (l : list) : (bool * list * list * list) = 
+let datatype letter = A | B | C in  
+let datatype $letter2 = A2 | B2 | C2 in  
+let datatype string = EmptyS | ConsS of letter * string in 
+let datatype $string2 = EmptyS2 | ConsS2 of letter2 * string2 in 
+let datatype list = EmptyL | ConsL of string * list in 
+let rec partition (l : list) : (bool * list * list * list) = 
 	case unroll l of  
 	em => (false,EmptyL,EmptyL,EmptyL) 
 	| (s,ss) => 
-		let (anyEmpty,a,b,c) = partition ss in 
+		let val (anyEmpty,a,b,c) = partition ss in 
 		case unroll s of 
 			 em => (true,a,b,c) 
 		| (z,zs) =>  
 			case unroll z of A => (anyEmpty,ConsL(zs,a),b,c) | B => (anyEmpty,a,ConsL(zs,b),c) | C => (anyEmpty,a,b,ConsL(zs,c)) 
 in 
-letrec exists ((l,s) : list * $string2) : $bool = 
+let rec exists ((l,s) : list * $string2) : $bool = 
 	case unroll l of em => next{false} | notempty =>  
-		let (anyEmpty, a, b, c) = partition l in 
+		let val (anyEmpty, a, b, c) = partition l in 
 		next { 
 			case unroll prev{s} of 
 				 em => prev{if anyEmpty then next{true} else next{false}} 
@@ -26,5 +26,5 @@ letrec exists ((l,s) : list * $string2) : $bool =
 				| C => prev{exists (c,next{zs})}  
 		} in 
 exists(  
-	let c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)),  
-	next{let c = prev{ConsS2} in c(prev{A2},c(prev{B2},c(prev{C2},prev{EmptyS2})))})
+	let val c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)),  
+	next{let val c = prev{ConsS2} in c(prev{A2},c(prev{B2},c(prev{C2},prev{EmptyS2})))})

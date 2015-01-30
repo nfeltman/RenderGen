@@ -20,9 +20,9 @@ open LangCommon
 	  IN | IF | THEN | ELSE | NEXT | PREV | INL | 
 	  INR | CASE | OF | HOLD | EQ | COMMA | FN |
 	  DARROW | ARROW | BAR | INT | COLON | DOLLAR |
-	  UNIT | BOOL | GT | LT | LTE | GTE | LETF | 
-	  LETR | FIX | ROLL | UNROLL | TRUE | FALSE | 
-	  MU | MOD | DEQ | LETTY | LETDT | STR | 
+	  UNIT | BOOL | GT | LT | LTE | GTE | FUN | 
+	  REC | FIX | ROLL | UNROLL | TRUE | FALSE | 
+	  MU | MOD | DEQ | TYPE | DATA | STR | VAL |
 	  PUSH | PUSHA | PUSHP | PUSHS | USCORE |
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
@@ -37,7 +37,7 @@ open LangCommon
 %name L12Parse
 
 %noshift EOF
-%keyword LET LETR LETF IN CASE OF LPAR RPAR LBRACE RBRACE
+%keyword LET FUN REC VAL DATA IN CASE OF LPAR RPAR LBRACE RBRACE
 %nodefault
 %%
 
@@ -80,16 +80,16 @@ open LangCommon
 		  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 		  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
-		  | LET PATT EQ EXP IN EXP										(Elet(EXP1,(PATT,EXP2)))
+		  | LET VAL PATT EQ EXP IN EXP									(Elet(EXP1,(PATT,EXP2)))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
-		  | LETF ID LPAR PATT COLON TY RPAR EQ EXP IN EXP				(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
-		  | LETR ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP		(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
-		  | LETTY ID EQ TY IN EXP										(Eletty (ThisStage,ID,TY,EXP))
-		  | LETTY DOLLAR ID EQ TY IN EXP								(Eletty (NextStage,ID,TY,EXP))
-		  | LETDT ID EQ DTARML IN EXP									(Eletdata (ThisStage,ID,DTARML,EXP))
-		  | LETDT DOLLAR ID EQ DTARML IN EXP							(Eletdata (NextStage,ID,DTARML,EXP))
-		  | LETDT CARAT ID EQ DTARML IN EXP								(Eletdata (MonoStage,ID,DTARML,EXP))
+		  | LET FUN ID LPAR PATT COLON TY RPAR EQ EXP IN EXP			(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
+		  | LET REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP	(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
+		  | LET TYPE ID EQ TY IN EXP									(Eletty (ThisStage,ID,TY,EXP))
+		  | LET TYPE DOLLAR ID EQ TY IN EXP								(Eletty (NextStage,ID,TY,EXP))
+		  | LET DATA ID EQ DTARML IN EXP								(Eletdata (ThisStage,ID,DTARML,EXP))
+		  | LET DATA DOLLAR ID EQ DTARML IN EXP							(Eletdata (NextStage,ID,DTARML,EXP))
+		  | LET DATA CARAT ID EQ DTARML IN EXP							(Eletdata (MonoStage,ID,DTARML,EXP))
 
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)

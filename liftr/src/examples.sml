@@ -36,12 +36,12 @@ k("proj1", 				"#1 (3,true)",ansI 3),
 k("proj2", 				"#2 (3,true)",ansB true),
 k("proj3", 				"3 + #1 (3,true)",ansI 6),
 k("proj4", 				"#1 (3,true) + 3",ansI 6),
-k("let1", 				"let x = 4 + 6 in x * x",ansI 100),
-k("let2", 				"let (x,b) = (4+6,false) in if b then x else x * x",ansI 100),
-j("letnext",			"let x = next{4 + 6} in next {prev{x} * prev{x}}",SAME),
-j("monopatt",			"let mono{(x,y)} = mono{(1,2)} in mono {x+y}",SAME),
-j("nextpatt",			"let next{(x,y)} = next{(1,2)} in next {x+y}",SAME),
-j("doubleBind", 		"let x = next{4 + 6} in let x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}",SAME),
+k("let1", 				"let val x = 4 + 6 in x * x",ansI 100),
+k("let2", 				"let val (x,b) = (4+6,false) in if b then x else x * x",ansI 100),
+j("letnext",			"let val x = next{4 + 6} in next {prev{x} * prev{x}}",SAME),
+j("monopatt",			"let val mono{(x,y)} = mono{(1,2)} in mono {x+y}",SAME),
+j("nextpatt",			"let val next{(x,y)} = next{(1,2)} in next {x+y}",SAME),
+j("doubleBind", 		"let val x = next{4 + 6} in let val x = next{prev{x} * prev{x}} in next{prev{x} * prev{x}}",SAME),
 k("if1", 				"if 3 > 2 then 4 + 6 else 2 * 3",ansI 10),
 j("ifFirstThenSecnod",	"if 3 > 2 then next{4 + 6} else next{2 * 3}",SAME),
 j("if2", 				"next{ if 2 > 3 then prev{hold mono{4 + 6}} else 2 * 3}",SAME),
@@ -51,31 +51,31 @@ j("if7",				"if 3 > 2 then next{prev{hold mono{8 * 9}} + 6} else next{prev{hold 
 j("holdif",				"hold mono{if 2 > 3 then 1 else 0}",SAME),
 j("holdif2",			"next {prev {hold mono{if 2 > 3 then 1 else 0}}}",SAME),
 k("funcApp1", 			"(fn x : int => x + x) 45",ansI 90),
-k("funcApp2", 			"let f = fn x : int => x + x in f 45",ansI 90),
-k("funcApp3", 			"letfun g (x:int) = x + x in 12 + g 45",ansI 102),
-k("funcApp4", 			"letfun g (x:int) = x + x in g 45 + 12",ansI 102),
+k("funcApp2", 			"let val f = fn x : int => x + x in f 45",ansI 90),
+k("funcApp3", 			"let fun g (x:int) = x + x in 12 + g 45",ansI 102),
+k("funcApp4", 			"let fun g (x:int) = x + x in g 45 + 12",ansI 102),
 j("multiStageFunc", 	"(fn mono{x} : ^int => next{prev{hold mono{x * x}} + prev{hold mono{x}}}) mono{45}",SAME),
-k("datatype3", 			"datatype t = A of int | B of int * int | C of int * int * int in " ^
+k("datatype3", 			"let datatype t = A of int | B of int * int | C of int * int * int in " ^
 						"case unroll (B (3,4)) of x => x | (x,y) => x+y | (x,y,z) => x+y+z",ansI 7),
 k("highOrder1", 		"(fn f:int->int => f 5) (fn x:int=>x+x)",ansI 10),
-k("closure", 			"(let x = 3 in fn y:int=> x*y) 5",ansI 15),
+k("closure", 			"(let val x = 3 in fn y:int=> x*y) 5",ansI 15),
 k("higherOrder1", 		"(fn f:int->int => fn x:int=> f (f x)) (fn y:int=>y+y) 5",ansI 20),
-j("datastruct2", 		"letfun f (mono{x}:^int) = next{prev{hold mono{x*x}}+4} in ((f mono{1},f mono{2}),(f mono{3},f mono{4}))",SAME),
-j("datastruct3", 		"letfun map (f : ^int -> $int) = " ^ 
+j("datastruct2", 		"let fun f (mono{x}:^int) = next{prev{hold mono{x*x}}+4} in ((f mono{1},f mono{2}),(f mono{3},f mono{4}))",SAME),
+j("datastruct3", 		"let fun map (f : ^int -> $int) = " ^ 
 						"fn M:((^int*^int)*(^int*^int)) => ((f (#1 (#1 M)), f (#2 (#1 M))), (f (#1 (#2 M)), f (#2 (#2 M)))) in " ^ 
 						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) ((mono{1}, mono{2}), (mono{3}, mono{4}))",SAME),
-j("datastruct4", 		"letfun map (f : ^int -> $int) = " ^ 
+j("datastruct4", 		"let fun map (f : ^int -> $int) = " ^ 
 						"fn ((M1,M2),(M3,M4)):((^int*^int)*(^int*^int)) => ((f M1, f M2), (f M3, f M4)) in " ^ 
 						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) ((mono{1}, mono{2}), (mono{3}, mono{4}))",SAME),
-j("datastruct5", 		"letfun map (f : ^int -> $int) = " ^ 
+j("datastruct5", 		"let fun map (f : ^int -> $int) = " ^ 
 						"fn (M1,M2,M3,M4):(^int*^int*^int*^int) => (f M1, f M2, f M3, f M4) in " ^ 
 						"map (fn mono{x}:^int => next{prev{hold mono{x*x}}+4}) (mono{1}, mono{2}, mono{3}, mono{4})",SAME),
 k("roll1",				"roll (int) 5",SAME),
 k("roll2",				"roll (int * bool) (234, true)",SAME),
 k("unroll1",			"#1 (unroll (roll (int * bool) (234, true)))",ansI 234),
-k("fact",				"letrec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
-k("sumlist",			"datatype list = Empty | Cons of int * list in " ^
-						"letrec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
+k("fact",				"let rec fact (n : int) : int = if n <= 0 then 1 else n * fact (n-1) in fact 5",ansI 120),
+k("sumlist",			"let datatype list = Empty | Cons of int * list in " ^
+						"let rec sum (l : list) : int = case unroll l of empty => 0 | (h,t) => h + sum t in "^
 						"sum (Cons (5, Cons (3, Empty)))",ansI 8),
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
