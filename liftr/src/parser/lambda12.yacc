@@ -27,6 +27,8 @@ open LangCommon
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
+	  DECL of expr -> expr |
+	  DECLL of expr -> expr |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
 	  MATCH of patt * expr | MATCHL of (patt * expr) list |
 	  BINOP of Prims.binops | 
@@ -80,19 +82,24 @@ open LangCommon
 		  | NEXT LBRACE EXP RBRACE										(Enext(EXP))
 		  | PREV LBRACE EXP RBRACE										(Eprev(EXP))
 		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
-		  | LET VAL PATT EQ EXP IN EXP									(Elet(EXP1,(PATT,EXP2)))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
-		  | LET FUN ID LPAR PATT COLON TY RPAR EQ EXP IN EXP			(Elet(Elam(TY,(PATT,EXP1)),(Pvar ID,EXP2)))
-		  | LET REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP IN EXP	(Eletr(ID,TY1,TY2,(PATT,EXP1),EXP2))
-		  | LET TYPE ID EQ TY IN EXP									(Eletty (ThisStage,ID,TY,EXP))
-		  | LET TYPE DOLLAR ID EQ TY IN EXP								(Eletty (NextStage,ID,TY,EXP))
-		  | LET DATA ID EQ DTARML IN EXP								(Eletdata (ThisStage,ID,DTARML,EXP))
-		  | LET DATA DOLLAR ID EQ DTARML IN EXP							(Eletdata (NextStage,ID,DTARML,EXP))
-		  | LET DATA CARAT ID EQ DTARML IN EXP							(Eletdata (MonoStage,ID,DTARML,EXP))
+		  | LET DECLL IN EXP											(DECLL EXP)
 
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)
+
+	DECLL : 							(fn e => e)
+		  | DECL DECLL					(DECL o DECLL)
+
+	 DECL : VAL PATT EQ EXP 								(fn e => Elet(EXP,(PATT,e)))
+	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 			(fn e => Elet(Elam(TY,(PATT,EXP)),(Pvar ID, e)))
+	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP	(fn e => Eletr(ID,TY1,TY2,(PATT,EXP),e))
+		  | TYPE ID EQ TY									(fn e => Eletty (ThisStage,ID,TY,e))
+		  | TYPE DOLLAR ID EQ TY							(fn e => Eletty (NextStage,ID,TY,e))
+		  | DATA ID EQ DTARML 								(fn e => Eletdata (ThisStage,ID,DTARML,e))
+		  | DATA DOLLAR ID EQ DTARML 						(fn e => Eletdata (NextStage,ID,DTARML,e))
+		  | DATA CARAT ID EQ DTARML 						(fn e => Eletdata (MonoStage,ID,DTARML,e))
 
    DTARML : DTARM						([DTARM])
 		  | DTARM BAR DTARML			(DTARM::DTARML)
