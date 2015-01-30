@@ -24,7 +24,6 @@ datatype expr	= Estandard of (expr,string,patt * expr,ty) S.exprF
 				| Ehold of expr
 				| EpushPrim of expr
 				| EpushSum of expr
-				| EpushProd of expr
 				| Eletty of stage * string * ty * expr
 				| Eletdata of stage * string * (string * ty option) list * expr
 				| Eletr of string * ty * ty * (patt * expr) * expr

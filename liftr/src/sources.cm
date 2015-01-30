@@ -22,7 +22,7 @@ Group is
 	  lambdaPSF/lambdaPSF.sml
 	  
 	  (* transformations *)
-	  propStage.sml
+	  lambda12/propStage.sml
 	  stageSplit.sml 
 	  
 	  (* semantics *)

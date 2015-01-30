@@ -54,7 +54,6 @@ fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.C1.lookup) exp
   | eval1 env (E1hold e) = holdGeneral (eval1 env e)
   | eval1 env (E1mono e) = V1mono (evalM env e)
   | eval1 env (E1pushPrim e) = Values1.makeprim (ValuesMono.unprim (unmono (eval1 env e)))
-  | eval1 env (E1pushProd e) = Values1.maketuple (map V1mono (ValuesMono.untuple (unmono (eval1 env e))))
   | eval1 env (E1pushSum e) = 
 		let 
 			val (i,v) = ValuesMono.uninj (unmono (eval1 env e))

@@ -23,7 +23,7 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | FUN | 
 	  REC | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ | TYPE | DATA | STR | VAL |
-	  PUSH | PUSHA | PUSHP | PUSHS | USCORE |
+	  PUSH | PUSHS | USCORE |
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
@@ -66,7 +66,6 @@ open LangCommon
 		  | UNROLL AEXP					(Eunroll (AEXP))
 		  | HOLD AEXP 					(Ehold(AEXP))
 		  | PUSH AEXP					(EpushPrim(AEXP))
-		  | PUSHP AEXP					(EpushProd(AEXP))
 		  | PUSHS AEXP					(EpushSum(AEXP))
 		  | AEXP						(AEXP)
 

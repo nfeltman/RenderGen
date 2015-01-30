@@ -82,8 +82,6 @@ eol = ("\013\010"|"\010"|"\013");
 				| "mu" => Tokens.MU(!pos,!pos)
 				| "mod" => Tokens.MOD(!pos,!pos)
 				| "push" => Tokens.PUSH(!pos,!pos)
-				| "pushA" => Tokens.PUSHA(!pos,!pos)
-				| "pushP" => Tokens.PUSHP(!pos,!pos)
 				| "pushS" => Tokens.PUSHS(!pos,!pos)
 				| s => Tokens.ID(s,!pos,!pos)
             );

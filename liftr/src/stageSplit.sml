@@ -358,15 +358,6 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		in 
 			(newT, res)
 		end
-  | stageSplit1 gamma (E1pushProd e) = 
-		let
-			val (t, res) = stageSplit1 gamma e
-			val ts = Typecheck12.TypeFeatures2.unprod ` Typecheck12.unnow ` t
-			
-			val splitAnswer = mapResumer1 (fn r => chain2 (r, Etuple ` map (fn _ => Eunit) ts)) res
-		in 
-			(Typecheck12.TypeFeatures1.makeprod ` map T1now ts, splitAnswer)
-		end
   | stageSplit1 gamma (E1pushSum e) = 
 		let
 			val (t, res) = stageSplit1 gamma e

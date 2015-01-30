@@ -120,7 +120,6 @@ fun eval1 env (E1 exp) =
 		end
   | eval1 env (E1mono e) = (id, V1mono ` evalM env e)
   | eval1 env (E1pushPrim e) = map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
-  | eval1 env (E1pushProd e) = map2 (V1 o VFtuple o (map V1mono) o untuple o unVM o unmono) (eval1 env e)
   | eval1 env (E1pushSum e) = 
 		let 
 			val (g,(i,v)) = map2 (uninj o unVM o unmono) (eval1 env e)
