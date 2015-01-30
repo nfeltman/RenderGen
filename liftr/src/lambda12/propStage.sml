@@ -33,19 +33,25 @@ fun Eunroll x = IL1standard (Funroll x)
 fun var v = IL1P (Pvar v)
 fun bind v e1 e2 = Elet (e1,(var v,e2))
 
-fun elabLetRec (f,t1,t2,(x,body),e) = 
+fun stageLet stage (e1,x,e2) = 
+  case stage of 
+    C.ThisStage => Elet (e1,(var x,e2))
+  | C.NextStage => Elet (IL1next e1,(IL1Pnext (var x),e2))
+  | C.MonoStage => Elet (IL1mono e1,(IL1Pmono (var x),e2))
+
+fun elabLetRec (stage,f,t1,t2,(x,body),e) = 
 	let
 		val tY = C.Tarr(C.Tprod[C.Tvar 0,t1],t2)
 	in
-	bind f
+	stageLet stage
 		(bind "r" 
 			(Elam(C.Tprod [C.Trec tY, t1], (IL1P (Ptuple [var "y", x]), 
 				Elet (Elam (t1,(var "v", Eapp (Eunroll (Evar "y"), Etuple[Evar "y", Evar "v"]))),
 					(var f, body))
 			)))
-			(Elam (t1, (var "v", Eapp(Evar "r", Etuple[Eroll(tY, Evar "r"), Evar "v"]))))
-		)
-		e
+			(Elam (t1, (var "v", Eapp(Evar "r", Etuple [Eroll(tY, Evar "r"), Evar "v"]))))
+		,
+    f,e)
 	end
 	
 	
@@ -70,17 +76,12 @@ fun elabDataType (stage,ty,cts,e) =
 				case tyOpt of
 				  SOME ty => Elam (ty,(var "x",Eroll(openSumType,Einj (prefixes, suffixes, Evar "x"))))
 				| NONE => Eroll(openSumType, Einj (prefixes, suffixes, Etuple []))
-		fun stageLet (e1,x,e2) = 
-			case stage of 
-			  C.ThisStage => Elet (e1,(var x,e2))
-			| C.NextStage => Elet (IL1next e1,(var x,e2))
-			| C.MonoStage => Elet (IL1mono e1,(IL1Pmono (var x),e2))
 	in
 		IL1letty(
 			stage, 
 			ty, 
 			C.Tstandard (TFrec openSumType), 
-			List.foldr (fn ((n,t,p,s),rest) => stageLet (buildInjector t p s, n, rest)) e ntpsList
+			List.foldr (fn ((n,t,p,s),rest) => stageLet stage (buildInjector t p s, n, rest)) e ntpsList
 		)
 	end
 fun id x = x
@@ -93,7 +94,7 @@ fun elabPatt (Lambda12c.P p) = IL1P (mapPattern elabPatt p)
 
 fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.Eletty (s,x,t,e)) = IL1letty (s,x,t,elab e)
-  | elab (C.Eletr (f,t1,t2,(x,ebody),e)) = elabLetRec (f,t1,t2,(elabPatt x,elab ebody), elab e)
+  | elab (C.Eletr (s,f,t1,t2,(x,ebody),e)) = elabLetRec (s,f,t1,t2,(elabPatt x,elab ebody), elab e)
   | elab (C.Eletdata (stage,ty,cts,e)) = elabDataType (stage,ty,cts, elab e)
   | elab (C.Eprev e) = IL1prev (elab e)
   | elab (C.Emono e) = IL1mono (elab e)

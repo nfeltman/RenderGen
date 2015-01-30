@@ -23,12 +23,13 @@ open LangCommon
 	  UNIT | BOOL | GT | LT | LTE | GTE | FUN | 
 	  REC | FIX | ROLL | UNROLL | TRUE | FALSE | 
 	  MU | MOD | DEQ | TYPE | DATA | STR | VAL |
-	  PUSH | PUSHS | USCORE |
+	  PUSH | PUSHS | USCORE | ATSGN |
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
 	  DECL of expr -> expr |
 	  DECLL of expr -> expr |
+	  STDEC of stage |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
 	  MATCH of patt * expr | MATCHL of (patt * expr) list |
 	  BINOP of Prims.binops | 
@@ -91,14 +92,17 @@ open LangCommon
 	DECLL : 							(fn e => e)
 		  | DECL DECLL					(DECL o DECLL)
 
-	 DECL : VAL PATT EQ EXP 								(fn e => Elet(EXP,(PATT,e)))
-	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 			(fn e => Elet(Elam(TY,(PATT,EXP)),(Pvar ID, e)))
-	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP	(fn e => Eletr(ID,TY1,TY2,(PATT,EXP),e))
-		  | TYPE ID EQ TY									(fn e => Eletty (ThisStage,ID,TY,e))
-		  | TYPE DOLLAR ID EQ TY							(fn e => Eletty (NextStage,ID,TY,e))
-		  | DATA ID EQ DTARML 								(fn e => Eletdata (ThisStage,ID,DTARML,e))
-		  | DATA DOLLAR ID EQ DTARML 						(fn e => Eletdata (NextStage,ID,DTARML,e))
-		  | DATA CARAT ID EQ DTARML 						(fn e => Eletdata (MonoStage,ID,DTARML,e))
+	 DECL : VAL PATT EQ EXP 															(fn e => Elet(EXP,(PATT,e)))
+	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 										(fn e => Elet(Elam(TY,(PATT,EXP)),(Pvar ID, e)))
+	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP								(fn e => Eletr(ThisStage,ID,TY1,TY2,(PATT,EXP),e))
+	 	  | ATSGN STDEC LBRACE REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP RBRACE	(fn e => Eletr(STDEC,ID,TY1,TY2,(PATT,EXP),e))
+		  | TYPE ID EQ TY																(fn e => Eletty (ThisStage,ID,TY,e))
+		  | ATSGN STDEC LBRACE TYPE ID EQ TY RBRACE										(fn e => Eletty (STDEC,ID,TY,e))
+		  | DATA ID EQ DTARML 															(fn e => Eletdata (ThisStage,ID,DTARML,e))
+		  | ATSGN STDEC LBRACE DATA ID EQ DTARML RBRACE									(fn e => Eletdata (STDEC,ID,DTARML,e))
+
+	STDEC : NEXT 						(NextStage)
+		  | MONO						(MonoStage)
 
    DTARML : DTARM						([DTARM])
 		  | DTARM BAR DTARML			(DTARM::DTARML)

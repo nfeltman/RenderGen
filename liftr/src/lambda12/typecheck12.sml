@@ -31,15 +31,6 @@ fun subst1 n (v : type1) (T1 t) = TypeSubst.substTy subst1 lift1 T1 n v t
   | subst1 n (_ : type1) (T1fut t) = T1fut t
   | subst1 n (_ : type1) (T1now t) = T1now t
 
-and noArrow (T2 (TFarr _)) = raise (TypeError "mono type bad")
-  | noArrow (T2 (TFprod ts)) = List.app noArrow ts
-  | noArrow (T2 (TFsum ts)) = List.app noArrow ts
-  | noArrow (T2 (TFrec t)) = noArrow t
-  | noArrow (T2 (TFvar _)) = ()
-  | noArrow (T2 (TFprim _)) = ()
-fun monoSafe (t as T2 (TFarr (t1,t2))) = (noArrow t1; monoSafe t2; t)
-  | monoSafe t = (noArrow t; t)
-
 structure TS1 : TypeSystem = 
 struct
 	type ty = type1

@@ -1,4 +1,4 @@
-let datatype ^list = Empty | Cons of int * list in 
+let @ mono {datatype list = Empty | Cons of int * list } in 
 let rec partition (mono{(p,l)} : ^(int*list)) : ^(int*list*list) = 
 	case pushS mono{unroll l} of 
 	  em => mono{(0,Empty, Empty)}

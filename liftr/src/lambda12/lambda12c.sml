@@ -26,7 +26,7 @@ datatype expr	= Estandard of (expr,string,patt * expr,ty) S.exprF
 				| EpushSum of expr
 				| Eletty of stage * string * ty * expr
 				| Eletdata of stage * string * (string * ty option) list * expr
-				| Eletr of string * ty * ty * (patt * expr) * expr
+				| Eletr of stage * string * ty * ty * (patt * expr) * expr
 
 fun trim s = substring (s,1,size(s)-2)
 				

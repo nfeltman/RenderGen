@@ -34,6 +34,7 @@ eol = ("\013\010"|"\010"|"\013");
 <L12>";"      => (Tokens.SEMI(!pos,!pos));
 <L12>","      => (Tokens.COMMA(!pos,!pos));
 <L12>"$"      => (Tokens.DOLLAR(!pos,!pos));
+<L12>"@"      => (Tokens.ATSGN(!pos,!pos));
 <L12>"="      => (Tokens.EQ(!pos,!pos));
 <L12>"=="     => (Tokens.DEQ(!pos,!pos));
 <L12>"->"     => (Tokens.ARROW(!pos,!pos));

@@ -1,5 +1,5 @@
 let 
-	datatype ^list = Empty | Cons of int * list
+	@ mono { datatype list = Empty | Cons of int * list }
 	datatype listU = EmptyU | ConsU of ^int * ^list 
 	
 	fun unwrap (mono{l} : ^list) =
@@ -9,16 +9,13 @@ let
 
 	fun partition ((mono{p}, mono{l}) : ^int*^list) =
 		let 
-			val mono {part} = 
-			mono{
-				let rec partition ((p,l) : int*list) : (int*list*list) = 
+			@ mono { 
+				rec part ((p,l) : int*list) : (int*list*list) = 
 					case unroll l of 
 					  _ => (0,Empty, Empty) 
 					| (h,t) => 
-						let val (s,left,right) = partition (p,t) in 
+						let val (s,left,right) = part (p,t) in 
 						if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
-				in 
-				partition
 			}
 			val mono{(n,left,right)} = mono{part (p,l)} 
 		in
@@ -28,7 +25,8 @@ let
 		case unroll (unwrap l) of 
 		  _ => next {0} 
 		| (h,t) => 
-			let val (n,left,right) = partition (h,t)
+			let 
+				val (n,left,right) = partition (h,t)
 				val next{n} = hold n
 			in
 			next { 
