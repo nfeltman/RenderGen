@@ -1,3 +1,5 @@
+%!TEX root = paper.tex
+
 \section {Implementation and Optimization}
 \label{sec:implementation}
 
@@ -47,47 +49,13 @@ or we could give more structure to the input language so that splitting can gene
 We choose to investigate the latter approach.
 Specifically, we add new staging features to \lang\ which allow us to indicate that a piece of code is {\em strictly} 
 stage \bbone---{\em i.e.} that it contains no $\next$ blocks.
-At the type level, this manifests as a constructor called $\monoType$.
+At the type level, this manifests as a constructor called $\curr$.
 So for instance, $\rmint \to \rmint$ is a stage \bbone\ function from one integer to another,
-which might fail to terminate at stage \bbtwo,  
-but $\monoType (\rmint \to \rmint)$ is a stage \bbone\ function from one integer to another
+which might fail to terminate at stage \bbtwo, 
+but $\curr (\rmint \to \rmint)$ is a stage \bbone\ function from one integer to another
 which {\em cannot} have any content at stage \bbtwo.
-Naturally, the well-formedness of $\monoType A$ requires that $A$ contain no $\fut$s.
+Naturally, the well-formedness of $\curr A$ requires that $A$ contain no $\fut$s.
 
-At the term level, we add the 
-$\monoTerm$, \texttt{letmono}, $\lifttag$, and $\liftint$ 
-constructs to move information in and out of $\monoType$.  
-The statics, dynamics, and splitting rules for these constructs are given in \cref{fig:monoRules}.
-
-The $\monoTerm$ construct allows us to declare a block of code as entirely stage \bbone,
-equivalent to saying that it has no $\next$ blocks.
-This is enforced in the type system by checking at the new world $\bbmono$ within the $\monoTerm$ block.
-Accordingly, $\monoTerm$ blocks are the intro form for the $\monoType$ modality. 
-
-The \texttt{letmono} construct allows us to form let bindings of monostage code without going into a $\monoTerm$ block.
-This construct, along with $\monoTerm$ blocks, is enough to allow us to form terms of the following types:
-\begin{itemize}
-\item $\monoType(A \times B) \to \monoType A \times \monoType B$ 
-\item $\monoType A \times \monoType B \to \monoType(A \times B)$
-\item $\monoType A + \monoType B \to \monoType(A + B)$
-\item $\monoType(A \to B) \to (\monoType A \to \monoType B)$
-\end{itemize}
-There are two notable types absent in this list, namely the converses of the latter two entries.
-Lets double-check to make sure that this is the behavior we'd want.
-
-First consider $(\monoType A \to \monoType B) \to \monoType(A \to B)$.
-Were this type inhabited, it would suggest that any function which might not terminate at stage $\bbtwo$
-can be transmuted into a function that does all the same work but definately terminates at stage $\bbtwo$.
-That seems definitely wrong, so it makes sense that this type is uninhabited.
-
-Next, consider $\monoType(A + B) \to \monoType A + \monoType B$.
-That would suggest that if there's a sum tag computed in a monostage way,
-then that sum tag can be lifted out from under the $\monoType$.
-This feature {\em does} sound reasonable, and so we add it explicitly
-with the $\lifttag$ construct. 
-Similarly, we add $\liftint$ to move integers out from under $\monoType$.
-\footnote{As with $\pause$, $\liftint$ can be defined in the language with
-some effort, but we provide it as a convenience.}
 
 With these new features in place, we can now define the \texttt{double}
 function so that it splits reasonably.

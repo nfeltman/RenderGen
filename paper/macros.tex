@@ -64,7 +64,6 @@
 
 % nodes
 \newcommand {\yhat} {\ensuremath{\mathtt{\hat y}}}
-\newcommand {\monoType} {\nabla}
 \newcommand {\curr} {\nabla}
 \newcommand {\fut} {\bigcirc}
 
@@ -106,25 +105,28 @@
 	\renewcommand {\pause} [1] {\mytt{hold(}##1\mytt{)}}
 	\renewcommand {\next} [1] {\mytt{next(}##1\mytt{)}}
 	\renewcommand {\prev} [1] {\mytt{prev(}##1\mytt{)}}
-	\newcommand {\monoTerm} [1] {\mytt{mono(}##1\mytt{)}}
-	\newcommand {\inl} [2] [] {\mytt{inl}_{##1}\mytt{(}{##2}\mytt{)}}
-	\newcommand {\inr} [2] [] {\mytt{inr}_{##1}\mytt{(}{##2}\mytt{)}}
+	\newcommand {\pure} [1] {\mytt{pure(}##1\mytt{)}}
+	\newcommand {\inl} [1] {\mytt{inl}\mytt{(}{##1}\mytt{)}}
+	\newcommand {\inr} [1] {\mytt{inr}\mytt{(}{##1}\mytt{)}}
 	\newcommand {\pio} [1] {\mytt{pi1(}##1\mytt{)}}
 	\newcommand {\pit} [1] {\mytt{pi2(}##1\mytt{)}}
-	\newcommand {\roll} [2] [] {\mytt{roll}_{##1}\mytt{(}##2\mytt{)}}
+	\newcommand {\roll} [1] {\mytt{roll}\mytt{(}##1\mytt{)}}
 	\newcommand {\unroll} [1] {\mytt{unroll(}##1\mytt{)}}
 	\newcommand {\lifttag} [1] {\mytt{lifttag(}##1\mytt{)}}
 	\newcommand {\push} {\mytt{unroll}}
 	\newcommand {\letin} [3] {\mytt{let(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
-	\newcommand {\letmono} [3] {\mytt{letm(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
+	\newcommand {\letp} [3] {\mytt{letp(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
 
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\pipeM} [3] {\mytt{pipeM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 
-	\newcommand {\lam} [3] [] {\mytt{fn}_{##1}\mytt{(}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
 	\newcommand {\valprod} [2] {({##1},{##2})}
 	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
 	\newcommand {\mval} [2] {\mytt{mv(}{##1}\mytt{;}{##2}\mytt{)}}
+
+
+	\newcommand {\mualphatau} {\mu \alpha.\tau}
 }
 { }
 
@@ -190,7 +192,7 @@
 \newcommand {\csplit} {\curvearrowright}
 \newcommand {\ssplit} {\curvearrowbotright}
 
-\newcommand {\splitonesym} {\overset{\bbone}\rightsquigarrow}
+\newcommand {\splitonesym} {\overset{\bbonem}\rightsquigarrow}
 \newcommand {\splittwosym} {\overset{\bbtwo}\rightsquigarrow}
 \newcommand {\splitone} [4] [\Gamma] {{#2} \splitonesym \left[{#4}\right]}
 \newcommand {\splittwo} [4] [\Gamma] {{#2} \splittwosym \left[{#4}\right]}

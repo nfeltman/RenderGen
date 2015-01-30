@@ -150,15 +150,15 @@
 \begin{mathpar}
 \fbox{Staging Features}
 \and
-\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}															\and
-\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}					\and
-\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \monoTerm i}}												\and
-\infer					{\reify {\cdot}{q}{q}}										{\cdot}																	\and
-\infer					{\reify {(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}	{\reify{\xi}{q_2}{q'}}													\and
-\inferdiaone			{\red {\monoTerm e} {\cdot; \monoTerm~v}}					{\reduce e v} 															\and
-\inferdiaone			{\red {\letmono x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\monoTerm {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
-\inferdiaone			{\red {\lifttag e} {\xi;\inl{\monoTerm v}}}					{\red e {\xi; \monoTerm{\inl v}}}										\and
-\inferdiaone			{\red {\lifttag e} {\xi;\inr{\monoTerm v}}}					{\red e {\xi; \monoTerm{\inr v}}}										
+\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}														\and
+\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
+\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
+\infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
+\infer					{\reify {(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}	{\reify{\xi}{q_2}{q'}}												\and
+\inferdiaone			{\red {\pure e} {\cdot; \pure~v}}							{\reduce e v} 														\and
+\inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
+\inferdiaone			{\red {\lifttag e} {\xi;\inl{\pure v}}}						{\red e {\xi; \pure{\inl v}}}										\and
+\inferdiaone			{\red {\lifttag e} {\xi;\inr{\pure v}}}						{\red e {\xi; \pure{\inr v}}}										
 \end{mathpar}
 
 \end{abstrsyn}
