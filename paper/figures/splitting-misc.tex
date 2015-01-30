@@ -52,43 +52,23 @@
 
 \begin{figure}
 \begin{abstrsyn}
-\[\begin{array}{rll}
-[\hat y \mapsto q,\xi;v]
-  &\vsplito& \mval 
-  {i}
-  {\letin {\hat y} q {r}} \\\relax
-[\cdot;()]
-  &\vsplito& \mval 
-  {()}
-  {()} \\\relax
-[\cdot;\pure{m}]
-  &\vsplito& \mval 
-  {m}
-  {()} \\\relax
-[\cdot;\next{\hat y}]
-  &\vsplito& \mval 
-  {()}
-  {\hat y} \\\relax
-[\cdot;(v_1,v_2)]
-  &\vsplito& \mval 
-  {(i_1,i_2)}
-  {(r_1,r_2)} \\\relax
-[\cdot;\inl{v}]
-  &\vsplito& \mval 
-  {\inl{i}}
-  {r} \\\relax
-[\cdot;\inr{v}]
-  &\vsplito& \mval 
-  {\inr{i}}
-  {r} \\\relax
-[\cdot;\roll{v}]
-  &\vsplito& \mval 
-  {\roll{i}}
-  {r} \\\relax
-[\cdot;\lam xe]
-  &\vsplito& \mval 
-  {\lam {x} {c}}
-  {\lam {(x,l)} {r}}
+\[\begin{array}{rrrl}
+
+\multicolumn{3}{l}  {\text{\bf Where } [\xi;v] \vsplito \mval {i} {r} \text{:}}          \\\relax
+~~~~~~~~~~~~ %please dear god, fix this shit
+&[\hat y \mapsto q,\xi;v]  &\vsplito& \mval  {i}             {\letin {\hat y} q {r}}      \\
+
+\multicolumn{3}{l}  {\text{\bf Where } [\cdot;v_k] \vsplito \mval {i_k} {r_k} \text{:}}  \\\relax
+&[\cdot;()]                &\vsplito& \mval  {()}            {()}                         \\\relax
+&[\cdot;\pure{m}]          &\vsplito& \mval  {m}             {()}                         \\\relax
+&[\cdot;\next{\hat y}]     &\vsplito& \mval  {()}            {\hat y}                     \\\relax
+&[\cdot;(v_1,v_2)]         &\vsplito& \mval  {(i_1,i_2)}     {(r_1,r_2)}                  \\\relax
+&[\cdot;\inl{v}]           &\vsplito& \mval  {\inl{i}}       {r}                          \\\relax
+&[\cdot;\inr{v}]           &\vsplito& \mval  {\inr{i}}       {r}                          \\\relax
+&[\cdot;\roll{v}]          &\vsplito& \mval  {\roll{i}}      {r}                          \\
+
+\multicolumn{3}{l}  {\text{\bf Where } \splitone e A {c,l.r} \text{:}}                   \\\relax
+&[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {(x,l)} {r}}
 \end{array}\]
 \end{abstrsyn}
 \caption{The masking relations takes a \lang\ partial value a masked value
