@@ -10,9 +10,9 @@ datatype tree = Branch of int * int * tree * tree
 1`fun qSelect1 (l : list) : tree =
   case l of
     Empty => Leaf
-  | Cons (h,t) => 
-      let (left,right,n) = partition h t in
-      Branch (n, h, qSelect1 left, qSelect1 right)`
+  | Cons ht => 
+      let (left,right,n) = partition ht in
+      Branch (n, #1 ht, qSelect1 left, qSelect1 right)`
 
 2`fun qSelect2 (p : tree, k : int) : int = 
   case p of

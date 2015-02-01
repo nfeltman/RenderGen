@@ -119,6 +119,7 @@
 
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\pipeM} [3] {\mytt{pipeM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\pipeS} [3] {\mytt{pipeS(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 
 	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
 	\newcommand {\valprod} [2] {({##1},{##2})}
@@ -136,7 +137,7 @@
 \newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
 \newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
-\newcommand {\colmix} [2] {{#1}:{#2}~@~\bbem}
+\newcommand {\colmix} [2] {{#1}:{#2}~@~\bbonem}
 \newcommand {\colm} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colwor} [2] {{#1}:{#2}~@~w}
 \newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
@@ -158,6 +159,10 @@
 \newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~@~\bbone}
 \newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
 \newcommand {\isvalwor} {~{\rm val}~@~w}
+\newcommand {\ispval} {~{\rm pval}}
+\newcommand {\isval} {~{\rm val}}
+\newcommand {\isres} {~{\rm res}}
+\newcommand {\isseppval} {~{\rm pval^S}}
 %\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
 %\newcommand {\redone} [2] {{#1} \Downarrow_\bbone^L {#2}}
 %\newcommand {\redtwo} [2] {{#1} \Downarrow_\bbtwo^\bbtwo {#2}}

@@ -9,24 +9,55 @@ The primary strength of \lang\ is the expressive power afforded by
 its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as it ability to form
 mixed-stage abstractions.
-[Sentence about how we actual want this in separated monostage form.]
-In this section, we introduce a {\em splitting transformation} whose job 
-is to translate \lang\ terms into a form where the stages are 
-seperated {\em at the top level}.
+To achieve this, \lang\ has three classes of multistage construct:
+\begin{itemize}
+\item terms $\colmix {e_1}{A_1}$ to represent multistage computations with multistage results,
+\item terms $\coltwo {e_2}{A_2}$ to represent multistage computions with purely stage \bbtwo\ results, and
+\item patial values $[\xi; v]$ to represent computations which have produced stage \bbone\ results,
+but for which some stage \bbtwo\ computation remains.
+\end{itemize}
 
-Recall that $\colmix {e_1}{A_1}$ represents multistage computations with multistage results,
-whereas $\coltwo {e_2}{A_2}$ represents multistage computions with stage \bbtwo\ results.
-Similarly, our splitting algorithm has two forms, 
-given by the judgements $\splitonesym$ and $\splittwosym$, 
-which respectively take these types of \lang\ terms as input.
-For the outputs, we introduce new constructs 
-to encode multistage values and computations that are syntactically separated at the top level.
+Our goal in this section will be to, for each class above, 
+show how to translate members of that class into
+an equivalent form where the stages are separated at the top level.
+
+More formally, we introduce three new constructs 
+(\texttt{mv}, \texttt{pipeM}, \texttt{pipeS}) 
+to represent the separated form of each class, 
+and three judgements ($\vsplito$,$\splitonesym$,$\splittwosym$)
+mapping interleaved forms to separated forms.
+In summary:
+
+\begin{center}
+\begin{tabular} {|c|c|c|c|}
+\hline
+Class
+	& \begin{tabular}[x]{@{}c@{}}Interleaved\\Form\end{tabular} 
+	& \begin{tabular}[x]{@{}c@{}}Separated\\Form\end{tabular} 
+	& \begin{tabular}[x]{@{}c@{}}Splitting\\Relation\end{tabular} 
+	\\ \hline
+Partial Value
+	& $[\xi; v]$
+	& $\mval i r$
+	& $\vsplito$
+	\\ \hline
+\begin{tabular}[x]{@{}c@{}}Multistage Term\\(Outputs at \bbone,\bbtwo)\end{tabular} 
+	& $\colmix e A$
+	& $\pipeM c l r$
+	& $\splitonesym$
+	\\ \hline
+\begin{tabular}[x]{@{}c@{}}Multistage Term\\(Output at \bbtwo)\end{tabular} 
+	& $\coltwo e A$
+	& $\pipeS p l r$
+	& $\splittwosym$
+	\\ \hline
+\end{tabular}
+\end{center}
 
 \subsection{Masking}
 
-Recall that partial values (including residual tables) produced by \bbone-evaluation may
-contain content at \emph{both} stages. 
-In particular, partial values have the character of a value at stage~\bbone\ and of a term at stage~\bbtwo.
+Recall that partial values are multistage terms with the character of a value at stage~\bbone\ and of a term at stage~\bbtwo.
+
 For example, the term
 \begin{lstlisting}
 1`(1+2, next{`2`7 + 5`1`})`
@@ -62,7 +93,7 @@ Since lambdas may represent multi-stage computations,
 masking splits the body of lambdas as a general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
 and packages the resulting terms as functions.
 
-The exmaple above is masked into,
+The example above is masked into,
 \begin{lstlisting}
 mv((3,()), let yhat=7+5 in ((),yhat))
 \end{lstlisting}
@@ -71,9 +102,9 @@ mv((3,()), let yhat=7+5 in ((),yhat))
 \label{sec:split-one}
 
 Recall that a term $\colone e A$ represents a multistage computation with a multistage result.
-To represent this in a separated form, we use the construct $\pipeM c l r$, 
+To represent this in a separated form, we use the ``multi-output pipeline'' construct $\pipeM c l r$, 
 where $c$ is a monostage term and $r$ is a monostage term open on the variable $l$.
-This ``multi-output pipeline'' can be partially evaluated with the following rule:
+This can be partially evaluated (into a masked value) with the following rule:
 \[
 \infer {\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
 \]
@@ -124,11 +155,15 @@ we defer description of $\next$ until after describing stage~\bbtwo\ term splitt
 \subsection{Stage \bbtwo\ Term Splitting}
 
 Because stage~\bbtwo\ terms in \lang\ fully reduce to values (as opposed to partial values),
-splitting stage~\bbtwo\ terms in \lang\ assumes a simpler form than that of stage~\bbone\ term splitting. 
-Specifically, splitting a stage~\bbtwo\ term $e$ in \lang\ generates a precomputation term $p$
-(performing all stage~\bbone\ subcomputations in $e$) and a
-resumer term $e_2=l.r$ (performing all stage~\bbtwo\ subcomputations) such that when 
-$e$ reduces to the value~$v$, $\letin l p r$ reduces to an identical value in \langmono.
+stage~\bbtwo\ term splitting assumes a simpler form than does stage~\bbone\ term splitting. 
+Specifically, splitting a term $\coltwo e A$ in \lang\ generates a ``single-output pipeline''
+term $\pipeS p l r$ where $p$ is a monostage {\em precomputation} term 
+that performs all of the stage~\bbone\ subcomputations in $e$, and $l.r$ 
+is a resumer which that performs all of the stage~\bbtwo\ subcomputations in $e$.
+This can be partially evaluated into a residual via the rule,
+\[
+\infer {\sepredone {\pipeS p l r} {[b/l]r}} {\reduce p b} 
+\]
 Note that in contrast to the combined term produced during stage~\bbone\ splitting,
 the precomputation $p$ generated by stage~\bbtwo\ splitting exists entirely
 to compute the boundary value expected by the resumer.
@@ -158,8 +193,6 @@ A notable properly of splitting stage~\bbtwo\ \texttt{case}s and functions is th
 precomputation of subterms is lifted out from underneath stage
 \bbtwo\
 binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
-\ur{This last point seems important.  It would be important to come
-  back to it.}
 
 Splitting $\prev$ generates a precomputation that projects the \bbone-result of its stage~\bbone\ subterm.
 Since the argument to $\prev$ is of $\fut$ type, its \bbone-result reduces to \texttt{()}, justifying why it can be thrown away.

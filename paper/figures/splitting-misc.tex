@@ -53,11 +53,11 @@
 \begin{figure}
 \begin{abstrsyn}
 \[\begin{array}{rrrl}
-
+\hline
 \multicolumn{4}{l}  {\text{\bf Where } [\xi;v] \vsplito \mval {i} {r} \text{:}}          \\
 \hspace{0.25in} 
 &[\hat y \mapsto q,\xi;v]  &\vsplito& \mval  {i}             {\letin {\hat y} q {r}}      \\
-
+\hline
 \multicolumn{4}{l}  {\text{\bf Where } [\cdot;v_k] \vsplito \mval {i_k} {r_k} \text{:}}  \\
 &[\cdot;()]                &\vsplito& \mval  {()}            {()}                         \\
 &[\cdot;\pure{m}]          &\vsplito& \mval  {m}             {()}                         \\
@@ -66,37 +66,13 @@
 &[\cdot;\inl{v}]           &\vsplito& \mval  {\inl{i}}       {r}                          \\
 &[\cdot;\inr{v}]           &\vsplito& \mval  {\inr{i}}       {r}                          \\
 &[\cdot;\roll{v}]          &\vsplito& \mval  {\roll{i}}      {r}                          \\
-
+\hline
 \multicolumn{4}{l}  {\text{\bf Where } \splitone e A {c,l.r} \text{:}}                   \\
-&[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {(x,l)} {r}}
+&[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {(x,l)} {r}}			\\
+\hline
 \end{array}\]
 \end{abstrsyn}
-\caption{The masking relations takes a \lang\ partial value a masked value
-comprising the seperated stage~\bbone\ and stage~\bbtwo\ parts. 
-[needs some where clauses above]}
+\caption{The masking relations converts a \lang\ partial value to a masked value
+comprising the seperated stage~\bbone\ and stage~\bbtwo\ parts.}
 \label{fig:valMask}
 \end{figure}
-
-%\begin{figure*}
-%\begin{mathpar}
-%\infer {i \sim i : \rmint} {\cdot} \and
-%\infer {(u_1,v_1) \sim (u_2,v_2) : A \times B} {u_1 \sim u_2 : A & v_1 \sim v_2 : B} \and
-%\infer {\inl~v_1 \sim \inl~v_2 : A+B} {v_1 \sim v_2 : A} \and
-%\infer {\inr~v_1 \sim \inr~v_2 : A+B} {v_1 \sim v_2 : A} \and
-%\infer [{\rm PROBLEM}] {\lam {x_1} A {e_1} \sim \lam {x_2} A {e_2} : A \to B} 
-%		{x_1 \equiv x_2 : A \vdash e_1 \equiv e_2 : B}
-%\end{mathpar}
-%\caption{Auxiliary Splitting Judgments}
-%\label{fig:auxSplit}
-%\end{figure*}
-%
-%\begin{figure*}
-%\caption{Context Splitting}
-%\label{fig:contSplit}
-%\begin{mathpar}
-%\infer {\emptyC \csplit [\emptyC~;~\emptyC]}{\cdot} \and
-%\infer {\Gamma, v : A^\bbone \csplit [\Gamma_1,v:A_1; \Gamma_2,v:A_2]}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplito [A_1, A_2]} \and
-%\infer {\Gamma, v : A^\bbtwo \csplit [\Gamma_1; \Gamma_2,v:A']}{\Gamma \csplit [\Gamma_1; \Gamma_2] & A \tsplits A'} 
-%\end{mathpar}
-%\end{figure*}
-

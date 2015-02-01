@@ -4,6 +4,7 @@
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
+
 fun part (p, Empty) = (0,Empty, Empty) 
   | part (p, Cons (h,t)) = 
     let val (s,left,right) = part (p,t) in 
@@ -12,11 +13,11 @@ fun part (p, Empty) = (0,Empty, Empty)
     else (s,left,Cons(h,right))
 
 fun qSelect (Empty, k) = 0
-  | qSelect (Cons (h,t), k) =
-    let val (left,right,n) = part (h,t) in
+  | qSelect (Cons ht, k) =
+    let val (n,left,right) = part ht in
     case compare k n of
       LT => qSelect (left, k)
-    | EQ => h
+    | EQ => #1 ht
     | GT => qSelect (right, k-1-n)
 \end{lstlisting}
 \caption{Unstaged implementation of quickselect.}
@@ -24,31 +25,26 @@ fun qSelect (Empty, k) = 0
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
-1`atsignpure{`3`datatype list = Empty | Cons of int * list`1`}
-fun part (pure{`3`p`1`} : ^`3`int`1`, pure{`3`l`1`} : ^`3`list`1`) =
-  pure{`3` 
-    let fun part (...) = ...
-    in part (p,l)
-  `1`} 
+1`atsignpure{`3`
+  datatype list = Empty | Cons of int * list
+  let fun part (...) = ...
+`1`} 
 
 `//1`qsStaged : ^`3`list`1` * $`2`int`1` -> $`2`int`1`
-fun qsStaged (pure{`3`Empty`1`},_) = next {`2`0`1`}
-  | qsStaged (pure{`3`Cons(~`1`h`3`,~`1`t`3`)`1`},next{`2`k`1`}) = 
+fun qsStaged (Empty,_) = next {`2`0`1`}
+  | qsStaged (Cons ht,next{`2`k`1`}) = 
     let 
-      val pure{`3`(~`1`n`3`,~`1`le`3`,~`1`ri`3`)`1`} = part (h,t)
+      val (n,le,ri) = part ht
       val next{`2`n`1`} = hold n 
     in next{`2`
       case compare k n of
         LT => prev {`1`qsStaged (le, next{`2`k`1`})`2`}
-      | EQ => prev {`1`hold h`2`}
+      | EQ => prev {`1`hold (#1 ht)`2`}
       | GT => prev {`1`qsStaged (ri, next{`2`k-1-n`1`})`2`}`1`
     }`
-
-
-
 \end{lstlisting}
 \caption{Staged implementation of quickselect in \lang.}
-\vspace{4.8em}
+\vspace{1.3em}
 \label{fig:qs-staged}
 \end{subfigure}
 \caption{Quickselect: traditional and staged.}
