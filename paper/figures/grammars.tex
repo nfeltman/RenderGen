@@ -3,28 +3,21 @@
 \begin{figure}
 \begin{abstrsyn}
 \[\begin{aligned}
-\text{Stages}\ \ 
-\world &::= \bbone \gbar \bbtwo \\
+\text{Worlds}\ \ 
+\world &::= \bbonem \gbar \bbonep \gbar \bbtwo  \\
 %
-\text{\bbone-Types}\ \ 
-\type_1 &::= \text{unit}\gbar\text{int}%~|~\text{bool}
- \gbar \type_1 \times \type_1
- \gbar \type_1 + \type_1 \\
-&\gbar \type_1 \to \type_1
- \gbar \alpha \gbar \mu \alpha.\tau_1
- \gbar \fut \type_2 \\
-%
-\text{\bbtwo-Types}\ \ 
-\type_2 &::= \text{unit}\gbar\text{int}%~|~\text{bool}
- \gbar \type_2 \times \type_2
- \gbar \type_2 + \type_2 \\
-&\gbar \type_2 \to \type_2
- \gbar \alpha \gbar \mu \alpha.\tau_2 \\
+\text{Types}\ \ 
+\type &::= \text{unit}\gbar\text{int}%~|~\text{bool}
+ \gbar \type \times \type
+ \gbar \type + \type \\
+&\gbar \type \to \type
+ \gbar \alpha \gbar \mu \alpha.\tau \\
+&\gbar \fut \type 
+ \gbar \curr \type \\
 %
 \text{Contexts}\ \ 
 \context &::=\emptyC
- \gbar \context, x:\tau_1~@~\bbone
- \gbar \context, x:\tau_2~@~\bbtwo \\
+ \gbar \context, x:\tau~@~w \\
 %\context &::=\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Expressions}\ \ 
@@ -45,13 +38,18 @@
  \gbar \prev \expr 
  \gbar \pause \expr \\
 %
-\text{Partial values}\ \ 
+\text{Residual table}\ \ 
+\xi &::= \cdot
+ \gbar \xi, {\hat y} \mapsto e \\
+ %
+\text{Values}\ \ 
 v &::= ()\gbar\inte%\gbar\bool
  \gbar \lam{\var}{\expr} 
  \gbar (v,v) \\
 &\gbar \inl v
- \gbar \inr v
- \gbar \next {\hat y} 
+ \gbar \inr v \\
+&\gbar \next {\hat y}
+ \gbar \pure {v}
 \end{aligned}\]
 \end{abstrsyn}
 \caption{\lang~Syntax}

@@ -1,3 +1,5 @@
+%!TEX root = paper.tex
+
 \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
 \label{sec:semantics}
 
@@ -5,19 +7,32 @@
 
 \input {figures/grammars}
 
-The input to our splitting algorithm is given in \lang, a typed, two-stage
+The input to our splitting algorithm is given in \lang, a typed, modal
 lambda calculus with products, sums, and isorecursive types. This language is
 adapted from \cite{davies96}, and is very similar to the staged languages
-considered in the partial evaluation and metaprogramming literature. In this
-paper, we restrict our attention to a two-stage language to simplify our
-presentation of the splitting algorithm, but we expect that the techniques
+considered in the partial evaluation and metaprogramming literature,
+though it differs in three key ways:
+
+\begin{enumerate}
+
+\item We restrict our attention to a two-stage language to simplify our
+presentation of the splitting algorithm, though we expect that the techniques
 presented here extend to more stages.
 
-Our dynamic semantics of \lang\ differ from those given in \cite{davies96} and
+\item Although our language describes computations with two {\em stages}
+(\bbone\ and \bbtwo), its type system makes use of three {\em worlds}
+(\bbonem, \bbonep, \bbtwo).  For reasons discussed later, we require
+that stage \bbone\ computations be classified as being either pure
+(occuring at \bbonep) or mixed (occuring at \bbonem). 
+Only mixed code may transition to stage/world \bbtwo.
+
+\item Our dynamic semantics for \lang\ differ from those given in \cite{davies96} and
 the metaprogramming literature, because we avoid duplicating stage \bbtwo\
 computations. In addition to being more efficient, our non-duplicating semantics
 are easier to compare with our splitting algorithm, whose development and
 exposition is our main goal.
+
+\end{enumerate}
 
 %Apart from the non-duplication, the dynamic semantics of \lang\ is essentially
 %identical to Davies'.
@@ -26,10 +41,8 @@ exposition is our main goal.
 
 \input {figures/statics}
 
-In \lang, the $\next$ constructor includes a stage \bbtwo\ term in a
-stage~\bbone\ term. To ensure that the staging features are only applied to
-valid terms, we index our judgments not only by a type, but also a stage $w$.
-
+To ensure that the staging features are only applied in a valid way, 
+we index our judgments not only by a type, but also a stage $w$.
 The typing judgment $\typeswor e A$ says that $e$ has type $A$ at stage $w$, in
 the context $\Gamma$, and is defined in \cref{fig:statics}.
 
