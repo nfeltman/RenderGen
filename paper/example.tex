@@ -1,3 +1,5 @@
+%!TEX root = paper.tex
+
 \section {Example: Staged Quickselect in \texorpdfstring{\lang}{λ12}}
 \label{sec:staging}
 
@@ -82,11 +84,8 @@ We define a staged version of quickselect in \ref{fig:qs-staged}, writing
 first-stage computations in red, and second-stage computations in blue. While
 \texttt{qSelect} sends a \textrm{list} and \rmint\ to an \rmint,
 \texttt{qsStaged} has a more precise type---it is a first-stage function which
-takes a \textrm{list} and a $\fut\rmint$ (an $\rmint$ \emph{in the future}), and
-returns a $\fut\rmint$. 
-
-\crem{Next three paragraphs are waiting on exact code for \ref{fig:qs-staged}.
-Use three colors?}
+takes a \textrm{list} (ignore the $\curr$ for now) and a 
+$\fut\rmint$ (an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$. 
 
 The stage \bbone\ portions of \texttt{qsStaged} look like \texttt{qSelect}: any
 term of non-circle type is available for immediate use. Indeed, we case on
@@ -127,6 +126,11 @@ chose annotations which maximize the work performed in the first stage.
 %(We adopt the convention that the top-level context is stage \bbone.) 
 
 %pass around opaque stage \bbtwo\ computations at stage \bbone
+
+The quickselect example also contains some {\em purity annotations}, 
+$\curr$ and \texttt{@pure}, which indicate regions of code that are 
+contain no stage \bbtwo\ code (i.e. they are purely stage \bbone),
+which allow more efficient code generation down the line.
 
 \subsection{Splitting Staged Programs}
 
@@ -172,8 +176,8 @@ improvement.
 
 In this paper, we develop a splitting algorithm
 (\ref{sec:splitting,sec:implementation}) which, for any term $e$ in \lang,
-produces a pair of terms $e_1,e_2$ containing respectively all the first- and
-second-stage content of $e$, such that $e_2~e_1$ is equivalent to $e$.
+produces an equivalent term where the stages of computation 
+are syntactically seperated at the top level.
 (Such a splitting is always possible because $e$ is well-typed in \lang.) In the
 case of \texttt{qsStaged}, our splitting algorithm produces the algorithm
 described above.

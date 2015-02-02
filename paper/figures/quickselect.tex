@@ -25,12 +25,12 @@ fun qSelect (Empty, k) = 0
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
-1`atsignpure{`3`
+1`atsignpure{
   datatype list = Empty | Cons of int * list
-  let fun part (...) = ...
-`1`} 
+  fun part (...) = ...
+} 
 
-`//1`qsStaged : ^`3`list`1` * $`2`int`1` -> $`2`int`1`
+`//1`qsStaged : ^list * $`2`int`1` -> $`2`int`1`
 fun qsStaged (Empty,_) = next {`2`0`1`}
   | qsStaged (Cons ht,next{`2`k`1`}) = 
     let 
