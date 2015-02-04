@@ -135,7 +135,7 @@
 
 
 %judgments
-\newcommand {\colone} [2] {{#1}:{#2}~@~\bbone}
+\newcommand {\colone} [2] {{#1}:{#2}~@~\bbonem}
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
 \newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colmix} [2] {{#1}:{#2}~@~\bbonem}
@@ -173,7 +173,10 @@
 %\newcommand {\diatwo} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
 \newcommand {\diaone} [3] [\Gamma] {{#2} \Downarrow_\bbone [{#3}]}
 \newcommand {\diatwo} [3] [\Gamma] {{#2} \Downarrow_\bbtwo {#3}}
-\newcommand {\sepredone} [2] {{#1} \Downarrow_\bbone^S {#2}}
+\newcommand {\sepredonesym} {{\Downarrow_\bbone^S}}
+\newcommand {\sepredtwosym} {{\Downarrow_\bbtwo^S}}
+\newcommand {\sepredone} [2] {{#1} \sepredonesym {#2}}
+\newcommand {\sepredtwo} [2] {{#1} \sepredtwosym {#2}}
 \newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
 \newcommand {\reifysym} {\overset{R}\Rightarrow}
 \newcommand {\redsym} {{\Downarrow}}
