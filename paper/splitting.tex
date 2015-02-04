@@ -9,50 +9,49 @@ The primary strength of \lang\ is the expressive power afforded by
 its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as it ability to form
 mixed-stage abstractions.
-To achieve this, \lang\ has three classes of multistage construct:
+In this section, we provide an algorithm to translate the multistage terms and values of \lang\
+into equivalent but simpler forms where the stages are separated at the top syntactic level.
+
+Since \lang\ itself is not sufficient to express the syntactically-seperated forms 
+that we desire as the output of splitting,
+we introduce three new constructs for just that purpose:
 \begin{itemize}
-\item terms $\colmix {e_1}{A_1}$ to represent multistage computations with multistage results,
-\item terms $\coltwo {e_2}{A_2}$ to represent multistage computions with purely stage \bbtwo\ results, and
-\item patial values $[\xi; v]$ to represent computations which have produced stage \bbone\ results,
-but for which some stage \bbtwo\ computation remains.
+\item {\em Single-output pipelines}, \texttt{pipeS}, analogous to \lang\ terms at \bbtwo.
+\item {\em Multi-output pipelines}, \texttt{pipeM}, analogous to \lang\ terms at \bbonem. 
+\item {\em Masked values}, \texttt{mv}, analogous to \lang\ partial values.
 \end{itemize}
 
-Our goal in this section will be to, for each class above, 
-show how to translate members of that class into
-an equivalent form where the stages are separated at the top level.
+We also define analogs to evaluation and residualization for these new terms.
+So, whereas residualization ($\redtwosym$) sends multistage terms at world \bbtwo\ to residuals, 
+separated-form residualization ($\sepredtwosym$) sends \texttt{pipeS} terms to residuals.
+And whereas evaluation ($\redonesym$) sends multistage terms at world \bbonem\ to partial values,
+seperated-form evaluation ($\sepredonesym$) sends a \texttt{pipeM} terms to \texttt{mv} terms.
+An overview of these features is provided in \ref{fig:outputTermSummary}.
+That figure also provides the actual rules for $\sepredonesym$ and $\sepredtwosym$.
+\footnote{Note how there's one rule for each, and they're rather simple.
+Indeed, the simplicity of these reduction rules is one reason why we 
+would want to translate into this separated form, rather than use the semantics of \ref{sec:semantics}.}
 
-More formally, we introduce three new constructs 
-(\texttt{mv}, \texttt{pipeM}, \texttt{pipeS}) 
-to represent the separated form of each class, 
-and three judgements ($\vsplito$,$\splitonesym$,$\splittwosym$)
-mapping interleaved forms to separated forms.
-In summary:
+With these output terms defined, we can state the goal of our splitting algorithm:
+to translate terms in \lang\ to a syntactically-separted form, 
+such that the semantics is preserved.
 
-\begin{center}
-\begin{tabular} {|c|c|c|c|}
-\hline
-Class
-	& \begin{tabular}[x]{@{}c@{}}Interleaved\\Form\end{tabular} 
-	& \begin{tabular}[x]{@{}c@{}}Separated\\Form\end{tabular} 
-	& \begin{tabular}[x]{@{}c@{}}Splitting\\Relation\end{tabular} 
-	\\ \hline
-Partial Value
-	& $[\xi; v]$
-	& $\mval i r$
-	& $\vsplito$
-	\\ \hline
-\begin{tabular}[x]{@{}c@{}}Multistage Term\\(Outputs at \bbone,\bbtwo)\end{tabular} 
-	& $\colmix e A$
-	& $\pipeM c l r$
-	& $\splitonesym$
-	\\ \hline
-\begin{tabular}[x]{@{}c@{}}Multistage Term\\(Output at \bbtwo)\end{tabular} 
-	& $\coltwo e A$
-	& $\pipeS p l r$
-	& $\splittwosym$
-	\\ \hline
-\end{tabular}
-\end{center}
+Exactly what is meant by ``such that the semantics is preserved'' depends on whether we're translating
+terms at \bbonem\ or \bbtwo.  
+In the latter case, where an $\coltwo e A$ is translated to a $\pipeS p l r$ with the $\splitonesym$ relation,
+this constraint is straightforward: $e$ and $\pipeS p l r$ can both be reduced to residuals
+via $\redtwosym$ and $\sepredtwosym$, so we only need to require that those
+residuals be equivalent for the translation to be correct.
+In the former case, where an $\colone e A$ is translated to a $\pipeM c l r$ with the $\splittwosym$ relation, 
+things are more complicated: 
+the output of $\redonesym$ is a partial value and the output of $\sepredonesym$ is a masked value,
+so we first need a way to relate those forms if we want to talk about correctness of the term translation.
+That is the purpose of of the {\em masking} relation, written $\vsplito$.
+
+This section proceeds by first defining masking ($\vsplito$), 
+then using it to motivate the definition of \bbonem-translation ($\splitonesym$),
+and finally coming back to define \bbtwo-tranlastion ($\splittwosym$).
+A summary of these operations and the relationship between them is provided in \ref{fig:splittingSummary}.
 
 \subsection{Masking}
 
