@@ -8,29 +8,32 @@
 The primary strength of \lang\ is the expressive power afforded by
 its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as it ability to form
-mixed-stage abstractions.
-In this section, we provide an algorithm to translate the multistage terms and values of \lang\
-into equivalent but simpler forms where the stages are separated at the top syntactic level.
+mixed-stage abstractions. 
 
-Since \lang\ itself is not sufficient to express the syntactically-seperated forms 
-that we desire as the output of splitting,
-we introduce three new constructs for just that purpose:
+In this section, we provide an algorithm to translate the multistage terms and values of \lang\
+into equivalent but simpler forms where the stage \bbone\ and stage \bbtwo\ portions 
+of the computation are {\em syntactically seperated} from each other.
+Specifically, we desire a outputs of the form $\mathcal{C}(e_1;e_2)$ where  
+$e_1$ is a monostage term that encodes all stage \bbone\ computation, 
+and $e_2$ is a monostage term that encodes all stage \bbtwo\ computation.
+To represent outputs in this way, we introduce three new constructs:
 \begin{itemize}
-\item {\em Single-output pipelines}, \texttt{pipeS}, analogous to \lang\ terms at \bbtwo.
-\item {\em Multi-output pipelines}, \texttt{pipeM}, analogous to \lang\ terms at \bbonem. 
-\item {\em Masked values}, \texttt{mv}, analogous to \lang\ partial values.
+\item {\em Single-output pipelines}, \texttt{pipeS}, for the output of splitting \lang\ terms at world \bbtwo.
+\item {\em Multi-output pipelines}, \texttt{pipeM}, for the output of splitting \lang\ terms at world \bbonem. 
+\item {\em Masked values}, \texttt{mv}, which will serve a purpose analogous to \lang\ partial values.
 \end{itemize}
 
-We also define analogs to evaluation and residualization for these new terms.
+We also define analogs to evaluation and residualization for these new terms, 
+called $\sepredonesym$ and $\sepredtwosym$.
 So, whereas residualization ($\redtwosym$) sends multistage terms at world \bbtwo\ to residuals, 
 separated-form residualization ($\sepredtwosym$) sends \texttt{pipeS} terms to residuals.
 And whereas evaluation ($\redonesym$) sends multistage terms at world \bbonem\ to partial values,
 seperated-form evaluation ($\sepredonesym$) sends a \texttt{pipeM} terms to \texttt{mv} terms.
 An overview of these features is provided in \ref{fig:outputTermSummary}.
 That figure also provides the actual rules for $\sepredonesym$ and $\sepredtwosym$.
-\footnote{Note how there's one rule for each, and they're rather simple.
+Note how there's one rule for each, and they're rather simple.
 Indeed, the simplicity of these reduction rules is one reason why we 
-would want to translate into this separated form, rather than use the semantics of \ref{sec:semantics}.}
+would want to translate into this separated form, rather than use the semantics of \ref{sec:semantics}.
 
 With these output terms defined, we can state the goal of our splitting algorithm:
 to translate terms in \lang\ to a syntactically-separted form, 
