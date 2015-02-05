@@ -13,7 +13,7 @@ mixed-stage abstractions.
 In this section, we provide an algorithm to translate the multistage terms and values of \lang\
 into equivalent but simpler forms where the stage \bbone\ and stage \bbtwo\ portions 
 of the computation are {\em syntactically seperated} from each other.
-Specifically, we desire a outputs of the form $\mathcal{C}(e_1;e_2)$ where  
+That is, we desire a outputs of the form $\mathcal{C}(e_1;e_2)$ where  
 $e_1$ is a monostage term that encodes all stage \bbone\ computation, 
 and $e_2$ is a monostage term that encodes all stage \bbtwo\ computation.
 To represent outputs in this way, we introduce three new constructs:
@@ -24,11 +24,9 @@ To represent outputs in this way, we introduce three new constructs:
 \end{itemize}
 
 We also define analogs to evaluation and residualization for these new terms, 
-called $\sepredonesym$ and $\sepredtwosym$.
-So, whereas residualization ($\redtwosym$) sends multistage terms at world \bbtwo\ to residuals, 
-separated-form residualization ($\sepredtwosym$) sends \texttt{pipeS} terms to residuals.
-And whereas evaluation ($\redonesym$) sends multistage terms at world \bbonem\ to partial values,
-seperated-form evaluation ($\sepredonesym$) sends a \texttt{pipeM} terms to \texttt{mv} terms.
+called $\sepredonesym$ and $\sepredtwosym$, 
+which respectively send \texttt{pipeM} terms to \texttt{mv} terms
+and \texttt{pipeS} terms to residuals.
 An overview of these features is provided in \ref{fig:outputTermSummary}.
 That figure also provides the actual rules for $\sepredonesym$ and $\sepredtwosym$.
 Note how there's one rule for each, and they're rather simple.
@@ -41,11 +39,11 @@ such that the semantics is preserved.
 
 Exactly what is meant by ``such that the semantics is preserved'' depends on whether we're translating
 terms at \bbonem\ or \bbtwo.  
-In the latter case, where an $\coltwo e A$ is translated to a $\pipeS p l r$ with the $\splitonesym$ relation,
+In the latter case, where an $\coltwo e A$ is translated to a $\pipeS p l r$ with the $\splittwosym$ relation,
 this constraint is straightforward: $e$ and $\pipeS p l r$ can both be reduced to residuals
 via $\redtwosym$ and $\sepredtwosym$, so we only need to require that those
 residuals be equivalent for the translation to be correct.
-In the former case, where an $\colone e A$ is translated to a $\pipeM c l r$ with the $\splittwosym$ relation, 
+In the former case, where an $\colone e A$ is translated to a $\pipeM c l r$ with the $\splitonesym$ relation, 
 things are more complicated: 
 the output of $\redonesym$ is a partial value and the output of $\sepredonesym$ is a masked value,
 so we first need a way to relate those forms if we want to talk about correctness of the term translation.
