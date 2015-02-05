@@ -56,26 +56,9 @@ A summary of these operations and the relationship between them is provided in \
 
 \subsection{Masking}
 
-Recall that partial values are multistage terms with the character of a value at stage~\bbone\ and of a term at stage~\bbtwo.
-
-For example, the term
-\begin{lstlisting}
-1`(1+2, next{`2`7 + 5`1`})`
-\end{lstlisting}
-evaluates via $\redonesym$ to:
-\begin{lstlisting}
-2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
-\end{lstlisting}
-
-What we desire is a simple way to translate this partial value into a form that separates the stage~\bbone\ content (the value \texttt{3}) 
-from the stage~\bbtwo\ content (the term $\letin \yhat {\mathtt{7+5}} \yhat$),
-allowing us to later define a term translation that respects this value translation.
-
-For this purpose, we define a relation called {\em masking}, written $\vsplito$, 
-which sends partial values to {\em masked values}.
-Masked values have only one form, written $\mval {i} {r}$, 
-where $i$ is a monostage value (the {\em immediate value}) and $r$ is a monostage term (the {\em resumer}).
-The masking relation is defined in \ref{fig:valMask}.
+The point of the masking operation is simply to convert a partial value into a masked value $\mval i q$
+by assigning all of the stage \bbone\ content to $i$ and all of the stage \bbtwo\ content to $q$.
+The rules of the masking relation are given in \ref{fig:valMask}.
 
 Masking operates by first inducting on the entries of the residual table.  
 Being purely stage~\bbtwo\ content, these are reified into let statements at the top of the resumer.
@@ -93,39 +76,21 @@ Since lambdas may represent multi-stage computations,
 masking splits the body of lambdas as a general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
 and packages the resulting terms as functions.
 
-The example above is masked into,
-\begin{lstlisting}
-mv((3,()), let yhat=7+5 in ((),yhat))
-\end{lstlisting}
-
-\subsection{Stage \bbone\ Term Splitting}
+\subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
 
-Recall that a term $\colone e A$ represents a multistage computation with a multistage result.
-To represent this in a separated form, we use the ``multi-output pipeline'' construct $\pipeM c l r$, 
-where $c$ is a monostage term and $r$ is a monostage term open on the variable $l$.
-This can be partially evaluated (into a masked value) with the following rule:
-\[
-\infer {\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
-\]
-We require that $c$ (the \emph{combined term}) reduce to the tuple $(i,b)$,
-where $i$ becomes the immediate result of the masked value,
-and where $b$ is plugged into the open variable of the resumer.
-We refer to $b$ as the \emph{boundary value} of the split since it carries information between stage~\bbone\ and stage~\bbtwo\ subcomputations.
-
-The splitting algorithm for stage~\bbone\ terms, as specified by the
-judgment $e \splitonesym \pipeM c l r$ in \cref{fig:termSplit}, proceeds
-recursively on the structure of~$e$.
-Our goal for the transformation is that 
-if $\diaone e {\xi,v}$ and $[\xi,v] \vsplito \mval i r$, 
-then $\splitone e A {\pipeM c l {r'}}$ and $\sepredone {\pipeM c l {r'}} {\mval i {r''}}$,
-where $r \equiv r''$ in some standard equivalence.
-Intuitively, translation and evaluation should commute.
+We now show how to translate terms $\colone e A$ into the form $\pipeM c l r$,
+pursuant to the correctness condition given in \ref{fig:splittingSummary}.
+The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
+which proceeds recursively on the structure of~$e$.
 
 When $e$ is a terminal (a variable or base constant)
-splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, and the trivial resumer \texttt{()}. (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
+splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, 
+and the trivial resumer \texttt{()}. 
+(Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  
+For example, the integer constant \texttt{3} splits into the combined term \texttt{(3,())} and resumer \texttt{\_=>()}.
 
-For all non-terminals (except $\next$),
+For all non-terminals (except \texttt{next}),
 splitting descends into $e$, recursively splitting its $n$ subterms
 to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
 The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
@@ -139,7 +104,7 @@ of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
 Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the \bbone-result $y_1$ of the predicate.
 The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$).   
 $b_i$ is cased in the resumer to determine which branch's resumer should be executed.
-{\tt case} and $\pause$ are the only two rules where splitting adds non-trivial logic is added to the precomputation.
+{\tt case} and \texttt{hold} are the only two rules where splitting adds non-trivial logic is added to the precomputation.
 
 Function introduction has a \texttt{()} boundary value,
 since functions are already fully reduced in our semantics.
@@ -149,58 +114,38 @@ The resumer is a new function formed out of the stage~\bbtwo\ part of the origin
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
 
-Since the results of splitting $\next$ terms depend on the output of splitting its stage~\bbtwo\ subterm,
-we defer description of $\next$ until after describing stage~\bbtwo\ term splitting.
+Since the results of splitting \texttt{next} terms depend on the output of splitting its stage~\bbtwo\ subterm,
+we defer description of \texttt{next} until after describing stage~\bbtwo\ term splitting.
 
-\subsection{Stage \bbtwo\ Term Splitting}
+\subsection{Term Splitting at \bbtwo}
 
-Because stage~\bbtwo\ terms in \lang\ fully reduce to values (as opposed to partial values),
-stage~\bbtwo\ term splitting assumes a simpler form than does stage~\bbone\ term splitting. 
-Specifically, splitting a term $\coltwo e A$ in \lang\ generates a ``single-output pipeline''
-term $\pipeS p l r$ where $p$ is a monostage {\em precomputation} term 
-that performs all of the stage~\bbone\ subcomputations in $e$, and $l.r$ 
-is a resumer which that performs all of the stage~\bbtwo\ subcomputations in $e$.
-This can be partially evaluated into a residual via the rule,
-\[
-\infer {\sepredone {\pipeS p l r} {[b/l]r}} {\reduce p b} 
-\]
-Note that in contrast to the combined term produced during stage~\bbone\ splitting,
-the precomputation $p$ generated by stage~\bbtwo\ splitting exists entirely
-to compute the boundary value expected by the resumer.
+Because stage~\bbtwo\ terms in \lang\ reduce to monostage residuals (as opposed to partial values),
+term splitting at \bbtwo\ assumes a simpler form than the version at \bbonem\ does. 
+The algorithm is specified by the $\splittwosym$ relation in \cref{fig:termSplit}.
 
-% \ur{I don't quite understand the following.}
-% (Thus, the resumer, bound to the value output by $p$, is equivalent to
-% the residual term defined in~\ref{ssec:dynamics})
-
-As with stage~\bbone\ terms, the splitting algorithm for stage~\bbtwo\ terms,
-as specified by the judgment $e \splittwosym [p,l.r]$ in \cref{fig:termSplit}, is defined on the local structure of $e$.
 In the terminal cases of
 constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers consisting of the original term.
 For example, the integer constant \texttt{3} splits into the
 precomputation \texttt{()} and resumer \texttt{\_=>3}.
 
-For all non-terminal terms~$e$ in \lang\ (except $\prev$
-and $\pause$)
-% recursively splitting
-% subterms and generating precomputations $p_1, \ldots, p_n$ and
-% resumers $r_1, \ldots, r_n$ for a term with~$n$ immediate subterms.
-the precomputation of~$e$ is defined as the combined precomputations of $e$'s $n$ subterms:
+More generally, for all (except \texttt{prev} and \texttt{hold}) 
+$n$-ary terms $e = \mathcal{C}\ttlpar e_1 \ttsemi \ldots \ttsemi e_n \ttrpar$ 
+the precomputation is the tupled precomputations of $e$'s $n$ subterms:
 $p=(p_1,\ldots,p_n)$.  The resumer binds each boundary value to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
-of~$e$ but where each subterm is replaced by its corresponding resumer $r_i$.
+of~$e$ but where each subterm is replaced by its corresponding resumer:
+$r = \mathcal{C}\ttlpar r_1 \ttsemi \ldots \ttsemi r_n \ttrpar$ .
+Notably, at \texttt{case}s and functions the
+precomputation of subterms is lifted out from underneath stage \bbtwo\ binders.  
+% TODO: should probably draw a parallel to the same behavior in dynamics
 
-A notable properly of splitting stage~\bbtwo\ \texttt{case}s and functions is that the
-precomputation of subterms is lifted out from underneath stage
-\bbtwo\
-binders.  % TODO: should probably draw a parallel to the same behavior in dynamics
-
-Splitting $\prev$ generates a precomputation that projects the \bbone-result of its stage~\bbone\ subterm.
-Since the argument to $\prev$ is of $\fut$ type, its \bbone-result reduces to \texttt{()}, justifying why it can be thrown away.
-$\pause$ treats the entire combined term of its stage~\bbone\ subexpression as a precomputation, 
+Splitting \texttt{prev} generates a precomputation that projects the \bbone-result of its stage~\bbone\ subterm.
+Since the argument to \texttt{prev} is of $\fut$ type, its \bbone-result reduces to \texttt{()}, justifying why it can be thrown away.
+\texttt{hold} treats the entire combined term of its stage~\bbone\ subexpression as a precomputation, 
 and projects out the integer result in the resumer. 
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.} 
-Finally, splitting $\next$ simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
+Finally, splitting \texttt{next} simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
 
 \end{abstrsyn}
 
