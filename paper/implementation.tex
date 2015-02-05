@@ -14,62 +14,6 @@ For instance, trivial subterm precomputations needn't be saved at tuples:
 \[
 \infer {\splittwo {(e_1,e_2)} A {p,l.(r_1,r_2)}}{\splittwo {e_1} A {(),\_.r_1} & \splittwo {e_2} A {p,l.r_2}}
 \]
+Our implementation uses many optimizations like these.
 
-This sort of optimization does not affect the contract of splitting at all,
-because the contract only requires that there be a precomputation that the residual can accept,
-with no restrictions on the form of that precomputation.
-
-The problem becomes more difficult when trying to optimize across function boundaries.
-For example, consider the stage \bbtwo\ term,
-\begin{lstlisting}
-2`prev{
-  1`letfun double (n : int) = n + n
-  in next{`2`hold {`1`double 5`2`}-7`1`}`2`
-}`
-\end{lstlisting}
-Using the rules above, this term splits into:
-\begin{lstlisting}
-1`letfun double (n : int) = (n+n, ())
-in double 5`
-
-2`l => 
-letfun double (n : unit, l0 : unit) = ()
-in (double (pi2 l); pi1 l)-7`
-\end{lstlisting}
-
-Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{double}, since it always returns \texttt{()}. 
-In this case, the wasted work is small, but if \texttt{double} were a recursive function,
-then it's runtime may be unbounded.
-
-There are two ways plausible ways to solve this problem:
-either we could define an optimization step that comes 
-after splitting and show that it tends to fix the inefficiencies that splitting creates; 
-or we could give more structure to the input language so that splitting can generate more efficient code directly.
-
-We choose to investigate the latter approach.
-Specifically, we add new staging features to \lang\ which allow us to indicate that a piece of code is {\em strictly} 
-stage \bbone---{\em i.e.} that it contains no $\next$ blocks.
-At the type level, this manifests as a constructor called $\curr$.
-So for instance, $\rmint \to \rmint$ is a stage \bbone\ function from one integer to another,
-which might fail to terminate at stage \bbtwo, 
-but $\curr (\rmint \to \rmint)$ is a stage \bbone\ function from one integer to another
-which {\em cannot} have any content at stage \bbtwo.
-Naturally, the well-formedness of $\curr A$ requires that $A$ contain no $\fut$s.
-
-
-With these new features in place, we can now define the \texttt{double}
-function so that it splits reasonably.
-\begin{lstlisting}
-2`prev{
-  1`let mono{`3`double`1`} = mono{`3`fn n : int => n+n`1`}
-  in next{`2`hold {`1`lift(mono{`3`double 5`1`})`2`}-7`1`}`2`
-}`
-\end{lstlisting}
-This now splits into:
-\begin{lstlisting}
-1`let double = (fn n : int => n+n)
-in (double 5,())`
-
-2`l => in (pi1 l)-7`
-\end{lstlisting}
 \end{concretesyntax}
