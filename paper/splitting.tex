@@ -7,15 +7,15 @@
 
 The primary strength of \lang\ is the expressive power afforded by
 its ability to syntactically interleave work intended for stage \bbone\
-and work intended for stage \bbtwo, as well as it ability to form
+and work intended for stage \bbtwo, as well as its ability to form
 mixed-stage abstractions. 
 
 In this section, we provide an algorithm to translate the multistage terms and values of \lang\
 into equivalent but simpler forms where the stage \bbone\ and stage \bbtwo\ portions 
-of the computation are {\em syntactically seperated} from each other.
-That is, we desire a outputs of the form $\mathcal{C}(e_1;e_2)$ where  
-$e_1$ is a monostage term that encodes all stage \bbone\ computation, 
-and $e_2$ is a monostage term that encodes all stage \bbtwo\ computation.
+of the computation are {\em syntactically separated} from each other.
+That is, we desire outputs of the form $\mathcal{C}(e_1;e_2)$ where  
+$e_1$ is a monostage term encoding all stage \bbone\ computation, 
+and $e_2$ is a monostage term encoding all stage \bbtwo\ computation.
 To represent outputs in this way, we introduce three new constructs:
 \begin{itemize}
 \item {\em Single-output pipelines}, \texttt{pipeS}, for the output of splitting \lang\ terms at world \bbtwo.
@@ -34,7 +34,7 @@ Indeed, the simplicity of these reduction rules is one reason why we
 would want to translate into this separated form, rather than use the semantics of \ref{sec:semantics}.
 
 With these output terms defined, we can state the goal of our splitting algorithm:
-to translate terms in \lang\ to a syntactically-separted form, 
+to translate terms in \lang\ to a syntactically-separated form, 
 such that the semantics is preserved.
 
 Exactly what is meant by ``such that the semantics is preserved'' depends on whether we're translating
@@ -47,11 +47,11 @@ In the former case, where an $\colone e A$ is translated to a $\pipeM c l r$ wit
 things are more complicated: 
 the output of $\redonesym$ is a partial value and the output of $\sepredonesym$ is a masked value,
 so we first need a way to relate those forms if we want to talk about correctness of the term translation.
-That is the purpose of of the {\em masking} relation, written $\vsplito$.
+That is the purpose of the {\em masking} relation, written $\vsplito$.
 
-This section proceeds by first defining masking ($\vsplito$), 
-then using it to motivate the definition of \bbonem-translation ($\splitonesym$),
-and finally coming back to define \bbtwo-tranlastion ($\splittwosym$).
+This section proceeds by defining masking ($\vsplito$), 
+then using masking to motivate the definition of \bbonem-translation ($\splitonesym$),
+and finally coming back to define \bbtwo-translation ($\splittwosym$).
 A summary of these operations and the relationship between them is provided in \ref{fig:splittingSummary}.
 
 \subsection{Masking}
@@ -67,7 +67,7 @@ evaluates via $\redonesym$ to:
 2`[yhat|->7+5]` 1`(3,next{`2`yhat`1`})`
 \end{lstlisting}
 
-What we desire is a simple way to translate this partial value into a form that separates the stage~\bbone\ content (the value \texttt{3}) 
+We want a simple way to translate this partial value into a form that separates the stage~\bbone\ content (the value \texttt{3}) 
 from the stage~\bbtwo\ content (the term $\letin \yhat {\mathtt{7+5}} \yhat$),
 allowing us to later define a term translation that respects this value translation.
 
@@ -90,7 +90,7 @@ However, the tags of injections and rolls are replicated only in the immediate v
 since they represent stage~\bbone\ information.
 
 Since lambdas may represent multi-stage computations, 
-masking splits the body of lambdas as a general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
+masking splits the body of lambdas as general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
 and packages the resulting terms as functions.
 
 The example above is masked into,
