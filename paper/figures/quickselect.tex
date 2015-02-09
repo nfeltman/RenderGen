@@ -47,6 +47,30 @@ fun qsStaged (Empty,_) = next {`2`0`1`}
 \vspace{1.3em}
 \label{fig:qs-staged}
 \end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+\begin{lstlisting} 
+1`atsignpure{
+  datatype list = Empty | Cons of int * list
+  fun part (...) = ...
+} 
+
+`//1`qsStaged : ^list * $`2`int`1` -> $`2`int`1`
+fun qsStaged (`3`pure{`1`Empty`3`}`1`,_) = next {`2`0`1`}
+  | qsStaged (`3`pure{`1`Cons ht`3`}`1`,next{`2`k`1`}) = 
+    let 
+      val (n0,le,ri) = `3`pushP (pushA pure{`1`part`3`} pure{`1`ht`3`})`1`
+      val next{`2`n`1`} = hold n0
+    in next{`2`
+      case compare k n of
+        LT => prev {`1`qsStaged (le, next{`2`k`1`})`2`}
+      | EQ => prev {`1`hold (#1 `3`pure{`1`ht`3`}`1`)`2`}
+      | GT => prev {`1`qsStaged (ri, next{`2`k-1-n`1`})`2`}`1`
+    }`
+\end{lstlisting}
+\caption{Staged implementation of quickselect in \lang, with explicit conversions.}
+\vspace{1.3em}
+\label{fig:qs-staged}
+\end{subfigure}
 \caption{Quickselect: traditional and staged.}
 \end{figure*}
 
