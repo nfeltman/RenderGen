@@ -46,7 +46,7 @@ fun elabLetRec (stage,f,t1,t2,(x,body),e) =
 	stageLet stage
 		(bind "r" 
 			(Elam(C.Tprod [C.Trec tY, t1], (IL1P (Ptuple [var "y", x]), 
-				Elet (Elam (t1,(var "v", Eapp (Eunroll (Evar "y"), Etuple[Evar "y", Evar "v"]))),
+				Elet (Elam (t1,(var "v", Eapp (Eunroll (Evar "y"), Etuple [Evar "y", Evar "v"]))),
 					(var f, body))
 			)))
 			(Elam (t1, (var "v", Eapp(Evar "r", Etuple [Eroll(tY, Evar "r"), Evar "v"]))))

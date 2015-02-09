@@ -32,12 +32,12 @@
 \newcommand{\pvalsym}{\ensuremath{\mathsf{pval}}}
 \newcommand{\ressym}{\ensuremath{\mathsf{res}}}
 \newcommand{\valsym}{\ensuremath{\mathsf{val}}}
-\newcommand{\fconsym}{\ensuremath{\mathsf{rtab}}}
+\newcommand{\cpvalsym}{\ensuremath{\mathsf{cpval}}}
 \newcommand{\wf}{\ \wfsym}
 \newcommand{\pval}{\ \pvalsym}
 \newcommand{\res}{\ \ressym}
 \newcommand{\val}{\ \valsym}
-\newcommand{\fcon}{\ \fconsym}
+\newcommand{\cpval}{\ \cpvalsym}
 
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
@@ -118,6 +118,7 @@
 	\newcommand {\letp} [3] {\mytt{letp(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
 
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\caseP} [3] {\mytt{caseP(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\pipeM} [3] {\mytt{pipeM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 	\newcommand {\pipeS} [3] {\mytt{pipeS(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 
@@ -126,7 +127,6 @@
 	\newcommand {\valprod} [2] {({##1},{##2})}
 	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
 	\newcommand {\mval} [2] {\mytt{mv(}{##1}\mytt{;}{##2}\mytt{)}}
-
 
 	\newcommand {\mualphatau} {\mu \alpha.\tau}
 }
@@ -139,18 +139,20 @@
 \newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
 \newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colmix} [2] {{#1}:{#2}~@~\bbonem}
+\newcommand {\colpure} [2] {{#1}:{#2}~@~\bbonep}
 \newcommand {\colm} [2] {{#1}:{#2}~@~\bbmono}
 \newcommand {\colwor} [2] {{#1}:{#2}~@~w}
 \newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
+\newcommand {\typespure} [3] [\Gamma] { {#1} \vdash \colpure{#2}{#3}}
 \newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
 \newcommand {\typesmono} [3] [\Gamma] { {#1} \vdash \colmono{#2}{#3}}
 \newcommand {\typesm} [3] [\Gamma] { {#1} \vdash \colm{#2}{#3}}
 \newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
-\newcommand {\istypeone} {~{\rm type}~@~\bbone}
-\newcommand {\istypetwo} {~{\rm type}~@~\bbtwo}
-\newcommand {\istypem} {~{\rm type}~@~\bbem}
-\newcommand {\istypewor} {~{\rm type}~@~w}
+\newcommand {\istypemix} {\ \mathsf{type}~@~\bbonem}
+\newcommand {\istypetwo} {\ \mathsf{type}~@~\bbtwo}
+\newcommand {\istypepure} {\ \mathsf{type}~@~\bbonep}
+\newcommand {\istypewor} {\ \mathsf{type}~@~w}
 
 \newcommand {\typeslangTwo} [3] [\Gamma] {{#1} \vdash_\bbtwo {#2}:{#3}}
 
@@ -160,9 +162,6 @@
 \newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~@~\bbone}
 \newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
 \newcommand {\isvalwor} {~{\rm val}~@~w}
-\newcommand {\ispval} {~{\rm pval}}
-\newcommand {\isval} {~{\rm val}}
-\newcommand {\isres} {~{\rm res}}
 \newcommand {\isseppval} {~{\rm pval^S}}
 %\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
 %\newcommand {\redone} [2] {{#1} \Downarrow_\bbone^L {#2}}
@@ -194,7 +193,7 @@
 \newcommand {\masko} [1] {|#1|_{\bbone}}
 \newcommand {\maskt} [1] {|#1|_{\bbtwo}}
 
-\newcommand {\vsplito} {\overset{\bbone}\curvearrowbotright}
+\newcommand {\vsplito} {\curvearrowbotright}
 \newcommand {\vsplitt} {\overset{\bbtwo}\curvearrowbotright}
 \newcommand {\tsplito} {\overset{\bbone}\curvearrowright}
 \newcommand {\tsplits} {\overset{\bbtwo}\curvearrowright}

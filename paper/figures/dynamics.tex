@@ -1,45 +1,23 @@
 %!TEX root = ../paper.tex
 
-%\begin{figure}
-%\begin{mathpar}
-%\infertypeswor[\rmunit]
-%{() \pval}
-%{\cdot}
-%\and
-%\infertypeswor[int]
-%{i \pval}
-%{\cdot}
-%%\and
-%%\infertypeswor[bool]
-%%{b \pval}
-%%{\cdot}
-%\and
-%\infertypeswor[\times]
-%{(v_1, v_2) \pval}
-%{v_1 \pval & v_2 \pval}
-%\and
-%\infertypeswor[+_1]
-%{\inl~v \pval}
-%{v \pval}
-%\and
-%\infertypeswor[+_2]
-%{\inr~v \pval}
-%{v \pval}
-%\and
-%\infertypeswor[\to]
-%{\lam x A e \pval}
-%{\cdot}
-%\and
-%\infertypeswor[\fut]
-%{(\next~\hat y) \pval}
-%{\cdot}
-%\end{mathpar}
-%\caption{\lang~Valid Partial Values}
-%\label{fig:validPvalues}
-%\end{figure}
-
 \begin{figure*}
 \begin{abstrsyn}
+\begin{mathpar}
+\fbox {Values} \and
+\infertypeswor[\rmunit]		{() \pval}									{\cdot}			\and
+\infertypeswor[int]			{i \pval}									{\cdot}			\and
+\infertypeswor[\times]		{(v_1, v_2) \pval}							{v_1 \pval 
+																		&v_2 \pval}		\and
+\infertypeswor[+_1]			{\inl v \pval}								{v \pval}		\and
+\infertypeswor[+_2]			{\inr v \pval}								{v \pval}		\and
+\infertypeswor[\to]			{\lam x e \pval}							{\cdot}			\and
+\infertypeswor[\fut]		{\next {\hat y} \pval}						{\cdot}			\and
+\infertypeswor[]			{\pure {v} \pval}							{v \val}		\and
+\infertypeswor[]			{[\cdot;v] \cpval}							{v \pval}		\and
+\infertypeswor[]			{[\hat y \mapsto q,\xi;v] \cpval}			{q \res 
+																		&[\xi;v] \pval}
+\end{mathpar}
+\hrule
 \begin{mathpar}
 \fbox{1-Evaluation}
 \and
@@ -140,16 +118,13 @@
 {\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 
 %\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
 %	{\sub}										\and
-
 %\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
 %\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and
 %
-
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Staging Features}
-\and
+\fbox{Staging Features} \and
 \inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}														\and
 \inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
 \inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and

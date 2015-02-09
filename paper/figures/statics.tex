@@ -1,17 +1,6 @@
 %!TEX root = ../paper.tex
 
 %\begin{figure}
-%\begin{mathpar}
-%\infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																			\and
-%\infertypeswor [int]			{\Delta \vdash {\tt int} \istypewor}						{\cdot} 																			\and
-%%\infertypeswor [bool]			{\Delta \vdash {\tt bool} \istypewor}						{\cdot} 																			\and
-%\infertypeswor [\times]		{\Delta \vdash A \times B \istypewor}						{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
-%\infertypeswor [+]			{\Delta \vdash A + B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
-%\infertypeswor [\to]			{\Delta \vdash A \to B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
-%\infertypeswor [\mu]			{\Delta \vdash \mu \alpha. A \istypewor}					{\Delta, \alpha \istypewor \vdash A \istypewor} 								\and
-%\infertypeswor [var]			{\Delta \vdash \alpha \istypewor}							{\alpha \istypewor \in \Delta} 													\and
-%\infertypeswor [\fut]			{\Delta \vdash \fut A \istypeone}							{\Delta \vdash A \istypetwo} 																
-%\end{mathpar}
 %\caption{\lang~Valid Types}
 %\label{fig:validTypes}
 %\end{figure}
@@ -19,6 +8,20 @@
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
+\fbox {Valid Types} \and
+\infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																	\and
+\infertypeswor [int]		{\Delta \vdash {\tt int} \istypewor}						{\cdot} 																	\and
+\infertypeswor [\times]		{\Delta \vdash A \times B \istypewor}						{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
+\infertypeswor [+]			{\Delta \vdash A + B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
+\infertypeswor [\to]		{\Delta \vdash A \to B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
+\infertypeswor [\mu]		{\Delta \vdash \mu \alpha. A \istypewor}					{\Delta, \alpha \istypewor \vdash A \istypewor} 							\and
+\infertypeswor [var]		{\Delta \vdash \alpha \istypewor}							{\alpha \istypewor \in \Delta} 												\and
+\infertypeswor [\fut]		{\Delta \vdash \fut A \istypemix}							{\Delta \vdash A \istypetwo} 												\and
+\infertypeswor [\fut]		{\Delta \vdash \curr A \istypemix}							{\Delta \vdash A \istypepure} 															
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\fbox {Typing} \and
 \infertypeswor [\rmunit] 	{\ty {()}\rmunit}									{\cdot} 																	\and
 \infertypeswor [int]		{\ty {i} \rmint}									{\cdot} 																	\and
 \infertypeswor [hyp]		{\ty x A}											{\col x A \in \Gamma} 														\and
@@ -37,7 +40,19 @@
 \infertypeswor [\curr I]	{\typesone {\pure e} {\curr A}}						{\typesmono e A} 															\and
 \infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colmono x A] {e_2} B} 		\and
 \infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}		{\typesone e {\curr (A+B)}} 												\and
+\infertypeswor [+ E]		{\typesone {\caseP{e_1}{x_2.e_2}{x_3.e_3}} C}		{\typesone {e_1}{\curr(A+B)} 
+																				&\typesone[\Gamma,\colone {x_2} {\curr A}]{e_2} C 
+																				&\typesone[\Gamma,\colone {x_3} {\curr B}]{e_3} C} 							\and
 \infertypeswor [hold]		{\typesone {\pause e} {\fut \rmint}}				{\typesone e {\curr \rmint}}		 										\and
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\fbox {Derivable $\curr$ Rules} \and
+\infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {\curr B}}					{\ty {e_1} {\curr(A \to B)} & \ty {e_2} {\curr A}} 							\and
+\infertypeswor [\times E_1]	{\ty {\pio e} {\curr A}}							{\ty e {\curr(A\times B)}}													\and
+\infertypeswor [\times E_2]	{\ty {\pit e} {\curr B}}							{\ty e {\curr(A\times B)}}													\and
+\infertypeswor []			{\typesone {x} {\curr A}}							{\colpure x A \in \Gamma}													\and
+\infertypeswor []			{\typespure x A}									{\colone x {\curr A} \in \Gamma}													
 \end{mathpar}
 \end{abstrsyn}
 \caption{\lang~Static Semantics}
