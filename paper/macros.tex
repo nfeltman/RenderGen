@@ -10,8 +10,6 @@
 \newcommand {\bbonep} {\ensuremath{\mathbbm{1P}}}
 \newcommand {\bbonem} {\ensuremath{\mathbbm{1M}}}
 \newcommand {\bbtwo} {\ensuremath{\mathbbm{2}}}
-\newcommand {\bbmono} {\ensuremath{\mathbb{M}}}
-\newcommand {\bbem} {\ensuremath{\mathbb{M}}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
 \newcommand {\ellResid} {$\mathrm{L^R}$}
 \newcommand {\ellTarget} {$\mathrm{L^T}$}
@@ -133,35 +131,31 @@
 { }
 
 
+\newcommand {\myatsign} {\hspace{-0.15em}\text{@}\hspace{-0.2em}}
 
 %judgments
-\newcommand {\colone} [2] {{#1}:{#2}~@~\bbonem}
-\newcommand {\coltwo} [2] {{#1}:{#2}~@~\bbtwo}
-\newcommand {\colmono} [2] {{#1}:{#2}~@~\bbmono}
-\newcommand {\colmix} [2] {{#1}:{#2}~@~\bbonem}
-\newcommand {\colpure} [2] {{#1}:{#2}~@~\bbonep}
-\newcommand {\colm} [2] {{#1}:{#2}~@~\bbmono}
-\newcommand {\colwor} [2] {{#1}:{#2}~@~w}
-\newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
+\newcommand {\coltwo} [2] {{#1}:{#2}~\myatsign~\bbtwo}
+\newcommand {\colmix} [2] {{#1}:{#2}~\myatsign~\bbonem}
+\newcommand {\colpure} [2] {{#1}:{#2}~\myatsign~\bbonep}
+\newcommand {\colwor} [2] {{#1}:{#2}~\myatsign~w}
+\newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colmix{#2}{#3}}
 \newcommand {\typespure} [3] [\Gamma] { {#1} \vdash \colpure{#2}{#3}}
 \newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
-\newcommand {\typesmono} [3] [\Gamma] { {#1} \vdash \colmono{#2}{#3}}
-\newcommand {\typesm} [3] [\Gamma] { {#1} \vdash \colm{#2}{#3}}
 \newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
 \newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
-\newcommand {\istypemix} {\ \mathsf{type}~@~\bbonem}
-\newcommand {\istypetwo} {\ \mathsf{type}~@~\bbtwo}
-\newcommand {\istypepure} {\ \mathsf{type}~@~\bbonep}
-\newcommand {\istypewor} {\ \mathsf{type}~@~w}
+\newcommand {\istypemix} {\ \mathsf{type}~\myatsign~\bbonem}
+\newcommand {\istypetwo} {\ \mathsf{type}~\myatsign~\bbtwo}
+\newcommand {\istypepure} {\ \mathsf{type}~\myatsign~\bbonep}
+\newcommand {\istypewor} {\ \mathsf{type}~\myatsign~w}
 
 \newcommand {\typeslangTwo} [3] [\Gamma] {{#1} \vdash_\bbtwo {#2}:{#3}}
 
 \newcommand {\reify} [3] {[{#1};{#2}]\overset{R}\Rightarrow{#3}}
 \newcommand {\erasone} {\Downarrow^e_\bbone}
 \newcommand {\erastwo} {\Downarrow^e_\bbtwo}
-\newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~@~\bbone}
-\newcommand {\isvaltwo} {~{\rm val}~@~\bbtwo}
-\newcommand {\isvalwor} {~{\rm val}~@~w}
+\newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~\myatsign~\bbone}
+\newcommand {\isvaltwo} {~{\rm val}~\myatsign~\bbtwo}
+\newcommand {\isvalwor} {~{\rm val}~\myatsign~w}
 \newcommand {\isseppval} {~{\rm pval^S}}
 %\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
 %\newcommand {\redone} [2] {{#1} \Downarrow_\bbone^L {#2}}

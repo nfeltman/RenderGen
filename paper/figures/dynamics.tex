@@ -1,25 +1,49 @@
 %!TEX root = ../paper.tex
 
+\begin{figure}
+\begin{abstrsyn}
+\[\begin{aligned}
+\text{Values}\ \ 
+u &::= ()\gbar\inte
+ \gbar \lam {\var}{e} \\
+&\gbar (u, u)
+ \gbar \inl u 
+ \gbar \inr u \\
+\text{Partial Values}\ \ 
+v &::= ()
+ \gbar \lam {\var}{\expr} \\
+&\gbar (v, v)
+ \gbar \inl v 
+ \gbar \inr v \\
+&\gbar \next {\hat y}
+ \gbar \pure u \\
+\text{Residuals}\ \ 
+q &::= ()\gbar\inte\gbar\var%\bool
+ \gbar \lam {\var}{q} 
+ \gbar \app q q \\
+&\gbar (q, q) 
+ \gbar \pio q 
+ \gbar \pit q \\
+&\gbar \inl q 
+ \gbar \inr q
+ \gbar \caseof {q}{\var.q}{\var.q} \\
+&\gbar \roll e
+ \gbar \unroll e\\
+\text{Residual Table}\ \ 
+\xi &::= \cdot
+ \gbar \xi, {\hat y} \mapsto q \\
+\end{aligned}\]
+\end{abstrsyn}
+\caption{Values, partial values, and residuals are restricted forms of expressions
+which appear as part of evaluation.
+They are given here as grammars.  
+Residual tables, a new construct, are also produced as part of evaluation.}
+\end{figure}
+
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
-\fbox {Values} \and
-\infertypeswor[\rmunit]		{() \pval}									{\cdot}			\and
-\infertypeswor[\times]		{(v_1, v_2) \pval}							{v_1 \pval 
-																		&v_2 \pval}		\and
-\infertypeswor[+_1]			{\inl v \pval}								{v \pval}		\and
-\infertypeswor[+_2]			{\inr v \pval}								{v \pval}		\and
-\infertypeswor[\to]			{\lam x e \pval}							{\cdot}			\and
-\infertypeswor[\fut]		{\next {\hat y} \pval}						{\cdot}			\and
-\infertypeswor[]			{\pure {v} \pval}							{v \val}		\and
-\infertypeswor[]			{[\cdot;v] \cpval}							{v \pval}		\and
-\infertypeswor[]			{[\hat y \mapsto q,\xi;v] \cpval}			{q \res 
-																		&[\xi;v] \cpval}
-\end{mathpar}
-\hrule
-\begin{mathpar}
-\fbox{1-Evaluation}
-\and
+\fbox{1-Evaluation}	\and
 \inferdiaone[\rmunit]
 {\red {()}{\cdot;()}}
 {\cdot}
@@ -93,11 +117,11 @@
 {\cdot}
 \and
 \inferdiaspc[\to I]
-{\red {\lam{x}{A}{e}}{\lam{x}{A}{q}}}
+{\red {\lam{x}{e}}{\lam{x}{q}}}
 {\diatwo [\Gamma,x] e q} 
 \and
 \inferdiaspc [\to E]
-{\red {e_1~e_2}{q_1~q_2}}
+{\red {\app {e_1} {e_2}}{q_1~q_2}}
 {\sub [1] & \sub [2]}
 \and
 \inferdiaspc [\times I]
@@ -106,7 +130,7 @@
 \and
 \inferdiaspc [C]
 {\red {\mathcal{C}(e)}{\mathcal{C}(q)}}
-{\sub}
+{\sub & \mathcal{C} = \mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}}
 %\inferdiaspc[+ I_2]
 %{\red {\inr~e}{\inr~q}}
 %{\sub}
@@ -131,11 +155,15 @@
 \infer					{\reify {(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}	{\reify{\xi}{q_2}{q'}}												\and
 \inferdiaone			{\red {\pure e} {\cdot; \pure v}}							{\reduce e v} 														\and
 \inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
-\inferdiaone			{\red {\lifttag e} {\xi;\inl{\pure v}}}						{\red e {\xi; \pure{\inl v}}}										\and
-\inferdiaone			{\red {\lifttag e} {\xi;\inr{\pure v}}}						{\red e {\xi; \pure{\inr v}}}										
+%\inferdiaone			{\red {\lifttag e} {\xi;\inl{\pure v}}}						{\red e {\xi; \pure{\inl v}}}										\and
+%\inferdiaone			{\red {\lifttag e} {\xi;\inr{\pure v}}}						{\red e {\xi; \pure{\inr v}}}										
+\inferdiaone [+ E_1]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\pure{\inl{v}}} 
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_2]e_2}{\xi_2;v_2}}			\and
+\inferdiaone [+ E_2]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\pure{\inr{v}}}
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3;v_3}}		
 \end{mathpar}
 
 \end{abstrsyn}
-\caption{\lang~Dynamic Semantics.  In residualization rules, $\mathcal{C}$ can stand for \texttt{pi1}/\texttt{pi2}/\texttt{inl}/\texttt{inr}/\texttt{roll}/\texttt{unroll}.}
+\caption{\lang~Dynamic Semantics.}
 \label{fig:diaSemantics}
 \end{figure*}

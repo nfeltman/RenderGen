@@ -43,7 +43,7 @@ In the latter case, where an $\coltwo e A$ is translated to a $\pipeS p l r$ wit
 this constraint is straightforward: $e$ and $\pipeS p l r$ can both be reduced to residuals
 via $\redtwosym$ and $\sepredtwosym$, so we only need to require that those
 residuals be equivalent for the translation to be correct.
-In the former case, where an $\colone e A$ is translated to a $\pipeM c l r$ with the $\splitonesym$ relation, 
+In the former case, where an $\colmix e A$ is translated to a $\pipeM c l r$ with the $\splitonesym$ relation, 
 things are more complicated: 
 the output of $\redonesym$ is a partial value and the output of $\sepredonesym$ is a masked value,
 so we first need a way to relate those forms if we want to talk about correctness of the term translation.
@@ -79,7 +79,7 @@ and packages the resulting terms as functions.
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
 
-We now show how to translate terms $\colone e A$ into the form $\pipeM c l r$,
+We now show how to translate terms $\colmix e A$ into the form $\pipeM c l r$,
 pursuant to the correctness condition given in \ref{fig:splittingSummary}.
 The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
 which proceeds recursively on the structure of~$e$.
@@ -146,6 +146,10 @@ and projects out the integer result in the resumer.
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.} 
 Finally, splitting \texttt{next} simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
+
+\subsection {Three World System?}
+
+Why do we need a three world system?
 
 \end{abstrsyn}
 
