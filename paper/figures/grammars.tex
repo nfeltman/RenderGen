@@ -21,10 +21,10 @@
 %\context &::=\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Expressions}\ \ 
-\expr &::= ()\gbar\inte\gbar\var%\bool
+\expr &::= \tup{}\gbar\inte\gbar\var%\bool
  \gbar \lam {\var}{\expr} 
  \gbar \app \expr \expr \\
-&\gbar (\expr, \expr) 
+&\gbar \tup{\expr, \expr} 
  \gbar \pio \expr 
  \gbar \pit \expr \\
 &\gbar \inl \expr 
@@ -42,72 +42,3 @@
 \caption{\lang~Syntax}
 \label{fig:grammar}
 \end{figure}
-
-%
-%\begin{figure}
-%\caption{\ellStaged~Syntax}
-%\label{fig:ellStagedSyntax}
-%\centering
-%\begin{tabular}{ll} 
-%$\begin{aligned}
-%\typeo &::= \text{unit}~|~\text{int}~|~\text{bool} \\
-%&\gbar \typeo \times \typeo \\
-%&\gbar \fut \typet \\
-%\expro &::= ()~|~\inte~|~\bool  \\
-%&\gbar \letin{\var}{\expro}{\expro} \\
-%&\gbar \var \\
-%&\gbar (\expro, \expro) \\
-%&\gbar \pi_1~\expro \gbar \pi_2~\expro \\
-%&\gbar \ifthen {\expro}{\expro}{\expro} \\
-%&\gbar \next~\exprt \\
-%\contextot &::=\emptyC \\
-%&\gbar \contextot, \var : \typeo ^\bbone \\
-%&\gbar \contextot, \var : \typet ^\bbtwo
-%\end{aligned} $ 
-%& 
-%$\begin{aligned}
-%\typet &::=  \text{unit}~|~\text{int}~|~\text{bool} \\
-%&\gbar \typet \times \typet \\
-%\\
-%\exprt &::= ()~|~\inte~|~\bool \\
-%&\gbar \letin{\var}{\exprt}{\exprt} \\
-%&\gbar \var \\
-%&\gbar (\exprt, \exprt) \\
-%&\gbar \pi_1~\exprt \gbar \pi_2~\exprt \\
-%&\gbar \ifthen {\exprt}{\exprt}{\exprt} \\
-%&\gbar \prev~\expro \\
-%\\
-%\\
-%\\
-%\end{aligned} $
-%\end{tabular}
-%\end{figure}
-
-%
-%\begin{figure}
-%\caption{\ellTarget~Syntax}
-%\label{fig:ellTargetSyntax}
-%\centering
-%\begin{tabular}{ll} 
-%$\begin{aligned}
-%\expr &::= ()~|~\inte~|~\bool \\
-%&\gbar \letin{\var}{\expr}{\expr} \\
-%&\gbar \var \\
-%&\gbar (\expr, \expr) \\
-%&\gbar \pi_1~\expr \gbar \pi_2~\expr \\
-%&\gbar \inl~\expr \gbar \inr~\expr \\
-%&\gbar \ifthen {\expr}{\expr}{\expr}  \\
-%&\gbar \caseof {\expr}{x_1.\expr}{x_2.\expr} 
-%\end{aligned} $
-%& 
-%$\begin{aligned}
-%\type &::=  \rmunit~|~\text{int}~|~\text{bool} \\
-%&\gbar \type \times \type  \\
-%&\gbar \type + \type 
-%\\
-%\context &::= \emptyC \\
-%&\gbar \context, \var : \type
-%\\ \\ \\ \\
-%\end{aligned} $
-%\end{tabular}
-%\end{figure}

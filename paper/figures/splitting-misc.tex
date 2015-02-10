@@ -1,55 +1,5 @@
 %!TEX root = ../paper.tex
 
-%\begin{figure*}
-%\caption{Type Splitting}
-%\label{fig:typeSplit}
-%\begin{mathpar}
-%\infer [\mathrm{unit}\tsplito]	{\rmunit \tsplito [\rmunit,\rmunit]}{\cdot} \and
-%\infer [\mathrm{int}\tsplito]	{{\rm int} \tsplito [{\rm int}, \rmunit]}{\cdot} \and
-%\infer [\mathrm{bool}\tsplito]	{{\rm bool} \tsplito [{\rm bool}, \rmunit]}{\cdot} \and
-%\infer [\times\tsplito]
-%	{A\times B \tsplito [A_1 \times B_1, A_2 \times B_2]}
-%	{A \tsplito [A_1, A_2] & B \tsplito [B_1,B_2]} \and
-%\infer [\fut\tsplito]
-%	{\fut~A \tsplito [{\rm unit}, A']}
-%	{A \tsplits A'} \and
-%\end{mathpar}
-%\end{figure*}
-%
-
-% \[\begin{array}{l|l|l}
-% [\xi;v] & \masko{\xi;v} & \maskt{\xi;v} \\ \hline
-% [\hat y \mapsto q,\xi;v]
-%   & \masko{\cdot;v}
-%   & \letin {\hat y} q {\maskt{\xi;v}} \\\relax
-% [\cdot;()] 
-%   & ()
-%   & () \\\relax
-% [\cdot;\monoTerm~v] 
-%   & v
-%   & () \\\relax
-% [\cdot;\next~\hat y] 
-%   & ()
-%   & \hat y \\\relax
-% [\cdot;(v_1,v_2)] 
-%   & (\masko {\cdot;v_1},\masko {\cdot;v_2})
-%   & (\maskt {\cdot;v_1},\maskt {\cdot;v_2}) \\\relax
-% [\cdot;\inl~v] 
-%   & \inl~\masko{\cdot;v}
-%   & \maskt {\cdot;v} \\\relax
-% [\cdot;\inr~v] 
-%   & \inr~\masko{\cdot;v}
-%   & \maskt {\cdot;v} \\\relax
-% [\cdot;\roll~v] 
-%   & \roll~\masko{\cdot;v}
-%   & \maskt {\cdot;v} \\\relax
-% [\cdot;\lam xAe]
-%   & \lambda x.c 
-%   & \lambda (x,l).r \\
-% & \text{ for } \splitone e A {c,l.r}
-% & \text{ for } \splitone e A {c,l.r}
-% \end{array}\]
-
 \begin{figure}
 \begin{abstrsyn}
 \[\begin{array}{rrrl}
@@ -59,16 +9,16 @@
 &[\hat y \mapsto q,\xi;v]  &\vsplito& \mval  {i}             {\letin {\hat y} q {r}}      \\
 \hline
 \multicolumn{4}{l}  {\text{\bf Where } [\cdot;v_k] \vsplito \mval {i_k} {r_k} \text{:}}  \\
-&[\cdot;()]                &\vsplito& \mval  {()}            {()}                         \\
-&[\cdot;\pure{m}]          &\vsplito& \mval  {m}             {()}                         \\
-&[\cdot;\next{\hat y}]     &\vsplito& \mval  {()}            {\hat y}                     \\
-&[\cdot;(v_1,v_2)]         &\vsplito& \mval  {(i_1,i_2)}     {(r_1,r_2)}                  \\
+&[\cdot;\tup{}]            &\vsplito& \mval  {\tup{}}        {\tup{}}                     \\
+&[\cdot;\pure{m}]          &\vsplito& \mval  {m}             {\tup{}}                     \\
+&[\cdot;\next{\hat y}]     &\vsplito& \mval  {\tup{}}            {\hat y}                     \\
+&[\cdot;\tup{v_1,v_2}]         &\vsplito& \mval  {\tup{i_1,i_2}}     {\tup{r_1,r_2}}                  \\
 &[\cdot;\inl{v}]           &\vsplito& \mval  {\inl{i}}       {r}                          \\
 &[\cdot;\inr{v}]           &\vsplito& \mval  {\inr{i}}       {r}                          \\
 &[\cdot;\roll{v}]          &\vsplito& \mval  {\roll{i}}      {r}                          \\
 \hline
 \multicolumn{4}{l}  {\text{\bf Where } \splitone e A {c,l.r} \text{:}}                   \\
-&[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {(x,l)} {r}}			\\
+&[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {\tup{x,l}} {r}}			\\
 \hline
 \end{array}\]
 \end{abstrsyn}

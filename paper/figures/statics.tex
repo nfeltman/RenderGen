@@ -10,7 +10,7 @@
 \begin{mathpar}
 \fbox {Valid Types} \and
 \infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																	\and
-\infertypeswor [int]		{\Delta \vdash {\tt int} \istypewor}						{w = \bbonep,\bbtwo} 														\and
+\infertypeswor [int]		{\Delta \vdash {\tt int} \istypewor}						{w \in \{\bbonep,\bbtwo\}}													\and
 \infertypeswor [\times]		{\Delta \vdash A \times B \istypewor}						{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
 \infertypeswor [+]			{\Delta \vdash A + B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
 \infertypeswor [\to]		{\Delta \vdash A \to B \istypewor}							{\Delta \vdash A \istypewor & \Delta \vdash B \istypewor} 					\and
@@ -22,12 +22,12 @@
 \hrule
 \begin{mathpar}
 \fbox {Standard Typing} \and
-\infertypeswor [\rmunit] 	{\ty {()}\rmunit}									{\cdot} 																	\and
-\infertypeswor [int]		{\ty {i} \rmint}									{w = \bbonep,\bbtwo} 														\and
+\infertypeswor [\rmunit] 	{\ty {\tup{}}\rmunit}								{\cdot} 																	\and
+\infertypeswor [int]		{\ty {i} \rmint}									{w \in \{\bbonep,\bbtwo\}}													\and
 \infertypeswor [hyp]		{\ty x A}											{\col x A \in \Gamma} 														\and
 \infertypeswor [\to I]		{\ty {\lam {x}{e}} {A \to B}}						{A \istypewor & \ty [,\col x A] e B} 										\and
 \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 										\and
-\infertypeswor [\times I]	{\ty {(e_1,e_2)}{A\times B}}						{\ty {e_1} A & \ty {e_2} B} 												\and
+\infertypeswor [\times I]	{\ty {\tup{e_1,e_2}}{A\times B}}						{\ty {e_1} A & \ty {e_2} B} 												\and
 \infertypeswor [\times E_1]	{\ty {\pio e} A}									{\ty e {A\times B}} 														\and
 \infertypeswor [\times E_2]	{\ty {\pit e} B}									{\ty e {A\times B}} 														\and
 \infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A} 																	\and
@@ -44,7 +44,7 @@
 \infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\and
 \infertypeswor [\curr I]	{\typesone {\pure e} {\curr A}}						{\typespure e A} 															\and
 \infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colpure x A] {e_2} B} 		\and
-%\infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}		{\typesone e {\curr (A+B)}} 												\and
+%\infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}		{\typesone e {\curr \tup{A+B}}} 												\and
 \infertypeswor [+ E]		{\typesone {\caseP{e_1}{x_2.e_2}{x_3.e_3}} C}		{\typesone {e_1}{\curr(A+B)} 
 																				&\typesone[\Gamma,\colmix {x_2} {\curr A}]{e_2} C 
 																				&\typesone[\Gamma,\colmix {x_3} {\curr B}]{e_3} C} 							
@@ -52,9 +52,9 @@
 % \hrule
 % \begin{mathpar}
 % \fbox {Derivable $\curr$ Rules} \and
-% \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {\curr B}}					{\ty {e_1} {\curr(A \to B)} & \ty {e_2} {\curr A}} 							\and
-% \infertypeswor [\times E_1]	{\ty {\pio e} {\curr A}}							{\ty e {\curr(A\times B)}}													\and
-% \infertypeswor [\times E_2]	{\ty {\pit e} {\curr B}}							{\ty e {\curr(A\times B)}}													\and
+% \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {\curr B}}					{\ty {e_1} {\curr\tup{A \to B}} & \ty {e_2} {\curr A}} 							\and
+% \infertypeswor [\times E_1]	{\ty {\pio e} {\curr A}}							{\ty e {\curr\tup{A\times B}}}													\and
+% \infertypeswor [\times E_2]	{\ty {\pit e} {\curr B}}							{\ty e {\curr\tup{A\times B}}}													\and
 % \infertypeswor []			{\typesone {x} {\curr A}}							{\colpure x A \in \Gamma}													\and
 % \infertypeswor []			{\typespure x A}									{\colone x {\curr A} \in \Gamma}													
 % \end{mathpar}

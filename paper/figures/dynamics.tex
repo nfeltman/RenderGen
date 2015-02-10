@@ -4,24 +4,24 @@
 \begin{abstrsyn}
 \[\begin{aligned}
 \text{Values}\ \ 
-u &::= ()\gbar\inte
+u &::= \tup{}\gbar\inte
  \gbar \lam {\var}{e} \\
-&\gbar (u, u)
+&\gbar \tup{u, u}
  \gbar \inl u 
  \gbar \inr u \\
 \text{Partial Values}\ \ 
-v &::= ()
+v &::= \tup{}
  \gbar \lam {\var}{\expr} \\
-&\gbar (v, v)
+&\gbar \tup{v, v}
  \gbar \inl v 
  \gbar \inr v \\
 &\gbar \next {\hat y}
  \gbar \pure u \\
 \text{Residuals}\ \ 
-q &::= ()\gbar\inte\gbar\var%\bool
+q &::= \tup{}\gbar\inte\gbar\var%\bool
  \gbar \lam {\var}{q} 
  \gbar \app q q \\
-&\gbar (q, q) 
+&\gbar \tup{q, q} 
  \gbar \pio q 
  \gbar \pit q \\
 &\gbar \inl q 
@@ -45,7 +45,7 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 \begin{mathpar}
 \fbox{1-Evaluation}	\and
 \inferdiaone[\rmunit]
-{\red {()}{\cdot;()}}
+{\red {\tup{}}{\cdot;\tup{}}}
 {\cdot}
 \and
 \inferdiaone [\to I]
@@ -58,7 +58,7 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 \and
 %
 \inferdiaone [\times I]
-{\red {(e_1,e_2)}{\gcomp 1 2;\valprod{v_1}{v_2}}}
+{\red {\tup{e_1,e_2}}{\gcomp 1 2;\valprod{v_1}{v_2}}}
 {\sub [1] & \sub [2]}
 \and
 \inferdiaone [\times E_1]
@@ -102,7 +102,7 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 \fbox{Residualization}
 \and
 \inferdiaspc[\rmunit]
-{\red {()}{()}}
+{\red {\tup{}}{\tup{}}}
 {\cdot}
 \and
 \inferdiaspc[int]
@@ -125,12 +125,12 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 {\sub [1] & \sub [2]}
 \and
 \inferdiaspc [\times I]
-{\red {(e_1,e_2)}{(q_1,q_2)}}
+{\red {\tup{e_1,e_2}}{\tup{q_1,q_2}}}
 {\sub [1] & \sub [2]} 
 \and
 \inferdiaspc [C]
-{\red {\mathcal{C}(e)}{\mathcal{C}(q)}}
-{\sub & \mathcal{C} = \mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}}
+{\red {\scriptCapp e}{\scriptCapp q}}
+{\sub & \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}}
 %\inferdiaspc[+ I_2]
 %{\red {\inr~e}{\inr~q}}
 %{\sub}
@@ -152,7 +152,7 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 \inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
 \inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
 \infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
-\infer					{\reify {(y \mapsto q_1), \xi}{q_2}{\letin{y}{q_1}{q'}}}	{\reify{\xi}{q_2}{q'}}												\and
+\infer					{\reify {y \mapsto q_1, \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \inferdiaone			{\red {\pure e} {\cdot; \pure v}}							{\reduce e v} 														\and
 \inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
 %\inferdiaone			{\red {\lifttag e} {\xi;\inl{\pure v}}}						{\red e {\xi; \pure{\inl v}}}										\and
