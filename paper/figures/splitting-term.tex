@@ -12,7 +12,7 @@
 \infersplitone [\to E]			{\spl {\app {e_1}{e_2}}{B}{\left(
 									\talllet{\tup{y_1,z_1}}{c_1}{
 									\talllet{\tup{y_2,z_2}}{c_2}{
-									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\tup{y_3,\tup{z_1,z_2,z_3}}}}}\right),
+									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\tup{y_3,\tup{z_1,z_2,z_3}}\ttrpar\ttrpar\ttrpar}}}\right),
 									\begin{aligned}
 											\tup{l_1,&l_2,l_3}.\\[-\baselineskip] % terrible hax
 											&\app{r_1}{\tup{r_2,l_3}}\\
@@ -22,7 +22,7 @@
 									{\left(
 										\talllet{\tup{y_1,z_1}}{c_1}{
 										\talllet{\tup{y_2,z_2}}{c_2}{
-										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
+										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}\ttrpar\ttrpar}}
 									\right),
 									\tup{l_1,l_2}.\tup{r_1,r_2}
 							}}																				{\sub 1 A & \sub 2 B} \and
@@ -45,7 +45,7 @@
 								\talllet{\tup{y_1,z_1}}{c_1}{
 									\tallcase{y_1}
 									{x_2.\letin{\tup{y_2,z_2}}{c_2}{\tup{y_2,\tup{z_1,\inl{z_2}}}}}
-									{x_3.\letin{\tup{y_3,z_3}}{c_3}{\tup{y_3,\tup{z_1,\inr{z_3}}}}}
+									{x_3.\letin{\tup{y_3,z_3}}{c_3}{\tup{y_3,\tup{z_1,\inr{z_3}}}}\ttrpar}
 								}\right), \\
 								\tup{l_1,l_b}.\letin{z}{r_1}{\caseof{l_b}{l_2.[z/x_2]{r_2}}{l_3.[z/x_3]{r_3}}}
 								\end{array}}}				{\sub 1 {A+B} & \sub [\Gamma,\col{x_2} A] 2 C 	& \sub [\Gamma,\col{x_3} B] 3 C} 	
@@ -100,7 +100,7 @@
 \infersplitone				{\spl {\pure e} {\curr A} {\tup{e,\tup{}},\_.\tup{}}}						{\cdot}							\and
 \infersplitone				{\spl {\letp x{e_1}{e_2}} {?} 
 							{\left(\talllet {\tup{x,z_1}} {c_1} {
-							 \talllet {\tup{y_2,z_2}} {c_2} {\tup{y_2,\tup{z_1,z_2}}}}\right),
+							 \talllet {\tup{y_2,z_2}} {c_2} {\tup{y_2,\tup{z_1,z_2}}\ttrpar\ttrpar}}\right),
 							 \tup{l_1,l_2}.\tup{r_1;r_2}}}											{\sub 1 ? & \sub 2 ?}			\and
 \infersplitone				{\spl {\lifttag e} ? {c,l.r}}									{\sub {} ?}				
 \end{mathpar}
