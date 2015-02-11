@@ -22,8 +22,9 @@ Notes from 1/16:
 \item We are modeling computations where some inputs arrive at stage 1 and
 others arrive at stage 2. As a result, some subcomputations can be performed at
 stage 1, and others at stage 2.
-\item \emph{Statics}: M12 is a language with three worlds: 1, 2, and M.
-We model the computations described above as functions in world M.
+\item \emph{Statics}: M12 is a language with three worlds: 1M, 1P, and 2.
+We model the computations described above as functions in world M, and their
+results as values in 2.
 \item \emph{Dynamics}: We describe how to perform all of the stage 1
 subcomputations in an M12 program. Our semantics are mutually defined in terms
 of how to reduce terms in each of the three worlds.
@@ -43,7 +44,7 @@ by using the first element as a pivot%
 linear time behavior.}
 and then recurs on one of the two resulting sides to find the desired element.
 The side chosen is determined by the relationship of \texttt{k} to the size of
-the first half \texttt{n}, which is returned by the \texttt{partition} function
+the first half \texttt{n}, which is returned by the \texttt{part}ition function
 along with the two sides themselves.
 
 Now, consider an application where we perform many order statistics queries on
@@ -70,39 +71,40 @@ to \texttt{qSelect} are guarded by a comparison to \texttt{k}, \texttt{k} does
 not determine the arguments to those recursive calls---it only determines which
 call is made. Thus, if we are willing to change the evaluation order of the
 language (and evaluate under the \texttt{case} statement), it should be possible
-to set things up so that \emph{all} the computation involving \texttt{l} is
-performed before \emph{any} of the computation involving \texttt{k}.
+to force \emph{all} the computations involving \texttt{l} to be performed before
+\emph{any} of the computations involving \texttt{k}.
 
 We can formalize this intuition by writing quickselect in a \emph{staged}
 language. In this paper, we choose \lang\ (\ref{sec:semantics}), a staged, typed
 lambda calculus. This allows us to directly express the idea that the argument
 \texttt{l} is known at the \emph{first} stage of the computation, while the
 argument \texttt{k} is only known at the \emph{second}, and all
-first-stage computation occurs before any second-stage computation.
+first-stage computations occur before any second-stage computations.
 
 We define a staged version of quickselect in \ref{fig:qs-staged}, writing
 first-stage computations in red, and second-stage computations in blue. While
-\texttt{qSelect} sends a \textrm{list} and \rmint\ to an \rmint,
+\texttt{qSelect} sends a \textrm{list} and $\rmint$ to an $\rmint$,
 \texttt{qsStaged} has a more precise type---it is a first-stage function which
-takes a \textrm{list} (ignore the $\curr$ for now) and a 
-$\fut\rmint$ (an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$. 
+takes a \textrm{list} (ignoring the $\curr$ for the moment) and a $\fut\rmint$
+(an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
 
-The stage \bbone\ portions of \texttt{qsStaged} look like \texttt{qSelect}: any
-term of non-circle type is available for immediate use. Indeed, we case on
-\texttt{l} as usual, and in the \texttt{Cons} branch, \texttt{partition} it.
+Ignoring for the moment all \texttt{pure} annotations, the first-stage code in
+\texttt{qsStaged} looks like \texttt{qSelect}: in the first stage, terms of
+non-circle type are available for immediate use. Indeed, we case on the list as
+usual, and in the \texttt{Cons} branch, \texttt{part}ition it.
 
-The next part of the original \texttt{qSelect} function depends on \texttt{k},
-which has type $\fut\rmint$, indicating that it is only available to stage
-\bbtwo\ computations. Since \texttt{qsStaged} itself produces a $\fut\rmint$,
-the remainder of the function is stage \bbtwo\ code.
+The \texttt{case} expression in \texttt{qSelect} depends on \texttt{k}, whose
+type $\fut\rmint$ indicates that it is only available to second-stage
+computations. Since \texttt{qsStaged} itself produces a $\fut\rmint$, the
+remainder of the function is second-stage code.
 
-The $\next$ wraps a stage \bbtwo\ expression of type $\rmint$ (the \texttt{case}
-expression) as a stage \bbone\ expression of type $\fut\rmint$ (the result type
+The $\next$ wraps a second-stage expression of type $\rmint$ (the \texttt{case}
+expression) as a first-stage expression of type $\fut\rmint$ (the result type
 of \texttt{qsStaged}). Inside the \texttt{LT} and \texttt{GT} branches, the
-$\prev$ unwraps stage \bbone\ $\fut\rmint$s (the results of the recursive calls
-to \texttt{qsStaged}) as stage \bbtwo\ $\rmint$s. In the \texttt{EQ} branch,
-$\pause$ promotes an integer at stage \bbone\ (the head of \texttt{l}) directly
-to an integer at stage \bbtwo.%
+$\prev$ unwraps first-stage $\fut\rmint$s (the results of the recursive calls
+to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
+$\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
+second-stage $\rmint$.%
 \footnote{$\pause$ can be implemented from our other language features, with
 some effort. We provide it as a primitive to shorten examples. Furthermore, it
 would be wise to extend $\pause$ to other base types, if we had them, and to
@@ -117,20 +119,14 @@ analysis tool), and do not consider the problem of generating such annotations.
 There are many ways to annotate any program, including \texttt{qSelect}; we
 chose annotations which maximize the work performed in the first stage.
 
-%The purpose of writing quickselect in \lang\ is that, because \texttt{qsStaged}
-%typechecks, it is a valid way of dividing the program into two stages, where the
-%stage \bbone\ computations can all be performed prior to the stage \bbtwo\
-%computations. In \ref{sec:semantics} we provide an evaluation strategy for
-%\lang\ which validates that claim.
-
-%(We adopt the convention that the top-level context is stage \bbone.) 
-
-%pass around opaque stage \bbtwo\ computations at stage \bbone
-
-The quickselect example also contains some {\em purity annotations}, 
-$\curr$ and \texttt{@pure}, which indicate regions of code that are 
-contain no stage \bbtwo\ code (i.e. they are purely stage \bbone),
-which allow more efficient code generation down the line.
+Our type system, discussed in \ref{sec:semantics}, ensures that the staging
+annotations are consistent, in the sense that computations marked as
+first-stage cannot depend on ones marked as second-stage. The $\curr$ and
+\texttt{pure} annotations further distinguish those first-stage computations
+which do not contain any embedded second-stage code. (Code \emph{inside}
+\texttt{pure}, like the \texttt{part}ition function, is guaranteed not to
+contain second-stage code; other code, like \texttt{qsStaged}, may.) We will
+discuss the importance of this additional distinction in \ref{sec:splitting}.
 
 \subsection{Splitting Staged Programs}
 
@@ -143,15 +139,13 @@ all the work depending only on \texttt{l} (the first stage), and one which uses
 rank \texttt{k} in \texttt{l}. 
 
 Intuitively, \texttt{l} determines the result of all calls to
-\texttt{partition}, and \texttt{k} only determines which calls are made. So we
+\texttt{part}ition, and \texttt{k} only determines which calls are made. So we
 can preprocess \texttt{l} by recursively dividing it into halves smaller and
 greater than the pivot---that is, building a binary search tree. Then, once we
 have \texttt{k}, we can recur on this tree, choosing whichever branch has the
-\texttt{k}${}^\textit{th}$ leftmost element until we reach a leaf. Crucially,
-because \texttt{partition} has no stage \bbtwo\ content, we need not perform any
-of its work at stage \bbtwo!
-
-\crem{Use $\bbonep$ to explain the above.}
+\texttt{k}${}^\textit{th}$ leftmost element until we reach a leaf. And because
+\texttt{part}ition contains no second-stage code, we can run it entirely in the
+first stage!
 
 We have implemented this splitting of quickselect in \ref{fig:qs-split}.
 \texttt{qSelect1} builds a binary search tree from the list \texttt{l}, and
@@ -175,12 +169,13 @@ complexity from $\Theta (n^2)$ to $\Theta(n\log{n})$---a near linear time
 improvement. 
 
 In this paper, we develop a splitting algorithm
-(\ref{sec:splitting,sec:implementation}) which, for any term $e$ in \lang,
-produces an equivalent term where the stages of computation 
-are syntactically seperated at the top level.
-(Such a splitting is always possible because $e$ is well-typed in \lang.) In the
-case of \texttt{qsStaged}, our splitting algorithm produces the algorithm
-described above.
+(\ref{sec:splitting,sec:implementation}) which, given a program $e$ in \lang,
+produces an equivalent pair of programs which correspond precisely to the two
+stages of computation in $e$.
+(Splitting is always possible because the staging annotations in $e$ are
+consistent, because $e$ is well-typed in \lang.) In the case of
+\texttt{qsStaged}, our splitting algorithm produces the algorithm described
+above.
 
 %\texttt{qSelect l k = qSelect2 (qSelect1 l) k}.
 
