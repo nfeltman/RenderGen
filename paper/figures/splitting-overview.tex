@@ -1,34 +1,46 @@
 %!TEX root = ../paper.tex
 
-\begin{figure*}
-\textbf{Languages:}
-\begin{itemize}
-\item \lang: two-staged typed lambda calculus with product, sum, and
-  recursive types
-\item \langTwo: monostaged typed lambda calculus
-\item \langmono: an unstaged lambda calculus
-\end{itemize}
+\begin{figure}
+\begin{abstrsyn}
 
-\textbf{\lang\ Dynamic Semantics (\ref{sec:semantics})}
-\begin{itemize}
-\item 
-\bbone-Evaluation: $e\mathbin{\redonesym}[\xi;v]$, where $\xi$ is a \emph{residual table} and $v$ is a \emph{partial value}. 
+\textbf{Monostage Evaluation (also used for \bbone-Evaluation at \bbonep):}
 
-\item
-Residualization: $e\mathbin{\redtwosym}q$, where $q$ is a \emph{residual} in the unstaged language \langTwo
+\hspace{2em} Evaluation Form: $\reduce e v$, where 
+	
+	\hspace{4em} $e$ is the monostage term to be evaluated
+	
+	\hspace{4em} $v$ is the resulting value
 
-\item 
-Table reification: $[\xi;q]\mathbin{\reifysym} q'$, where $q,q'$ are residuals,
-$\xi$ is a residual table.
+\textbf{\bbone-Evaluation at \bbonem:}
 
-\item
-Residual evaluation: $q\mathbin{\redsym} v$, where $q$ is a residual, $v$ is a
-value.
-\end{itemize}
+\hspace{2em} Evaluation Form (Evaluation): $\diaone e {\xi;v}$, where 
+	
+	\hspace{4em} $e$ is the term at world \bbonem\ to be evaluated
 
+	\hspace{4em} $\xi$ is the resulting residual table
+	
+	\hspace{4em} $v$ is the resulting partial value
+
+\textbf{\bbone-Evaluation at \bbtwo:}
+
+\hspace{2em} Evaluation Form (Residualization): $\diatwo e q$, where 
+	
+	\hspace{4em} $e$ is the term at world \bbtwo\ to be evaluated
+
+	\hspace{4em} $q$ is the resulting residual
+
+\hspace{2em} Auxiliary Judgement (Reification): $\reify \xi q q'$, where 
+	
+	\hspace{4em} $\xi$ is the residual table to be reified into \texttt{let} terms
+
+	\hspace{4em} $q$ is a residual to be placed at the bottom of the \texttt{let}s
+
+	\hspace{4em} $q'$ is the resulting residual
+
+\end{abstrsyn}
 \caption{Summary of \lang\ evaluation.}
 \label{fig:dynamicsSummary}
-\end{figure*}
+\end{figure}
 
 \begin{figure*}
 \begin{abstrsyn}
