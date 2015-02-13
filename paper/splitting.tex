@@ -10,49 +10,69 @@ its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as its ability to form
 mixed-stage abstractions. 
 
-In this section, we provide an algorithm to translate the multistage terms and values of \lang\
+In this section, we provide a {\em splitting algorithm} to translate the multistage terms of \lang\,
 into equivalent but simpler forms where the stage \bbone\ and stage \bbtwo\ portions 
 of the computation are {\em syntactically separated} from each other.
-That is, we desire outputs of the form $\mathcal{C}(e_1;e_2)$ where  
-$e_1$ is a monostage term encoding all stage \bbone\ computation, 
-and $e_2$ is a monostage term encoding all stage \bbtwo\ computation.
-To represent outputs in this way, we introduce three new constructs:
-\begin{itemize}
-\item {\em Single-output pipelines}, \texttt{pipeS}, for the output of splitting \lang\ terms at world \bbtwo.
-\item {\em Multi-output pipelines}, \texttt{pipeM}, for the output of splitting \lang\ terms at world \bbonem. 
-\item {\em Masked values}, \texttt{mv}, which will serve a purpose analogous to \lang\ partial values.
-\end{itemize}
 
-We also define analogs to evaluation and residualization for these new terms, 
-called $\sepredonesym$ and $\sepredtwosym$, 
-which respectively send \texttt{pipeM} terms to \texttt{mv} terms
-and \texttt{pipeS} terms to residuals.
-An overview of these features is provided in \ref{fig:outputTermSummary}.
-That figure also provides the actual rules for $\sepredonesym$ and $\sepredtwosym$.
-Note how there's one rule for each, and they're rather simple.
-Indeed, the simplicity of these reduction rules is one reason why we 
-would want to translate into this separated form, rather than use the semantics of \ref{sec:semantics}.
+More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
+we can translate $e$ into some syntactically separated program $\mathcal{P}$ 
+(via the new relation $e \splittwosym \mathcal{P}$), which
+can also be reduced to the residual $q$, up to an equivalence.
+We enforce the ``syntactically separated'' condition structurally by saying that 
+$\mathcal{P}$ must have the form $\pipeS p l r$ where  
+$p$ (called the {\em precomputation}) is a monostage term encoding all the stage \bbone\ computation that was in $e$, 
+and $l.r$ (called the {\em resumer}) is a monostage term encoding all the stage \bbtwo\ computation that was in $e$.  
+We can then residualize $\mathcal{P}$ with the $\sepredtwosym$ judgement, which is defined by the single rule
+which evaluates the precomputation and plugs it in for $l$:
+\[
+\infer{\sepredtwo {\pipeS p l r} {[b/l]r}} {\reduce p b}
+\]
+A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
 
-With these output terms defined, we can state the goal of our splitting algorithm:
-to translate terms in \lang\ to a syntactically-separated form, 
-such that the semantics is preserved.
+Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via \texttt{prev}),
+we also provide a way to split those as well.
+This is given by the new relation $e \splitonesym \mathcal{P}$,
+where $\mathcal{P}$ must have the form $\pipeM c l r$ where  
+$c$ (called the {\em combined term}) is a monostage term encoding all the stage \bbone\ computation that was in $e$, 
+and $l.r$ (again called the {\em resumer}) is a monostage term encoding all the stage \bbtwo\ computation that was in $e$.
 
-Exactly what is meant by ``such that the semantics is preserved'' depends on whether we're translating
-terms at \bbonem\ or \bbtwo.  
-In the latter case, where an $\coltwo e A$ is translated to a $\pipeS p l r$ with the $\splittwosym$ relation,
-this constraint is straightforward: $e$ and $\pipeS p l r$ can both be reduced to residuals
-via $\redtwosym$ and $\sepredtwosym$, so we only need to require that those
-residuals be equivalent for the translation to be correct.
-In the former case, where an $\colmix e A$ is translated to a $\pipeM c l r$ with the $\splitonesym$ relation, 
-things are more complicated: 
-the output of $\redonesym$ is a partial value and the output of $\sepredonesym$ is a masked value,
-so we first need a way to relate those forms if we want to talk about correctness of the term translation.
-That is the purpose of the {\em masking} relation, written $\vsplito$.
+Similar to above, we also define a $\sepredtwosym$ relation which can be used to evaluate \texttt{pipeM} terms,
+with one complication arising from the fact that \lang\ terms at world \bbonem\ produces multistage output.
+For example, consider the term
+\begin{lstlisting}
+(next {1+2}, pure{3+4})
+\end{lstlisting}
+which reduces (via $\redonesym$) to the residual table and partial value
+\begin{lstlisting}
+[yhat |-> 1+2] (next {yhat}, pure{7})
+\end{lstlisting}
+Since this output has interleaved stages, so theres no way a syntactically seperated term could directly reduce to it.
+
+We resolve this mismatch by introducing one more translation, called {\em masking} and written $[\xi;v] \vsplito \mathcal{V}$,
+which converts residual tables and partial values like the those above into a syntactically seperated version $\mathcal{V}$.
+As before, we enforce the ``syntactically seperated'' property structurally,
+saying that $\mathcal{V}$ must have the form $\mval i q$ (called a {\em masked value}) where 
+$i$ is a monostage value respresenting the stage \bbone\ part of $v$,
+and $q$ is a monostage term representing all of the stage \bbtwo\ computation in $\xi$ and $v$.
+
+With this machinery in place, we can define $\sepredtwosym$ as just creating masked values with the single rule:
+\[
+\infer{\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
+\]
+Here we see the primary difference between terms at world \bbtwo\ and world \bbone.
+Since $\coltwo e A$ reduces to an entirely stage \bbtwo\ result, 
+its stage \bbone\ subcomputations only exist to internally pass their value to stage \bbtwo;
+but since $\colmix e A$ reduces to a multistage result, 
+its stage \bbone\ subcomputations exist {\em both} to pass their value to stage \bbtwo\ {\em and} to be present in the result.
+Correspondingly, in the $\sepredtwosym$ rule, $p$ reduces only to a boundary value which is passed to the resumer;
+but in the $\sepredonesym$ rule, $c$ reduces to a tuple containing both the immediate result and the boundary value,
+with only the latter being passed to the resumer.
+
+A summary of these operations and the relationship between them is provided on the left side of \ref{fig:splittingSummary}.
 
 This section proceeds by defining masking ($\vsplito$), 
 then using masking to motivate the definition of \bbonem-translation ($\splitonesym$),
 and finally coming back to define \bbtwo-translation ($\splittwosym$).
-A summary of these operations and the relationship between them is provided in \ref{fig:splittingSummary}.
 
 \subsection{Masking}
 

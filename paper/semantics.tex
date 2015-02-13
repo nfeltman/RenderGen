@@ -7,24 +7,24 @@
 
 \input {figures/grammars}
 
-The input to our splitting algorithm is given in \lang, a typed, modal
-lambda calculus with products, sums, and isorecursive types. This language is
-adapted from \cite{davies96}, and is very similar to the staged languages
-considered in the partial evaluation and metaprogramming literature,
-though it differs in three key ways:
+We express staged programs as terms in \lang, a typed, modal lambda calculus
+with products, sums, and isorecursive types. This language is adapted from
+\cite{davies96}, and is very similar to other staged languages considered in the
+partial evaluation and metaprogramming literature, though it differs in three
+key ways:
 
 \begin{enumerate}
 
-\item We restrict our attention to a two-stage language to simplify our
-presentation of the splitting algorithm, though we expect that the techniques
+\item We restrict \lang\ to exactly two stages, to simplify our
+presentation of our stage-splitting algorithm. We expect that the techniques
 presented here extend to more stages.
 
-\item Although our language describes computations with two {\em stages}
-(\bbone\ and \bbtwo), its type system makes use of three {\em worlds}
-(\bbonem, \bbonep, \bbtwo).  For reasons discussed later, we require
-that stage \bbone\ computations be classified as being either pure
-(occuring at \bbonep) or mixed (occuring at \bbonem). 
-Only mixed code may transition to stage/world \bbtwo.
+\item Although \lang\ describes two-stage computations, its modal type system
+has three distinct \emph{worlds} \bbonem, \bbonep, and \bbtwo. Essentially, this
+further distinguishes those first-stage computations which are \emph{purely
+first-stage} (\bbonep) or contain a \emph{mix} of code from each stage
+(\bbonem). This distinction proves useful when defining our splitting algorithm.
+%Only mixed code may transition to stage/world \bbtwo.
 
 \item Our dynamic semantics for \lang\ differ from those given in \cite{davies96} and
 the metaprogramming literature, because we avoid duplicating stage \bbtwo\
@@ -34,32 +34,48 @@ exposition is our main goal.
 
 \end{enumerate}
 
-%Apart from the non-duplication, the dynamic semantics of \lang\ is essentially
-%identical to Davies'.
+\crem{Do we actually want to make this ``more efficient'' claim?}
 
 \subsection{Statics}
 
 \input {figures/statics}
 
-To ensure that the staging features are only applied in a valid way, 
-we index our judgments not only by a type, but also a stage $w$.
-The typing judgment $\typeswor e A$ says that $e$ has type $A$ at stage $w$, in
-the context $\Gamma$, and is defined in \cref{fig:statics}.
+\begin{abstrsyn}
 
-\crem{Notice that certain types are impossible.}
+The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
+$e$ has type $A$ at world $w$, in the context $\Gamma$. (Variables in the
+context are also annotated with the world at which they live.)
 
-Except for the staging features $\next$, $\prev$, and $\pause$, the ordinary
-language features (i.e., the introductory and eliminatory forms for product,
-sum, and function types) preserve the stage of their subterms, and work at both
-stages \bbone\ and \bbtwo. Thus, if we were to remove the staging features,
-\lang\ would simply consist of two non-interacting copies of a standard lambda
-calculus. Variables in the context are annotated with the stage at which they
-were introduced and can only be used at the same stage.
+All three worlds (\bbonem, \bbonep, and \bbtwo) contain product, sum, function,
+and recursive types defined in the usual fashion. For example, given
+two terms $\typesone{e_1}A$ and $\typesone{e_2}B$ at world \bbonem, one can form
+the pair $\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world
+\bbonem. 
 
-Note that there is no way to eliminate a term of type $\fut A$ into a stage
-\bbone\ term---the only elimination form is $\prev$, which results in a stage
-\bbtwo\ term. This is why well-typed terms cannot have any information flow
-from stage \bbtwo\ to stage \bbone, and what makes splitting possible.
+Differing worlds (and hence, differing stages of computation) interact by means
+of the $\fut$ and $\curr$ type formers. $\fut A$ is a type in world \bbonem\
+which classifies second-stage computations of type $A$. Given a world \bbtwo\
+term $e$ of type $A$, $\next{e}$ has type $\fut A$ at world
+\bbonem. This essentially encapsulates $e$ as a computation to be evaluated in
+the future---first-stage computations can shuffle it around, but not use its
+result. The only way to use a $\fut A$ is to wrap it with $\prev$, yielding an
+$A$ at world \bbtwo.
+
+%This is why well-typed terms cannot have any information flow from stage
+%\bbtwo\ to stage \bbone, and what makes splitting possible.
+
+$\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
+computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
+$\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contain
+second-stage computations because $\fut$ types are not available in world
+\bbonep.) 
+
+\crem{Need to explain why we chose letp and caseP as the abstractions. Then
+explain hold.}
+
+\crem{Need to explain why \bbonem\ doesn't have ints.}
+
+\end{abstrsyn}
 
 \subsection{Dynamics}
 \label{sec:stagedsemantics}
