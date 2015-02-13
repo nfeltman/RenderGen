@@ -10,23 +10,26 @@ its ability to syntactically interleave work intended for stage \bbone\
 and work intended for stage \bbtwo, as well as its ability to form
 mixed-stage abstractions. 
 
-In this section, we provide a {\em splitting algorithm} to translate the multistage terms of \lang\,
-into equivalent but simpler forms where the stage \bbone\ and stage \bbtwo\ portions 
-of the computation are {\em syntactically separated} from each other.
+In this section, we provide a {\em splitting algorithm} to translate the multistage terms of \lang\
+into a simpler but equivalent form.
+The output of splitting is simpler because it is {\em syntactically separated}; that is, 
+stage \bbone\ and stage \bbtwo\ are represented by distinct subterms and are only connected at the top syntactic level.
+The output of splitting is equivalent (to its input) because it can be evaluated to the same residual 
+that would be produced by the semantics of \ref{sec:semantics}.
 
 More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
-we can translate $e$ into some syntactically separated program $\mathcal{P}$ 
+splitting translates $e$ into some syntactically separated program $\mathcal{P}$ 
 (via the new relation $e \splittwosym \mathcal{P}$), which
-can also be reduced to the residual $q$, up to an equivalence.
-We enforce the ``syntactically separated'' condition structurally by saying that 
-$\mathcal{P}$ must have the form $\pipeS p l r$ where  
+can also be reduced to $q$ (via the new relation $\mathcal{P} \sepredtwosym q$).
+We enforce the ``syntactically separated'' condition by saying that $\mathcal{P}$ 
+can only have one form, namely $\pipeS p l r$, where  
 $p$ (called the {\em precomputation}) is a monostage term encoding all the stage \bbone\ computation that was in $e$, 
 and $l.r$ (called the {\em resumer}) is a monostage term encoding all the stage \bbtwo\ computation that was in $e$.  
-We can then residualize $\mathcal{P}$ with the $\sepredtwosym$ judgement, which is defined by the single rule
-which evaluates the precomputation and plugs it in for $l$:
+Likewise, $\sepredtwosym$ is defined by a single rule, which evaluates the precomputation and plugs it in for $l$:
 \[
 \infer{\sepredtwo {\pipeS p l r} {[b/l]r}} {\reduce p b}
 \]
+Here we call $b$ the {\em boundary value}, as it represents the communication at the boundary between stages.
 A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
 
 Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via \texttt{prev}),
