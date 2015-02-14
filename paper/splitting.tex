@@ -67,8 +67,8 @@ Since $\coltwo e A$ reduces to an entirely stage \bbtwo\ result,
 its stage \bbone\ subcomputations only exist to internally pass their value to stage \bbtwo;
 but since $\colmix e A$ reduces to a multistage result, 
 its stage \bbone\ subcomputations exist {\em both} to pass their value to stage \bbtwo\ {\em and} to be present in the result.
-Correspondingly, in the $\sepredtwosym$ rule, $p$ reduces only to a boundary value which is passed to the resumer;
-but in the $\sepredonesym$ rule, $c$ reduces to a tuple containing both the immediate result and the boundary value,
+Correspondingly, in the $\sepredtwosym$ rule, the precomptuation $p$ reduces only to a boundary value which is passed to the resumer;
+but in the $\sepredonesym$ rule, the combined term $c$ reduces to a tuple containing both the immediate result and the boundary value,
 with only the latter being passed to the resumer.
 
 A summary of these operations and the relationship between them is provided on the left side of \ref{fig:splittingSummary}.
@@ -107,7 +107,7 @@ pursuant to the correctness condition given in \ref{fig:splittingSummary}.
 The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
 which proceeds recursively on the structure of~$e$.
 
-When $e$ is a terminal (a variable or base constant)
+When $e$ is a terminal (a variable or unit)
 splitting yields a combined term formed by tupling $e$ with a \texttt{()} precomputation, 
 and the trivial resumer \texttt{()}. 
 (Stage~\bbone\ terminals, by definition, contain no stage~\bbtwo\ subcomputations.)  
@@ -118,13 +118,13 @@ splitting descends into $e$, recursively splitting its $n$ subterms
 to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
 The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
 to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
-to isolate \bbone-results from boundary values. Then,
-the \bbone-result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
+to isolate immediate results from boundary values. Then,
+the immediate result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
 The resumer binds the boundary values $b_1,\ldots,b_n$ to an
 argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
 
-Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the \bbone-result $y_1$ of the predicate.
+Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
 The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$).   
 $b_i$ is cased in the resumer to determine which branch's resumer should be executed.
 {\tt case} and \texttt{hold} are the only two rules where splitting adds non-trivial logic is added to the precomputation.
@@ -132,7 +132,7 @@ $b_i$ is cased in the resumer to determine which branch's resumer should be exec
 Function introduction has a \texttt{()} boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multi-stage, splitting must continue into it.
-The \bbone-result is a new function formed from the stage~\bbone\ part of the original body.
+The immediate result is a new function formed from the stage~\bbone\ part of the original body.
 The resumer is a new function formed out of the stage~\bbtwo\ part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
@@ -162,13 +162,13 @@ Notably, at \texttt{case}s and functions the
 precomputation of subterms is lifted out from underneath stage \bbtwo\ binders.  
 % TODO: should probably draw a parallel to the same behavior in dynamics
 
-Splitting \texttt{prev} generates a precomputation that projects the \bbone-result of its stage~\bbone\ subterm.
-Since the argument to \texttt{prev} is of $\fut$ type, its \bbone-result reduces to \texttt{()}, justifying why it can be thrown away.
+Splitting \texttt{prev} generates a precomputation that projects the immediate result of its stage~\bbone\ subterm.
+Since the argument to \texttt{prev} is of $\fut$ type, its immediate result reduces to $\tup{}$, justifying why it can be thrown away.
 \texttt{hold} treats the entire combined term of its stage~\bbone\ subexpression as a precomputation, 
 and projects out the integer result in the resumer. 
 \footnote{The resumer of an integer expression is usually trivial, 
 but we have to include it here for termination purposes.} 
-Finally, splitting \texttt{next} simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial \bbone-result \texttt{()}.
+Finally, splitting \texttt{next} simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
 \subsection {Three World System?}
 

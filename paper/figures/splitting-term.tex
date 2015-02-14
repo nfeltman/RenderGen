@@ -5,8 +5,8 @@
 \begin{mathpar}
 \fbox{Stage \bbonem} 
 \and
-\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}},\_.\tup{}}}															{\cdot} \and
-\infersplitone [int]			{\spl {i}{\rm int}{\tup{i,\tup{}},\_.\tup{}}}															{\cdot} \and
+\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}},\_.\tup{}}}												{\cdot} \and
+%\infersplitone [int]			{\spl {i}{\rm int}{\tup{i,\tup{}},\_.\tup{}}}														{\cdot} \and
 \infersplitone [hyp]			{\spl {x}{A}{\tup{x,\tup{}},\_.x}}																	{\cdot} \and
 \infersplitone [\to I]			{\spl {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}},\_.\tup{\lam {\tup{x,l}} r}}}					{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplitone [\to E]			{\spl {\app {e_1}{e_2}}{B}{\left(
@@ -70,7 +70,7 @@
 \fbox{Stage \bbtwo} 
 \and
 \infersplittwo [unit]			{\spl {\tup{}}{\rmunit}{\tup{},\_.\tup{}}}																{\cdot} 														\and
-\infersplittwo [int]			{\spl {i}{\rm int}{\tup{},\_.i}}																{\cdot} 														\and
+%\infersplittwo [int]			{\spl {i}{\rm int}{\tup{},\_.i}}																{\cdot} 														\and
 \infersplittwo [hyp]			{\spl {x}{A}{\tup{},\_.x}}																		{\cdot} 														\and
 \infersplittwo [\times E_1]		{\spl {\scriptCapp e}{A}{p,l.\scriptCapp r}}												{\sub {} {A\times B} 
 																															& \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},
@@ -96,7 +96,7 @@
 \and
 \infersplittwo [\fut E]		{\spl {\prev e}{A} {\pit c,l.r}}								{\splitonesub {} {\fut A}} 		\and
 \infersplitone [\fut I]		{\spl {\next e}{\fut A}{\tup{\tup{},p},l.r}}							{\splittwosub {} A} 			\and
-\infersplittwo [hold]		{\spl {\pause e}{\rmint}{c,\tup{a,l}.\tup{r;a}}}						{\splitonesub {} \rmint}		\and
+%\infersplittwo [hold]		{\spl {\pause e}{\rmint}{c,\tup{a,l}.\tup{r;a}}}						{\splitonesub {} \rmint}		\and
 \infersplitone				{\spl {\pure e} {\curr A} {\tup{e,\tup{}},\_.\tup{}}}						{\cdot}							\and
 \infersplitone				{\spl {\letp x{e_1}{e_2}} {?} 
 							{\left(\talllet {\tup{x,z_1}} {c_1} {

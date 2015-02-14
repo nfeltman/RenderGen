@@ -7,7 +7,7 @@
 \world &::= \bbonem \gbar \bbonep \gbar \bbtwo  \\
 %
 \text{Types}\ \ 
-\type &::= \text{unit}\gbar\text{int}%~|~\text{bool}
+\type &::= \text{unit}%\gbar\text{int}%~|~\text{bool}
  \gbar \type \times \type
  \gbar \type + \type \\
 &\gbar \type \to \type
@@ -21,7 +21,7 @@
 %\context &::=\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Expressions}\ \ 
-\expr &::= \tup{}\gbar\inte\gbar\var%\bool
+\expr &::= \tup{}\gbar\var%\bool
  \gbar \lam {\var}{\expr} 
  \gbar \app \expr \expr \\
 &\gbar \tup{\expr, \expr} 
@@ -35,8 +35,8 @@
  \gbar \unroll e\\
  %\gbar \letin{\var}{\expr_1}{\expr_2} \\
 &\gbar \next \expr 
- \gbar \prev \expr 
- \gbar \pause \expr \\
+ \gbar \prev \expr \\
+% \gbar \pause \expr \\
 &\gbar \pure \expr 
  \gbar \letp \var \expr \expr
  \gbar \caseP \expr {\var.\expr} {\var.\expr} \\

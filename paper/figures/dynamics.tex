@@ -4,7 +4,7 @@
 \begin{abstrsyn}
 \[\begin{aligned}
 \text{Values}\ \ 
-u &::= \tup{}\gbar\inte
+u &::= \tup{}
  \gbar \lam {\var}{e} \\
 &\gbar \tup{u, u}
  \gbar \inl u 
@@ -18,7 +18,7 @@ v &::= \tup{}
 &\gbar \next {\hat y}
  \gbar \pure u \\
 \text{Residuals}\ \ 
-q &::= \tup{}\gbar\inte\gbar\var%\bool
+q &::= \tup{}\gbar\var%\bool
  \gbar \lam {\var}{q} 
  \gbar \app q q \\
 &\gbar \tup{q, q} 
@@ -105,10 +105,10 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 {\red {\tup{}}{\tup{}}}
 {\cdot}
 \and
-\inferdiaspc[int]
-{\red {i}{i}}
-{\cdot}
-\and
+%\inferdiaspc[int]
+%{\red {i}{i}}
+%{\cdot}
+%\and
 %% %\inferdiaspc [bool]{\red {b}{b}}
 %% {\cdot}
 %% \and
@@ -150,7 +150,7 @@ Residual tables, a new construct, are also produced as part of evaluation.}
 \fbox{Staging Features} \and
 \inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}														\and
 \inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
-\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
+%\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
 \infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
 \infer					{\reify {y \mapsto q_1, \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
 \inferdiaone			{\red {\pure e} {\cdot; \pure v}}							{\reduce e v} 														\and
