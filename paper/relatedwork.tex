@@ -1,5 +1,19 @@
 
 \section{Related Work}
+
+\crem{\emph{This text came from section 3:}
+\lang\ is adapted from \cite{davies96}, and is very similar to other staged
+languages considered in the partial evaluation and metaprogramming literature.
+Unlike \cite{davies96}, we restrict \lang\ to exactly two stages, to simplify
+our presentation of our stage-splitting algorithm. We expect that the techniques
+presented here extend to more stages.
+Our dynamic semantics for \lang\ differ from those given in \cite{davies96} and
+the metaprogramming literature, because we avoid duplicating stage \bbtwo\
+computations. In addition to being more efficient, our non-duplicating semantics
+are easier to compare with our splitting algorithm, whose development and
+exposition is our main goal.
+}
+
 There are several distinctive aspect of our work which we wish to compare and contrast.
 Firstly, \lang\ is a simply typed lambda calculus 
 with explicit stage annotations and a non-duplicating semantics.

@@ -7,34 +7,13 @@
 
 \input {figures/grammars}
 
-We express staged programs as terms in \lang, a typed, modal lambda calculus
-with products, sums, and isorecursive types. This language is adapted from
-\cite{davies96}, and is very similar to other staged languages considered in the
-partial evaluation and metaprogramming literature, though it differs in three
-key ways:
-
-\begin{enumerate}
-
-\item We restrict \lang\ to exactly two stages, to simplify our
-presentation of our stage-splitting algorithm. We expect that the techniques
-presented here extend to more stages.
-
-\item Although \lang\ describes two-stage computations, its modal type system
-has three distinct \emph{worlds} \bbonem, \bbonep, and \bbtwo. Essentially, this
-further distinguishes those first-stage computations which are \emph{purely
-first-stage} (\bbonep) or contain a \emph{mix} of code from each stage
-(\bbonem). This distinction proves useful when defining our splitting algorithm.
-%Only mixed code may transition to stage/world \bbtwo.
-
-\item Our dynamic semantics for \lang\ differ from those given in \cite{davies96} and
-the metaprogramming literature, because we avoid duplicating stage \bbtwo\
-computations. In addition to being more efficient, our non-duplicating semantics
-are easier to compare with our splitting algorithm, whose development and
-exposition is our main goal.
-
-\end{enumerate}
-
-\crem{Do we actually want to make this ``more efficient'' claim?}
+We express two-stage programs as terms in \lang, a typed, modal lambda calculus
+with products, sums, and isorecursive types. Its type system has three distinct
+\emph{worlds} \bbonep, \bbonem, and \bbtwo, which respectively classify
+\emph{purely first-stage} computations (\bbonep); 
+first-stage computations containing a \emph{mix} of code from each stage
+(\bbonem); 
+and second-stage computations (\bbtwo).
 
 \subsection{Statics}
 
@@ -46,34 +25,48 @@ The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
 $e$ has type $A$ at world $w$, in the context $\Gamma$. (Variables in the
 context are also annotated with the world at which they live.)
 
-All three worlds (\bbonem, \bbonep, and \bbtwo) contain product, sum, function,
-and recursive types defined in the usual fashion. For example, given
-two terms $\typesone{e_1}A$ and $\typesone{e_2}B$ at world \bbonem, one can form
-the pair $\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world
-\bbonem. 
+All three worlds contain unit, product, sum, function, and recursive types
+defined in the usual fashion. For example, given two terms $\typesone{e_1}A$ and
+$\typesone{e_2}B$ at world \bbonem, one can form the pair
+$\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world \bbonem. 
 
 Differing worlds (and hence, differing stages of computation) interact by means
 of the $\fut$ and $\curr$ type formers. $\fut A$ is a type in world \bbonem\
-which classifies second-stage computations of type $A$. Given a world \bbtwo\
-term $e$ of type $A$, $\next{e}$ has type $\fut A$ at world
-\bbonem. This essentially encapsulates $e$ as a computation to be evaluated in
-the future---first-stage computations can shuffle it around, but not use its
-result. The only way to use a $\fut A$ is to wrap it with $\prev$, yielding an
-$A$ at world \bbtwo.
+which classifies second-stage computations of type $A$. Given a term $e$ of type
+$A$ at world \bbtwo, $\next{e}$ has type $\fut A$ at \bbonem. This essentially
+encapsulates $e$ as a computation to be evaluated in the future---first-stage
+computations can shuffle it around, but not use its result.  The only way to use
+a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
 
 %This is why well-typed terms cannot have any information flow from stage
 %\bbtwo\ to stage \bbone, and what makes splitting possible.
+
+Although our products and functions are restricted to types at the same world,
+$\fut$ essentially allows us to build ``mixed-stage'' products and functions.
+For example, quickselect is a function at world \bbonem\ which takes a
+$\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
+second-stage computation of an integer) to a $\fut\rmint$ (a second-stage
+computation of an integer).
 
 $\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
 computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
 $\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contain
 second-stage computations because $\fut$ types are not available in world
-\bbonep.) 
+\bbonep.)
 
-\crem{Need to explain why we chose letp and caseP as the abstractions. Then
-explain hold.}
+An $e$ of type $\curr A$ at \bbonem\ can be unwrapped as an $A$ at \bbonep\
+using the $\letp xe{e'}$ construct, which binds $\colpure xA$ in a \bbonem\ term
+$e'$. This allows us to compute under $\curr$---for example, given a $\colmix
+p{\curr(A\times B)}$, the term $\letp{x}{p}{\pure{\pio x}}$ computes its first
+projection, of type $\curr A$.
 
-\crem{Need to explain why \bbonem\ doesn't have ints.}
+Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we need the
+$\caseP{e}{x.e_1}{x.e_2}$ construct, whose branches are world \bbonem\ terms
+open on $\curr{A}$ and $\curr{B}$ respectively.
+
+The example code in this paper makes liberal use of $\rmint$s and various
+functions on these, as well as a function $\pause$ which takes a $\curr\rmint$
+to a $\fut\rmint$.
 
 \end{abstrsyn}
 
