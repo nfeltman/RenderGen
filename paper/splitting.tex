@@ -49,7 +49,7 @@ which reduces (via $\redonesym$) to the residual table and partial value
 \begin{lstlisting}
 [yhat |-> 1+2] (next {yhat}, pure{7})
 \end{lstlisting}
-Since this output has interleaved stages, so theres no way a syntactically seperated term could directly reduce to it.
+Since this output has interleaved stages, theres no way a syntactically seperated term could directly reduce to it.
 
 We resolve this mismatch by introducing one more translation, called {\em masking} and written $[\xi;v] \vsplito \mathcal{V}$,
 which converts residual tables and partial values like the those above into a syntactically seperated version $\mathcal{V}$.
@@ -57,6 +57,7 @@ As before, we enforce the ``syntactically seperated'' property structurally,
 saying that $\mathcal{V}$ must have the form $\mval i q$ (called a {\em masked value}) where 
 $i$ is a monostage value respresenting the stage \bbone\ part of $v$,
 and $q$ is a monostage term representing all of the stage \bbtwo\ computation in $\xi$ and $v$.
+Note that masking exists only for the purposes of stating correctness; it is not part of the splitting algorithm itself.
 
 With this machinery in place, we can define $\sepredtwosym$ as just creating masked values with the single rule:
 \[
@@ -88,8 +89,8 @@ Being purely stage~\bbtwo\ content, these are reified into let statements at the
 Once the table is empty, masking inducts on value itself.
 
 Masking assigns purely stage~\bbone\ values to the immediate value
-and likewise assign references into the residual table to the resumer.
-In both cases, the offside component is assigned to \texttt{()}, to represent trivial information.
+and likewise assigns references into the residual table to the resumer.
+In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
 
 Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
 However, the tags of injections and rolls are replicated only in the immediate value, 

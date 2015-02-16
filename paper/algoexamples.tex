@@ -5,43 +5,43 @@
 
 We investigate the behavior of our splitting algorithm on several examples.
 
-In the first application, we split a staged search algorithm where the data comes at stage \bbone\ and the search index comes at stage \bbtwo.  
+% In the first application, we split a staged search algorithm where the data comes at stage \bbone\ and the search index comes at stage \bbtwo.  
  
-We urge the reader to pay attention to how partial evaluation (\lang's dynamic semantics) and stage splitting compare for these examples.
-The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
-essentially embed that data structure in the residual. 
+% We urge the reader to pay attention to how partial evaluation (\lang's dynamic semantics) and stage splitting compare for these examples.
+% The main difference to note is that where splitting creates an explicit data structure, partial evaluation will
+% essentially embed that data structure in the residual. 
 
-\subsection {Y-Combinator}
+% \subsection {Y-Combinator}
 
-split the ycomb
+% split the ycomb
 
-\begin{lstlisting} 
-fn f : _ =>
-let r =
-    fn y : _ =>
-    (fn n : _ =>
-     let (v,p) =
-         f
-         (fn v : _ =>
-          let (v_0,p) = unroll y y in let (v_1,p_0) = v_0 v in (v_1,(p,p_0)))
-     in
-     let (v_0,p_0) = v n in (v_0,(p,p_0)),())
-in
-r (roll _ r)
-\end{lstlisting}
+% \begin{lstlisting} 
+% fn f : _ =>
+% let r =
+%     fn y : _ =>
+%     (fn n : _ =>
+%      let (v,p) =
+%          f
+%          (fn v : _ =>
+%           let (v_0,p) = unroll y y in let (v_1,p_0) = v_0 v in (v_1,(p,p_0)))
+%      in
+%      let (v_0,p_0) = v n in (v_0,(p,p_0)),())
+% in
+% r (roll _ r)
+% \end{lstlisting}
 
 
-\begin{lstlisting} 
-fn (f,l_1) : _ =>
-let r =
-    fn (y,()) : _ =>
-    fn (unused,(l_3,l_2)) : _ =>
-    #2 (f
-        (fn (unused_0,(l_5,l_4)) : _ => #2 (y (y,l_5) ((),l_4),()),l_3)
-        ((),l_2),())
-in
-r (r,l_1)
-\end{lstlisting}
+% \begin{lstlisting} 
+% fn (f,l_1) : _ =>
+% let r =
+%     fn (y,()) : _ =>
+%     fn (unused,(l_3,l_2)) : _ =>
+%     #2 (f
+%         (fn (unused_0,(l_5,l_4)) : _ => #2 (y (y,l_5) ((),l_4),()),l_3)
+%         ((),l_2),())
+% in
+% r (r,l_1)
+% \end{lstlisting}
 
 
 \subsection{Fast Exponent}

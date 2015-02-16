@@ -12,7 +12,7 @@ Applying the rules of \cref{sec:splitting} naively can yield inefficient split p
 In many cases, the results can be improved by considering special cases in individual rules.
 For instance, trivial subterm precomputations needn't be saved at tuples:
 \[
-\infer {\splittwo {(e_1,e_2)} A {p,l.(r_1,r_2)}}{\splittwo {e_1} A {(),\_.r_1} & \splittwo {e_2} A {p,l.r_2}}
+\infer {\splittwo {\tup{e_1,e_2}} A p l {\tup{r_1,r_2}}} {\splittwo {e_1} A {\tup{}} {\_}{r_1} & \splittwo {e_2} A  p l {r_2}}
 \]
 Our implementation uses many optimizations like these.
 

@@ -177,10 +177,11 @@
 
 \newcommand {\splitonesym} {\overset{\bbonem}\rightsquigarrow}
 \newcommand {\splittwosym} {\overset{\bbtwo}\rightsquigarrow}
-\newcommand {\splitone} [4] [\Gamma] {{#2} \splitonesym \left[{#4}\right]}
-\newcommand {\splittwo} [4] [\Gamma] {{#2} \splittwosym \left[{#4}\right]}
-\newcommand {\splitonesub} [3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}, l_{#2}.r_{#2}}}
-\newcommand {\splittwosub} [3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}, l_{#2}.r_{#2}}}
+\newcommand {\splitone} 	[5] [\Gamma] {{#2} \splitonesym \mytt{sepM(}{#4}\mytt{;}{#5}\mytt{)}}
+\newcommand {\splitonetall} [5] [\Gamma] {{#2} \splitonesym \mytt{sepM}\left(\begin{array}{@{}l@{}}{#4}\mytt{;}\\{#5}\end{array}\right)}
+\newcommand {\splittwo} 	[6] [\Gamma] {{#2} \splittwosym \pipeS{#4}{#5}{#6} }
+\newcommand {\splitonesub}	[3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}}{l_{#2}.r_{#2}}}
+\newcommand {\splittwosub}	[3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}}{l_{#2}}{r_{#2}}}
 
 %misc
 \newcommand{\dom}[1]{\mathsf{dom}(#1)}
