@@ -7,7 +7,7 @@
 
 % core conventions and language names
 \newcommand {\bbone} {\ensuremath{\mathbbmss{1}}}
-\newcommand {\bbonep} {\ensuremath{\mathbbmss{1P}}}
+\newcommand {\bbonep} {\ensuremath{\mathbbmss{1G}}}
 \newcommand {\bbonem} {\ensuremath{\mathbbmss{1M}}}
 \newcommand {\bbtwo} {\ensuremath{\mathbbmss{2}}}
 \newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
@@ -76,7 +76,7 @@
 	\renewcommand {\pause} [1] {\mytt{hold(}##1\mytt{)}}
 	\renewcommand {\next} [1] {\mytt{next(}##1\mytt{)}}
 	\renewcommand {\prev} [1] {\mytt{prev(}##1\mytt{)}}
-	\newcommand {\pure} [1] {\mytt{pure(}##1\mytt{)}}
+	\newcommand {\pure} [1] {\mytt{grnd(}##1\mytt{)}}
 	\newcommand {\inl} [1] {\mytt{inl}\mytt{(}{##1}\mytt{)}}
 	\newcommand {\inr} [1] {\mytt{inr}\mytt{(}{##1}\mytt{)}}
 	\newcommand {\tup} [1] {\mytt{<} ##1 \mytt{>}}
@@ -86,7 +86,7 @@
 	\newcommand {\unroll} [1] {\mytt{unroll(}##1\mytt{)}}
 	\newcommand {\lifttag} [1] {\mytt{lifttag(}##1\mytt{)}}
 	\newcommand {\push} {\mytt{unroll}}
-	\newcommand {\letp} [3] {\mytt{letp(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
+	\newcommand {\letp} [3] {\mytt{letg(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
 
 	\newcommand {\letin} [3] {\mytt{let(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
 	\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} \mytt{let(}{##2}\mytt{;}{##1}\mytt{.}\\{##3}\end{array}}
@@ -94,7 +94,7 @@
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
 
-	\newcommand {\caseP} [3] {\mytt{caseP(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\caseP} [3] {\mytt{caseg(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\pipeM} [3] {\mytt{sepM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 	\newcommand {\pipeS} [3] {\mytt{sep2(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
 

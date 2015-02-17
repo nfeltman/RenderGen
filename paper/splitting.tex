@@ -43,11 +43,11 @@ Similar to above, we also define a $\sepredtwosym$ relation which can be used to
 with one complication arising from the fact that \lang\ terms at world \bbonem\ produces multistage output.
 For example, consider the term
 \begin{lstlisting}
-(next {1+2}, pure{3+4})
+(next {1+2}, grnd{3+4})
 \end{lstlisting}
 which reduces (via $\redonesym$) to the residual table and partial value
 \begin{lstlisting}
-[yhat |-> 1+2] (next {yhat}, pure{7})
+[yhat |-> 1+2] (next {yhat}, grnd{7})
 \end{lstlisting}
 Since this output has interleaved stages, theres no way a syntactically seperated term could directly reduce to it.
 
@@ -88,7 +88,7 @@ Masking operates by first inducting on the entries of the residual table.
 Being purely stage~\bbtwo\ content, these are reified into let statements at the top of the resumer.
 Once the table is empty, masking inducts on value itself.
 
-Masking assigns purely stage~\bbone\ values to the immediate value
+Masking assigns ground stage~\bbone\ values to the immediate value
 and likewise assigns references into the residual table to the resumer.
 In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
 

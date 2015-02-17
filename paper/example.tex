@@ -92,7 +92,7 @@ first-stage computations in red, and second-stage computations in blue. While
 takes a \textrm{list} (ignoring the $\curr$ for the moment) and a $\fut\rmint$
 (an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
 
-Ignoring for the moment all \texttt{pure} annotations, the first-stage code in
+Ignoring for the moment all \texttt{grnd} annotations, the first-stage code in
 \texttt{qsStaged} looks like \texttt{qSelect}: in the first stage, terms of
 non-circle type are available for immediate use. Indeed, we case on the list as
 usual, and in the \texttt{Cons} branch, \texttt{part}ition it.
@@ -126,9 +126,9 @@ chose annotations which maximize the work performed in the first stage.
 Our type system, discussed in \ref{sec:semantics}, ensures that the staging
 annotations are consistent, in the sense that computations marked as
 first-stage cannot depend on ones marked as second-stage. The $\curr$ and
-\texttt{pure} annotations further distinguish those first-stage computations
+\texttt{grnd} annotations further distinguish those first-stage computations
 which do not contain any embedded second-stage code. (Code \emph{inside}
-\texttt{pure}, like the \texttt{part}ition function, is guaranteed not to
+\texttt{grnd}, like the \texttt{part}ition function, is guaranteed not to
 contain second-stage code; other code, like \texttt{qsStaged}, may.) We will
 discuss the importance of this additional distinction in \ref{sec:splitting}.
 
