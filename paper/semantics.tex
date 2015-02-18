@@ -3,10 +3,6 @@
 \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
 \label{sec:semantics}
 
-\input{figures/dynamics-overview}
-
-\input{figures/splitting-overview}
-
 \input{figures/values}
 
 \input{figures/grammars}
@@ -77,6 +73,8 @@ to a $\fut\rmint$.
 \subsection{Dynamics}
 \label{sec:stagedsemantics}
 
+\input{figures/dynamics-overview}
+
 \input{figures/dynamics}
 
 \begin{abstrsyn}
@@ -125,7 +123,7 @@ We could reduce this to $[\next{e}/x]e'$, but this may potentially duplicate an
 expensive computation $e$. Instead, we choose to hoist $e$ outside, binding it
 to a temporary variable $\hat{y}$, and substituting that variable instead:
 \begin{lstlisting} 
-2`let yhat = e in `1`[next{`2`yhat`1`}/x]e'`
+2`let val yhat = e in `1`[next{`2`yhat`1`}/x]e'`
 \end{lstlisting}
 then proceed by evaluating $[\next{\hat{y}}/x]e'$.
 
@@ -167,59 +165,36 @@ using the auxiliary judgment $\reify\xi q{q'}$ defined in
 %\end{mathpar}
 %to avoid one-for-one variable bindings in the residual.
 
-\subsection {Top-Level Evaluation}
+\subsection{Evaluating Staged Programs}
 
-\crem{TODO below here}
+We consider a staged program to be a closed term $e$ at world \bbtwo. The first
+stage of evaluation is $e\mathbin{\redtwosym} q$, which reduces all code at
+\bbonem\ and \bbonep\ inside $e$. The second stage of evaluation is $q
+\mathbin{\redsym} u$, or monostaged evaluation of the residual $q$, which yields
+a value $u$.
 
-We can use the evaluation relations in the dynamic semantics to
-evaluate a term to evaluate a \lang\ term as follows. We first apply
-1-evaluation to obtain a partial value and a residual table. We then
-construct a 2-term from the partial value and the residual table by
-using reification, and then reduce this term to a residual via
-residualization.  Finally, we evaluate the residual, which is a term in a
-our monostaged target language \langmono, to a value by using  a
-standard evaluation relation for \langmono.
-
-We can evaluate a \lang\ term as
-follows: we first apply 1-evaluation to obtain a partial value and a
-residual table, we then construct a 2-term from the partial value and
-the residual table by using reification, and then reduce this term to
-a residual via residualization.
-
-These dynamics allow us to define a partial evaluator for \lang\ by identifying
-static with stage \bbone\ and dynamic with stage \bbtwo.  Specifically, we
-encode $f$ as a \lang\ expression with a function type of the form
-$A\to\fut(B\to C)$.%
-
-Here $A$ is the static input, $B$ is the dynamic input, and $C$ is the output.
-
-Once a stage \bbone\ argument $a:A$ is provided, we can evaluate the partially-applied
-function:
-$\cdot\vdash f~a \mathop{\redonesym} [\xi,v]$.
-The result is an environment $\xi$ and a partial value $v$ of type $\fut(B\to
-C)$, which by canonical forms must have the form $v = \next~\hat y$. 
-Next, we reify this environment into a sequence of \verb|let|-bindings
-enclosing $\hat y$, via $\reify\xi{\hat y}{f_a}$. 
-Because reification preserves types, the resulting residual $f_a$ has type $B\to C$ in \langTwo, so we can apply it to some $b:B$
-and compute the final result of the function, $f_a~b \mathop{\tworedsym} c$.
-
-That this sequence of evaluations is in fact staged follows from our
-characterizations of partial values and residuals, that $\redonesym$
-outputs a partial value, and that $\reifysym$ outputs an expression in \langTwo.
-
-For example, to specialize quickselect to a particular list, 
+A multistage function, such as \texttt{qsStaged} from \ref{sec:staging}, has
+type $A\to \fut (B \to C)$ at \bbonem.%
+\footnote{We can rewrite \texttt{qsStaged} in this curried form, or apply a
+higher-order currying function.}
+To apply this function to arguments $\colmix a A$ and $\coltwo b B$, simply
+evaluate the program:
 \begin{lstlisting}
-qsStaged [5,2,7,4,1]
+2`prev{`1`f a`2`} b`
 \end{lstlisting}
-\TODO finish example
 
-%We can rewrite \texttt{fexp} in this form, or simply apply
-%the following higher-order function which makes the adjustment:
-%\begin{lstlisting} 
-%let adjust (f : $int * int -> $int) =
-%  fn (p : int) => 
-%    next{
-%      fn (b : int) => 
-%        prev{f (next {b}, p)}
-%    }
-%\end{lstlisting}
+We can also directly observe the reuse of first-stage computations across
+multiple second-stage computations. To run many order statistics queries
+$\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
+\begin{lstlisting}
+2`let val qs = prev{`1`qsStaged `3`grnd{`1`[7,4,2,5,9,...,3]`3`}`2`}`
+2`in (qs k1,...,qs km)`
+\end{lstlisting}
+To see that the partial application of \texttt{qsStaged} is only evaluated once,
+observe that after the first stage of evaluation, the residual has the form:
+\begin{lstlisting}
+2`let val yhat = ...`
+2`    val qs = yhat`
+2`in (qs k1,...,qs km)`
+\end{lstlisting}
+where $\hat{y}$ is bound to a function containing no first-stage redexes.
