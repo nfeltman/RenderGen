@@ -1,13 +1,16 @@
 %!TEX root = paper.tex
 
-\section {Implementation and Optimization}
+\section {Implementation}
 \label{sec:implementation}
 
 \begin{abstrsyn}
-We have implemented the semantics and splitting algorithm of \lang\ in Standard ML.
-In addition to the features shown here, our implementation includes more base types, 
-$n$-ary products and sums, if and let statements, and a basic elaboration step.
+We have implemented the semantics and splitting algorithm of \lang\ in Standard ML,
+as well as a semantics for the output language.
+In addition to the features shown here, our implementation includes base types, 
+$n$-ary products and sums, patterns, if and let statements, and a basic elaboration step.
+We cover some of the details here.
 
+\paragraph {Splitting Optimizations} 
 Applying the rules of \cref{sec:splitting} naively can yield inefficient split programs.
 In many cases, the results can be improved by considering special cases in individual rules.
 For instance, trivial subterm precomputations needn't be saved at tuples:
@@ -15,5 +18,39 @@ For instance, trivial subterm precomputations needn't be saved at tuples:
 \infer {\splittwo {\tup{e_1,e_2}} A p l {\tup{r_1,r_2}}} {\splittwo {e_1} A {\tup{}} {\_}{r_1} & \splittwo {e_2} A  p l {r_2}}
 \]
 Our implementation uses many optimizations like these.
+
+\paragraph {Patterns}
+
+Our implemention includes patterns to eliminate products, $\fut$, and $\curr$.
+We split patterns directly (in a way similar to the standard elim forms), 
+rather than translate them away before splitting.
+This, along with the optimized splitting algorithm,
+goes a long way toward producing readable outputs.
+
+\paragraph {Syntax}
+
+Our concrete syntax is used in examples throughout the paper.
+Its main notable property is that world boundaries are always noted by braces.
+
+Functions and datatypes declarations are elaborated in the standard way.
+We also implement declaration-level staging features.  For example,
+\begin{lstlisting}
+1`atsigngrnd{
+  datatype list = Empty | Cons of int * list
+  fun part (...) = ...
+}
+fun qsStaged (...) = ...`
+\end{lstlisting}
+indicates that the \texttt{list} datatype and \texttt{part} function
+are declared and defined at world \bbonep, though this is accomplished by 
+translating the above into,
+\begin{lstlisting}
+1`val grnd{Empty} = grnd{roll (inj ...)}
+val grnd{Cons}  = grnd{fn (...) => roll (inj ...)}
+val grnd{part}  = grnd{fn (...) => ...}
+val qsStaged    = fn (...) => ...`
+\end{lstlisting}
+
+
 
 \end{abstrsyn}

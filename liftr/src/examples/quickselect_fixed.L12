@@ -1,38 +1,34 @@
 let 
-	@ mono { datatype list = Empty | Cons of int * list }
-	datatype listU = EmptyU | ConsU of ^int * ^list 
-	
-	fun unwrap (mono{l} : ^list) =
-		case pushS mono{unroll l} of 
-		  _ => EmptyU 
-		| mono{(h,t)} => ConsU (mono{h}, mono{t})
+	@next {
+		datatype comp = LT | EQ | GT
+	}
+	val next{compare} = next {
+		fn (i,j) : int * int => if i < j then LT else if i == j then EQ else GT
+	}
+	@ mono { 
+		datatype list = Empty | Cons of int * list
+	} @ mono { 
+		rec partition ((p,l) : int*list) : (int*list*list) = 
+			case unroll l of 
+			  _ => (0,Empty, Empty) 
+			| (h,t) => 
+				let val (s,left,right) = partition (p,t) in 
+				if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
+	}
 
-	fun partition ((mono{p}, mono{l}) : ^int*^list) =
-		let 
-			@ mono { 
-				rec part ((p,l) : int*list) : (int*list*list) = 
-					case unroll l of 
-					  _ => (0,Empty, Empty) 
-					| (h,t) => 
-						let val (s,left,right) = part (p,t) in 
-						if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
-			}
-			val mono{(n,left,right)} = mono{part (p,l)} 
-		in
-		(mono{n},mono{left},mono{right})
-
-	rec qs ((l,next{i}) : ^list * $int) : $int = 
-		case unroll (unwrap l) of 
+	rec qs ((mono{l},next{i}) : ^list * $int) : $int = 
+		case pushS mono {unroll l} of 
 		  _ => next {0} 
-		| (h,t) => 
+		| mono{ht} => 
 			let 
-				val (n,left,right) = partition (h,t)
-				val next{n} = hold n
+				val mono{(n,left,right)} = mono{partition ht}
+				val next{n} = hold mono{n}
 			in
 			next { 
-				if i < n then prev{qs (left,next{i})}
-				else if i == n then prev{hold h}
-				else prev{qs (right,next{(i-n)-1})}
+				case unroll (compare (i,n)) of
+				  _ => prev{qs (mono{left},next{i})}
+				| _ => prev{hold mono{#1 ht}}
+				| _ => prev{qs (mono{right},next{(i-n)-1})}
 			}
 
 	val mono{c} = mono{Cons}

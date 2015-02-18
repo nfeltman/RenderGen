@@ -1,4 +1,4 @@
-
+%!TEX root = paper.tex
 
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
@@ -111,67 +111,68 @@ In this case, we've staged quickselect by saying that the list is stage \bbone\ 
 The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{mono}.
 
 \begin{lstlisting} 
-datatype list = Empty | Cons of int * list
-/* helper function */
-val partition = mono {
-  let fun partition ((p,l) : int*list) 
-  : (int*list*list) =
+atsignmono { 
+  datatype list = Empty | Cons of int * list
+  fun partition ((p,l) : int*list) : (int*list*list) = 
     case unroll l of 
-      Empty => (0,Empty, Empty) 
-    | Cons (h,t) =>
-        let (s,left,right) = partition (p,t) in
-        if h<p 
-        then (s+1,Cons(h,left),right)
-        else (s,left,Cons(h,right))
-  in partition
+      Empty => (0, Empty, Empty) 
+    | Cons (h,t) => 
+      let val (s,left,right) = partition (p,t) in 
+      if h<p 
+      then (s+1,Cons(h,left),right) 
+      else (s,left,Cons(h,right))
 }
 
-fun qs (l : list, i: $int) = 
-  case l of
-    Empty => next {0}
-  | Cons (h,t) => 
-      let (n,left,right) = partition (h,t) in
-      next{
-        let n = hold{n} in
-          case compare prev{i} n of
-            LT => prev {qs left i}
-          | EQ => hold {h}
-          | GT => prev {qs right next{prev{i}-n-1}}
-      }	
+fun qs ((grnd{l},next{i}) : ^list * $int) : $int = 
+  caseg grnd {unroll l} of 
+    Empty => next {0} 
+  | Cons grnd{ht} => 
+    let 
+      val grnd{(n,left,right)} = grnd{partition ht}
+      val next{n} = hold grnd{n}
+    in
+    next { 
+      case unroll (compare (i,n)) of
+        LT => prev{qs (grnd{left},next{i})}
+      | EQ => prev{hold grnd{#1 ht}}
+      | GT => prev{qs (grnd{right},next{i-n-1})}
+    }
 \end{lstlisting}
 
 \noindent
 Running stage splitting on this code produces:
 
 \begin{lstlisting} 
-datatype _ = Empty | Cons of _
-fun partition (p,l) =
-  case unroll l of 
+datatype list = Empty | Cons of int * list
+datatype tree = Leaf of unit | Branch of int * tree * int * tree
+fun partition ((p,l) : int*list) : (int*list*list) = 
+  case l of 
     Empty => (0,Empty, Empty) 
-  | Cons (h,t) =>
-      let (s,left,right) = partition (p,t) in
-      if h<p 
-      then (s+1,Cons(h,left),right)
-      else (s,left,Cons(h,right))
-
-fun qs1 (l, i) = roll((), 
-  case l of
-    Empty => inj1 ()
   | Cons (h,t) => 
-      inj2 (
+    let val (s,left,right) = partition (p,t) in 
+    if h<p 
+    then (s+1,Cons(h,left),right) 
+    else (s,left,Cons(h,right))
+
+fun qs1 (l : tree, i : int) = ((), 
+  case l of
+    Empty => Leaf ()
+  | Cons (h,t) => 
+      Branch (
         let (left,right,n) = partition h t in
         (n, #2 (qs1 left i), h, #2 (qs1 right i))
       )
   )
 
-fun qs2 ((l, i), p) = 
-  case unroll p of
-    inj1 () => 0
-  | inj2 (n,p1,h,p2) => 
-      case compare prev{i} n of
-        LT => qs2 () i
-      | EQ => h
-      | GT => qs2 () (i-n-1)
+fun qs2 (((), i : int), p : tree) = 
+  case p of
+    Leaf () => 0
+  | Branch (n,left,h,right) =>
+        case compare (i, n) of 
+          LT => qs (((), i), left) 
+        | EQ => h 
+        | GT => qs (((), i-n-1), right)
+
 \end{lstlisting}
 
 These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
