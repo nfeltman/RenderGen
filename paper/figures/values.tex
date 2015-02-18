@@ -1,0 +1,44 @@
+%!TEX root = ../paper.tex
+
+\begin{figure}
+\begin{abstrsyn}
+\[\begin{aligned}
+\text{Values}\ \ 
+u &::= \tup{}
+ \gbar \lam {\var}{e} \\
+&\gbar \tup{u, u}
+ \gbar \inl u 
+ \gbar \inr u \\
+\text{Partial Values}\ \ 
+v &::= \tup{}
+ \gbar \lam {\var}{\expr} \\
+&\gbar \tup{v, v}
+ \gbar \inl v 
+ \gbar \inr v \\
+&\gbar \next {\hat y}
+ \gbar \pure u \\
+\text{Residuals}\ \ 
+q &::= \tup{}\gbar\var%\bool
+ \gbar \lam {\var}{q} 
+ \gbar \app q q \\
+&\gbar \tup{q, q} 
+ \gbar \pio q 
+ \gbar \pit q \\
+&\gbar \inl q 
+ \gbar \inr q
+ \gbar \caseof {q}{\var.q}{\var.q} \\
+&\gbar \roll e
+ \gbar \unroll e\\
+\text{Residual Table}\ \ 
+\xi &::= \cdot
+ \gbar \xi, {\hat y} \mapsto q \\
+\end{aligned}\]
+\end{abstrsyn}
+\caption{Values, partial values, and residuals are restricted forms of expressions
+which appear as part of evaluation.
+They are given here as grammars.  
+Residual tables, a new construct, are also produced as part of evaluation.}
+\label{fig:values}
+\end{figure}
+
+
