@@ -3,7 +3,7 @@
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
-\fbox{1-Evaluation}	\and
+\fbox{Evaluation of \bbonem}	\and
 \inferdiaone[\rmunit]
 {\red {\tup{}}{\cdot;\tup{}}}
 {\cdot}
@@ -59,7 +59,7 @@
 
 \hrule
 \begin{mathpar}
-\fbox{Residualization}
+\fbox{Evaluation of \bbtwo}
 \and
 \inferdiaspc[\rmunit]
 {\red {\tup{}}{\tup{}}}
@@ -107,7 +107,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Staging Features} \and
+\fbox{Staging features} \and
 \inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}														\and
 \inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
 %\inferdiaone [hold]		{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
@@ -124,6 +124,6 @@
 \end{mathpar}
 
 \end{abstrsyn}
-\caption{\lang\ dynamics.}
+\caption{First-stage evaluation of \lang.}
 \label{fig:diaSemantics}
 \end{figure*}

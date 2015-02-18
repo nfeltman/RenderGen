@@ -1,47 +1,5 @@
 %!TEX root = ../paper.tex
 
-\begin{figure}
-\begin{abstrsyn}
-
-\textbf{Monostage Evaluation (also used for \bbone-Evaluation at \bbonep):}
-
-\hspace{2em} Evaluation Form: $\reduce e v$, where 
-	
-	\hspace{4em} $e$ is the monostage term to be evaluated
-	
-	\hspace{4em} $v$ is the resulting value
-
-\textbf{\bbone-Evaluation at \bbonem:}
-
-\hspace{2em} Evaluation Form (Evaluation): $\diaone e {\xi;v}$, where 
-	
-	\hspace{4em} $e$ is the term at world \bbonem\ to be evaluated
-
-	\hspace{4em} $\xi$ is the resulting residual table
-	
-	\hspace{4em} $v$ is the resulting partial value
-
-\textbf{\bbone-Evaluation at \bbtwo:}
-
-\hspace{2em} Evaluation Form (Residualization): $\diatwo e q$, where 
-	
-	\hspace{4em} $e$ is the term at world \bbtwo\ to be evaluated
-
-	\hspace{4em} $q$ is the resulting residual
-
-\hspace{2em} Auxiliary Judgement (Reification): $\reify \xi q q'$, where 
-	
-	\hspace{4em} $\xi$ is the residual table to be reified into \texttt{let} terms
-
-	\hspace{4em} $q$ is a residual to be placed at the bottom of the \texttt{let}s
-
-	\hspace{4em} $q'$ is the resulting residual
-
-\end{abstrsyn}
-\caption{Summary of \lang\ evaluation.}
-\label{fig:dynamicsSummary}
-\end{figure}
-
 \begin{figure*}
 \begin{abstrsyn}
 
