@@ -102,6 +102,12 @@ fun eval1 env (E1 exp) =
 				(g1 o g2, V (VFprim (Prims.evalPrim (bo, unprimV (unV v1), unprimV (unV v2)))))
 			end
 		| Froll (_,e) => map2 (V o VFroll) (eval e)
+		| Ffix (_,_,b) => 
+			let 
+				fun f v = evalBranchClean (V ` VFtuple [V ` VFlam f, v]) b 
+			in 
+				(id, V ` VFlam f)
+			end
 		| Funroll e => map2 (unroll o unV) (eval e)
 		| SEdata (DataFrag.Eerror _) => raise Stuck
 	end

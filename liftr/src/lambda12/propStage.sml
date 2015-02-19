@@ -29,6 +29,7 @@ fun Etuple x = IL1standard (SEprod (BranchlessFrag.Etuple x))
 fun Einj x = IL1standard (SEdata (DataFrag.Einj x))
 fun Eroll x = IL1standard (Froll x)
 fun Eunroll x = IL1standard (Funroll x)
+fun Efix x = IL1standard (Ffix x)
 
 fun var v = IL1P (Pvar v)
 fun bind v e1 e2 = Elet (e1,(var v,e2))
@@ -39,7 +40,7 @@ fun stageLet stage (e1,x,e2) =
   | C.NextStage => Elet (IL1next e1,(IL1Pnext (var x),e2))
   | C.MonoStage => Elet (IL1mono e1,(IL1Pmono (var x),e2))
 
-fun elabLetRec (stage,f,t1,t2,(x,body),e) = 
+fun elabLetRecOld (stage,f,t1,t2,(x,body),e) = 
 	let
 		val tY = C.Tarr(C.Tprod[C.Tvar 0,t1],t2)
 	in
@@ -53,6 +54,10 @@ fun elabLetRec (stage,f,t1,t2,(x,body),e) =
 		,
     f,e)
 	end
+
+fun elabLetRec (stage,f,t1,t2,(x,body),e) = 
+  stageLet stage
+    (Efix (t1, t2, (IL1P (Ptuple [var f, x]), body)), f, e)
 	
 	
 fun elabDataType (stage,ty,cts,e) = 

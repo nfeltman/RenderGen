@@ -17,6 +17,7 @@ datatype ('r,'p) pattern 	= Pvar of 'r
 datatype ('e,'r,'b,'t) exprF	= Fvar of 'r
 								| Flam of 't * 'b
 								| Fapp of 'e * 'e
+								| Ffix of 't * 't * 'b
 								| SEprod of 'e BranchlessFrag.exprF
 								| SEdata of ('e, 'b, 't) DataFrag.exprF
 								| Flet of 'e * 'b
@@ -37,6 +38,7 @@ fun mapExpr fe ft fp exp =
 	| Flet (e1, (x,e2)) => Flet (fe e1, (fp x, fe e2))
 	| Froll (t, e) => Froll (ft t, fe e)
 	| Funroll e => Funroll (fe e)
+	| Ffix (t1, t2, (x,e)) => Ffix (ft t1, ft t2, (fp x, fe e))
 
 fun collectExpr exp =
 	case exp of
@@ -48,6 +50,7 @@ fun collectExpr exp =
 	| Flet (e1, (x,e2)) => [e1,e2]
 	| Froll (t, e) => [e]
 	| Funroll e => [e]
+	| Ffix (t1,t2,(x,e)) => [e]
 
 fun recastPattern (_,ext,f) g (Pvar x) = let val y = f x in (Pvar y,ext g x y) end
   | recastPattern (rpRec,ext,_) g (Ptuple xs) =
@@ -74,6 +77,7 @@ fun replaceVars recRep G (recastPattern,lookup) exp =
 		| Flet (e1, b) => Flet (rep e1, forBranch b)
 		| Froll (t, e) => Froll (t, rep e)
 		| Funroll e => Funroll (rep e)
+		| Ffix (t1,t2,b) => Ffix (t1,t2, forBranch b)
 	end
 
 fun foldPattern (f,foldRec,unpack,ex) g p t =
@@ -158,6 +162,13 @@ fun typeCheckSpecial (gamma : C.cont) (checkrec : C.cont -> 'e -> T.ty * 'o) (ex
 			in
 				(selfSubst (F.unrec t), Funroll o1)
 			end
+		| Ffix (t1,t2,b as (x,_)) =>
+			let
+				val o1 as (t,_) = checkbranch (F.makeprod [F.makearr (t1,t2),t1],b)
+			in
+				assertSame (t,t2);
+				(F.makearr (t1,t2), Ffix (t1,t2,(x,o1)))
+			end
 	end
 
 and typeCheckBranch gamma checkrec (t,(patt,e)) = 
@@ -177,13 +188,17 @@ fun evalF env evalRec (extendPatt,lookupC) exp =
 	in
 		case exp of 
 		  Fvar v => lookupC env v
-		| Flam (t, b) => F.makelam (fn v => evalBranch v b)
+		| Flam (_, b) => F.makelam (fn v => evalBranch v b)
 		| Fapp (e1, e2) => (F.unlam (eval e1)) (eval e2)
 		| SEprod e => ProdEval.eval eval e
 		| SEdata e => DataEval.eval (eval,evalBranch) e
 		| Flet (e, b) => evalBranch (eval e) b
 		| Froll (_, e) => F.makeroll (eval e)
 		| Funroll e => F.unroll (eval e)
+		| Ffix (_,_,b) => 
+			let 
+				fun f v = evalBranch (F.maketuple [F.makelam f, v]) b 
+			in F.makelam f end
 	end
 end
 

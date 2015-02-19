@@ -24,6 +24,7 @@ fun Elet x = E ` S.Flet x
 fun Ebinop x = E ` S.SEdata ` DataFrag.Ebinop x
 fun Eroll x = E ` S.Froll x
 fun Eunroll x = E ` S.Funroll x
+fun Efix x = E ` S.Ffix x
 fun Eerror x = E ` S.SEdata ` DataFrag.Eerror x
 		
 end

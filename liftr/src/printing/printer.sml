@@ -6,7 +6,7 @@ datatype patt	= Pvar of string
 				| Ptuple of patt list
 				| Pbrace of string * patt 
 datatype expr	= Eatom of string
-				| Elam of expr * (patt * expr)
+				| Elam of string * expr * (patt * expr)
 				| Eapp of expr * expr
 				| Etuple of expr list
 				| Ecase of expr * (patt * expr) list
@@ -26,7 +26,7 @@ fun rp slot ex =
 	in
 		case ex of
 		  Eatom s => Eatom s
-		| Elam (t, b) => need 2 ` Elam (rp 0 t, rpb b)
+		| Elam (s,t, b) => need 2 ` Elam (s, rp 0 t, rpb b)
 		| Eapp (e1, e2) => need 1 ` Eapp (rp 1 e1, rp 0 e2)
 		| Etuple es => Etuple (map top es)
 		| Ecase (e,bs) => need 2 ` Ecase (top e, map rpb bs)
@@ -55,7 +55,7 @@ fun convertToLayout ex =
 	in
 		case ex of
 		  Eatom s => $ s
-		| Elam (t, (v,e)) => % [& [$ "fn ", $ (pat2string v), $ " : ", c t, $ " =>"], c e]
+		| Elam (s,t, (v,e)) => % [& [$ s, $ " ", $ (pat2string v), $ " : ", c t, $ " =>"], c e]
 		| Eapp (e1, e2) => % [c e1, c e2]
 		| Etuple es => Layout.tuple (map c es)
 	(*	| Etuple [] => $ "()"

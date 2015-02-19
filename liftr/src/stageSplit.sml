@@ -53,6 +53,7 @@ fun unusedAnswer (e as E exp) = case exp of
   | S.SEdata (DataFrag.Ebinop (_,e1,e2)) => (unusedAnswer e1) @ (unusedAnswer e2)
   | S.Froll (_,e) => unusedAnswer e
   | S.Funroll e => unusedAnswer e
+  | S.Ffix _ => []
   | S.SEdata (DataFrag.Eerror _) => [e]
 
 and chain2 (e1,e2) = 
@@ -81,9 +82,10 @@ datatype splitResult2 		= NoPrec2 of expr | WithPrec2 of expr * (ppatt * expr)
 local
 
 fun flattenContext c b = foldr (fn ((x,e1),e2) => Elet (e1, (x,e2))) b c
+fun flattenCVP c v p = flattenContext c ` Etuple [v,p]
 
 fun toOpaque (Opaque e) = e
-  | toOpaque (Splittable (cont, v, p)) = flattenContext cont (Etuple [v,p])
+  | toOpaque (Splittable (cont, v, p)) = flattenCVP cont v p
   
 fun toSplit (Opaque e) = 
 		let
@@ -98,6 +100,9 @@ fun mapSplitResult f (NoPrec1 vr) = NoPrec1 vr
 
 fun coerce (WithPrec1 (c, lr)) = (toOpaque c, lr)
   | coerce (NoPrec1 (e1,e2)) = (Etuple [e1, Eunit], (PPtuple [], e2))
+
+fun coercePrec (WithPrec1 (c, lr)) = (c, lr)
+  | coercePrec (NoPrec1 (e1,e2)) = (Splittable ([], e1, Eunit), (PPtuple [], e2))
 
 fun merge1 (NoPrec1 (v,r)) f g = NoPrec1 (f v, g r)
   | merge1 (WithPrec1 (e,(l,r))) f g = 
@@ -168,7 +173,7 @@ in
 
 exception Oops
 
-val coerce1 = coerce  
+val coerce1 = coerce
 
 (* assume here that the expression already type-checks *)
 fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 = 
@@ -182,7 +187,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		| S.SEdata (DataFrag.EprimVal i) => NoPrec1 (Eprim i,  Eunit)
 		| S.Flam (t, (x,e)) => 
 			let
-				val (c,(l,r)) = coerce1 (split e)
+				val (c,(l,r)) = coerce (split e)
 				val (x1,x2) = splitPattern x
 			in
 				NoPrec1 (Elam ((), (x1, c)), Elam ((),(PPtuple [x2,l], r)))
@@ -257,7 +262,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 					let
 						val (x1,x2) = splitPattern x
 						val (branches,residuals,suffixes) = processBranches xes (()::prefixes)
-						val (c,(l,r)) = coerce1 (split e)
+						val (c,(l,r)) = coerce (split e)
 						val branch = caseBranch c pWrap prefixes suffixes
 					in
 						((x1,branch)::branches, (l, Elet(Evar z,(x2,r)))::residuals, ()::suffixes)
@@ -274,7 +279,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 			let
 				val link = Variable.newvar "l"
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
-				val ((c2,lr2),(c3,lr3)) = (coerce1 (split e2), coerce1 (split e3))
+				val ((c2,lr2),(c3,lr3)) = (coerce (split e2), coerce (split e3))
 				val (branch2, branch3) = (caseBranch c2 pWrap [] [()], caseBranch c3 pWrap [()] [])
 			in
 				WithPrec1(
@@ -306,7 +311,7 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 						  NoPrec1 (e2, r2) => 
 							WithPrec1 (Opaque ` Elet (c1, (pat, Etuple[e2,Evar y])), (l1, makeLet2 r1 r2))
 						| WithPrec1 ((c2,v2,p2),(l2,r2)) => 
-							WithPrec1 (Opaque ` Elet (c1, (pat, flattenContext c2 ` Etuple [v2,Etuple[Evar y,p2]])), 
+							WithPrec1 (Opaque ` Elet (c1, (pat, flattenCVP c2 v2 (Etuple[Evar y,p2]) )), 
 								(PPtuple [l1,l2],makeLet2 r1 r2))
 					end
 			end
@@ -314,6 +319,21 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
 		| S.Froll (_,e) => merge1 (split e) roll id
 		| S.Funroll e => merge1 (split e) Eunroll id
+		| S.Ffix (_,_,(fx,e)) => 
+			let
+				val (s,(l,r)) = coercePrec (split e)
+				val (cont,v,p) = toSplit s
+				val (fx1,fx2) = splitPattern fx
+				val (f,x,l0) = (Variable.newvar "f", Variable.newvar "x", Variable.newvar "l")
+			in
+				NoPrec1(
+					Efix ((),(),(fx1, flattenCVP cont v (Eroll ((),p)))),
+					Efix ((),(),(PPtuple [PPvar f, PPtuple [PPvar x,PPvar l0]], 
+						Elet (Etuple [Etuple [Evar f, Evar x], Eunroll ` Evar l0], 
+							(PPtuple [fx2, l], r) 
+					)))
+				)
+			end
 		| S.SEdata (DataFrag.Eerror t) => NoPrec1 (Eerror (), Eerror ())
 	in
 		(t,
@@ -424,6 +444,7 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(promotePattern x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
+		| S.Ffix (_,_,(x,e)) => merge1 (split e) (fn r => Efix ((),(),(promotePattern x,r)))
 		| S.SEdata (DataFrag.Eerror t) => NoPrec2 (Eerror ())
 		)
 	end

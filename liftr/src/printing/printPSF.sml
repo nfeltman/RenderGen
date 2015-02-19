@@ -71,7 +71,7 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 		| S.SEdata (DataFrag.EprimVal (Prims.Vint i)) => Eatom (Int.toString i)
 		| S.SEdata (DataFrag.EprimVal (Prims.Vbool b)) => Eatom (if b then "true" else "false")
 		| S.SEdata (DataFrag.EprimVal (Prims.Vstr s)) => Eatom ("\""^s^"\"")
-		| S.Flam (t,b) => Elam (convertTy t, convertBranch b)
+		| S.Flam (t,b) => Elam ("fn",convertTy t, convertBranch b)
 		| S.Fapp (e1,e2) => Eapp (convert e1, convert e2)
 		| S.SEprod (BranchlessFrag.Etuple es) => Etuple (map convert es)
 		| S.SEprod (BranchlessFrag.Epi (i, e)) => EprimApp ("#" ^ (Int.toString (i+1)), convert e)
@@ -82,6 +82,7 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 		| S.SEdata (DataFrag.Ebinop (bo, e1, e2)) => Einfix (opToString bo, [convert e1, convert e2])
 		| S.Froll (t,e) => Eapp (EprimApp ("roll", convertTy t), convert e)
 		| S.Funroll e => EprimApp ("unroll", convert e)
+		| S.Ffix (t1,t2,b) =>Elam ("fix",Einfix ("*", [Einfix ("->", [convertTy t1, convertTy t2]), convertTy t1]), convertBranch b)
 		| S.SEdata (DataFrag.Eerror t) => EprimApp ("error", convertTy t)
 	end
 	
