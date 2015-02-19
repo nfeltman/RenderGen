@@ -26,6 +26,7 @@
 %\infertypeswor [int]		{\ty {i} \rmint}									{w \in \{\bbonep,\bbtwo\}}													\and
 \infertypeswor [hyp]		{\ty x A}											{\col x A \in \Gamma} 														\and
 \infertypeswor [\to I]		{\ty {\lam {x}{e}} {A \to B}}						{A \istypewor & \ty [,\col x A] e B} 										\and
+\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{A \istypewor & \ty [,\col f {A \to B},\col x A] e B} 						\and
 \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 										\and
 \infertypeswor [\times I]	{\ty {\tup{e_1,e_2}}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 												\and
 \infertypeswor [\times E_1]	{\ty {\pio e} A}									{\ty e {A\times B}} 														\and

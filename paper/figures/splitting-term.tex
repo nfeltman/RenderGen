@@ -5,10 +5,14 @@
 \begin{mathpar}
 \fbox{Stage \bbonem} 
 \and
-\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}}}{\_.\tup{}}}												{\cdot} \and
+\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}}}{\_.\tup{}}}											{\cdot} \and
 %\infersplitone [int]			{\spl {i}{\rm int}{\tup{i,\tup{}};\_.\tup{}}}														{\cdot} \and
 \infersplitone [hyp]			{\spl {x}{A}{\tup{x,\tup{}}}{\_.x}}																	{\cdot} \and
-\infersplitone [\to I]			{\spl {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}					{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplitone [\to I]			{\splitonetall {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}			{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplitone [fix]			{\splitonetall 	
+									{\fix{f}{x}{e}} {} 
+									{\tup{\fix f x {\letin{\tup{y,z}}c{\tup{y,\roll z}}}, \tup{}}}
+									{\_.\fix f {\tup {x,l_0}} {\letin{l}{\unroll {l_0}}{r}}}}										{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplitone [\to E]			{\splitonetall {\app {e_1}{e_2}}{B}{\left(
 									\talllet{\tup{y_1,z_1}}{c_1}{
 									\talllet{\tup{y_2,z_2}}{c_2}{
@@ -23,9 +27,9 @@
 									\right)}
 									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																				{\sub 1 A & \sub 2 B} \and
 \infersplitone [\times E_1]	
-	{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}								
-	{\sub {} {A\times B} 
-	& \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}} \and
+								{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}								
+								{\sub {} {A\times B} 
+								& \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}} \and
 %\infersplitone [\times E_2]	{\spl {\pit~e}{B}{\talllet{\tup{y,z}}{c}{\tup{\pit~y,z}};l.\pit~r}}								{\sub {} {A\times B}} \and
 %\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
 %								\begin{array}{l}
@@ -72,6 +76,7 @@
 																															& \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},
 																															  \mathtt{inr},\mathtt{roll},\mathtt{unroll}\}} 				\and
 \infersplittwo [\to I]			{\spl {\lam{x}{e}}{A \to B}{p}{l}{\lam{x}{r}}}												{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplittwo [\to I]			{\spl {\fix fxe}{A \to B}{p}{l}{\fix fxr}}													{\sub [\Gamma,\col x A] {} B} 									\and
 \infersplittwo [\to E]			{\spl {\app{e_1}{e_2}}{B}{\tup{p_1,p_2}}{\tup{l_1,l_2}}{\app{r_1}{r_2}}}					{\sub 1 {A \to B} & \sub 2 A}									\and
 \infersplittwo [\times I]		{\spl {\tup{e_1,e_2}}{A\times B}{\tup{p_1,p_2}}{\tup{l_1,l_2}}{\tup{r_1,r_2}}}				{\sub 1 A & \sub 2 B} 											\and
 %\infersplittwo [\times E_2]	{\spl {\pit~e}{B}{p;l}{\pit~r}}																{\sub {} {A\times B}} 											\and
