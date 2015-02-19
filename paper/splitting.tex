@@ -8,14 +8,13 @@
 \begin{abstrsyn}
 
 The primary strength of \lang\ is the expressive power afforded by
-its ability to syntactically interleave work intended for stage \bbone\
-and work intended for stage \bbtwo, as well as its ability to form
-mixed-stage abstractions. 
+its ability to syntactically interleave first- and second-stage computations,
+as well as its ability to form mixed-stage abstractions. 
 
 In this section, we provide a {\em splitting algorithm} to translate the multistage terms of \lang\
 into a simpler but equivalent form.
 The output of splitting is simpler because it is {\em syntactically separated}; that is, 
-stage \bbone\ and stage \bbtwo\ are represented by distinct subterms and are only connected at the top syntactic level.
+the first and second stages are represented by distinct subterms and are only connected at the top syntactic level.
 The output of splitting is equivalent (to its input) because it can be evaluated to the same residual 
 that would be produced by the semantics of \ref{sec:semantics}.
 
@@ -25,8 +24,10 @@ splitting translates $e$ into some syntactically separated program $\mathcal{P}$
 can also be reduced to $q$ (via the new relation $\mathcal{P} \sepredtwosym q$).
 We enforce the ``syntactically separated'' condition by saying that $\mathcal{P}$ 
 can only have one form, namely $\pipeS p l r$, where  
-$p$ (called the {\em precomputation}) is a monostage term encoding all the stage \bbone\ computation that was in $e$, 
-and $l.r$ (called the {\em resumer}) is a monostage term encoding all the stage \bbtwo\ computation that was in $e$.  
+$p$ (called the {\em precomputation}) is a monostage term encoding all the
+first-stage computation that was in $e$, 
+and $l.r$ (called the {\em resumer}) is a monostage term encoding all the
+second-stage computation that was in $e$.  
 Likewise, $\sepredtwosym$ is defined by a single rule, which evaluates the precomputation and plugs it in for $l$:
 \[
 \infer{\sepredtwo {\pipeS p l r} {[b/l]r}} {\reduce p b}
@@ -38,8 +39,9 @@ Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via \texttt{prev})
 we also provide a way to split those as well.
 This is given by the new relation $e \splitonesym \mathcal{P}$,
 where $\mathcal{P}$ must have the form $\pipeM c l r$ where  
-$c$ (called the {\em combined term}) is a monostage term encoding all the stage \bbone\ computation that was in $e$, 
-and $l.r$ (again called the {\em resumer}) is a monostage term encoding all the stage \bbtwo\ computation that was in $e$.
+$c$ (called the {\em combined term}) is a monostage term encoding all the first-stage computation that was in $e$, 
+and $l.r$ (again called the {\em resumer}) is a monostage term encoding all the
+second-stage computation that was in $e$.
 
 Similar to above, we also define a $\sepredtwosym$ relation which can be used to evaluate \texttt{sepM} terms,
 with one complication arising from the fact that \lang\ terms at world \bbonem\ produce multistage output.
@@ -51,25 +53,27 @@ which reduces (via $\redonesym$) to the residual table and partial value
 \begin{lstlisting}
 [yhat |-> 1+2] (next {yhat}, grnd{7})
 \end{lstlisting}
-Since this output has interleaved stages, theres no way a syntactically seperated term could directly reduce to it.
+Since this output has interleaved stages, theres no way a syntactically separated term could directly reduce to it.
 
 We resolve this mismatch by introducing one more translation, called {\em masking} and written $[\xi;v] \vsplito \mathcal{V}$,
-which is just a technical device to convert residual tables and partial values---like the those above---into a syntactically seperated version $\mathcal{V}$.
-As before, we enforce the ``syntactically seperated'' property structurally,
+which is just a technical device to convert residual tables and partial values---like the those above---into a syntactically separated version $\mathcal{V}$.
+As before, we enforce the ``syntactically separated'' property structurally,
 saying that $\mathcal{V}$ must have the form $\mval i q$ (called a {\em masked value}) where 
-$i$ is a monostage value respresenting the stage \bbone\ part of $v$,
-and $q$ is a monostage term representing all of the stage \bbtwo\ computation in $\xi$ and $v$.
+$i$ is a monostage value representing the first-stage part of $v$,
+and $q$ is a monostage term representing all of the second-stage computation in $\xi$ and $v$.
 Note that masking exists only for the purposes of stating correctness; it is not part of the splitting algorithm itself.
 
 With this machinery in place, we can define $\sepredonesym$ as just creating masked values with the single rule:
 \[
 \infer{\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
 \]
-Here we see the primary difference between terms at world \bbtwo\ and world \bbone.
-Since $\coltwo e A$ reduces to an entirely stage \bbtwo\ result, 
-its stage \bbone\ subcomputations only exist to internally pass their value to stage \bbtwo;
+Here we see the primary difference between world \bbtwo\ terms and world \bbonem\ terms.
+Since $\coltwo e A$ reduces to an entirely second-stage result, 
+its first-stage subcomputations only exist to internally pass their value to the
+second stage;
 but since $\colmix e A$ reduces to a multistage result, 
-its stage \bbone\ subcomputations exist {\em both} to pass their value to stage \bbtwo\ {\em and} to be present in the result.
+its first-stage subcomputations exist {\em both} to pass their value to the
+second stage {\em and} to be present in the result.
 Correspondingly, in the $\sepredtwosym$ rule, the precomptuation $p$ reduces only to a boundary value which is passed to the resumer;
 but in the $\sepredonesym$ rule, the combined term $c$ reduces to a tuple containing both the immediate result and the boundary value,
 with only the latter being passed to the resumer.
@@ -83,23 +87,23 @@ and finally coming back to define \bbtwo-translation ($\splittwosym$).
 \subsection{Masking}
 
 The point of the masking operation is simply to convert a partial value into a masked value $\mval i q$
-by assigning all of the stage \bbone\ content to $i$ and all of the stage \bbtwo\ content to $q$.
+by assigning all of the first-stage content to $i$ and all of the second-stage content to $q$.
 The rules of the masking relation are given in \ref{fig:valMask}.
 
 Masking operates by first inducting on the entries of the residual table.  
-Being purely stage~\bbtwo\ content, these are reified into let statements at the top of the resumer.
+Being purely second-stage content, these are reified into let statements at the top of the resumer.
 Once the table is empty, masking inducts on value itself.
 
-Masking assigns ground stage~\bbone\ values to the immediate value
+Masking assigns values in \bbonep\ to the immediate value
 and likewise assigns references into the residual table to the resumer.
 In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
 
 Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
 However, the tags of injections and rolls are replicated only in the immediate value, 
-since they represent stage~\bbone\ information.
+since they represent first-stage information.
 
 Since lambdas may represent multi-stage computations, 
-masking splits the body of lambdas as general stage~\bbone\ terms (as described in \ref{sec:split-one}), 
+masking splits the body of lambdas as general world \bbonem\ terms (as described in \ref{sec:split-one}), 
 and packages the resulting terms as functions.
 
 \subsection{Term Splitting at \bbonem}
@@ -112,7 +116,7 @@ which proceeds recursively on the structure of~$e$.
 
 When $e$ is unit or a variable,
 splitting yields a combined term formed by tupling $e$ with a $\tup{}$ precomputation.
-These expressions, as they contain no stage~\bbtwo\ subcomputations, have a trivial resumer, $\tup{}$.
+These expressions, as they contain no second-stage subcomputations, have a trivial resumer, $\tup{}$.
 Similarly, the contents of a \texttt{grnd} block are assigned entirely to the immediate value,
 with trivial precomputation and resumer.
 
@@ -135,18 +139,19 @@ $b_i$ is cased in the resumer to determine which branch's resumer should be exec
 Function introduction has a $\tup{}$ boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multi-stage, splitting must continue into it.
-The immediate result is a new function formed from the stage~\bbone\ part of the original body.
-The resumer is a new function formed out of the stage~\bbtwo\ part of the original body.
+The immediate result is a new function formed from the first-stage part of the original body.
+The resumer is a new function formed out of the second-stage part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
 
-Since the results of splitting \texttt{next} terms depend on the output of splitting its stage~\bbtwo\ subterm,
-we defer description of \texttt{next} until after describing stage~\bbtwo\ term splitting.
+Since the results of splitting \texttt{next} terms depend on the output of
+splitting its world \bbtwo\ subterm,
+we defer description of \texttt{next} until after describing world \bbtwo\ term splitting.
 
 \subsection{Term Splitting at \bbtwo}
 
-Because stage~\bbtwo\ terms in \lang\ reduce to monostage residuals (as opposed to partial values),
-term splitting at \bbtwo\ assumes a simpler form than the version at \bbonem\ does. 
+Because world \bbtwo\ terms in \lang\ reduce to monostage residuals (as opposed to partial values),
+term splitting at world \bbtwo\ assumes a simpler form than the version at \bbonem\ does. 
 The algorithm is specified by the $\splittwosym$ relation in \cref{fig:termSplit}.
 
 In the terminal cases of
@@ -162,12 +167,14 @@ argument $(l_1,\ldots,l_n)$ in a term that has the same structure
 of~$e$ but where each subterm is replaced by its corresponding resumer:
 $r = \mathcal{C}\ttlpar r_1 \ttsemi \ldots \ttsemi r_n \ttrpar$ .
 Notably, at \texttt{case}s and functions the
-precomputation of subterms is lifted out from underneath stage \bbtwo\ binders.  
+precomputation of subterms is lifted out from underneath world \bbtwo\ binders.  
 % TODO: should probably draw a parallel to the same behavior in dynamics
 
-Splitting \texttt{prev} generates a precomputation that projects the immediate result of its stage~\bbone\ subterm.
+Splitting \texttt{prev} generates a precomputation that projects the immediate
+result of its world \bbone\ subterm.
 Since the argument to \texttt{prev} is of $\fut$ type, its immediate result reduces to $\tup{}$, justifying why it can be thrown away.
-Finally, splitting \texttt{next} simply tuples up the precomputation of its stage~\bbtwo\ subterm with a trivial immediate result $\tup{}$.
+Finally, splitting \texttt{next} simply tuples up the precomputation of its
+world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
 \subsection {Three World System?}
 
