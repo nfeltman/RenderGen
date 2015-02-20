@@ -48,12 +48,13 @@ fun qSelect (Empty, k) = 0
 % \end{subfigure}
 \begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
+1`hold : ^int -> $`2`int`
 1`atsigngrnd{
   datatype list = Empty | Cons of int * list
   fun part (...) = ...
-} 
+}
 
-`//1`qsStaged : ^list * $`2`int`1` -> $`2`int`1`
+1`qsStaged : ^list * $`2`int`1` -> $`2`int`1`
 fun qsStaged (`3`grnd{`1`Empty`3`}`1`,_) = next {`2`0`1`}
   | qsStaged (`3`grnd{`1`Cons ht`3`}`1`,next{`2`k`1`}) = 
     let 
@@ -63,8 +64,7 @@ fun qsStaged (`3`grnd{`1`Empty`3`}`1`,_) = next {`2`0`1`}
       case compare k n of
         LT => prev {`1`qsStaged (`3`grnd{`1`left`3`}`1`, next{`2`k`1`})`2`}
       | EQ => prev {`1`hold `3`grnd{`1`#1 ht`3`}`2`}
-      | GT => prev {`1`qsStaged (`3`grnd{`1`right`3`}`1`, next{`2`k-1-n`1`})`2`}`1`
-    }`
+      | GT => prev {`1`qsStaged (`3`grnd{`1`right`3`}`1`, next{`2`k-1-n`1`})`2`}`1`}`
 \end{lstlisting}
 \caption{Staged implementation of quickselect in \lang.}
 %\vspace{1.3em}
