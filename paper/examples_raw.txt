@@ -1,0 +1,163 @@
+
+%% FASTEXP INPUT
+
+let rec exp ((b,e) : $int*int) : $int = 
+    if e == 0 then 
+        next{1} 
+    else if (e mod 2) == 0 then
+        next{let val x = prev{exp (b,e/2)} in x*x} 
+    else next{prev{b} * prev{exp (b,e-1)}} 
+in exp (next{3},5)
+
+%% FASTEXP OUTPUT 
+
+let exp =
+    fix (exp,(b,e)) : ((_->_)*_) =>
+    let (v,p) =
+    if e==0 then
+        ((), inj (#+_) ())
+    else
+        let (v,p) =
+        if (emod2)==0 then ((), inj (#+_) (#2 (exp (b, e/2)))) else ((), inj (_+#) (#2 (exp (b, e-1))))
+        in
+        (v, inj (_+#) p)
+    in
+    (v, roll _ p)
+in
+exp ((), 5)
+---
+l.
+let exp =
+    fix (f,(x,l_0)) : ((_->_)*_) =>
+    let ((exp,(b,e)),l_1) = ((f, x), unroll l_0) in
+    case l_1 of
+      () => 1
+    | l_2 => case l_2 of l_3 => let x_0 = exp ((b, ()), l_3) in x_0*x_0 | l_3 => b*exp ((b, ()), l_3)
+in
+exp ((3, ()), l)
+
+
+%% QUICKSELECT INPUT
+
+let 
+    @next {
+        datatype comp = LT | EQ | GT
+    }
+    val next{compare} = next {
+        fn (i,j) : int * int => if i < j then LT else if i == j then EQ else GT
+    }
+    @ mono { 
+        datatype list = Empty | Cons of int * list
+    } @ mono { 
+        rec partition ((p,l) : int*list) : (int*list*list) = 
+            case unroll l of 
+              _ => (0,Empty, Empty) 
+            | (h,t) => 
+                let val (s,left,right) = partition (p,t) in 
+                if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
+    }
+
+    rec qs ((mono{l},next{i}) : ^list * $int) : $int = 
+        case pushS mono {unroll l} of 
+          _ => next {0} 
+        | mono{ht} => 
+            let 
+                val mono{(n,left,right)} = mono{partition ht}
+                val next{n} = hold mono{n}
+            in
+            next { 
+                case unroll (compare (i,n)) of
+                  _ => prev{qs (mono{left},next{i})}
+                | _ => prev{hold mono{#1 ht}}
+                | _ => prev{qs (mono{right},next{(i-n)-1})}
+            }
+
+    @next{
+        datatype list2 = Empty2 | Cons2 of int * list2
+    }
+
+    fun map ((f,l,next{q}) : (^list*$int -> $int) * ^list * $list2) = 
+        next {
+            let 
+                rec m (q : list2) : list2 = 
+                    case unroll q of
+                      _ => Empty2
+                    | (h,t) => Cons2 (prev{f (l,next{h})}, m t)
+            in m q
+        }
+
+    val mono{c} = mono{Cons}
+    val testlist = mono{c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
+
+    val next{c} = next{Cons2}
+    val queries = next{c(0,c(1,c(2,c(3,c(4,c(5,Empty2))))))}        
+in 
+map (qs, testlist, queries)
+
+%% QUICKSELECT OUTPUT
+
+let () = () in
+let () = () in
+let () = () in
+let () = () in
+let Empty = roll _ (inj (#+_) ()) in
+let Cons = fn x : _ => roll _ (inj (_+#) x) in
+let partition =
+    fix (partition,(p,l)) : ((_->_)*_) =>
+    case unroll l of
+      _ => (0, Empty, Empty)
+    | (h,t) =>
+	  let (s,left,right) = partition (p, t) in
+	  if h<p then (s+1, Cons (h, left), right) else (s, left, Cons (h, right))
+in
+let qs =
+    fix (qs,(l,())) : ((_->_)*_) =>
+    let (v,p) =
+	case unroll l of
+	  _ => ((), inj (#+_) ())
+	| ht =>
+	      let (v,p) =
+		  let (n,left,right) = partition ht in
+		  let ((),y) = ((), n) in ((), (y, (#2 (qs (left, ())), #1 ht, #2 (qs (right, ())))))
+	      in
+	      (v, inj (_+#) p)
+    in
+    (v, roll _ p)
+in
+let () = () in
+let () = () in
+let map = fn (f,l,()) : _ => ((), #2 (f (l, ()))) in
+let c = Cons in
+let testlist = c (8, c (2, c (3, c (7, c (4, c (5, Empty)))))) in
+let () = () in let queries = () in map (qs, testlist, queries)
+---
+l.
+let LT = roll _ (inj (#+_+_) ()) in
+let EQ = roll _ (inj (_+#+_) ()) in
+let GT = roll _ (inj (_+_+#) ()) in
+let compare = fn (i,j) : _ => if i<j then LT else if i==j then EQ else GT in
+let () = () in
+let () = () in
+let () = () in
+let qs =
+    fix (f,(x,l_0)) : ((_->_)*_) =>
+    let ((qs,((),i)),l_1) = ((f, x), unroll l_0) in
+    let z = () in
+    case l_1 of
+      () => let _ = z in 0
+    | (l_5,(l_4,l_3,l_2)) =>
+	  let () = z in
+	  let () = () in
+	  let n = l_5 in
+	  case unroll (compare (i, n)) of _ => qs (((), i), l_4) | _ => l_3 | _ => qs (((), (i-n)-1), l_2)
+in
+let Empty2 = roll _ (inj (#+_) ()) in
+let Cons2 = fn x : _ => roll _ (inj (_+#) x) in
+let map =
+    fn ((f,l_1,q),l_0) : _ =>
+    let m = fix (m,q_0) : ((_->_)*_) => case unroll q_0 of _ => Empty2 | (h,t) => Cons2 (f ((l_1, h), l_0), m t) in
+    m q
+in
+let () = () in
+let testlist = () in
+let c = Cons2 in let queries = c (0, c (1, c (2, c (3, c (4, c (5, Empty2)))))) in map ((qs, testlist, queries), l)
