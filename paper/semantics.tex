@@ -88,14 +88,14 @@ contain (inside $\next$);
 they may contain (inside $\prev$) and reduces those.
 \end{enumerate}
 These tasks are accomplished by the $\redsym$, $\redonesym$, and $\redtwosym$
-big-step judgments, respectively (all defined in \ref{fig:diaSemantics}).
+big-step judgments, respectively (defined in \ref{fig:diaSemantics}).
 
-This process ultimately produces a monostaged term, called a \emph{residual},
-all of whose redexes are second-stage computations. The second stage of
-evaluation is therefore just ordinary (unstaged) evaluation of this residual,
-which we notate $\redsym$. (We assume there is a single notion of unstaged
-evaluation applicable to both \bbonep\ terms and residuals. For space reasons,
-we omit its definition.)
+This process ultimately produces a monostaged term, called a \emph{residual}
+(\ref{fig:values}), all of whose redexes are second-stage computations. The
+second stage of evaluation is therefore just ordinary (unstaged) evaluation of
+this residual, which we notate $\redsym$. (For simplicity, we treat residuals
+and \bbonep\ terms as living in a single language equipped with a standard
+evaluation $\redsym$, whose definition we omit for space reasons.)
 
 Notice that our type system makes it possible to evaluate terms in a staged
 fashion, but doing so still requires some machinery, since the stages are
