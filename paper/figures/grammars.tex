@@ -6,18 +6,41 @@
 \text{Worlds}\ \ 
 \world &::= \bbonem \gbar \bbonep \gbar \bbtwo  \\
 %
-\text{Types}\ \ 
-\type &::= \text{unit}%\gbar\text{int}%~|~\text{bool}
- \gbar \type \times \type
- \gbar \type + \type \\
-&\gbar \type \to \type
- \gbar \alpha \gbar \mu \alpha.\tau \\
-&\gbar \fut \type 
- \gbar \curr \type \\
+\text{\bbonem-Types}\ \ 
+\type_\bbonem &::= \text{unit}
+ \gbar \type_\bbonem \times \type_\bbonem
+ \gbar \type_\bbonem + \type_\bbonem \\
+&\gbar \type_\bbonem \to \type_\bbonem
+ \gbar \alpha \gbar \mu \alpha.\tau_\bbonem \\
+&\gbar \fut \type_\bbtwo
+ \gbar \curr \type_\bbonep \\
+%
+\text{\bbonep-Types}\ \ 
+\type_\bbonep &::= \text{unit}
+ \gbar \type_\bbonep \times \type_\bbonep
+ \gbar \type_\bbonep + \type_\bbonep \\
+&\gbar \type_\bbonep \to \type_\bbonep
+ \gbar \alpha \gbar \mu \alpha.\tau_\bbonep \\
+%
+\text{\bbtwo-Types}\ \ 
+\type_\bbtwo &::= \text{unit}
+ \gbar \type_\bbtwo \times \type_\bbtwo
+ \gbar \type_\bbtwo + \type_\bbtwo \\
+&\gbar \type_\bbtwo \to \type_\bbtwo
+ \gbar \alpha \gbar \mu \alpha.\tau_\bbonep \\
+%
+%\text{Types}\ \ 
+%\type &::= \text{unit}%\gbar\text{int}%~|~\text{bool}
+% \gbar \type \times \type
+% \gbar \type + \type \\
+%&\gbar \type \to \type
+% \gbar \alpha \gbar \mu \alpha.\tau \\
+%&\gbar \fut \type 
+% \gbar \curr \type \\
 %
 \text{Contexts}\ \ 
 \context &::=\emptyC
- \gbar \context, x:\tau~@~w \\
+ \gbar \context, x:\tau_w~@~w \\
 %\context &::=\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Expressions}\ \ 
@@ -36,10 +59,10 @@
  \gbar \fix \var \var \expr\\
  %\gbar \letin{\var}{\expr_1}{\expr_2} \\
 &\gbar \next \expr 
- \gbar \prev \expr \\
+ \gbar \prev \expr
 % \gbar \pause \expr \\
-&\gbar \pure \expr 
- \gbar \letp \var \expr \expr
+ \gbar \pure \expr \\
+&\gbar \letp \var \expr \expr
  \gbar \caseP \expr {\var.\expr} {\var.\expr} \\
 \text{Program} &::= \coltwo e \tau \\
 \end{aligned}\]

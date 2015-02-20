@@ -7,19 +7,19 @@
 
 \begin{figure*}
 \begin{abstrsyn}
-\begin{mathpar}
-\fbox {Valid Types} \and
-\infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																	\and
-%\infertypeswor [int]		{\Delta \vdash {\tt int} \istypewor}						{w \in \{\bbonep,\bbtwo\}}													\and
-\infertypeswor [\times]		{\Delta \vdash A~\mathcal{O}~B \istypewor}					{\Delta \vdash A \istypewor 
-																						& \Delta \vdash B \istypewor
-																						& \mathcal O \in \{+,\times,\to \}} 										\and
-\infertypeswor [\mu]		{\Delta \vdash \mu \alpha. A \istypewor}					{\Delta, \alpha \istypewor \vdash A \istypewor} 							\and
-\infertypeswor [var]		{\Delta \vdash \alpha \istypewor}							{\alpha \istypewor \in \Delta} 												\and
-\infertypeswor [\fut]		{\Delta \vdash \fut A \istypemix}							{\Delta \vdash A \istypetwo} 												\and
-\infertypeswor [\fut]		{\Delta \vdash \curr A \istypemix}							{\Delta \vdash A \istypepure} 															
-\end{mathpar}
-\hrule
+%\begin{mathpar}
+%\fbox {Valid Types} \and
+%\infertypeswor [\rmunit] 	{\Delta \vdash {\tt unit} \istypewor}						{\cdot} 																	\and
+%%\infertypeswor [int]		{\Delta \vdash {\tt int} \istypewor}						{w \in \{\bbonep,\bbtwo\}}													\and
+%\infertypeswor [\times]		{\Delta \vdash A~\mathcal{O}~B \istypewor}					{\Delta \vdash A \istypewor 
+%																						& \Delta \vdash B \istypewor
+%																						& \mathcal O \in \{+,\times,\to \}} 										\and
+%\infertypeswor [\mu]		{\Delta \vdash \mu \alpha. A \istypewor}					{\Delta, \alpha \istypewor \vdash A \istypewor} 							\and
+%\infertypeswor [var]		{\Delta \vdash \alpha \istypewor}							{\alpha \istypewor \in \Delta} 												\and
+%\infertypeswor [\fut]		{\Delta \vdash \fut A \istypemix}							{\Delta \vdash A \istypetwo} 												\and
+%\infertypeswor [\fut]		{\Delta \vdash \curr A \istypemix}							{\Delta \vdash A \istypepure} 															
+%\end{mathpar}
+%\hrule
 \begin{mathpar}
 \fbox {Standard Typing} \and
 \infertypeswor [\rmunit] 	{\ty {\tup{}}\rmunit}								{\cdot} 																	\and
