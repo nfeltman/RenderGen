@@ -4,31 +4,14 @@
 \label{sec:implementation}
 
 \begin{abstrsyn}
-We have implemented the semantics and splitting algorithm of \lang\ in Standard ML,
-as well as a semantics for the output language.
+We have implemented the semantics and splitting algorithm of \lang\ in Standard ML.
+Specifically, our implemention includes parsers, printers, and interpretters for both \lang\ 
+and the output language, as well as a splitting algorithm which mediates between the two.
 In addition to the features shown here, our implementation includes base types, 
 $n$-ary products and sums, patterns, if and let statements, and a basic elaboration step.
 We cover some of the details here.
 
-\paragraph {Splitting Optimizations} 
-Applying the rules of \cref{sec:splitting} naively can yield inefficient split programs.
-In many cases, the results can be improved by considering special cases in individual rules.
-For instance, trivial subterm precomputations needn't be saved at tuples:
-\[
-\infer {\splittwo {\tup{e_1,e_2}} A p l {\tup{r_1,r_2}}} {\splittwo {e_1} A {\tup{}} {\_}{r_1} & \splittwo {e_2} A  p l {r_2}}
-\]
-Our implementation uses many optimizations like these.
-
-\paragraph {Patterns}
-
-Our implemention includes patterns to eliminate products, $\fut$, and $\curr$.
-We split patterns directly (in a way similar to the standard elim forms), 
-rather than translate them away before splitting.
-This, along with the optimized splitting algorithm,
-goes a long way toward producing readable outputs.
-
 \paragraph {Syntax}
-
 Our concrete syntax is used in examples throughout the paper.
 Its main notable property is that world boundaries are always noted by braces.
 
@@ -51,6 +34,15 @@ val grnd{part}  = grnd{fn (...) => ...}
 val qsStaged    = fn (...) => ...`
 \end{lstlisting}
 
+\paragraph {Patterns}
+Our implemention includes patterns in the input language to eliminate products, $\fut$, and $\curr$.
+As implied by our splitting rules, we also include product patterns in the output language.
+For the sake of readability, we split input patterns directly (in a way similar to the standard elim forms), 
+rather than translate them away before splitting.
 
+\paragraph {Specialized Splitting} 
+Our implemented splitting algorithm also includes many special cases to create more readable outputs.
+Most important among these are cases for eliminating trivial precomputations.
+These special cases all fit within the presented framework of our correctness condition.
 
 \end{abstrsyn}
