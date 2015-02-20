@@ -3,39 +3,36 @@
 \begin{figure}
 \begin{abstrsyn}
 
-\textbf{Monostage Evaluation (also used for \bbone-Evaluation at \bbonep):}
+\textbf{First-stage evaluation at \bbonep\ ---
+$\reduce e u$}
+\begin{enumerate}
+\item[] Given $\colpure e A$;
+$u$ is a value.
+\end{enumerate}
 
-\hspace{2em} Evaluation Form: $\reduce e v$, where 
-	
-	\hspace{4em} $e$ is the monostage term to be evaluated
-	
-	\hspace{4em} $v$ is the resulting value
+\textbf{First-stage evaluation at \bbonem\ ---
+$\diaone e {\xi;v}$}
+\begin{enumerate}
+\item[] Given $\colmix e A$;
+$\xi$ is a residual table, 
+$v$ is a partial value.
+\end{enumerate}
 
-\textbf{\bbone-Evaluation at \bbonem:}
+\textbf{First-stage evaluation at \bbtwo\ ---
+$\diatwo e q$}
+\begin{enumerate}
+\item[] Given $\coltwo e A$;
+$q$ is a residual.
+\item[] Uses reification --- $\reify \xi q q'$ \\
+Given residual table $\xi$ and residual $q$; $q'$ is a residual.
+\end{enumerate}
 
-\hspace{2em} Evaluation Form (Evaluation): $\diaone e {\xi;v}$, where 
-	
-	\hspace{4em} $e$ is the term at world \bbonem\ to be evaluated
-
-	\hspace{4em} $\xi$ is the resulting residual table
-	
-	\hspace{4em} $v$ is the resulting partial value
-
-\textbf{\bbone-Evaluation at \bbtwo:}
-
-\hspace{2em} Evaluation Form (Residualization): $\diatwo e q$, where 
-	
-	\hspace{4em} $e$ is the term at world \bbtwo\ to be evaluated
-
-	\hspace{4em} $q$ is the resulting residual
-
-\hspace{2em} Auxiliary Judgement (Reification): $\reify \xi q q'$, where 
-	
-	\hspace{4em} $\xi$ is the residual table to be reified into \texttt{let} terms
-
-	\hspace{4em} $q$ is a residual to be placed at the bottom of the \texttt{let}s
-
-	\hspace{4em} $q'$ is the resulting residual
+\textbf{Second-stage evaluation of residuals ---
+$\reduce q u$}
+\begin{enumerate}
+\item[] Given residual $q$;
+$u$ is a value.
+\end{enumerate}
 
 \end{abstrsyn}
 \caption{Summary of \lang\ evaluation.}
