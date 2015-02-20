@@ -7,19 +7,21 @@
 
 \begin{abstrsyn}
 
-The primary strength of \lang\ is the expressive power afforded by
-its ability to syntactically interleave first- and second-stage computations,
-as well as its ability to form mixed-stage abstractions. 
+Although the type system of \lang\ ensures that we can perform all first-stage
+computations before any second-stage ones, actually evaluating terms in this
+fashion is somewhat intricate, because stages are syntactically interleaved
+within terms. In this section, we present a \emph{splitting algorithm} which
+statically converts a term in \lang\ into a pair of 
+syntactically % I don't like this word but temporarily here for continuity
+separate programs corresponding to the two stages of computation in that term.
 
-In this section, we provide a {\em splitting algorithm} to translate the multistage terms of \lang\
-into a simpler but equivalent form.
-The output of splitting is simpler because it is {\em syntactically separated}; that is, 
-the first and second stages are represented by distinct subterms and are only connected at the top syntactic level.
-The output of splitting is equivalent (to its input) because it can be evaluated to the same residual 
-that would be produced by the semantics of \ref{sec:semantics}.
+%The output of splitting is simpler because it is {\em syntactically separated};
+%The output of splitting is equivalent (to its input) because it can be
+%evaluated to the same residual that would be produced by the semantics of
+%\ref{sec:semantics}.
 
 More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
-splitting translates $e$ into some syntactically separated program $\mathcal{P}$ 
+$e$ splits into a syntactically separated program $\mathcal{P}$ 
 (via the new relation $e \splittwosym \mathcal{P}$), which
 can also be reduced to $q$ (via the new relation $\mathcal{P} \sepredtwosym q$).
 We enforce the ``syntactically separated'' condition by saying that $\mathcal{P}$ 

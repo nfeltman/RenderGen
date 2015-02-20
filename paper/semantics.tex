@@ -25,9 +25,9 @@ The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
 $e$ has type $A$ at world $w$, in the context $\Gamma$. (Variables in the
 context are also annotated with the world at which they live.)
 
-All three worlds contain unit, product, sum, function, and recursive types
-defined in the usual fashion. For example, given two terms $\typesone{e_1}A$ and
-$\typesone{e_2}B$ at world \bbonem, one can form the pair
+All three worlds contain fixpoints and unit, product, sum, function, and
+recursive types defined in the usual fashion. For example, given two terms
+$\typesone{e_1}A$ and $\typesone{e_2}B$ at world \bbonem, one can form the pair
 $\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world \bbonem. 
 
 Differing worlds (and hence, differing stages of computation) interact by means
