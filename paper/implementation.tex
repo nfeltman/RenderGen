@@ -33,11 +33,11 @@ val grnd{part}  = grnd{fn (...) => ...}
 val qsStaged    = fn (...) => ...`
 \end{lstlisting}
 
-We also have a number of optimizations which drastically improve the readability
-of split programs. We split patterns directly, rather than translating them into
-lower-level constructs. Finally, we perform many local simplifications during
-the splitting algorithm, most notably, not pairing precomputations when one is
-known to be $\tup{}$.
+In the splitting algorithm, we perform a number of optimizations which
+drastically improve the readability of split programs. For example, we split
+patterns directly, instead of first translating them into lower-level
+constructs. We also take advantage of many local simplifications, most notably,
+not pairing precomputations when one is known to be $\tup{}$.
 
 %Specifically, our implemention includes parsers, printers, and interpreters
 
