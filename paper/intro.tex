@@ -1,6 +1,22 @@
 \section{Introduction}
 
-\crem{This text was lifted from section 2.}
+\crem{Notes from 2/21:
+\begin{enumerate}
+\item see K/R intro.
+\item function specialization is an important optimization technique which can
+be performed whether or not the function's arguments are known.
+\item data specialization statically specializes a multi-argument program
+\emph{before} having any of its arguments, unlike partial evaluation.
+\item we are doing data specialization, but on lambda calculus (cf C-like
+languages, as in graphics papers).
+\item this additional expressive power gives us some interesting
+results---asymptotic speedup on some algorithms (and generation of recursive
+types from recursive functions), and cross-cutting (?) modularity (see graphics
+applications).
+\end{enumerate}
+}
+
+\subsection{Old intro}
 
 partial evaluation requires compile-time access to first stage, whereas we don't
 
@@ -9,81 +25,52 @@ in a staged fashion by first providing the first-stage arguments and
 generating a piece of code that is specialized for the arguments.  For
 example, we can evaluate the staged quickselect by providing a
 list~\texttt{l} to obtain a piece of code that then can be used with
-different ranks (\texttt{k} values) in the second stage.  Such a
-specialized code essentially performs all the first-stage computations
-first and uses their results to improve the efficiency in the second
-stage, where we issue many queries.  
+different ranks (\texttt{k} values) in the second stage.
+Such a specialized code essentially performs all the first-stage computations
+first and uses their results to improve the efficiency in the second stage,
+where we issue many queries.  
 
-This staged evaluation technique corresponds to {\em partial
-  evaluation} or {\em program specialization} and can bring out
-dramatic improvements in the efficiency of programs.  It has however
-one major limitation: since it requires the first stage arguments to
-be available, it cannot be performed at compile time, except of course
-when the first-stage values are available at compile time.  Since the
-evaluation in the first stage produces a piece of code that must also
-be compiled or interpreted to execute in the second stage, the
-approach can lead to code blowup and tends to be relatively expensive
-in practice.  Due to these reasons, the applications of partial
-evaluation are limited.  For example, in our quickselect example, it
-is unlikely to know the list~\texttt{l} that we will be operation on
-at compile time. Partial evaluation dynamically at run time is
-difficult because the first stage generates code that is linear in the
-size of the list, whose generation, dynamic compilation or
-interpretation can be excruciatingly slow.
+For example, in our quickselect example, it is unlikely to know the
+list~\texttt{l} that we will be operation on at compile time. 
 
 \cite{knoblock96} proposed the {\em data specialization}
 technique to overcome some of these limitations of program
-specialization.  The idea behind this technique is to take a staged
-program and split it into a stage-1 and a stage-2 program without
-knowledge of any of the arguments.  Unlike program specialization,
+specialization.  
+Unlike program specialization,
 data specialization does not require knowledge of the first-stage
-arguments to produce fast code for the second stage.  Instead it yield
+arguments to produce fast code for the second stage.  
+Instead it yield
 a first stage program that maps the first stage arguments to an
 intermediate or {\em boundary data structure}, which is used by the
 second stage program along with the second stage arguments to produce
-the final results.  Knoblock and Ruf's observation is that the
-information required by the second stage can be represented solely as
-a data structure, making it unnecessary to generate and compile or
-interpret code dynamically at run time.  Data specialization can
-therefore be applied statically at compile time, leading to
-drastically improved run-time performance without any significant
-run-time overheads.
+the final results.  
 
-It is thus perhaps no surprise that the prior art in data
-specialization is not able to perform such ``optimizations''.
-Knoblock and Ruf's paper takes a very important step by formulating
-the problem and proposing a solution.  But their work applies to
-program fragments that don't involve sophisticated data types such as
-as sums and recursive types, and don't involve recursion. For example,
-their work would not apply to our quickselect example and similar ones
-involving recursion and/or  recursive types.
+But their work applies to program fragments that don't involve sophisticated
+data types such as as sums and recursive types, and don't involve recursion.
 
-\subsection{Old intro}
+\subsection{Oldest intro}
 
-It is a common observation that some computations can be performed efficiently by using {\em staging}, wherein the execution of a program is split over two or more discrete points in time ({\em i.e.} stages).  This most often arises when we want to evaluate a multivariate function several times, with some inputs dynamic (varying across invocations) and some static (constant across invocations).  Examples include:
+This most often arises when
+we want to evaluate a multivariate function several times, with some inputs
+dynamic (varying across invocations) and some static (constant across
+invocations).
 \begin{itemize}
 \item Computing $b^e$, where $b$ varies and $e$ is constant.
-\item Finding the $i$th largest element in a list, where the list is constant and $i$ varies.
-\item Computing the shading of a surface in a 3D rendering, where some contributors to the final pixel color can be approximated as constant over  pixel blocks.  
+\item Finding the $i$th largest element in a list, where the list is constant
+and $i$ varies.
+\item Computing the shading of a surface in a 3D rendering, where some
+contributors to the final pixel color can be approximated as constant over
+pixel blocks.  
 \end{itemize}
-
-With these goals in mind, our initial concern is how to express multistage programs. To this end, we have created \lang, a typed multi-stage lambda calculus featuring products, sums, and isorecursive types. An important property of \lang\ is that the staging of a well-typed program is apparent without resorting to any variable analysis, contra standard binding time analysis.  
-
-Once we have appropriately written {\em multi-stage} programs, we then must execute them in a way that respects the staging.  In this paper, we explore two techniques for this: {\em partial evaluation} and {\em stage-splitting}.  
-
-The main idea of the former technique is to evaluate all of the constant portions of the program and embed the partial results into a {\em residual} program that depends only on the varying inputs.  This is an old and well-explored idea, though the typical setup of partial evaluation implies a more powerful binding time analysis than is necessary for our language.
-
-The main idea of the latter technique is to statically compile the multi-stage program into several smaller programs, one per stage, and then to execute those in a standard way once inputs are available.  This has previously been explored as an optimization technique for languages with fewer features (notably, no functions) or a more constrained staging model than \lang. Prior examples include the ``data specialization" work of Knoblock and Ruf\,\cite{knoblock96} as well as the compilation of high-level shading languages for computer graphics such as RTSL\,\cite{Proudfoot:2001} and Spark\,\cite{Foley:2011}.  Unlike partial evaluation, stage splitting is purely a static program transformation and is not dependent on the input data.
-
-\TODO motivate this example
-
-\TODO integrate the following text into the new intro
+Prior examples
+include the ``data specialization" work of Knoblock and Ruf~\cite{knoblock96}
+as well as the compilation of high-level shading languages for computer graphics
+such as RTSL~\cite{Proudfoot:2001} and Spark~\cite{Foley:2011}.
 
 Recall that partial evaluators operate on multivariate functions $f$, whose
 inputs are each labeled either {\em static} or {\em dynamic}. Once the static
 inputs are provided, partial evaluation of $f$ produces a residual depending on
-only the dynamic input. Mathematically, a partial evaluator is any $p$ such
-that
+only the dynamic input. Mathematically, a partial evaluator is any $p$ such that
 \[
 	\forall f,x. \exists f_x. \left[p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)\right]
 \]
@@ -92,17 +79,11 @@ mathematical interpretation (a la \cite{jones96}). Here, $x$ is the static
 input, $y$ is the dynamic input, and $f_x$ is the residual, that is, \emph{$f$
 specialized to $x$}.
 
-\ur{  Based on this definition, it
-  might be good and correct to argue that this is more or less an
-  orthogonal problem.}
-
-Much like partial evaluation, the goal of stage-splitting is to separate the evaluation of a multi-stage function into distinct phases.
-However, where partial evaluation requires the value of some inputs to be known, stage splitting is a static transformation performed
-before {\em any arguments} are available.
-Taking a multivariate function $f$ as input, stage-splitting produces two functions $f_1$ and $f_2$,
-where $f_1$ uses the stage-\bbone\ input to produce a data structure, 
-and $f_2$ consumes that data structure and the stage-\bbtwo\ input to produce the final output.  
-More precisely, a stage splitter is any $s$ such that
+Taking a multivariate function $f$ as input, stage-splitting produces two
+functions $f_1$ and $f_2$, where $f_1$ uses the stage-\bbone\ input to produce a
+data structure, and $f_2$ consumes that data structure and the stage-\bbtwo\
+input to produce the final output.  More precisely, a stage splitter is any $s$
+such that
 \[
 	\forall f. \exists f_1,f_2. 
 	\left[
@@ -113,14 +94,16 @@ More precisely, a stage splitter is any $s$ such that
 	\right]
 \]
 with the same $\llbracket \cdot \rrbracket$ notation as before.
-Notice that $x$ here is bound underneath the existential $f_1$ and $f_2$,
-meaning that the stage splitting operation does not depend on the stage-\bbone\ input.
+The stage splitting operation does not depend on the stage-\bbone\ input.
 This stands in contrast to the definition of partial evaluation, where $f_x$ does depend on $x$.
 
-
-
-
-\Cref{sec:semantics} describes the grammar and type system of \lang, as well as a reference semantics which is essentially a partial evaluator that respects staging. \Cref{sec:splitting} describes a stage-splitting transformation for \lang\ and proves its equivalence to the reference semantics.
-Finally, \Cref{sec:examples} gives several examples of how stage-splitting terms in \lang\ can be used to derive classic data structures, and discusses the effectiveness and limitations of this technique.  Notably, these examples make use of the stage-splitting features not available in prior work.
+\Cref{sec:semantics} describes the grammar and type system of \lang, as well as
+a reference semantics which is essentially a partial evaluator that respects
+staging. \Cref{sec:splitting} describes a stage-splitting transformation for
+\lang\ and proves its equivalence to the reference semantics.  Finally,
+\Cref{sec:examples} gives several examples of how stage-splitting terms in
+\lang\ can be used to derive classic data structures, and discusses the
+effectiveness and limitations of this technique.  Notably, these examples make
+use of the stage-splitting features not available in prior work.
 
 
