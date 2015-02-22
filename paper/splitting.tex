@@ -178,9 +178,44 @@ Since the argument to \texttt{prev} is of $\fut$ type, its immediate result redu
 Finally, splitting \texttt{next} simply tuples up the precomputation of its
 world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
-\subsection {Three World System?}
+\subsection {Necessity of \bbonep}
 
-Why do we need a three world system?
+We have not yet given a justification for why first stage code must be
+partitioned between the worlds \bbonem\ and \bbonep.
+Certainly one could imagine a simpler system without all the \texttt{grnd} annotations.  
+Why wouldn't this work?
+
+To see why, consider a function with a monostage body. 
+For example, one which simply doubles its argument:
+\begin{lstlisting}
+2`prev{
+  1`let fun double (n : int) = n + n
+  in next{`2`hold {`1`double 5`2`}-7`1`}`2`
+}`
+\end{lstlisting}
+Using the rule for splitting at \bbonem, this term splits into:
+\begin{lstlisting}
+1`let fun double (n : int) = (n+n, ())
+in double 5`
+
+2`l => 
+let fun double (n : unit, l0 : unit) = ()
+in (double (pi2 l); pi1 l)-7`
+\end{lstlisting}
+
+Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{double}, since it always returns \texttt{()}. 
+In this case, the wasted work is small, but if \texttt{double} were a recursive function,
+then it's runtime may be unbounded.
+
+Optimizing such an inefficiency away after-the-fact is in general a global program analysis,
+since functions like \texttt{double} could be passed around as values.  
+So instead of relying on hefty analysis, 
+we take the approach of adding enough structure to the input language's type system to
+allow the input code to {\em prove} itself to be---in some parts---monostage.
+
+We find that giving input with \texttt{grnd} annotations is not especially cumbersome in practice.
+Yet even if a language designer desired a different implicit/explicit trade-off,
+then the three-world \lang\ would still be useful as a typed intermediate representation.
 
 \end{abstrsyn}
 

@@ -35,7 +35,8 @@ let
 		datatype list2 = Empty2 | Cons2 of int * list2
 	}
 
-	fun map ((f,l,next{q}) : (^list*$int -> $int) * ^list * $list2) = 
+	fun map (f : ^list*$int -> $int) = 
+		fn (l,next{q}) : ^list * $list2 =>
 		next {
 			let	
 				rec m (q : list2) : list2 = 
@@ -45,10 +46,12 @@ let
 			in m q
 		}
 
+	val qsMany = map qs
+
 	val mono{c} = mono{Cons}
 	val testlist = mono{c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
 
 	val next{c} = next{Cons2}
 	val queries = next{c(0,c(1,c(2,c(3,c(4,c(5,Empty2))))))}		
 in 
-map (qs, testlist, queries)
+qsMany (testlist, queries)

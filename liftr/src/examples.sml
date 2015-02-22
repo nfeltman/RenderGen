@@ -93,7 +93,7 @@ fun testProgram verbose name programType p t =
 	let
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
-		val debug = if verbose >= 1 then print else (fn _ => ())
+		val debug = if verbose >= 2 then print else (fn _ => ())
 	(*	fun printTerm e = (((PrettyPrinter.printTerm debug) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm) e; debug "\n") *)
 		fun printTerm e = (PrettyPrinter.printExp debug e; debug "\n")
 		

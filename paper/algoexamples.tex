@@ -106,6 +106,8 @@ Standard quickselect finds the $k$th largest number in a list (l) by recursively
 first element and picking the side which contains the $k$th largest element.
 In this case, we've staged quickselect by saying that the list is stage \bbone\ and $k$ is stage \bbtwo.
 The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{grnd}.
+In this example, we make use of the behavior where first stage code is executed even under second stage branches.
+
 \begin{lstlisting} 
 atsigngrnd { 
   datatype list = Empty | Cons of int * list
@@ -167,45 +169,48 @@ fun qs2 (((), i : int), p : tree) =
 
 \end{lstlisting}
 
-These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
+These functions recursively build ({\tt qs\_1}) and then search ({\tt qs\_2}) a binary tree,
 which stores a set element and subtree size at every branch.
 All of the list partitioning work now occurs within the precomputation.
-For this result, it is crucial that precomputations are performed even under second stage branches.
-
-This works well because quickselect does a lot of work at stage one that can be amortized across all of stage two.
+Thus, {\tt qs\_1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs\_2} performs expected $\Theta(\log n)$ work.
+This results in a net speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on the same list. 
 
 \subsection {Mixed Map Combinator}
 
-\nr{still going...}
+In the previous example, we suggested that staged quickselect could be applied to one list and many queries.
+In this example, we implement that behavior by passing \texttt{qs} to a higher order function.
+Such a combinator, which operates over both stages at once, is possible because of the generality of \lang's abstractions.
 
-Because \lang\ is so general, we can write combinators which effectively operate over {\em both stages at once}.
-
+Note that we have to define a datatype for integer lists at the second stage, which is given by \texttt{list2}.
 \begin{lstlisting} 
 atsignnext{
   datatype list2 = Empty2 | Cons2 of int * list2
 }
 
-fun map (f:^list*$int->$int, l:^list, q:$list2) = 
+type qsType = ^list*$int->$int
+
+// map : qsType -> ^list * $list2 -> $list2
+fun map f (l, q) = 
 next {
   let 
   fun m Empty2 = Empty2
-    | m (Cons2 (h,t)) = Cons2 (prev{f (l,next{h})}, m t)
+    | m (Cons2(h,t)) = Cons2(prev{f (l,next{h})}, m t)
   in m prev{q}
 }
+
+val qsMany = map qs
 \end{lstlisting}
-
-\noindent
-{\tt map} splits into the following two functions:
-
+The \texttt{map} function splits into the following two functions:
 \begin{lstlisting} 
 datatype list2 = Empty2 | Cons2 of int * list2
 
-fun map1 (f,l,()) = ((), #2 (f (l, ())))
-
-fun map2 ((f,l,q), b : tree) = 
-let fun m q_0 =
-  case q_0 of 
-    Empty2 => Empty2 
-  | Cons2 (h,t) => Cons2 (f ((l, h), b), m t)
-in m q
+fun map1 f = (fn (l,()) => ((), #2 (f (l, ()))), ())
+fun map2 (f,()) ((l,q), p : tree) =
+  let 
+  fun m Empty2 = Empty2
+    | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
+  in m q
 \end{lstlisting}
+
+As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
+whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) is executed once per query.
