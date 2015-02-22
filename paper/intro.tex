@@ -13,49 +13,29 @@ $f_a(-)$ which computes $f(a,-)$. This transformation essentially substitutes
 $a$ for the first argument of $f$, then evaluates in place any subexpressions of
 $f$ depending only on that argument.
 
-\emph{Data specialization} \cite{knoblock96} is a different technique which
-specializes $f$ \emph{without} the fixed argument $a$. Instead, it transforms
-$f$ into a pair of functions $f_1$ and $f_2$. $f_1(a)$ produces a data structure
-populated with the results of the subexpressions depending only on $a$. $f_2$
-takes this data structure and the varying argument, and computes the result;
-that is, $f_2(f_1(a),-)$ is the same as $f(a,-)$. Importantly, unlike in partial
-evaluation, neither $f_1$ nor $f_2$ depend on $a$!
+\emph{Data specialization} \cite{knoblock96} is a technique for specializing $f$
+\emph{without} the fixed argument $a$, instead splitting $f$ into a pair of
+functions $f_1$ and $f_2$. $f_1(a)$ produces a data structure containing the
+results of the computations which depend only on $a$; $f_2$ then completes the
+computation, given this data structure and the varying argument; that is,
+$f_2(f_1(a),-)$ computes $f(a,-)$.
 
-In this paper, we extend the technique of data specialization to a typed lambda
-calculus with recursive and higher-order functions, and recursive datatypes.
-Previous work has been limited to C-like languages (see graphics papers) and
-doesn't handle certain stuff.
+Previous work on data specialization has been limited to simple, imperative
+languages. In this paper, we extend data specialization to a typed lambda
+calculus, allowing us to specialize more interesting programs.
 
-This additional expressive power allows us to perform data specialization on new
-kinds of functions, like quickselect. We get some interesting results from
-this---including algorithm synthesis with asymptotic speedup. Higher-order
-functions also allow us to write combinators which cut across both stages (see
-graphics stuff).
+When splitting certain recursive functions, like \texttt{quickselect}, our
+algorithm synthesizes recursive data structures and traversal algorithms which
+yield asymptotic speedups over the original function. Splitting higher-order
+combinators, like \texttt{map}, provides compositional reasoning at the source
+level while cross-cutting fixed runtime stages, as in graphical shading
+languages like Spark~\cite{Foley:2011}.
 
-We start by walking through a quickselect example in \ref{sec:example}.
+We start in \ref{sec:example} with an extended example of splitting
+\texttt{quickselect}.
 In \ref{sec:semantics}, we describe our staged language \lang, including its
 type system and operational semantics.
 In \ref{sec:splitting,sec:implementation}, we describe our stage-splitting
-algorithm which performs data specialization.
-Finally, in \ref{sec:examples}, we walk through what our algorithm does to
-various programs, like deriving classic algorithms.
-
-%It has potentially both control-flow and data dependencies on $a$.
-
-%Many programs have arguments coming at different frequencies. It can be
-%important to specialize these functions on some of their arguments, whether or
-%not we know those arguments, in order to perform invariant computations only
-%once.
-
-%For example, quickselect. Or, the compilation of high-level shading languages
-%for computer graphics such as RTSL~\cite{Proudfoot:2001} and
-%Spark~\cite{Foley:2011}.
-
-%\begin{itemize}
-%\item Computing $b^e$, where $b$ varies and $e$ is constant.
-%\item Finding the $i$th largest element in a list, where the list is constant
-%and $i$ varies.
-%\item Computing the shading of a surface in a 3D rendering, where some
-%contributors to the final pixel color can be approximated as constant over
-%pixel blocks.  
-%\end{itemize}
+algorithm for performing data specialization.
+Finally, in \ref{sec:examples}, we show how our stage-splitting algorithm
+transforms a variety of other programs.
