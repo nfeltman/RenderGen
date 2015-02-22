@@ -7,18 +7,18 @@ $f$ to its fixed argument $a$, by executing those computations in $f$ which
 depend only on $a$. This ensures that calls to the specialized function require
 only computations which depend on its varying argument.
 
-\emph{Program specialization}, or partial evaluation, is a well-known
-specialization technique which, given $a$, transforms $f$ into a new function
-$f_a(-)$ which computes $f(a,-)$. This transformation essentially substitutes
-$a$ for the first argument of $f$, then evaluates in place any subexpressions of
-$f$ depending only on that argument.
+\emph{Program specialization}, or partial evaluation \cite{futamura71,jones96},
+is a well-known specialization technique which, given $a$, transforms $f$ into a
+new function $f_a(-)$ which computes $f(a,-)$. This transformation essentially
+substitutes $a$ for the first argument of $f$, then evaluates in place any
+subexpressions of $f$ depending only on that argument.
 
-\emph{Data specialization} \cite{knoblock96} is a technique for specializing $f$
-\emph{without} the fixed argument $a$, instead splitting $f$ into a pair of
-functions $f_1$ and $f_2$. $f_1(a)$ produces a data structure containing the
-results of the computations which depend only on $a$; $f_2$ then completes the
-computation, given this data structure and the varying argument; that is,
-$f_2(f_1(a),-)$ computes $f(a,-)$.
+\emph{Data specialization} \cite{knoblock96,jorring86} 
+is a technique for specializing $f$ \emph{without} the fixed argument $a$,
+instead splitting $f$ into a pair of functions $f_1$ and $f_2$. $f_1(a)$
+produces a data structure containing the results of the computations which
+depend only on $a$; $f_2$ then completes the computation, given this data
+structure and the varying argument; that is, $f_2(f_1(a),-)$ computes $f(a,-)$.
 
 Previous work on data specialization has been limited to simple, imperative
 languages. In this paper, we extend data specialization to a typed lambda

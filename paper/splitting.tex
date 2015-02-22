@@ -104,7 +104,7 @@ Masking distributes into tuples, injections, and rolls, since their subvalues ma
 However, the tags of injections and rolls are replicated only in the immediate value, 
 since they represent first-stage information.
 
-Since lambdas may represent multi-stage computations, 
+Since lambdas may represent multistage computations, 
 masking splits the body of lambdas as general world \bbonem\ terms (as described in \ref{sec:split-one}), 
 and packages the resulting terms as functions.
 
@@ -140,7 +140,7 @@ $b_i$ is cased in the resumer to determine which branch's resumer should be exec
 
 Function introduction has a $\tup{}$ boundary value,
 since functions are already fully reduced in our semantics.
-However, since the body of a function may itself be multi-stage, splitting must continue into it.
+However, since the body of a function may itself be multistage, splitting must continue into it.
 The immediate result is a new function formed from the first-stage part of the original body.
 The resumer is a new function formed out of the second-stage part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
