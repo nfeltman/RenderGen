@@ -1,25 +1,14 @@
 %!TEX root = paper.tex
 
 \section {Example: Staged Quickselect in \texorpdfstring{\lang}{λ12}}
-\label{sec:staging}
+\label{sec:example}
 
 \begin{abstrsyn}
-
-\ur{
-\begin{itemize}
-\item 
-I find it hard to distinguish between blue and black on printed paper.
-\item
-$\pause$ should be called ``promote'' or something like that. I
-  believe this is what Taha calls cross stage persistence.  THat work should
-  be cited.
-\end{itemize}
-}
 
 \input{figures/quickselect}
 
 Suppose that we wish to issue order statistics queries on a collection of items
-represented as a list \texttt{l}. We can use quickselect \cite{quickselect}, an
+represented as a list \texttt{l}. We can use quickselect \cite{Hoare:1961}, an
 expected linear time algorithm which takes a list \texttt{l} and a rank
 \texttt{k} and returns the element with rank \texttt{k} in \texttt{l}.
 

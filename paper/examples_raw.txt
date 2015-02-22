@@ -1,3 +1,21 @@
+%% VECTORS INPUT
+
+let
+    type vec = ^int * ^int * $int
+
+    fun dot ((
+        (mono{x1},mono{y1},next{z1}), 
+        (mono{x2},mono{y2},next{z2})) : vec * vec) = 
+    next{prev{hold mono{(x1*x2) + (y1*y2)}} + (z1*z2)}
+in
+dot ((mono{1},mono{2},next{3}),(mono{4},mono{5},next{6}))
+
+%% VECTORS OUTPUT
+
+let dot = fn ((x1,y1,()),(x2,y2,())) : _ => ((), (x1*x2)+(y1*y2)) in dot ((1, 2, ()), (4, 5, ()))
+---
+l.
+let dot = fn ((((),(),z1),((),(),z2)),l_0) : _ => l_0+(z1*z2) in dot ((((), (), 3), ((), (), 6)), l)
 
 %% FASTEXP INPUT
 
@@ -76,7 +94,8 @@ let
         datatype list2 = Empty2 | Cons2 of int * list2
     }
 
-    fun map ((f,l,next{q}) : (^list*$int -> $int) * ^list * $list2) = 
+    fun map f : ^list*$int -> $int = 
+        fn (l,next{q}) : ^list * $list2 =>
         next {
             let 
                 rec m (q : list2) : list2 = 
@@ -86,13 +105,15 @@ let
             in m q
         }
 
+    val qsMany = map qs
+
     val mono{c} = mono{Cons}
     val testlist = mono{c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
 
     val next{c} = next{Cons2}
     val queries = next{c(0,c(1,c(2,c(3,c(4,c(5,Empty2))))))}        
 in 
-map (qs, testlist, queries)
+qsMany (testlist, queries)
 
 %% QUICKSELECT OUTPUT
 
@@ -107,31 +128,35 @@ let partition =
     case unroll l of
       _ => (0, Empty, Empty)
     | (h,t) =>
-	  let (s,left,right) = partition (p, t) in
-	  if h<p then (s+1, Cons (h, left), right) else (s, left, Cons (h, right))
+      let (s,left,right) = partition (p, t) in
+      if h<p then (s+1, Cons (h, left), right) else (s, left, Cons (h, right))
 in
 let qs =
     fix (qs,(l,())) : ((_->_)*_) =>
     let (v,p) =
-	case unroll l of
-	  _ => ((), inj (#+_) ())
-	| ht =>
-	      let (v,p) =
-		  let (n,left,right) = partition ht in
-		  let ((),y) = ((), n) in ((), (y, (#2 (qs (left, ())), #1 ht, #2 (qs (right, ())))))
-	      in
-	      (v, inj (_+#) p)
+    case unroll l of
+      _ => ((), inj (#+_) ())
+    | ht =>
+          let (v,p) =
+          let (n,left,right) = partition ht in
+          let ((),y) = ((), n) in ((), (y, (#2 (qs (left, ())), #1 ht, #2 (qs (right, ())))))
+          in
+          (v, inj (_+#) p)
     in
     (v, roll _ p)
 in
 let () = () in
 let () = () in
-let map = fn (f,l,()) : _ => ((), #2 (f (l, ()))) in
-let c = Cons in
-let testlist = c (8, c (2, c (3, c (7, c (4, c (5, Empty)))))) in
-let () = () in let queries = () in map (qs, testlist, queries)
+let map = fn f : _ => (fn (l,()) : _ => ((), #2 (f (l, ()))), ()) in
+let (qsMany,y) = map qs in
+let (v,p) =
+    let c = Cons in
+    let testlist = c (8, c (2, c (3, c (7, c (4, c (5, Empty)))))) in
+    let () = () in let queries = () in qsMany (testlist, queries)
+in
+(v, (y, p))
 ---
-l.
+(l_0,l).
 let LT = roll _ (inj (#+_+_) ()) in
 let EQ = roll _ (inj (_+#+_) ()) in
 let GT = roll _ (inj (_+_+#) ()) in
@@ -140,24 +165,26 @@ let () = () in
 let () = () in
 let () = () in
 let qs =
-    fix (f,(x,l_0)) : ((_->_)*_) =>
-    let ((qs,((),i)),l_1) = ((f, x), unroll l_0) in
+    fix (f,(x,l_1)) : ((_->_)*_) =>
+    let ((qs,((),i)),l_2) = ((f, x), unroll l_1) in
     let z = () in
-    case l_1 of
+    case l_2 of
       () => let _ = z in 0
-    | (l_5,(l_4,l_3,l_2)) =>
-	  let () = z in
-	  let () = () in
-	  let n = l_5 in
-	  case unroll (compare (i, n)) of _ => qs (((), i), l_4) | _ => l_3 | _ => qs (((), (i-n)-1), l_2)
+    | (l_6,(l_5,l_4,l_3)) =>
+      let () = z in
+      let () = () in
+      let n = l_6 in
+      case unroll (compare (i, n)) of _ => qs (((), i), l_5) | _ => l_4 | _ => qs (((), (i-n)-1), l_3)
 in
 let Empty2 = roll _ (inj (#+_) ()) in
 let Cons2 = fn x : _ => roll _ (inj (_+#) x) in
 let map =
-    fn ((f,l_1,q),l_0) : _ =>
-    let m = fix (m,q_0) : ((_->_)*_) => case unroll q_0 of _ => Empty2 | (h,t) => Cons2 (f ((l_1, h), l_0), m t) in
+    fn (f,()) : _ =>
+    fn ((l_2,q),l_1) : _ =>
+    let m = fix (m,q_0) : ((_->_)*_) => case unroll q_0 of _ => Empty2 | (h,t) => Cons2 (f ((l_2, h), l_1), m t) in
     m q
 in
+let qsMany = map (qs, l_0) in
 let () = () in
 let testlist = () in
-let c = Cons2 in let queries = c (0, c (1, c (2, c (3, c (4, c (5, Empty2)))))) in map ((qs, testlist, queries), l)
+let c = Cons2 in let queries = c (0, c (1, c (2, c (3, c (4, c (5, Empty2)))))) in qsMany ((testlist, queries), l)

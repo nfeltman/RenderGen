@@ -80,6 +80,7 @@ k("sumlist",			"let datatype list = Empty | Cons of int * list in " ^
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
 i("fastexp",			"fastexp",ansNI 243),
+i("vectors",			"vectors", ansNI 32),
 i("quickselect",		"quickselect", ansNI 4),
 i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
 i("stress",				"stress", SAME)

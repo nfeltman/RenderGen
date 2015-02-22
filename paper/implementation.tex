@@ -4,19 +4,19 @@
 \label{sec:implementation}
 
 \begin{abstrsyn}
-We have implemented the semantics and splitting algorithm of \lang\ in Standard ML.
-Specifically, our implemention includes parsers, printers, and interpretters for both \lang\ 
-and the output language, as well as a splitting algorithm which mediates between the two.
-In addition to the features shown here, our implementation includes base types, 
-$n$-ary products and sums, patterns, if and let statements, and a basic elaboration step.
-We cover some of the details here.
+We have a Standard ML implementation of the \lang\ language, a staged
+interpreter, the splitting algorithm, and an interpreter for split programs.
+This implementation extends the language described in \ref{sec:semantics} with 
+\rmint{}s,
+\rmbool{}s,
+\texttt{let} statements,
+$n$-ary sums and products,
+datatype and function declarations, and
+deep pattern matching (including $\next{}$ and $\pure{}$ patterns).
+The code snippets in this paper are written in our concrete syntax, using 
+these additional features when convenient.
 
-\paragraph {Syntax}
-Our concrete syntax is used in examples throughout the paper.
-Its main notable property is that world boundaries are always noted by braces.
-
-Functions and datatypes declarations are elaborated in the standard way.
-We also implement declaration-level staging features.  For example,
+We allow staging annotations around declarations. For example,
 \begin{lstlisting}
 1`atsigngrnd{
   datatype list = Empty | Cons of int * list
@@ -24,9 +24,8 @@ We also implement declaration-level staging features.  For example,
 }
 fun qsStaged (...) = ...`
 \end{lstlisting}
-indicates that the \texttt{list} datatype and \texttt{part} function
-are declared and defined at world \bbonep, though this is accomplished by 
-translating the above into,
+declares the \texttt{list} datatype and \texttt{part} function at world \bbonep,
+by elaborating into:
 \begin{lstlisting}
 1`val grnd{Empty} = grnd{roll (inj ...)}
 val grnd{Cons}  = grnd{fn (...) => roll (inj ...)}
@@ -34,15 +33,16 @@ val grnd{part}  = grnd{fn (...) => ...}
 val qsStaged    = fn (...) => ...`
 \end{lstlisting}
 
-\paragraph {Patterns}
-Our implemention includes patterns in the input language to eliminate products, $\fut$, and $\curr$.
-As implied by our splitting rules, we also include product patterns in the output language.
-For the sake of readability, we split input patterns directly (in a way similar to the standard elim forms), 
-rather than translate them away before splitting.
+In the splitting algorithm, we perform a number of optimizations which
+drastically improve the readability of split programs. For example, we split
+patterns directly, instead of first translating them into lower-level
+constructs. We also take advantage of many local simplifications, most notably,
+not pairing precomputations when one is known to be $\tup{}$.
 
-\paragraph {Specialized Splitting} 
-Our implemented splitting algorithm also includes many special cases to create more readable outputs.
-Most important among these are cases for eliminating trivial precomputations.
-These special cases all fit within the presented framework of our correctness condition.
+%Specifically, our implemention includes parsers, printers, and interpreters
+
+%Its main notable property is that world boundaries are always noted by braces.
+
+%We also emit tuple patterns liberally in split programs.
 
 \end{abstrsyn}
