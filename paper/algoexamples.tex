@@ -1,13 +1,54 @@
 %!TEX root = paper.tex
+ 
+\pagebreak
 
 \section{Examples of Algorithm Derivation}
 \label{sec:examples}
 
 We investigate the behavior of our splitting algorithm on several examples.
+While our splitting algorithm does not produce typed output terms,
+we find that in practice there do exist valid type annotation for small examples.
+For the sake of readability in presenting the output of our splitting algorithm,
+we take this liberty along with other minor clean-up and inverse-elaboration.
+
+\subsection{Dot Product}
+
+Our first example concerns the dot product of (integer) 3-vectors where 
+the first two coordinates are known at the first stage and the 
+third coordinate is known at the second stage.
+The result is an integer at the second stage.
+This example, largely lifted from \cite{knoblock96}, requires only straight-line code:
+\begin{lstlisting} 
+type vec = ^int * ^int * $int
+
+// dot : vec * vec -> $int
+fun dot (
+  (grnd{x1},grnd{y1},next{z1}): vec, 
+  (grnd{x2},grnd{y2},next{z2}): vec) = 
+next{
+  prev{hold grnd{(x1*x2) + (y1*y2)}} + (z1*z2)
+}
+\end{lstlisting}
+The \texttt{dot} function splits into the two functions:
+\begin{lstlisting} 
+
+fun dot1 ((x1,y1,()),(x2,y2,())) 
+  = ((), (x1*x2)+(y1*y2))
+
+fun dot2 ((((),(),z1),((),(),z2)),l) 
+  = l+(z1*z2)
+\end{lstlisting}
+Here, \texttt{dot1} calculates the products and sum on the first two coordinates and returns it as the precomputation,
+then \texttt{dot2} adds that precompuation to the product of the last coordinate.
 
 \subsection{Fast Exponent}
 
-Here is a staged version of the fast-exponent example.
+We next consider an example with recursion.
+Here, the \texttt{exp} function calculates the exponent $b^e$
+by considering three cases for $e$: zero, even (but not zero), and odd.
+We stage the function by saying that the exponent is known at the first stage,
+but the base is known at the second stage.
+The result is an integer at the second stage.
 \begin{lstlisting} 
 fun exp (b : $int , e : int) = 
   if e == 0 then 
@@ -17,10 +58,8 @@ fun exp (b : $int , e : int) =
   else 
     next{prev{b} * prev{exp (b,e-1)}}
 \end{lstlisting}
-
 \noindent
-{\tt fexp} splits into the following two functions:
-
+From this, splitting creates the following two functions:
 \begin{lstlisting} 
 datatype nat = Zero | Even of nat | Odd of nat
 
@@ -38,26 +77,35 @@ fun exp2 ((b : int, e : unit), l : nat) =
     | Even n => let x = exp ((b, ()), n) in x*x 
     | Odd n => b * exp ((b, ()), n)
 \end{lstlisting}
+Splitting has produced two recursive functions,
+one (\texttt{exp1}) which builds up an intermediate data structure (\texttt{nat}),
+and another (\texttt{exp2}) which consumes that data structure.  
+Noticing that said structure is just a binary representation of the exponent,
+we've given it an appropriate name.
 
-Which is all to say that the split code precomputes a binary representation of the exponent.
-Since integers are usually stored in a binary format anyways, this isn't practically useful,
-but it's still an interesting exposition of the technique.
+This may seem like a deep observation, 
+that integers can be decomposed into a binary respresation,
+but it actually follows from the recursive structure of the original program:
+just as \texttt{exp} could either terminate or recur in one of two ways,
+\texttt{nat} likewise has a base case and two recursive cases.
+Splitting oberves this only by following local structure.
 
-Partially evaluating the code here might actually be useful, since the residual wouldn't have branches,
-and exponents tend to be small enough that the code size would be reasonable.
+Of course, since integers are usually stored in a binary format anyway, 
+this isn't practically useful, but it's a clear exposition of the technique.
+Partially evaluating this code is typically more useful,
+as that would eliminate branches in the residual,
+and exponents tend to be small enough to keep code size reasonable.
 
 \subsection{Quickselect}
 
 \crem{Revise to take section 2 into account.}
 
-We have observed that stage splitting can be used to transform \lang\ programs into two step algorithms where the precomputation generates a data-structure, and the residual uses the precomputed structure to accelerate repeated computation.  
-
+We now move on to our marquee example: quickselect.
 The function {\tt qs} in the code below is a staged version of the quickselect algorithm.
-Standard quickselect finds the $i$th largest number in a list (l) by recursively partitioning the list by its 
-first element and picking the side which contains the $i$th largest element.
-In this case, we've staged quickselect by saying that the list is stage \bbone\ and $i$ is stage \bbtwo.
+Standard quickselect finds the $k$th largest number in a list (l) by recursively partitioning the list by its 
+first element and picking the side which contains the $k$th largest element.
+In this case, we've staged quickselect by saying that the list is stage \bbone\ and $k$ is stage \bbtwo.
 The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{grnd}.
-
 \begin{lstlisting} 
 atsigngrnd { 
   datatype list = Empty | Cons of int * list
@@ -84,10 +132,7 @@ fun qs (grnd{Empty}, next{i}) = next {0}
       | GT => prev{qs (grnd{right},next{i-n-1})}
     }
 \end{lstlisting}
-
-\noindent
 Running stage splitting on this code produces:
-
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
 datatype tree = Leaf of unit 
@@ -125,20 +170,21 @@ fun qs2 (((), i : int), p : tree) =
 These functions recursively build ({\tt qs\_1} and then search ({\tt qs\_2}) a binary tree,
 which stores a set element and subtree size at every branch.
 All of the list partitioning work now occurs within the precomputation.
-
-Partial evaluation creates a giant tree of if statements proportional to the size of the list,
-whereas splitting just creates the tree out of values, and then interprets it in the residual.
-For large input lists (which is typical), this saves a lot on memory.
+For this result, it is crucial that precomputations are performed even under second stage branches.
 
 This works well because quickselect does a lot of work at stage one that can be amortized across all of stage two.
 
-Also, the behavior where we lift precomputations out from branches is very important.
-
 \subsection {Mixed Map Combinator}
+
+\nr{still going...}
 
 Because \lang\ is so general, we can write combinators which effectively operate over {\em both stages at once}.
 
 \begin{lstlisting} 
+atsignnext{
+  datatype list2 = Empty2 | Cons2 of int * list2
+}
+
 fun map (f:^list*$int->$int, l:^list, q:$list2) = 
 next {
   let 
@@ -152,6 +198,7 @@ next {
 {\tt map} splits into the following two functions:
 
 \begin{lstlisting} 
+datatype list2 = Empty2 | Cons2 of int * list2
 
 fun map1 (f,l,()) = ((), #2 (f (l, ())))
 

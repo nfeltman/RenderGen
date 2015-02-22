@@ -95,15 +95,15 @@
 	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
 
 	\newcommand {\caseP} [3] {\mytt{caseg(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
-	\newcommand {\pipeM} [3] {\mytt{sepM(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
-	\newcommand {\pipeS} [3] {\mytt{sep2(}{##1}\mytt{;}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\pipeM} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
+	\newcommand {\pipeS} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
+	\newcommand {\mval}  [2] {\mytt{\{}{##1}\mytt{;}{##2}\mytt{\}}}
 
 	\newcommand {\app} [2] {\mytt{app}\mytt{(}{##1}\mytt{;}{##2}\mytt{)}}
 	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
 	\newcommand {\fix} [3] {\mytt{fix}\mytt{(}{##1}\mytt{.}{##2}\mytt{.}{##3}\mytt{)}}
 	\newcommand {\valprod} [2] {({##1},{##2})}
 	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
-	\newcommand {\mval} [2] {\mytt{mv(}{##1}\mytt{;}{##2}\mytt{)}}
 
 	\newcommand {\mualphatau} {\mu \alpha.\tau}
 
@@ -178,8 +178,8 @@
 
 \newcommand {\splitonesym} {\overset{\bbonem}\rightsquigarrow}
 \newcommand {\splittwosym} {\overset{\bbtwo}\rightsquigarrow}
-\newcommand {\splitone} 	[5] [\Gamma] {{#2} \splitonesym \mytt{sepM(}{#4}\mytt{;}{#5}\mytt{)}}
-\newcommand {\splitonetall} [5] [\Gamma] {{#2} \splitonesym \mytt{sepM}\left(\begin{array}{@{}l@{}}{#4}\mytt{;}\\{#5}\end{array}\right)}
+\newcommand {\splitone} 	[5] [\Gamma] {{#2} \splitonesym \mytt{\{}{#4}\mytt{|}{#5}\mytt{\}}}
+\newcommand {\splitonetall} [5] [\Gamma] {{#2} \splitonesym \left\{\begin{array}{@{}l@{}}{#4}\\\mytt{|}{#5}\end{array}\right\}}
 \newcommand {\splittwo} 	[6] [\Gamma] {{#2} \splittwosym \pipeS{#4}{#5}{#6} }
 \newcommand {\splitonesub}	[3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}}{l_{#2}.r_{#2}}}
 \newcommand {\splittwosub}	[3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}}{l_{#2}}{r_{#2}}}
