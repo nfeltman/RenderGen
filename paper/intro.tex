@@ -1,109 +1,61 @@
 \section{Introduction}
 
-\crem{Notes from 2/21:
-\begin{enumerate}
-\item see K/R intro.
-\item function specialization is an important optimization technique which can
-be performed whether or not the function's arguments are known.
-\item data specialization statically specializes a multi-argument program
-\emph{before} having any of its arguments, unlike partial evaluation.
-\item we are doing data specialization, but on lambda calculus (cf C-like
-languages, as in graphics papers).
-\item this additional expressive power gives us some interesting
-results---asymptotic speedup on some algorithms (and generation of recursive
-types from recursive functions), and cross-cutting (?) modularity (see graphics
-applications).
-\end{enumerate}
-}
+Multi-argument functions can frequently perform useful work before receiving all
+of their inputs, or are often called numerous times with one argument fixed. An
+important program optimization is therefore to \emph{specialize} such a function
+$f$ to its fixed argument $a$, by executing those computations in $f$ which
+depend only on $a$. This ensures that calls to the specialized function require
+only computations which depend on its varying argument.
 
-\subsection{Old intro}
+\emph{Program specialization}, or partial evaluation, is a well-known
+specialization technique which, given $a$, transforms $f$ into a new function
+$f_a(-)$ which computes $f(a,-)$. This transformation essentially substitutes
+$a$ for the first argument of $f$, then evaluates in place any subexpressions of
+$f$ depending only on that argument.
 
-partial evaluation requires compile-time access to first stage, whereas we don't
+\emph{Data specialization} \cite{knoblock96} is a different technique which
+specializes $f$ \emph{without} the fixed argument $a$. Instead, it transforms
+$f$ into a pair of functions $f_1$ and $f_2$. $f_1(a)$ produces a data structure
+populated with the results of the subexpressions depending only on $a$. $f_2$
+takes this data structure and the varying argument, and computes the result;
+that is, $f_2(f_1(a),-)$ is the same as $f(a,-)$. Importantly, unlike in partial
+evaluation, neither $f_1$ nor $f_2$ depend on $a$!
 
-Prior work on metaprogramming allows us to evaluate such staged code
-in a staged fashion by first providing the first-stage arguments and
-generating a piece of code that is specialized for the arguments.  For
-example, we can evaluate the staged quickselect by providing a
-list~\texttt{l} to obtain a piece of code that then can be used with
-different ranks (\texttt{k} values) in the second stage.
-Such a specialized code essentially performs all the first-stage computations
-first and uses their results to improve the efficiency in the second stage,
-where we issue many queries.  
+In this paper, we extend the technique of data specialization to a typed lambda
+calculus with recursive and higher-order functions, and recursive datatypes.
+Previous work has been limited to C-like languages (see graphics papers) and
+doesn't handle certain stuff.
 
-For example, in our quickselect example, it is unlikely to know the
-list~\texttt{l} that we will be operation on at compile time. 
+This additional expressive power allows us to perform data specialization on new
+kinds of functions, like quickselect. We get some interesting results from
+this---including algorithm synthesis with asymptotic speedup. Higher-order
+functions also allow us to write combinators which cut across both stages (see
+graphics stuff).
 
-\cite{knoblock96} proposed the {\em data specialization}
-technique to overcome some of these limitations of program
-specialization.  
-Unlike program specialization,
-data specialization does not require knowledge of the first-stage
-arguments to produce fast code for the second stage.  
-Instead it yield
-a first stage program that maps the first stage arguments to an
-intermediate or {\em boundary data structure}, which is used by the
-second stage program along with the second stage arguments to produce
-the final results.  
+We start by walking through a quickselect example in \ref{sec:example}.
+In \ref{sec:semantics}, we describe our staged language \lang, including its
+type system and operational semantics.
+In \ref{sec:splitting,sec:implementation}, we describe our stage-splitting
+algorithm which performs data specialization.
+Finally, in \ref{sec:examples}, we walk through what our algorithm does to
+various programs, like deriving classic algorithms.
 
-But their work applies to program fragments that don't involve sophisticated
-data types such as as sums and recursive types, and don't involve recursion.
+%It has potentially both control-flow and data dependencies on $a$.
 
-\subsection{Oldest intro}
+%Many programs have arguments coming at different frequencies. It can be
+%important to specialize these functions on some of their arguments, whether or
+%not we know those arguments, in order to perform invariant computations only
+%once.
 
-This most often arises when
-we want to evaluate a multivariate function several times, with some inputs
-dynamic (varying across invocations) and some static (constant across
-invocations).
-\begin{itemize}
-\item Computing $b^e$, where $b$ varies and $e$ is constant.
-\item Finding the $i$th largest element in a list, where the list is constant
-and $i$ varies.
-\item Computing the shading of a surface in a 3D rendering, where some
-contributors to the final pixel color can be approximated as constant over
-pixel blocks.  
-\end{itemize}
-Prior examples
-include the ``data specialization" work of Knoblock and Ruf~\cite{knoblock96}
-as well as the compilation of high-level shading languages for computer graphics
-such as RTSL~\cite{Proudfoot:2001} and Spark~\cite{Foley:2011}.
+%For example, quickselect. Or, the compilation of high-level shading languages
+%for computer graphics such as RTSL~\cite{Proudfoot:2001} and
+%Spark~\cite{Foley:2011}.
 
-Recall that partial evaluators operate on multivariate functions $f$, whose
-inputs are each labeled either {\em static} or {\em dynamic}. Once the static
-inputs are provided, partial evaluation of $f$ produces a residual depending on
-only the dynamic input. Mathematically, a partial evaluator is any $p$ such that
-\[
-	\forall f,x. \exists f_x. \left[p(f,x) = f_x \text{ and } \forall y.\llbracket f \rrbracket(x,y)=\llbracket f_x \rrbracket(y)\right]
-\]
-where $\llbracket \cdot \rrbracket$ translates the text of a function to its
-mathematical interpretation (a la \cite{jones96}). Here, $x$ is the static
-input, $y$ is the dynamic input, and $f_x$ is the residual, that is, \emph{$f$
-specialized to $x$}.
-
-Taking a multivariate function $f$ as input, stage-splitting produces two
-functions $f_1$ and $f_2$, where $f_1$ uses the stage-\bbone\ input to produce a
-data structure, and $f_2$ consumes that data structure and the stage-\bbtwo\
-input to produce the final output.  More precisely, a stage splitter is any $s$
-such that
-\[
-	\forall f. \exists f_1,f_2. 
-	\left[
-		\begin{array}{l}
-		s(f) = (f_1,f_2) \text{ and } \\
-		\forall x,y.\llbracket f \rrbracket(x,y)=\llbracket f_2 \rrbracket(\llbracket f_1 \rrbracket(x),y)
-		\end{array}
-	\right]
-\]
-with the same $\llbracket \cdot \rrbracket$ notation as before.
-The stage splitting operation does not depend on the stage-\bbone\ input.
-This stands in contrast to the definition of partial evaluation, where $f_x$ does depend on $x$.
-
-\Cref{sec:semantics} describes the grammar and type system of \lang, as well as
-a reference semantics which is essentially a partial evaluator that respects
-staging. \Cref{sec:splitting} describes a stage-splitting transformation for
-\lang\ and proves its equivalence to the reference semantics.  Finally,
-\Cref{sec:examples} gives several examples of how stage-splitting terms in
-\lang\ can be used to derive classic data structures, and discusses the
-effectiveness and limitations of this technique.  Notably, these examples make
-use of the stage-splitting features not available in prior work.
-
-
+%\begin{itemize}
+%\item Computing $b^e$, where $b$ varies and $e$ is constant.
+%\item Finding the $i$th largest element in a list, where the list is constant
+%and $i$ varies.
+%\item Computing the shading of a surface in a 3D rendering, where some
+%contributors to the final pixel color can be approximated as constant over
+%pixel blocks.  
+%\end{itemize}
