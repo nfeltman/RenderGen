@@ -3,26 +3,14 @@ If we regard those inputs as arriving at different \emph{stages} of the
 computation, then we can \emph{split} those algorithms into, for each stage, a
 function performing all the work dependent only on the available inputs.
 
-In this paper, we provide a theoretical understanding of this splitting process
-by defining it as a program transformation on \lang, a typed lambda calculus
-equipped with a modal staging operator. This approach extends splitting to
-language features absent in prior work, including first-class functions and
-disjoint unions.
+Prior work on splitting has been limited to simple, imperative languages; in
+this paper, we extend splitting to \lang, a typed lambda calculus equipped with
+a modal staging operator, allowing us to split recursive and higher-order
+functions.
 
 These new features allow us to express some familiar algorithms which, when
 split, yield asymptotic improvements; for example, quickselect of the $k$th
 smallest element of a list $l$ splits into (1) sorting $l$ into a binary search
 tree, then (2) finding the tree's $k$th leftmost element.
 
-\TODO (Is this true?)
-We also show that splitting a staged implementation of an interpreter yields a
-partial evaluator.
-
-%into one function per stage, performing all the work depending only on the
-%available inputs.
-
-%as much work as possible given the inputs available at each stage. 
-
-%In this way, splitting is essentially an algorithm generation technique.
-
-% amortized
+% something about compositional, cross-cutting code
