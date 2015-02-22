@@ -80,6 +80,7 @@ k("sumlist",			"let datatype list = Empty | Cons of int * list in " ^
 i("prefixtree",			"prefixtree", ansNB true),
 i("iota",				"iota", ansI 5),
 i("fastexp",			"fastexp",ansNI 243),
+i("vectors",			"vectors", ansNI 32),
 i("quickselect",		"quickselect", ansNI 4),
 i("quickselect_fixed",	"quickselect_fixed", ansNI 4),
 i("stress",				"stress", SAME)
@@ -92,7 +93,7 @@ fun testProgram verbose name programType p t =
 	let
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
-		val debug = if verbose >= 2 then print else (fn _ => ())
+		val debug = if verbose >= 1 then print else (fn _ => ())
 	(*	fun printTerm e = (((PrettyPrinter.printTerm debug) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm) e; debug "\n") *)
 		fun printTerm e = (PrettyPrinter.printExp debug e; debug "\n")
 		
