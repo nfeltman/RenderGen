@@ -1,5 +1,5 @@
 %!TEX root = paper.tex
- \section{Examples of Algorithm Derivation}
+ \section{Examples of Splitting}
 \label{sec:examples}
 
 We investigate the behavior of our splitting algorithm on several examples.
@@ -95,8 +95,6 @@ and exponents tend to be small enough to keep code size reasonable.
 
 \subsection{Quickselect}
 
-\crem{Revise to take section 2 into account.}
-
 We now move on to our marquee example: quickselect.
 The function {\tt qs} in the code below is a staged version of the quickselect algorithm.
 Standard quickselect finds the $k$th largest number in a list (l) by recursively partitioning the list by its 
@@ -171,6 +169,8 @@ which stores a set element and subtree size at every branch.
 All of the list partitioning work now occurs within the precomputation.
 Thus, {\tt qs\_1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs\_2} performs expected $\Theta(\log n)$ work.
 This results in a net speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on the same list. 
+
+\crem{Nico: add something here about the importance of ground}
 
 \subsection {Mixed Map Combinator}
 
