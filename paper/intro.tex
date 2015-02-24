@@ -1,5 +1,153 @@
 \section{Introduction}
 
+Consider the following function that takes as arguments an $x$ and $m$
+$y$'s and invokes a function $f(\cdot, \cdot)$ on consecutive
+values of $y$'s.
+\begin{lstlisting}
+fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
+  @$(f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@.
+\end{lstlisting}
+Let's assume for concreteness that $f(x,y)$ takes time to the size of
+the first argument.  The function $F(x_0, y_0 \ldots y_{m-1}$ then
+takes time $O(n \cdot m)$ where $n$ is the size of the input $x_0$.
+
+Such computations, where we apply a multivariate function to arguments
+where only one of the arguments change over time, are common.  In
+fact, many research problems revolve around improving performance of
+such functions.  For example, algorithm design techniques such as
+dynamic programming take advantage of the fact that the function $f$
+above is being passed the same argument many times, and thus optimize
+it so that it can re-use results related to $f$.  Similarly, 
+crucial compiler optimization techniques such as loop hoisting and
+common subexpression evaluation take identify common common
+computations across all invocations of $f$ and perform them once and
+for all at the beginning of the computation.
+
+The common theme in all such techniques is to achieve what Jorring and
+Scherlis back in 1980's called: {\em frequency reduction} and {\em
+  precomputation}~\cite{JS86-staging}.  The idea behind frequency
+reduction is to identify computations that are performed multiple
+times and pull them ahead so that they can be performed once and used
+later as needed.  The idea behind precomputation is to identify
+computations that can be performed earlier, for example at compile
+time if their inputs are available statically and perform them at that
+earlier time.  Jorring and Scherlis discuss three possible approaches
+to achieving frequency reduction and procomputation by performing {\em
+  stage transformations} that stages the computation into distinct
+stages where the earlier stages host computations that can be
+performed earlier or that can might be used frequently.  The three
+approaches are
+\begin{itemize}
+\item 
+partial evaluation,
+
+\item
+meta programming, and
+
+\item 
+pass separation.
+
+\end{itemize}
+
+The idea behind partial evaluation is to take advantage of the fact
+that certain data becomes available earlier than others.
+Specifically, partial evaluation distinguishes between a {\em static}
+and {\em dynamic} stage and performs all static computations first,
+followed be the dynamic stage.  For example, suppose that we wish to
+compute $F(x_0, y_0 \ldots y_{m-1})$ and that $x_0$ is a static
+variable becoming available at an earlier stage.  We can take
+advantage of this by specializing $f$ for $x_0$ such that $f(x,y) =
+f_{x0}(y)$, where $f_{x0}$ is the function specialized for $x0$.  We
+can then re-write our function $F$ as follows.
+
+\begin{lstlisting}
+fun @$F_{x0}(y_0, y_1 \ldots y_{m-1}$@ = 
+  @$(f_{x0}(y_0);  f_{x0}(y_1)  \ldots f_{x0}(ym)$@.
+\end{lstlisting}
+
+
+There has been much research on partial evaluation (\secref{related}).
+Broadly speaking, earlier (pre 90's) research used binding-time
+analysis to determine the static and dynamic parts of a computation
+and specialized the program based on that.  Binding time analysis can
+be fully automated but can be difficult to predict.  Later research
+tends to use {\em meta programming}, where the programmer writes a
+program that given the static values generates a specialized program
+for those values.  Meta programming gives the programmer relatively
+fine-grained control over partial evaluation but comes at the cost of
+more complex reasoning and a loss of automation. 
+
+
+The third and final approach, called pass separation, assumes much
+less information to perform a stage transformations.  Instead of
+requiring the static data, it requires just the knowledge of which
+computations are static and dynamic and uses this knowledge to
+generate a stage one (static) and stage two (dynamic) computations.
+Applied to our example, pass separation would {\em split} function
+into $f1$ and $f2$ such that $f(x,y) = f2(f1(x),y)$.  We can then
+rewrite our example as
+\begin{lstlisting}
+fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
+@$(f2(f1(x), y_0);  f2(f1(x), y_1)  \ldots f2(f1(x), y_{m-1})$@.
+\end{lstlisting}
+%
+A compiler can then rewrite this as 
+\begin{lstlisting}
+fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
+let @$fx = f1(x)$@
+in @$(f2(fx, y_0);  f2(fx, y_1)  \ldots f2(fx, y_{m-1})$@.
+\end{lstlisting}
+We refer to such a program as {\em untangled}.
+
+%
+The key difference with partial evaluation is that we have not
+specialized the program to any specific static value but simply
+translated it into an equivalent program where the first stage
+function $f1$ only consumes first-stage data.  We can evaluate such an
+expression in two stages: first, we evaluate all $f1(x)$'s and reduce
+them to a final value that can be used directly in the second stage
+(we can be smart about this evaluation and evaluate $f1(x)$ just
+once). Second, we evaluate all instances of $f2$'s and compute the
+final value.
+
+Since pass separation requires strictly less information than partial
+evaluation and meta programming, it can be a powerful technique that
+can be applied with far less information.  For example, the code that
+we obtained in our example, can be instantiated with a value of $x$
+that becomes available at run time and still obtain significant
+benefits.  As we show in this paper, these benefits can be
+asymptotically significant.  In other words, we can obtain some
+benefit of partial evaluation at run time in cases when we don't know
+the values of arguments ahead of time.  If, however, we do know the
+values ahead of time, then we can also apply partial evaluation to the
+untangled program, deriving again all the benefits of partial
+evaluation.
+
+As the example illustrates, untangling the program into two stages
+seems to have no cost.  So why don't we apply this kind of untangling
+all time time?
+
+\smallskip
+
+Untangling a program into stages to can be done manually.  In fact
+Jorring and Sherlis describe how to do this for some examples.
+Automation, however, has been difficult.  According to Jorring and
+Sherlis ``... partial evaluation technique is readily mechanized,
+while staging transformation approach will elude full automation for
+some time.''  
+
+\smallskip
+
+That time has come.
+
+In this paper...
+
+
+
+
+
+\paragraph{Old intro below.}
+
 Multi-argument functions can frequently perform useful work before receiving all
 of their inputs, or are often called numerous times with one argument fixed. An
 important program optimization is therefore to \emph{specialize} such a function
