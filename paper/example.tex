@@ -59,7 +59,7 @@ We define a staged version of quickselect in \ref{fig:qs-staged}, writing
 first-stage computations in red, and second-stage computations in blue. While
 \texttt{qSelect} sends a \textrm{list} and $\rmint$ to an $\rmint$,
 \texttt{qsStaged} has a more precise type---it is a first-stage function which
-takes a \textrm{list} (ignoring the $\curr$ for the moment) and a $\fut\rmint$
+takes a $\curr\mathrm{list}$ (an integer list now) and a $\fut\rmint$
 (an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
 
 Ignoring for the moment all \texttt{grnd} annotations, the first-stage code in
@@ -88,13 +88,14 @@ analysis tool), and do not consider the problem of generating such annotations.
 There are many ways to annotate any program, including \texttt{qSelect}; we
 chose annotations which maximize the work performed in the first stage.
 
-Our type system, discussed in \ref{sec:semantics}, ensures that the staging
+\lang's type system, discussed in \ref{sec:semantics}, ensures that the staging
 annotations are consistent, in the sense that computations marked as
 first-stage cannot depend on ones marked as second-stage. The $\curr$ and
-\texttt{grnd} annotations further distinguish those first-stage computations
+\texttt{grnd} (``ground'') annotations further distinguish those first-stage computations
 which do not contain any embedded second-stage code. (Code \emph{inside}
 \texttt{grnd}, like the \texttt{part}ition function, is guaranteed not to
-contain second-stage code; other code, like \texttt{qsStaged}, may.) We will
+contain second-stage code; first stage code outside a \texttt{grnd}, 
+like \texttt{qsStaged}, may.) We will
 discuss the importance of this additional distinction in \ref{sec:splitting}.
 
 \subsection{Splitting Staged Programs}
@@ -104,7 +105,7 @@ discuss the importance of this additional distinction in \ref{sec:splitting}.
 An astute programmer, having noticed that \texttt{quickselect} can be staged in
 this fashion, might try to split it into a pair of functions, one which performs
 all the work depending only on \texttt{l} (the first stage), and one which uses
-\texttt{k} and the result of that work on \texttt{l} to compute the element with
+that partial result and \texttt{k} to compute the element with
 rank \texttt{k} in \texttt{l}. 
 
 Intuitively, \texttt{l} determines the result of all calls to
@@ -114,7 +115,7 @@ greater than the pivot---that is, building a binary search tree. Then, once we
 have \texttt{k}, we can recur on this tree, choosing whichever branch has the
 \texttt{k}${}^\textit{th}$ leftmost element until we reach a leaf. And because
 \texttt{part}ition contains no second-stage code, we can run it entirely in the
-first stage!
+first stage.
 
 We have implemented this splitting of quickselect in \ref{fig:qs-split}.
 \texttt{qSelect1} builds a binary search tree from the list \texttt{l}, and
@@ -134,8 +135,7 @@ let b = qSelect1 l in
 Assuming \texttt{l} contains $n$ elements, this optimization changes the
 asymptotic complexity from expected (randomized) $\Theta(n \cdot m)$ to
 $\Theta(n\log{n} + m\log{n})$, which for any $m \approx n$ reduces the
-complexity from $\Theta (n^2)$ to $\Theta(n\log{n})$---a near linear time
-improvement. 
+complexity from $\Theta (n^2)$ to $\Theta(n\log{n})$---a significant improvement. 
 
 In this paper, we develop a splitting algorithm
 (\ref{sec:splitting,sec:implementation}) which, given a program $e$ in \lang,

@@ -3,7 +3,7 @@
 \begin{figure}
 \begin{abstrsyn}
 \[\begin{aligned}
-\text{Values}\ \ 
+\text{Ground Values}\ \ 
 u &::= \tup{}
  \gbar \lam {\var}{e} \\
 &\gbar \tup{u, u}
@@ -28,13 +28,14 @@ q &::= \tup{}\gbar\var%\bool
  \gbar \inr q
  \gbar \caseof {q}{\var.q}{\var.q} \\
 &\gbar \roll e
- \gbar \unroll e\\
+ \gbar \unroll e
+ \gbar \fix \var \var \expr\\
 \text{Residual Table}\ \ 
 \xi &::= \cdot
  \gbar \xi, {\hat y} \mapsto q \\
 \end{aligned}\]
 \end{abstrsyn}
-\caption{Outputs of first-stage evaluation.}
+\caption{Outputs of first-stage evaluation of \lang.}
 \label{fig:values}
 \end{figure}
 
