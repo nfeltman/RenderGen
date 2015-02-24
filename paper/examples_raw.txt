@@ -23,7 +23,7 @@ let rec exp ((b,e) : $int*int) : $int =
     if e == 0 then 
         next{1} 
     else if (e mod 2) == 0 then
-        next{let val x = prev{exp (b,e/2)} in x*x} 
+        exp (next{prev{b}*prev{b}},e/2)
     else next{prev{b} * prev{exp (b,e-1)}} 
 in exp (next{3},5)
 
@@ -36,7 +36,7 @@ let exp =
         ((), inj (#+_) ())
     else
         let (v,p) =
-        if (emod2)==0 then ((), inj (#+_) (#2 (exp (b, e/2)))) else ((), inj (_+#) (#2 (exp (b, e-1))))
+        if (emod2)==0 then ((), inj (#+_) (#2 (exp ((), e/2)))) else ((), inj (_+#) (#2 (exp (b, e-1))))
         in
         (v, inj (_+#) p)
     in
@@ -48,9 +48,7 @@ l.
 let exp =
     fix (f,(x,l_0)) : ((_->_)*_) =>
     let ((exp,(b,e)),l_1) = ((f, x), unroll l_0) in
-    case l_1 of
-      () => 1
-    | l_2 => case l_2 of l_3 => let x_0 = exp ((b, ()), l_3) in x_0*x_0 | l_3 => b*exp ((b, ()), l_3)
+    case l_1 of () => 1 | l_2 => case l_2 of l_3 => exp ((b*b, ()), l_3) | l_3 => b*exp ((b, ()), l_3)
 in
 exp ((3, ()), l)
 
