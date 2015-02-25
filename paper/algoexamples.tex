@@ -53,8 +53,6 @@ that they write the precomputation into a mutable cache.
 
 \subsection{Exponentiation by Squaring}
 
-\crem{work in progress}
-
 Our next example computes $b^e$ using exponentiation by squaring, where $e$ is
 known at the first stage, and $b$ is known at the second stage. This is a common
 example in the partial evaluation literature (for example, in \cite{jones96}).
@@ -66,13 +64,15 @@ example in the partial evaluation literature (for example, in \cite{jones96}).
   else if `3`grnd {`1`(e mod 2) == 0`3`}`1` then
     exp(next{`2`prev{`1`b`2`}*prev{`1`b`2`}`1`},`3`grnd{`1`e/literaltwo`3`}`1`)
   else 
-    next{`2`prev{`1`b`2`} * prev{`1`exp(b,`3`grnd{`1`e-literalone`3`}`1`)`2`}`1`}`
+    next{`2`prev{`1`b`2`} * prev{`1`
+      exp(next{`2`prev{`1`b`2`}*prev{`1`b`2`}`1`},`3`grnd{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
 \end{lstlisting}
 %
-Because \texttt{exp} is a recursive function whose conditionals depend only on
-$e$, partial evaluation fully unrolls the conditionals depending on
-
-representation of $e$. 
+Because \texttt{exp} is a recursive function whose conditionals test the parity
+of the exponent argument, the sequence of branches taken corresponds exactly to
+the binary representation of $e$. Partially evaluating \texttt{exp} with $e$
+unrolls all of the conditionals, selecting and expanding the appropriate branch
+in each case.
 
 Our algorithm, on the other hand, produces:
 %
@@ -85,117 +85,112 @@ datatype binnat = Zero | Even of nat | Odd of nat
   else if (e mod 2)==0 then 
     ((), Even (#2 (exp1 ((), e/2))))
   else 
-    ((), Odd (#2 (exp1 (b, e-1))))`
+    ((), Odd (#2 (exp1 ((), (e-1)/2))))`
 
 2`fun exp2 ((b : int, e : unit), l : binnat) =
     case l of
       Zero => 1
     | Even n => exp2 ((b*b, ()), n)
-    | Odd n => b * exp2 ((b, ()), n)`
+    | Odd n => b * exp2 ((b*b, ()), n)`
 \end{lstlisting}
 %
+\texttt{exp1} recursively performs parity tests on $e$, but unlike \texttt{exp},
+it simply computes a data structure (a \texttt{binnat}) recording which branches
+were taken. \texttt{exp2} takes $b$ and a \texttt{binnat} $l$, and uses $l$ to
+determine how to compute with $b$.
 
-Our algorithm, on the other hand, creates a data
-structure which communicates to the second-stage function which conditionals
-should be taken.
+Of course, the \texttt{binnat} computed by \texttt{exp1} is precisely the binary
+representation of $e$! While partial evaluation realizes \texttt{exp}'s
+control-flow dependency on $e$ by recursively expanding its branches in place,
+we realize this dependency explicitly in the boundary data structure. This
+occurs in the $\splitonesym$ rule for \texttt{case}, which emits a tag
+corresponding to the taken branch in the precomputation, and \texttt{case}s on
+it (as $l_b$) in the residual.
 
-Splitting has produced two recursive functions,
-one (\texttt{exp1}) which builds up an intermediate data structure (\texttt{nat}),
-and another (\texttt{exp2}) which consumes that data structure.  
-Noticing that said structure is just a binary representation of the exponent,
-we've given it an appropriate name.
+While this example is not useful in practice, it still demonstrates the way our
+splitting algorithm finds interesting data structures lurking in the structure
+of recursive functions.
 
-This may seem like a deep observation, 
-that integers can be decomposed into a binary respresation,
-but it actually follows from the recursive structure of the original program:
-just as \texttt{exp} could either terminate or recur in one of two ways,
-\texttt{nat} likewise has a base case and two recursive cases.
-Splitting oberves this only by following local structure.
-
-Of course, since integers are usually stored in a binary format anyway, 
-this isn't practically useful, but it's a clear exposition of the technique.
-Partially evaluating this code is typically more useful,
-as that would eliminate branches in the residual,
-and exponents tend to be small enough to keep code size reasonable.
+%Partially evaluating this code is typically more useful, as that would
+%eliminate branches in the residual, and exponents tend to be small enough to
+%keep code size reasonable.
 
 \subsection{Quickselect}
 
-We now move on to our marquee example: quickselect.
-The function {\tt qs} in the code below is a staged version of the quickselect algorithm.
-Standard quickselect finds the $k$th largest number in a list (l) by recursively partitioning the list by its 
-first element and picking the side which contains the $k$th largest element.
-In this case, we've staged quickselect by saying that the list is stage \bbone\ and $k$ is stage \bbtwo.
-The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{grnd}.
-In this example, we make use of the behavior where first stage code is executed even under second stage branches.
+Let us return to the \texttt{quickselect} algorithm, which we discussed at
+length in \ref{sec:example}. (The code is in \ref{fig:qs-staged}.)
+\texttt{quickselect} finds the $k$th largest element of a list $l$ by
+recursively \texttt{partition}ing the list by its first element, then recurring
+on the side containing the $k$th largest element. $l$ is first-stage and $k$ is
+second-stage.
 
+Stage-splitting \texttt{quickselect} produces:
+%
 \begin{lstlisting} 
-atsigngrnd { 
-  datatype list = Empty | Cons of int * list
-  fun partition ((p,l) : int*list) : (int*list*list) = 
-    case unroll l of 
-      Empty => (0, Empty, Empty) 
-    | Cons (h,t) => 
+datatype list = Empty | Cons of int * list
+datatype tree = Leaf
+              | Branch of int * tree * int * tree
+
+1`fun partition ((p,l):int*list) : (int*list*list) = 
+  case l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) => 
       let val (s,left,right) = partition (p,t) in 
       if h<p 
       then (s+1,Cons(h,left),right) 
       else (s,left,Cons(h,right))
-}
 
-fun qs (grnd{Empty}, next{i}) = next {0} 
-  | qs (grnd{Cons ht}, next{i}) =
-    let 
-      val grnd{(n,left,right)} = grnd{partition ht}
-      val next{n} = hold grnd{n}
-    in
-    next { 
-      case unroll (compare (i,n)) of
-        LT => prev{qs (grnd{left},next{i})}
-      | EQ => prev{hold grnd{#1 ht}}
-      | GT => prev{qs (grnd{right},next{i-n-1})}
-    }
-\end{lstlisting}
-Running stage splitting on this code produces:
-\begin{lstlisting} 
-datatype list = Empty | Cons of int * list
-datatype tree = Leaf of unit 
-              | Branch of int * tree * int * tree
-fun partition ((p,l) : int*list) : (int*list*list) = 
-  case l of 
-    Empty => (0,Empty, Empty) 
-  | Cons (h,t) => 
-    let val (s,left,right) = partition (p,t) in 
-    if h<p 
-    then (s+1,Cons(h,left),right) 
-    else (s,left,Cons(h,right))
-
-fun qs1 (l : list, i : int) = ((), 
+fun qs1 (l : list, k : unit) = ((), 
   case l of
-    Empty => Leaf ()
+    Empty => Leaf
   | Cons (h,t) => 
       Branch (
         let (left,right,n) = partition h t in
-        (n, #2 (qs1 left i), h, #2 (qs1 right i))
+        (n, #2 (qs1 left k), h, #2 (qs1 right k))
       )
-  )
+  )`
 
-fun qs2 (((), i : int), p : tree) = 
+2`fun qs2 (((), k : int), p : tree) = 
   case p of
-    Leaf () => 0
+    Leaf => 0
   | Branch (n,left,h,right) =>
-        case compare (i, n) of 
-          LT => qs (((), i), left) 
-        | EQ => h 
-        | GT => qs (((), i-n-1), right)
-
+      case compare (k, n) of 
+        LT => qs2 (((), k), left) 
+      | EQ => h 
+      | GT => qs2 (((), k-n-1), right)`
 \end{lstlisting}
+%
+\texttt{qs1} \texttt{partition}s $l$, but since the comparison with $k$ (to
+determine which half of $l$ to recur on) is at the second stage, it simply
+recurs on \emph{both} halves, pairing up the results along with $h$ (the head of
+$l$) and $n$ (the size of the left half). \texttt{qs2} takes $k$ and this tree
+$p$, and uses $k$ to determine how to traverse $p$.
 
-These functions recursively build ({\tt qs\_1}) and then search ({\tt qs\_2}) a binary tree,
-which stores a set element and subtree size at every branch.
+How does our algorithm emit a binary search tree and traversal algorithm? The
+$\splittwosym$ rule for \texttt{case} tuples up the precomputations for its
+branches, and in the residual, selects the residual corresponding to the
+appropriate branch.
+
 All of the list partitioning work now occurs within the precomputation.
-Thus, {\tt qs\_1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs\_2} performs expected $\Theta(\log n)$ work.
-This results in a net speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on the same list. 
+
+Thus, {\tt qs1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs2}
+performs expected $\Theta(\log n)$ work.  This results in a net speedup over
+standard quickselect if we perform $\Omega(n / \log n)$ queries on the same
+list. 
+
+This is like the previous example, except that this is actually useful, and
+creates a \emph{different}, interesting, known algorithm. 
+As before, the tree matches the structure of the code. We could partially
+evaluate also, but if the list is big, that's a bad idea.
+
+In this example, we
+make use of the behavior where first stage code is executed even under second
+stage branches.
 
 \crem{Nico: add something here about the importance of ground}
+
+The helper function {\tt partition} operates entirely in
+stage \bbone, and so we have wrapped it in a \texttt{grnd}.  
 
 \subsection {Mixed Map Combinator}
 
