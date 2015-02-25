@@ -1,42 +1,46 @@
+\newcommand{\langname}{LAMDA12}
 \section{Introduction}
 
-Consider the following function that takes as arguments an $x$ and $m$
-$y$'s and invokes a function $f(\cdot, \cdot)$ on consecutive
-values of $y$'s.
+Consider a function that takes as arguments an $x$ and $y_1 \ldots
+y_{m-1}$ and invokes a function $f(\cdot, \cdot)$ on consecutive
+values of $y$'s.  Using ``;'' for  sequential composition, we can
+write such a function as
 \begin{lstlisting}
 fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
-  @$(f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@.
+  @$f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@.
 \end{lstlisting}
-Let's assume for concreteness that $f(x,y)$ takes time to the size of
-the first argument.  The function $F(x_0, y_0 \ldots y_{m-1}$ then
-takes time $O(n \cdot m)$ where $n$ is the size of the input $x_0$.
+%
+%% Let's assume for concreteness that $f(x,y)$ takes time to the size of
+%% the first argument.  The function $F(x_0, y_0 \ldots y_{m-1}$ then
+%% takes time $O(n \cdot m)$ where $n$ is the size of the input $x_0$.
 
 Such computations, where we apply a multivariate function to arguments
-where only one of the arguments change over time, are common.  In
-fact, many research problems revolve around improving performance of
-such functions.  For example, algorithm design techniques such as
-dynamic programming take advantage of the fact that the function $f$
-above is being passed the same argument many times, and thus optimize
-it so that it can re-use results related to $f$.  Similarly, 
-crucial compiler optimization techniques such as loop hoisting and
-common subexpression evaluation take identify common common
-computations across all invocations of $f$ and perform them once and
-for all at the beginning of the computation.
+where one of the argument remains the same are common.  In fact, many
+research problems aim at improving efficiency of such functions.  For
+example, algorithm design techniques such as dynamic programming
+identify the computation in $f$ that depend on $x$ try to ensure that
+such computations are performed no more than once.  Similarly, crucial
+compiler optimization techniques such as loop hoisting and common
+subexpression elimination take identify common computations across all
+invocations of $f$ and perform them once and for all at the beginning
+of the computation. The whole area of incremental computation aims at
+adapting a computation to small changes, which may be applicable to
+this problem depending on the closeness of $y_i$'s.
 
-The common theme in all such techniques is to achieve what Jorring and
-Scherlis back in 1980's called: {\em frequency reduction} and {\em
-  precomputation}~\cite{JS86-staging}.  The idea behind frequency
-reduction is to identify computations that are performed multiple
-times and pull them ahead so that they can be performed once and used
-later as needed.  The idea behind precomputation is to identify
-computations that can be performed earlier, for example at compile
-time if their inputs are available statically and perform them at that
-earlier time.  Jorring and Scherlis discuss three possible approaches
-to achieving frequency reduction and procomputation by performing {\em
-  stage transformations} that stages the computation into distinct
-stages where the earlier stages host computations that can be
-performed earlier or that can might be used frequently.  The three
-approaches are
+The common theme in all such design and optimization techniques is to
+achieve what Jorring and Scherlis back in 1980's called: {\em
+  frequency reduction} or {\em precomputation}~\cite{JS86-staging}.
+The idea behind frequency reduction is to identify computations that
+are performed multiple times and pull them ahead so that they can be
+performed once and used later as needed.  The idea behind
+precomputation is to identify computations that can be performed
+earlier, for example at compile time if their inputs are available
+statically and perform them at that earlier time. 
+
+
+There has been much work on language-based techniques for performing
+frequency reduction and precomputation.  Broadly speaking, these
+techniques can be categorized into
 \begin{itemize}
 \item 
 partial evaluation,
@@ -45,105 +49,154 @@ partial evaluation,
 meta programming, and
 
 \item 
-pass separation.
+pass separation or data specialization.
 
 \end{itemize}
 
-The idea behind partial evaluation is to take advantage of the fact
-that certain data becomes available earlier than others.
-Specifically, partial evaluation distinguishes between a {\em static}
-and {\em dynamic} stage and performs all static computations first,
-followed be the dynamic stage.  For example, suppose that we wish to
-compute $F(x_0, y_0 \ldots y_{m-1})$ and that $x_0$ is a static
-variable becoming available at an earlier stage.  We can take
-advantage of this by specializing $f$ for $x_0$ such that $f(x,y) =
-f_{x0}(y)$, where $f_{x0}$ is the function specialized for $x0$.  We
-can then re-write our function $F$ as follows.
-
+Partial evaluation performs precomputation by distinguishing between a
+{\em static} and {\em dynamic} stage and performs all static
+computations first, followed be the dynamic stage.  For example,
+suppose that we wish to compute $F(x, y_0 \ldots y_{m-1})$ for a
+statically known $x = 0$.  We can derive a specialization of $f$ at
+$0$, written $f_0$, such that $f(x,y) = f_{0}(y)$ and specialize $F$
+for $x=0$ as
 \begin{lstlisting}
-fun @$F_{x0}(y_0, y_1 \ldots y_{m-1}$@ = 
-  @$(f_{x0}(y_0);  f_{x0}(y_1)  \ldots f_{x0}(ym)$@.
+fun @$F_{0}(y_0, y_1 \ldots y_{m-1}$@ = 
+  @$(f_{0}(y_0);  f_{0}(y_1)  \ldots f_{0}(ym)$@.
 \end{lstlisting}
+%
+Such a partial evaluation typically proceed by performing a
+binding-time analysis to determine the static and dynamic parts of $f$
+and $F$ and specializes them based on the results of the binding-time
+analysis.
 
+A closely related technique, {\em meta programming} enables the
+programmer to write a program that takes the static values and
+generates a specialized program for those values.  Meta programming
+gives the programmer relatively fine-grained control over partial
+evaluation by requiring staging annotations in the program.  Such
+staging annotations make explicit the stage of each computation and
+can overcome some of the intricacies of binding-time analysis but this
+comes at the cost of more complex reasoning and some loss of
+automation (partial evaluation can in principle be applied fully
+automatically without relying on any annotations).
 
-There has been much research on partial evaluation (\secref{related}).
-Broadly speaking, earlier (pre 90's) research used binding-time
-analysis to determine the static and dynamic parts of a computation
-and specialized the program based on that.  Binding time analysis can
-be fully automated but can be difficult to predict.  Later research
-tends to use {\em meta programming}, where the programmer writes a
-program that given the static values generates a specialized program
-for those values.  Meta programming gives the programmer relatively
-fine-grained control over partial evaluation but comes at the cost of
-more complex reasoning and a loss of automation. 
-
-
-The third and final approach, called pass separation, assumes much
-less information to perform a stage transformations.  Instead of
+The third and final approach, called {\em pass separation} or {\em
+  data specialization}, assumes much less information: instead of
 requiring the static data, it requires just the knowledge of which
 computations are static and dynamic and uses this knowledge to
-generate a stage one (static) and stage two (dynamic) computations.
-Applied to our example, pass separation would {\em split} function
-into $f1$ and $f2$ such that $f(x,y) = f2(f1(x),y)$.  We can then
-rewrite our example as
+generate two stage computations. 
+%
+Applied to our example, pass separation would {\em split} the function
+$f$ into $f_s$ (static) and $f_d$ (dynamic) such that $f(x,y) =
+f_d(f_s(x),y)$.  We can then rewrite our example as
+%
 \begin{lstlisting}
 fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
-@$(f2(f1(x), y_0);  f2(f1(x), y_1)  \ldots f2(f1(x), y_{m-1})$@.
+let @$fsx = f_s(x)$@
+in @$(f_d(fsx, y_0);  f_d(fsx, y_1)  \ldots f_d(fsx, y_{m-1})$@.
 \end{lstlisting}
+We refer to such a program as {\em stratified} program.
+
+The key difference with partial evaluated program and the stratified
+program is that the latter has lost to generality: it work for any
+arguments, whereas the partially evaluated program is specialized for
+a particular value of $x$ ($x = 0$ in the example).  Thus, the pass
+separation can be applied without leading to any loss of generality.
+Going back to the terminology of Jorring and Scherlis, pass separation
+is a frequency reduction, whereas as partial evaluation and
+meta-programming are precomputation techniques.  Specifically, if
+desired partial evaluation can be applied further to a stratified
+program as an orthogonal improvement.
+
+But what is the benefit or pass separation? Let's assume for
+concreteness that $f(x,y)$ takes time in the size of the first
+argument.  The function $F(x, y_0 \ldots y_{m-1}$ then takes time $O(n
+\cdot m)$ where $n$ is the size of $x$. Assume further that in the
+stratified code the static function $f_s(x)$ takes $O(n)$ time and the
+$f_d(fsx, \cdot)$ function takes $O(\log{n})$ time.  With these run
+times, the stratified code has complexity $O(n + m\log{n})$ instead of
+$O(n \cdot m)$, a significant asymptotic improvement.  (In this paper,
+we will achieve such a reduction in complexity automatically.)
+
+In summary pass separation causes no loss of generalization and can
+improve efficiency, so why is it not applied liberally? 
+
+Indeed, in fact it is: in computer graphics, program are typically
+manually stratified for frequency reduction.  In fact, stratification
+into a pre-determined set ``modules'' is required by the execution
+model of modern graphics architectures.  Such manual stratification is
+a massive challenge: it breaks composition because the invariants are
+scattered over the code written over multiple strata and because
+modification to any one stratum requires modifying all others to
+match.  Ideally, we wish to write just one program and stratify it
+into multiple strata automatically.
+
+Such automatic stratification turns out to be challenging: the first
+successful approach that we know of is by Knoblock and
+Ruf\,\cite{knoblock96}, which like our work was inspired by computer
+graphics applications.  While practically effective, Knoblock and Ruf
+consider only a very simple language and are not able to stratify
+recursive programs.  Recent
+efforts\,\cite{Proudfoot:2001,Foley:2011,He:2014} .... 
+but still cannot stratify recursive programs.
 %
-A compiler can then rewrite this as 
+In fact back in 80,s Jorring and Sherlis was able to stratify
+reasonably complex programs but only manually and note that
+``... partial evaluation technique is readily mechanized, while
+staging transformation approach will elude full automation for some
+time.''
+
+In this paper we make significant progress on the problem of automatic
+stratification of higher-order programs.  As our starting point, we
+take the modal language \langname with explicit staging in the style
+of Davies~\cite{Davies}, where the ``circle'' modality denotes
+computation in a later stage, and present a staged operational
+semantics similar for \langname (\secref{language}).  We then present
+a splitting algorithm that stratifies a \langname program into a two
+mono-staged programs, one for the first stage and for the second stage
+(\secref{splitting}).  Since each program is at a mono-stage, they are
+expressed in conventional function languages.
+
+The crux of the splitting algorithm is splitting recursive mixed stage
+functions that involve both a first stage and second stage
+computations.  When split, such a function turns into a first-stage
+function that yields a {\em boundary value} that encodes the
+``first-stage'' part of the computation.  If the function recurs on a
+first-stage argument, then the boundary value is typically a recursive
+data structure.  In other words, the splitting algorithm maps
+computational recursion into a recursive data type. If the boundary
+structure is generated as a result of a conditional, it is typically
+encoded as a (recursive) sum type, such as a tree, where the kind of
+the node indicates the recursion status of the first-stage evaluation.
+The ``second stage'' part of the computation takes the boundary value
+as an argument as well as the second stage argument and uses them to
+complete the computation, often by traversing the now precomputed
+boundary in light of the now available second-stage argument.
+
+Since it deals with unrestricted recursion and a rich language
+consisting of first-class functions, recursion, and sum and recursive
+types, the splitting algorithm is naturally complex. With some care,
+the algorithm nevertheless can be specified reasonably succinctly.  In
+fact, we have implemented the algorithm (\secref{implementation}) and
+applied to several examples (\secref{examples}).  As an interesting
+example, we show that a function 
 \begin{lstlisting}
-fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
-let @$fx = f1(x)$@
-in @$(f2(fx, y_0);  f2(fx, y_1)  \ldots f2(fx, y_{m-1})$@.
+fun @$F(x: int list, y_0:int, y_1:int \ldots y_{m-1}:int$@ = 
+  @$f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@,
 \end{lstlisting}
-We refer to such a program as {\em untangled}.
-
-%
-The key difference with partial evaluation is that we have not
-specialized the program to any specific static value but simply
-translated it into an equivalent program where the first stage
-function $f1$ only consumes first-stage data.  We can evaluate such an
-expression in two stages: first, we evaluate all $f1(x)$'s and reduce
-them to a final value that can be used directly in the second stage
-(we can be smart about this evaluation and evaluate $f1(x)$ just
-once). Second, we evaluate all instances of $f2$'s and compute the
-final value.
-
-Since pass separation requires strictly less information than partial
-evaluation and meta programming, it can be a powerful technique that
-can be applied with far less information.  For example, the code that
-we obtained in our example, can be instantiated with a value of $x$
-that becomes available at run time and still obtain significant
-benefits.  As we show in this paper, these benefits can be
-asymptotically significant.  In other words, we can obtain some
-benefit of partial evaluation at run time in cases when we don't know
-the values of arguments ahead of time.  If, however, we do know the
-values ahead of time, then we can also apply partial evaluation to the
-untangled program, deriving again all the benefits of partial
-evaluation.
-
-As the example illustrates, untangling the program into two stages
-seems to have no cost.  So why don't we apply this kind of untangling
-all time time?
-
-\smallskip
-
-Untangling a program into stages to can be done manually.  In fact
-Jorring and Sherlis describe how to do this for some examples.
-Automation, however, has been difficult.  According to Jorring and
-Sherlis ``... partial evaluation technique is readily mechanized,
-while staging transformation approach will elude full automation for
-some time.''  
-
-\smallskip
-
-That time has come.
-
-In this paper...
-
-
-
+where $f(x,y)$ selects the element of the list $x$ with rank $y$, when
+splits yields an asymptotically more efficient function that runs in
+expected $O(n\log{n} + m\log{n})$ time instead of expected $O(n \cdot
+m)$ time, a near linear time improvement.  Interestingly the code
+output by our splitting algorithm auto-generates the ``quicksort''
+algorithm, which it uses to build a binary search tree as a boundary
+value in the first stage, and in the second stage, generated a
+``binary search'' algorithm that takes the tree and performs a binary
+search on the tree as guided by the given rank.  To the best of our
+knowledge, no prior approaches to this problem can perform such
+complex transformations on code that can yield asymptotic
+improvements in run time.
 
 
 \paragraph{Old intro below.}
