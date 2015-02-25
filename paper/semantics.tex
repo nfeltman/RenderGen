@@ -137,7 +137,7 @@ then proceed by evaluating $[\next{\hat{y}}/x]e'$.
 We achieve this by threading through a \emph{residual table} $\xi$, which
 functions as a top-level sequence of \texttt{let}-bindings of residuals $e$ to
 variables $\hat{y}$ in an evaluated \bbonem\ term. Thus, $\redonesym$ evaluation
-yields a pair $[\xi;v]$ of a residual table and a \emph{partial value} $v$
+yields a pair $\rtab \xi v$ of a residual table and a \emph{partial value} $v$
 containing variables bound in that table. The grammar of residual tables and
 partial values (terms fully evaluated at the first but not second stage) is
 given in \ref{fig:values}.
@@ -154,7 +154,7 @@ binders.
 
 For all constructs other than $\prev{e}$, $\redtwosym$ evaluation proceeds
 recursively on all subterms, yielding a monostaged residual $q$. At $\prev{e}$,
-we evaluate $e$ using $\redonesym$ to $[\xi;v]$. Because $\colmix e{\fut A}$,
+we evaluate $e$ using $\redonesym$ to $\rtab \xi v$. Because $\colmix e{\fut A}$,
 $v$ must have the canonical form $\next{\hat{y}}$ for some $\hat{y}$ bound in $\xi$. We \emph{reify}
 $\xi$ into a sequence of second-stage \texttt{let} bindings around $\hat{y}$,
 using the auxiliary judgment $\reify\xi q{q'}$ defined in

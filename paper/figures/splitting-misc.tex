@@ -4,18 +4,18 @@
 \begin{abstrsyn}
 \[\begin{array}{rrrl}
 \hline
-\multicolumn{4}{l}  {\text{\bf Where } [\xi;v] \vsplito \mval {i} {r} \text{:}}          \\
+\multicolumn{4}{l}  {\text{\bf Where } \rtab \xi v \vsplito \mval {i} {r} \text{:}}          \\
 \hspace{0.25in} 
-&[\hat y \mapsto q,\xi;v]  &\vsplito& \mval  {i}             {\letin {\hat y} q {r}}      \\
+&\rtab {\hat y \mapsto q,\xi} v  &\vsplito& \mval  {i}             {\letin {\hat y} q {r}}      \\
 \hline
-\multicolumn{4}{l}  {\text{\bf Where } [\cdot;v_k] \vsplito \mval {i_k} {r_k} \text{:}}  \\
-&[\cdot;\tup{}]            &\vsplito& \mval  {\tup{}}        {\tup{}}                     \\
-&[\cdot;\pure{m}]          &\vsplito& \mval  {m}             {\tup{}}                     \\
-&[\cdot;\next{\hat y}]     &\vsplito& \mval  {\tup{}}            {\hat y}                     \\
-&[\cdot;\tup{v_1,v_2}]         &\vsplito& \mval  {\tup{i_1,i_2}}     {\tup{r_1,r_2}}                  \\
-&[\cdot;\inl{v}]           &\vsplito& \mval  {\inl{i}}       {r}                          \\
-&[\cdot;\inr{v}]           &\vsplito& \mval  {\inr{i}}       {r}                          \\
-&[\cdot;\roll{v}]          &\vsplito& \mval  {\roll{i}}      {r}                          \\
+\multicolumn{4}{l}  {\text{\bf Where } \rtab \cdot {v_k} \vsplito \mval {i_k} {r_k} \text{:}}  \\
+&\rtab \cdot {\tup{}}            &\vsplito& \mval  {\tup{}}        {\tup{}}                     \\
+&\rtab \cdot {\pure{m}}          &\vsplito& \mval  {m}             {\tup{}}                     \\
+&\rtab \cdot {\next{\hat y}}     &\vsplito& \mval  {\tup{}}            {\hat y}                     \\
+&\rtab \cdot {\tup{v_1,v_2}}         &\vsplito& \mval  {\tup{i_1,i_2}}     {\tup{r_1,r_2}}                  \\
+&\rtab \cdot {\inl{v}}           &\vsplito& \mval  {\inl{i}}       {r}                          \\
+&\rtab \cdot {\inr{v}}           &\vsplito& \mval  {\inr{i}}       {r}                          \\
+&\rtab \cdot {\roll{v}}          &\vsplito& \mval  {\roll{i}}      {r}                          \\
 \hline
 \multicolumn{4}{l}  {\text{\bf Where } \splitone e A {c}{l.r} \text{:}}                   \\
 &[\cdot;\lam xe]           &\vsplito& \mval  {\lam {x} {c}}  {\lam {\tup{x,l}} {r}}			\\

@@ -5,60 +5,60 @@
 \begin{mathpar}
 \fbox{Evaluation of \bbonem}	\and
 \inferdiaone[\rmunit]
-{\red {\tup{}}{\cdot;\tup{}}}
+{\red {\tup{}}{\cdot}{\tup{}}}
 {\cdot}
 \and
 \inferdiaone [\to I]
-{\red {\lam{x}{e}} {\cdot;\lam{x}{e}}}
+{\red {\lam{x}{e}} {\cdot}{\lam{x}{e}}}
 {\cdot}
 \and
 \inferdiaone [fix]
-{\red {\fix fxe} {\cdot;\lam{x}{[\fix fxe / f]e}}}
+{\red {\fix fxe} {\cdot}{\lam{x}{[\fix fxe / f]e}}}
 {\cdot}
 \and
 \inferdiaone [\to E]
-{\red {\app {e_1}{e_2}} {\gcomp 1 2, \xi';v'}}
-{\red {e_1} {\xi_1;\lam{x}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi';v'}}
+{\red {\app {e_1}{e_2}} {\gcomp 1 2, \xi'}{v'}}
+{\red {e_1} {\xi_1}{\lam{x}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi'}{v'}}
 \and
 %
 \inferdiaone [\times I]
-{\red {\tup{e_1,e_2}}{\gcomp 1 2;\valprod{v_1}{v_2}}}
+{\red {\tup{e_1,e_2}}{\gcomp 1 2}{\tup{v_1,v_2}}}
 {\sub [1] & \sub [2]}
 \and
 \inferdiaone [\times E_1]
-{\red {\pio{e}}{\xi;v_1}}
-{\red{e}{\xi;\valprod{v_1}{v_2}}}
+{\red {\pio{e}}{\xi}{v_1}}
+{\red{e}{\xi}{\tup{v_1,v_2}}}
 \and
 \inferdiaone [\times E_2]
-{\red {\pit{e}}{\xi;v_2}}
-{\red{e}{\xi;\valprod{v_1}{v_2}}}
+{\red {\pit{e}}{\xi}{v_2}}
+{\red{e}{\xi}{\tup{v_1,v_2}}}
 \and
 \inferdiaone [+ I_1]
-{\red {\inl{e}} {\xi;\inl{v}}}
+{\red {\inl{e}} {\xi}{\inl{v}}}
 {\sub}
 \and
 \inferdiaone [+ I_2]
-{\red {\inr{e}} {\xi;\inr{v}}}
+{\red {\inr{e}} {\xi}{\inr{v}}}
 {\sub}
 \and
 %
 \inferdiaone [+ E_1]
-{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}
-{\red {e_1}{\xi_1;\inl{v}} & \red
-  [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2;v_2}}
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}
+{\red {e_1}{\xi_1}{\inl{v}} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2}{v_2}}
 \and
 \inferdiaone [+ E_2]
-{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}
-{\red {e_1}{\xi_1;\inr{v}} & \red
-  [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3;v_3}}
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}
+{\red {e_1}{\xi_1}{\inr{v}} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3}{v_3}}
 \and
 \inferdiaone[\mu I]
-{\red {\roll{e}}{\xi;\roll{v}}}
+{\red {\roll{e}}{\xi}{\roll{v}}}
 {\sub}
 \and
 \inferdiaone[\mu E]
-{\red {\unroll{e}}{\xi; v}}
-{\red {e}{\xi; \roll{v}}}
+{\red {\unroll{e}}{\xi}{ v}}
+{\red {e}{\xi}{ \roll{v}}}
 \end{mathpar}
 
 \hrule
@@ -116,19 +116,19 @@
 \hrule
 \begin{mathpar}
 \fbox{Staging features} \and
-\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q;\next{\hat y}}}			{\diatwo e q}														\and
-\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi; \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
-%\inferdiaone [hold]	{\red {\pause e} {\xi, \hat y \mapsto i; \next {\hat y}}}	{\red e {\xi; \pure i}}												\and
+\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q}{\next{\hat y}}}			{\diatwo e q}														\and
+\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi}{ \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
+%\inferdiaone [hold]	{\red {\pause e} {\xi, \hat y \mapsto i}{ \next {\hat y}}}	{\red e {\xi}{ \pure i}}												\and
 \infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
 \infer					{\reify {y \mapsto q_1, \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
-\inferdiaone			{\red {\pure e} {\cdot; \pure v}}							{\reduce e v} 														\and
-\inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2; v_2}}			{\red {e_1} {\xi_1;\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2;v_2}} 	\and
-%\inferdiaone			{\red {\lifttag e} {\xi;\inl{\pure v}}}						{\red e {\xi; \pure{\inl v}}}										\and
-%\inferdiaone			{\red {\lifttag e} {\xi;\inr{\pure v}}}						{\red e {\xi; \pure{\inr v}}}										
-\inferdiaone [+ E_1]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2;v_2}}		{\red {e_1}{\xi_1;\pure{\inl{v}}} 
-																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_2]e_2}{\xi_2;v_2}}			\and
-\inferdiaone [+ E_2]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3;v_3}}		{\red {e_1}{\xi_1;\pure{\inr{v}}}
-																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3;v_3}}		
+\inferdiaone			{\red {\pure e} {\cdot}{ \pure v}}							{\reduce e v} 														\and
+\inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2}{ v_2}}			{\red {e_1} {\xi_1}{\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2}{v_2}} 	\and
+%\inferdiaone			{\red {\lifttag e} {\xi}{\inl{\pure v}}}						{\red e {\xi}{ \pure{\inl v}}}										\and
+%\inferdiaone			{\red {\lifttag e} {\xi}{\inr{\pure v}}}						{\red e {\xi}{ \pure{\inr v}}}										
+\inferdiaone [+ E_1]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}		{\red {e_1}{\xi_1}{\pure{\inl{v}}} 
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_2]e_2}{\xi_2}{v_2}}			\and
+\inferdiaone [+ E_2]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}		{\red {e_1}{\xi_1}{\pure{\inr{v}}}
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3}{v_3}}		
 \end{mathpar}
 
 \end{abstrsyn}

@@ -109,7 +109,7 @@ If $\Gamma, \Gamma'\vdash e : A \splittwosym [p,l.r]$ then for all substitutions
 If $\Gamma, \Gamma'\vdash e : A \splitonesym [c,l.r]$ then for all $\gamma : \Gamma$,
 \begin{itemize}
 \item $\gamma \vsplito [\gamma_1, \gamma_2]$
-\item $\diaone [\Gamma'] {\gamma(e)} {\xi;v}$ iff $\reduce {\gamma_1(c)} {(v_1,u)}$ where
+\item $\diaone [\Gamma'] {\gamma(e)} {\xi}{v}$ iff $\reduce {\gamma_1(c)} {(v_1,u)}$ where
 \item $\Gamma',\dom \xi \vdash v \vsplito [v_1,v_2]$
 \item $\reify \xi {v_2} q$
 \item $\Gamma'\vdash q \equiv (\letin{l}{u}{\gamma_2(r)})$
@@ -132,7 +132,7 @@ If $\vdash e:A~@~\bbone$, then (by splitting)
 \end{itemize}
 if and only if (by the staged dynamic semantics)
 \begin{itemize}
-\item $\diaone [] e {\xi;v}$
+\item $\diaone [] e {\xi}{v}$
 \item $\dom \xi \vdash v \vsplito [v_1,v_2]$
 \item $\reify \xi{v_2}q$
 \item $q \mathbin{\tworedsym} v_D$
