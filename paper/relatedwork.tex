@@ -93,12 +93,23 @@ program, sometimes in asymptotically significant ways.
 We are not aware of prior work in the context of higher-order
 functional languages that presents such a splitting algorithm.
 
-Perhaps the closest work to ours is the work on ``data
-specialization'' by Knoblock and Ruf~\cite{knoblock96}.  As our work,
-Knoblock and Ruf are concerned about the problem of splitting a
-program into two stages.  They only consider, however, a very simple
-first-order language and straightline programs.
-
+Perhaps the closest work to ours is algorithm for ``data
+specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  As our
+work, Knoblock and Ruf are concerned about the problem of splitting an
+explicitly staged program into two stages.  However, they only
+consider, simple first-order language and straight-line
+programs. Automatic pass seperation has also been a topic of interest
+in programming systems for computer graphics, where, to achieve
+high-performance, programs are typically manually separated into
+components by frequency of execution (Seperation into a pre-determined
+set of per-frequency modules is \emph{required} by the execution model
+of modern graphics architectures.)  The software engineering
+challenges modifying multiple per-stage programs have led to
+suggestions of writing graphics programs in an explicitly staged
+programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
+deferring the task of pass seperation to the compiler. However, all
+prior efforts, like that of Knock and Ruf\,\cite{knoblock96} have been
+limited to simple, imperitive languages.  
 
 %% \section{Related Work}
 
