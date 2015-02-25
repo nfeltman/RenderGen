@@ -181,6 +181,7 @@ Finally, splitting \texttt{next} simply tuples up the precomputation of its
 world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
 \subsection {Necessity of \bbonep}
+\label{sec:needGround}
 
 We have not yet given a justification for why first stage code must be
 partitioned between the worlds \bbonem\ and \bbonep.
@@ -189,9 +190,9 @@ Why wouldn't this work?
 
 In order to be correct, any code at \bbonem\ must be split with the 
 pessimistic assumption that it may result in work at the second stage.
-When this assumption turns out not to be true---that is, purely monostage code---
-then splitting may produce second stage code which is needlessly costly 
-(an example of this will occur in the next section).
+When this assumption turns out not to be true---that is, purely monostage code---then 
+splitting may produce second stage code which is needlessly costly 
+(an example of this will occur in \ref{sec:exampleQS}).
 Detecting and optimizing this case is in general a global program analysis,
 since functions can be passed around as values.  
 So instead of relying on hefty analysis, 
