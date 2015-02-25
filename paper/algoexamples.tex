@@ -109,7 +109,7 @@ it (as $l_b$) in the residual.
 
 While this example is not useful in practice, it still demonstrates the way our
 splitting algorithm finds interesting data structures lurking in the structure
-of recursive functions.
+of recursive functions. A more useful example follows.
 
 %Partially evaluating this code is typically more useful, as that would
 %eliminate branches in the residual, and exponents tend to be small enough to
@@ -166,31 +166,30 @@ recurs on \emph{both} halves, pairing up the results along with $h$ (the head of
 $l$) and $n$ (the size of the left half). \texttt{qs2} takes $k$ and this tree
 $p$, and uses $k$ to determine how to traverse $p$.
 
-How does our algorithm emit a binary search tree and traversal algorithm? The
-$\splittwosym$ rule for \texttt{case} tuples up the precomputations for its
-branches, and in the residual, selects the residual corresponding to the
-appropriate branch.
+How does our splitting algorithm generate binary search trees and a traversal
+algorithm? The $\splittwosym$ rule for \texttt{case} tuples up the
+precomputations for its branches, and in the residual, selects the residual
+corresponding to the appropriate branch. The tree is implicit in the structure
+of the code; ordinarily, the quickselect algorithm only explores a single
+branch, but the staging annotations force the entire tree to be built.
 
-All of the list partitioning work now occurs within the precomputation.
+This is an instance where stage-splitting is more practical than partial
+evaluation---if $l$ is large, partially evaluating \texttt{quickselect} would
+yield a huge code blowup, essentially encoding the tree as code. (Or else it
+would not expand the calls to \texttt{partition}, in which case first-stage
+computations would be duplicated.)
 
-Thus, {\tt qs1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs2}
-performs expected $\Theta(\log n)$ work.  This results in a net speedup over
-standard quickselect if we perform $\Omega(n / \log n)$ queries on the same
-list. 
-
-This is like the previous example, except that this is actually useful, and
-creates a \emph{different}, interesting, known algorithm. 
-As before, the tree matches the structure of the code. We could partially
-evaluate also, but if the list is big, that's a bad idea.
-
-In this example, we
-make use of the behavior where first stage code is executed even under second
-stage branches.
+Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
+\texttt{qs2} performs expected $\Theta(\log n)$ work.  This results in a net
+speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on
+the same list. 
 
 \crem{Nico: add something here about the importance of ground}
 
-The helper function {\tt partition} operates entirely in
-stage \bbone, and so we have wrapped it in a \texttt{grnd}.  
+%All of the list partitioning work now occurs within the precomputation.
+
+%The helper function {\tt partition} operates entirely in stage \bbone, and so
+%we have wrapped it in a \texttt{grnd}.  
 
 \subsection {Mixed Map Combinator}
 
