@@ -77,14 +77,14 @@ fun exp1 (b : unit, e : int) =
   if e==0 then
     ((), Zero)
   else if (e mod 2)==0 then 
-    ((), Even (#2 (exp1 (b, e/2))))
+    ((), Even (#2 (exp1 ((), e/2))))
   else 
     ((), Odd (#2 (exp1 (b, e-1))))
 
 fun exp2 ((b : int, e : unit), l : nat) = 
     case l of
       Zero => 1
-    | Even n => let x = exp2 ((b, ()), n) in x*x 
+    | Even n => exp2 ((b*b, ()), n)
     | Odd n => b * exp2 ((b, ()), n)
 \end{lstlisting}
 %
