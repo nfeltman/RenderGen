@@ -1,4 +1,4 @@
-\newcommand{\langname}{LAMDA12}
+\newcommand{\langname}{LAMDA12\xspace}
 \section{Introduction}
 
 Consider a function that takes as arguments an $x$ and $y_1 \ldots
@@ -57,12 +57,12 @@ Partial evaluation performs precomputation by distinguishing between a
 {\em static} and {\em dynamic} stage and performs all static
 computations first, followed be the dynamic stage.  For example,
 suppose that we wish to compute $F(x, y_0 \ldots y_{m-1})$ for a
-statically known $x = 0$.  We can derive a specialization of $f$ at
-$0$, written $f_0$, such that $f(x,y) = f_{0}(y)$ and specialize $F$
-for $x=0$ as
+statically known $x = [~]$.  We can derive a specialization of $f$ at
+$[~]$, written $f_{[~]}$, such that $f(x,y) = f_{[~]}(y)$ and specialize $F$
+for $x=[~]$ as
 \begin{lstlisting}
-fun @$F_{0}(y_0, y_1 \ldots y_{m-1}$@ = 
-  @$(f_{0}(y_0);  f_{0}(y_1)  \ldots f_{0}(ym)$@.
+fun @$F_{[~]}(y_0, y_1 \ldots y_{m-1})$@ = 
+  @$(f_{[~]}(y_0);  f_{0}(y_1)  \ldots f_{0}(y_{m-1}))$@.
 \end{lstlisting}
 %
 Such a partial evaluation typically proceed by performing a
@@ -92,54 +92,59 @@ $f$ into $f_s$ (static) and $f_d$ (dynamic) such that $f(x,y) =
 f_d(f_s(x),y)$.  We can then rewrite our example as
 %
 \begin{lstlisting}
-fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
-let @$fsx = f_s(x)$@
-in @$(f_d(fsx, y_0);  f_d(fsx, y_1)  \ldots f_d(fsx, y_{m-1})$@.
+fun @$F(x, y_0, y_1 \ldots y_{m-1})$@ = 
+let @$fx = f_s(x)$@
+in @$(f_d(fx, y_0);  f_d(fx, y_1)  \ldots f_d(fx, y_{m-1}))$@.
 \end{lstlisting}
 We refer to such a program as {\em stratified} program.
 
 The key difference with partial evaluated program and the stratified
-program is that the latter has lost to generality: it work for any
+program is that the latter has lost no generality: it works with all
 arguments, whereas the partially evaluated program is specialized for
-a particular value of $x$ ($x = 0$ in the example).  Thus, the pass
+a particular value of $x$ ($x = [~]$ in the example).  Thus, the pass
 separation can be applied without leading to any loss of generality.
-Going back to the terminology of Jorring and Scherlis, pass separation
-is a frequency reduction, whereas as partial evaluation and
-meta-programming are precomputation techniques.  Specifically, if
-desired partial evaluation can be applied further to a stratified
-program as an orthogonal improvement.
+In fact, this is quite natural: going back to the terminology of
+Jorring and Scherlis, pass separation is a frequency reduction,
+whereas as partial evaluation and meta-programming are precomputation
+techniques. Consequently, if desired, partial evaluation can be
+orthogonally applied to a stratified program.
 
-But what is the benefit or pass separation? Let's assume for
-concreteness that $f(x,y)$ takes time in the size of the first
-argument.  The function $F(x, y_0 \ldots y_{m-1}$ then takes time $O(n
-\cdot m)$ where $n$ is the size of $x$. Assume further that in the
-stratified code the static function $f_s(x)$ takes $O(n)$ time and the
-$f_d(fsx, \cdot)$ function takes $O(\log{n})$ time.  With these run
-times, the stratified code has complexity $O(n + m\log{n})$ instead of
-$O(n \cdot m)$, a significant asymptotic improvement.  (In this paper,
-we will achieve such a reduction in complexity automatically.)
 
-In summary pass separation causes no loss of generalization and can
-improve efficiency, so why is it not applied liberally? 
 
-Indeed, in fact it is: in computer graphics, program are typically
-manually stratified for frequency reduction.  In fact, stratification
-into a pre-determined set ``modules'' is required by the execution
-model of modern graphics architectures.  Such manual stratification is
-a massive challenge: it breaks composition because the invariants are
-scattered over the code written over multiple strata and because
-modification to any one stratum requires modifying all others to
-match.  Ideally, we wish to write just one program and stratify it
-into multiple strata automatically.
+% Let's assume for concreteness that $f(x,y)$ takes time in the size of
+% the first argument.  The function $F(x, y_0 \ldots y_{m-1}$ then takes
+% time $O(n \cdot m)$ where $n$ is the size of $x$. Assume further that
+% in the stratified code the static function $f_s(x)$ takes $O(n)$ time
+% and the $f_d(fsx, \cdot)$ function takes $O(\log{n})$ time.  With
+% these run times, the stratified code has complexity $O(n + m\log{n})$
+% instead of $O(n \cdot m)$, a significant asymptotic improvement.  (In
+% this paper, we will achieve such a reduction in complexity
+% automatically.)
 
-Such automatic stratification turns out to be challenging: the first
+
+But what is the benefit or pass separation? The big benefit is
+efficiency. By stratifying the program, pass separation factors out
+frequently used the parts of computation, computes them first, and
+then reuse them later instead of computing them again.  Since it can
+be applied statically with no loss of generality, pass separation can
+significantly improve performance.  In fact, in computer graphics,
+program are typically manually stratified both for improved
+efficiency. Such stratification is in fact required by the execution
+model of some modern graphics architectures.  
+
+While highly desirable, manual stratification is difficult and highly
+nonmodular: program invariants are scattered over the code written in
+multiple strata and because modification to any one stratum requires
+modifying all others to match.  Ideally, we wish to write just one
+program and stratify it into multiple strata automatically.  But such
+automatic stratification turns out to be challenging: the first
 successful approach that we know of is by Knoblock and
 Ruf\,\cite{knoblock96}, which like our work was inspired by computer
 graphics applications.  While practically effective, Knoblock and Ruf
 consider only a very simple language and are not able to stratify
 recursive programs.  Recent
-efforts\,\cite{Proudfoot:2001,Foley:2011,He:2014} .... 
-but still cannot stratify recursive programs.
+efforts\,\cite{Proudfoot:2001,Foley:2011,He:2014} ....  but still
+cannot stratify recursive programs.
 %
 In fact back in 80,s Jorring and Sherlis was able to stratify
 reasonably complex programs but only manually and note that
@@ -148,10 +153,10 @@ staging transformation approach will elude full automation for some
 time.''
 
 In this paper we make significant progress on the problem of automatic
-stratification of higher-order programs.  As our starting point, we
-take the modal language \langname with explicit staging in the style
-of Davies~\cite{Davies}, where the ``circle'' modality denotes
-computation in a later stage, and present a staged operational
+stratification of higher-order functional programs.  As our starting
+point, we take the modal language \langname with explicit staging in
+the style of Davies~\cite{Davies}, where the ``circle'' modality
+denotes computation in a later stage, and present a staged operational
 semantics similar for \langname (\secref{language}).  We then present
 a splitting algorithm that stratifies a \langname program into a two
 mono-staged programs, one for the first stage and for the second stage
@@ -160,7 +165,7 @@ expressed in conventional function languages.
 
 The crux of the splitting algorithm is splitting recursive mixed stage
 functions that involve both a first stage and second stage
-computations.  When split, such a function turns into a first-stage
+computations.  When split, such a function turns into a stratum-1
 function that yields a {\em boundary value} that encodes the
 ``first-stage'' part of the computation.  If the function recurs on a
 first-stage argument, then the boundary value is typically a recursive
@@ -169,10 +174,11 @@ computational recursion into a recursive data type. If the boundary
 structure is generated as a result of a conditional, it is typically
 encoded as a (recursive) sum type, such as a tree, where the kind of
 the node indicates the recursion status of the first-stage evaluation.
-The ``second stage'' part of the computation takes the boundary value
-as an argument as well as the second stage argument and uses them to
-complete the computation, often by traversing the now precomputed
-boundary in light of the now available second-stage argument.
+The stratum-2 part of the computation, which corresponds to the
+``second stage'' takes the boundary value as an argument as well as
+the second-stage argument and uses them to complete the computation,
+often by traversing the now precomputed boundary in light of the now
+available second-stage argument.
 
 Since it deals with unrestricted recursion and a rich language
 consisting of first-class functions, recursion, and sum and recursive
@@ -180,23 +186,24 @@ types, the splitting algorithm is naturally complex. With some care,
 the algorithm nevertheless can be specified reasonably succinctly.  In
 fact, we have implemented the algorithm (\secref{implementation}) and
 applied to several examples (\secref{examples}).  As an interesting
-example, we show that a function 
+example, we consider a function
 \begin{lstlisting}
-fun @$F(x: int list, y_0:int, y_1:int \ldots y_{m-1}:int$@ = 
+fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
   @$f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@,
 \end{lstlisting}
-where $f(x,y)$ selects the element of the list $x$ with rank $y$, when
-splits yields an asymptotically more efficient function that runs in
-expected $O(n\log{n} + m\log{n})$ time instead of expected $O(n \cdot
-m)$ time, a near linear time improvement.  Interestingly the code
-output by our splitting algorithm auto-generates the ``quicksort''
-algorithm, which it uses to build a binary search tree as a boundary
-value in the first stage, and in the second stage, generated a
-``binary search'' algorithm that takes the tree and performs a binary
-search on the tree as guided by the given rank.  To the best of our
-knowledge, no prior approaches to this problem can perform such
-complex transformations on code that can yield asymptotic
-improvements in run time.
+where $f(x,y)$ selects the element of the list $x$ with rank $y$ by
+using the ``quickselect'' algorithm.  When applied to this function,
+our split algorithm yields an asymptotically more efficient function
+that runs in expected $O(n\log{n} + m\log{n})$ time instead of
+expected $O(n \cdot m)$ time---a near linear time improvement.
+Interestingly the code output by our splitting algorithm
+auto-generates the ``quicksort'' algorithm, which it uses to build a
+binary search tree as a boundary value in the first stage.  For the
+second stage, the splitting algorithm generates a ``binary search''
+that takes the tree and performs a binary search on the tree as guided
+by the given rank.  To the best of our knowledge, no prior approaches
+can perform such complex transformations on higher-order code, nor can
+they yield such asymptotic improvements in run time.
 
 
 \paragraph{Old intro below.}
