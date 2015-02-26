@@ -194,16 +194,23 @@ With \texttt{grnd} annotations, however, this can be prevented.
 
 \subsection {Combining Pixel Computations}
 
-\crem{Outdated: I will put in the new example.}
+\crem{Text is out of sync with example.}
 
 Due to its generality, \lang\ could make a good basis for modular programming of pipeline systems like those of modern graphics architectures.
 For instance, a pipeline program which takes input of type $A$ at the first stage and produces an output of type $B$ at the second stage 
 would simply be encoded by a function of type $A \to \fut B$.
 
 \begin{lstlisting} 
-1`fun par (pipe1 : A -> $`2`B`1`, pipe2 : C -> $`2`D`1`) 
-         (a : A, c : C) = 
-  next{`2`(prev{`1`pipe1 a`2`}, prev{`1`pipe2 c`2`}`1`}
+1`datatype object = ...`
+2`atsignnext{
+  type coord = int * int
+  type color = int
+}`
+
+1`fun sum (f : object * $2`coord` -> $2`color`,
+         g : object * $2`coord` -> $2`color`)
+        (x : object, next{2`c`} : $2`coord`) : $2`color` =
+  2`prev{`1`f (x,next{2`c`})`2`} + prev{`1`g (x,next{2`c`})`2`}`
 \end{lstlisting}
 
 Most pipeline programming models either force the user to manually split their programs (which harms modularity).
