@@ -1,4 +1,3 @@
-\newcommand{\langname}{LAMDA12\xspace}
 \section{Introduction}
 
 Consider a function that takes as arguments an $x$ and $y_1 \ldots
@@ -96,9 +95,9 @@ program is that the latter has lost no generality: it works with all
 arguments, whereas the partially evaluated program is specialized for
 a particular value of $x$ ($x = [~]$ in the example).  Thus, the pass
 separation can be applied without leading to any loss of generality.
-In fact, this is quite natural: going back to the terminology of
-Jorring and Scherlis, pass separation is a frequency reduction,
-whereas as partial evaluation and meta-programming are precomputation
+In fact, this is quite natural---in the terminology of
+J{\o}rring and Scherlis, pass separation is a frequency reduction,
+whereas as partial evaluation and metaprogramming are precomputation
 techniques. Consequently, if desired, partial evaluation can be
 orthogonally applied to a stratified program.
 
@@ -115,7 +114,7 @@ orthogonally applied to a stratified program.
 % automatically.)
 
 
-But what is the benefit or pass separation? The big benefit is
+But what is the benefit of pass separation? The big benefit is
 efficiency. By stratifying the program, pass separation factors out
 frequently used the parts of computation, computes them first, and
 then reuse them later instead of computing them again.  Since it can
@@ -149,11 +148,11 @@ time.''
 
 In this paper we make significant progress on the problem of automatic
 stratification of higher-order functional programs.  As our starting
-point, we take the modal language \langname with explicit staging in
+point, we take the modal language \lang\ with explicit staging in
 the style of Davies~\cite{davies96}, where the ``circle'' modality
 denotes computation in a later stage, and present a staged operational
 semantics similar for \lang\ (\ref{sec:stagedsemantics}).  We then
-present a splitting algorithm that stratifies a \langname program into
+present a splitting algorithm that stratifies a \lang\ program into
 a two mono-staged programs, one for the first stage and for the second
 stage (\ref{sec:splitting}).  Since each program is monostaged, they
 are expressed in conventional functional languages.
