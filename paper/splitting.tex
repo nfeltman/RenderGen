@@ -16,10 +16,10 @@ In this section, we present a \emph{splitting algorithm} which
 statically converts a term in \lang\ into a pair of separate,
 monostaged terms that individually correspond to the first and second
 stage computations of the \lang\ term. Due to important differences in
-structure, we describe both the correctness condition and algorithm
-for splitting of \bbonem\ terms separately from that of \bbtwo\ terms.
-By construction, \bbonep\ terms are monostage and do not require
-splitting.
+structure, we describe both the splitting correctness condition and
+splitting algorithm for \bbonem\ terms separately from that of
+\bbtwo\ terms.  By construction, \bbonep\ terms are monostage and do
+not require splitting.
 
 %The output of splitting is simpler because it is {\em syntactically separated};
 %The output of splitting is equivalent (to its input) because it can be
@@ -27,6 +27,9 @@ splitting.
 %\ref{sec:semantics}.
 
 %More precisely
+
+As described in \ref{sec:example}, 
+
 For any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
 $e$ splits into a syntactically separated program $\mathcal{P}$ 
 (via the new relation $e \splittwosym \mathcal{P}$) which is
