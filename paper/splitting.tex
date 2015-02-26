@@ -13,16 +13,21 @@
 %within terms.
 
 In this section, we present a \emph{splitting algorithm} which
-statically converts a term in \lang\ into a pair of 
-%syntactically % I don't like this word but temporarily here for continuity
-separate, monostaged programs that correspond to the first and second stage computations in that term.
+statically converts a term in \lang\ into a pair of separate,
+monostaged terms that individually correspond to the first and second
+stage computations of the \lang\ term. Due to important differences in
+structure, we describe both the correctness condition and algorithm
+for splitting of \bbonem\ terms separately from that of \bbtwo\ terms.
+By construction, \bbonep\ terms are monostage and do not require
+splitting.
 
 %The output of splitting is simpler because it is {\em syntactically separated};
 %The output of splitting is equivalent (to its input) because it can be
 %evaluated to the same residual that would be produced by the semantics of
 %\ref{sec:semantics}.
 
-More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
+%More precisely
+For any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
 $e$ splits into a syntactically separated program $\mathcal{P}$ 
 (via the new relation $e \splittwosym \mathcal{P}$) which is
 reduced to a residual $q'$ (via the new relation $\mathcal{P} \sepredtwosym q'$), which is the same as $q$ up to an equivalence.
@@ -39,9 +44,9 @@ $\sepredtwosym$ is defined by a single rule, which evaluates the precomputation 
 We call $b$ the {\em boundary value} resulting from the split since it represents the data communicated between the first and second stage computations.
 A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
 
-Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via
-\texttt{prev}), splitting is also defined on \bbonem\ terms.  However,
-defining correctness requirements for splitting \bbonem\ terms is
+%Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via
+%\texttt{prev}), splitting is also defined on \bbonem\ terms.  However,
+Defining the correctness requirements for splitting \bbonem\ terms is
 challenging because unlike \bbtwo\ terms (which reduce to monostage
 residuals that can be directly compared to the monostage result of
 $\sepredtwosym$), \bbonem\ terms reduce to partial values and residual
@@ -105,18 +110,16 @@ reduces to a multi-stage residual table and partial value, its first
 stage computations serve to both generate the value used as input for
 the second stage {\em and also} produce a first-stage value.
 Correspondingly, in the $\sepredtwosym$ rule, the precomputation $p$
-generated via splitting reduces only to a boundary value which is
+generated via splitting reduces only to a boundary value $b$ which is
 passed to the resumer; but in the $\sepredonesym$ rule, the combined
 term $c$ reduces to a tuple containing both the first stage result $i$
-and the boundary value $b$ provided as input to the resumer.  A
-summary of the relationship between the results of directly evaluating
-\lang\ and the results of splitting is provided at left in
-\ref{fig:splittingSummary}.
+and the boundary value $b$. A summary of the relationship between the
+results of directly evaluating \lang\ and the results of splitting is
+provided at left in \ref{fig:splittingSummary}.
 
-In the following subsections we formally define the masking
-transformation ($\vsplito$), then describe the algorithm for splitting
-both \bbonem\ terms ($\splitonesym$) and \bbtwo\ terms
-($\splittwosym$).
+The following subsections formally define the masking transformation
+($\vsplito$), then describe the algorithm for splitting both
+\bbonem\ terms ($\splitonesym$) and \bbtwo\ terms ($\splittwosym$).
   
 \subsection{Masking}
 
