@@ -10,11 +10,11 @@ algorithm does not type its output.
 
 \subsection{Dot Product}
 
-Our first example takes the dot product of two three-dimensional integer
-vectors, where the first two coordinates are first-stage, and the last
-coordinate is second-stage. \texttt{dot} is a first-order, non-recursive
-function---precisely the sort of code studied in prior work on pass separation
-for imperative languages. (A very similar example appears in \cite{knoblock96}.)
+Our first example, \texttt{dot}, appears in \cite{knoblock96}. \texttt{dot} is a
+first-order, non-recursive function---precisely the sort of code studied in
+prior work on pass separation for imperative languages. \texttt{dot} takes the
+dot product of two three-dimensional integer vectors, where the first two
+coordinates are first-stage, and the last coordinate is second-stage. 
 %
 \begin{lstlisting} 
 1`type vec = ^int * ^int * $`2`int`
@@ -52,9 +52,10 @@ that they write the precomputation into a mutable cache.
 
 \subsection{Exponentiation by Squaring}
 
-Our next example computes $b^e$ using exponentiation by squaring, where $e$ is
-known at the first stage, and $b$ is known at the second stage. This is a common
-example in the partial evaluation literature (for example, in \cite{jones96}).
+Our next example, \texttt{exp}, is a mainstay of the partial evaluation
+literature (for example, in \cite{jones96}). \texttt{exp} recursively computes
+$b^e$ using exponentiation by squaring, where $e$ is known at the first stage,
+and $b$ is known at the second stage. 
 %
 \begin{lstlisting} 
 1`fun exp (next{`2`b`1`} : $`2`int`1` , `3`grnd{`1`e`3`}`1` : ^int) = 
@@ -99,11 +100,11 @@ determine how to compute with $b$.
 
 Of course, the \texttt{binnat} computed by \texttt{exp1} is precisely the binary
 representation of $e$! While partial evaluation realizes \texttt{exp}'s
-control-flow dependency on $e$ by recursively expanding its branches in place,
-we realize this dependency explicitly in the boundary data structure. This
-occurs in the $\splitonesym$ rule for \texttt{case}, which emits a tag
-corresponding to the taken branch in the precomputation, and \texttt{case}s on
-it (as $l_b$) in the residual.
+control-flow dependency on a fixed $e$ by recursively expanding its branches in
+place, we explicitly record this dependency generically over all $e$ by creating
+a boundary data structure. This occurs in the $\splitonesym$ rule for
+\texttt{case}, which emits a tag corresponding to the taken branch in the
+precomputation, and \texttt{case}s on it (as $l_b$) in the residual.
 
 Because splitting \texttt{exp} does not eliminate its conditionals, partial
 evaluation is more useful in this case. (Notice, however, that partially
@@ -172,9 +173,9 @@ of the code; ordinarily, the quickselect algorithm only explores a single
 branch, but the staging annotations force the entire tree to be built.
 
 This is an instance where stage-splitting is more practical than partial
-evaluation---if $l$ is large, partially evaluating \texttt{quickselect} would
-yield a huge code blowup, simultaneously encoding the tree and traversal
-algorithm in code. (Avoiding the code blowup, by not expanding some calls to
+evaluation---if $l$ is large, partially evaluating \texttt{quickselect} requires
+runtime generation of a huge amount of code simultaneously encoding the tree and
+traversal algorithm. (Avoiding the code blowup, by not expanding some calls to
 \texttt{partition}, would result in duplicating first-stage computations.)
 
 Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
