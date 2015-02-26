@@ -85,15 +85,15 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \begin{abstrsyn}
 
 We evaluate \lang\ terms in two stages. The first stage of evaluation has 
-three interdependent modes of operation, depending on the world of the term it is evaluating.
+three mutually recursive modes of operation, depending on the world of the term it is evaluating.
 Specifically, first stage evaluation:
-\begin{enumerate}
+\begin{itemize}
 \item fully reduces terms in \bbonep, as they are purely first-stage;
 \item reduces terms in \bbonem, save for any world \bbtwo\ terms they may
 contain (inside \texttt{next}s);
 \item scans terms in \bbtwo\ for any world \bbonem\ subterms (inside \texttt{prev}s), 
 and reduces those in place.
-\end{enumerate}
+\end{itemize}
 These tasks are accomplished by the $\redsym$, $\redonesym$, and $\redtwosym$
 big-step judgments, respectively (defined in \ref{fig:diaSemantics}).
 

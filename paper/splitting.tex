@@ -90,17 +90,22 @@ and finally coming back to define \bbtwo-translation ($\splittwosym$).
 
 \subsection{Masking}
 
-The point of the masking operation is simply to convert a partial value into a masked value $\mval i q$
-by assigning all of the first-stage content to $i$ and all of the second-stage content to $q$.
-The rules of the masking relation are given in \ref{fig:valMask}.
+The masking operation converts a partial value into a masked value $\mval i q$,
+where $i$ is a monostage value encoding all of the first-stage information of the original partial value,
+and $q$ is a monostage term encoding all of the second-stage information of the original partial value.
+Remember that masking will not play a role in the final splitting algorithm, 
+but instead exists to specify the contract to which splitting at \bbonem\ must adhere.
+Accordingly, masking should be thought of as a definition, and as such it is in some parts arbitrary.
 
+The rules of the masking relation are given in \ref{fig:valMask}.
 Masking operates by first inducting on the entries of the residual table.  
 Being purely second-stage content, these are reified into let statements at the top of the resumer.
 Once the table is empty, masking inducts on value itself.
 
-Masking assigns values in \bbonep\ to the immediate value
+Masking assigns ground values to the immediate value
 and likewise assigns references into the residual table to the resumer.
 In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
+Note that the \texttt{grnd} and \texttt{next} annotations are erased.
 
 Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
 However, the tags of injections and rolls are replicated only in the immediate value, 
