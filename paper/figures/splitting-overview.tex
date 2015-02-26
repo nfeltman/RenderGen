@@ -4,29 +4,25 @@
 \begin{abstrsyn}
 
 \textbf{Splitting Terms at World \bbtwo\ ---
-$\splittwo e A p l r$}
+$\splittwo {\coltwo e A} A p l r$}
 \begin{enumerate}
-\item[] Input $\coltwo e A$ is the \lang\ program to be split.
-\item[] Precomputation $p$ is a monostaged term containing the program's first-stage computations.
-\item[] Resumer $l.r$ is a monostaged term containing the program's second-stage computations.
+\item[] Precomputation $p$ is a monostaged term containing the first-stage computations in $e$.
+\item[] Resumer $l.r$ is a monostaged term containing the second-stage computations in $e$.
 \end{enumerate}
 
 \textbf{Splitting Terms at World \bbonem\ ---
-$\splitone e A c {l.r}$}
+$\splitone {\colmix e A} A c {l.r}$}
 \begin{enumerate}
-\item[] Input $\colmix e A$ is the \lang\ program to be split.
-\item[] Combined result $c$ is a monostage term containing the program's first-stage computations.
-\item[] Resumer $l.r$ is a monostage term containing the program's second-stage computations.
+\item[] Combined result $c$ is a monostage term containing the first-stage computations in $e$.
+\item[] Resumer $l.r$ is a monostage term containing the second-stage computations in $e$.
 \end{enumerate}
 
-\textbf{Masking Partial Values ---
+\textbf{Masking ---
 $\rtab \xi v \vsplito \mval i q$}
 \begin{enumerate}
 \item[] Input $\rtab \xi v$ is the residual table and partial value to be masked.
-\item[] Immediate result $i$ is a monostaged value representing the first-stage
-result.
-\item[] Residual $q$ is a monostaged term representing the second-stage work
-left to do.
+\item[] Immediate value $i$ is a monostage value representing the first-stage components of $v$.
+\item[] Residual $q$ is a monostaged term representing the second-stage computations in $\xi$ and $v$.
 \end{enumerate}
 
 \hrule
@@ -35,8 +31,8 @@ left to do.
 \centering
 \setlength{\unitlength}{2.8pt}
 \begin{tabular}{c|c}
-{\Large \bf Splitting at World \bbonem} & 
-{\Large \bf Splitting at World \bbtwo} \\ \hline
+{\large \bf Splitting at World \bbonem} & 
+{\large \bf Splitting at World \bbtwo} \\
 
 \begin{picture} (80,54) (10,30)
 
@@ -58,7 +54,7 @@ left to do.
 \put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splitonesym\right)$}}
 \put(25,33){\makebox[50 \unitlength]{Masking $\left(\vsplito\right)$}}
 \put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\$\reduce c {\tup{i,b}}$\\$q\equiv [b/l]r$ }}
-\put(9,55){\parbox[r]{20 \unitlength}{Interleaved \\ Evaluation: \\$\diaone e \xi v$}}
+\put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\$\diaone e \xi v$}}
 
 \put(28,66){\parbox[t]{44 \unitlength}{ 
 	\textbf{Correctness Condition:} \\ 
@@ -87,7 +83,7 @@ left to do.
 
 \put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splittwosym\right)$}}
 \put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\ $\reduce p b$\\$q\equiv [b/l]r$}}
-\put(9,55){\parbox[r]{20 \unitlength}{Interleaved \\ Evaluation: \\ $\diatwo e q$}}
+\put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\ $\diatwo e q$}}
 
 \put(28,66){\parbox[t]{44 \unitlength}{ 
 	\textbf{Correctness Condition:} \\ 
