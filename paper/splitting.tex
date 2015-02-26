@@ -21,68 +21,55 @@ splitting algorithm for \bbonem\ terms separately from that of
 \bbtwo\ terms.  By construction, \bbonep\ terms are monostage and do
 not require splitting.
 
-%The output of splitting is simpler because it is {\em syntactically separated};
-%The output of splitting is equivalent (to its input) because it can be
-%evaluated to the same residual that would be produced by the semantics of
-%\ref{sec:semantics}.
-
-%More precisely
-
-As described in \ref{sec:example}, 
-
-For any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
-$e$ splits into a syntactically separated program $\mathcal{P}$ 
-(via the new relation $e \splittwosym \mathcal{P}$) which is
-reduced to a residual $q'$ (via the new relation $\mathcal{P} \sepredtwosym q'$), which is the same as $q$ up to an equivalence.
-By ``syntactically separated'' we mean that $\mathcal{P}$ 
-has the form $\pipeS p l r$, where  
-$p$ (called the {\em precomputation}) is a monostage term representing all the
-first-stage computations in $e$, 
-and $l.r$ (called the {\em resumer}) is a monostage term representing all the
-second-stage computations in $e$.  
-$\sepredtwosym$ is defined by a single rule, which evaluates the precomputation and substitutes the resulting value in for $l$ in the resumer:
+\textbf{Correctness condition for \bbtwo\ term splitting.}
+Intuitively, as suggested in \ref{sec:example}, splitting a
+\lang\ program (a \bbtwo\ term) should yield two monostage terms where
+evaluating the second term (corresponding to second stage
+computations) on the output of the first (first stage computations),
+yields the same result as direct evaluation of the \lang\ program.
+More precisely, for any $\coltwo e A$ which reduces to a residual $q$
+(via $\diatwo e q$), $e$ splits into a syntactically separated program
+$\mathcal{P}$ (via the new relation $e \splittwosym \mathcal{P}$)
+which is reduced to a residual $q'$ (via the new relation $\mathcal{P}
+\sepredtwosym q'$), which is the same as $q$ up to an equivalence.  By
+``syntactically separated'' we mean that $\mathcal{P}$ has the form
+$\pipeS p l r$, where $p$ (called the {\em precomputation}) is a
+monostage term representing all the first-stage computations in $e$,
+and $l.r$ (called the {\em resumer}) is a monostage term representing
+all the second-stage computations in $e$.  $\sepredtwosym$ is defined
+by a single rule, which evaluates the precomputation and substitutes
+the resulting value in for $l$ in the resumer:
 \[
 \infer{\sepredtwo {\pipeS p l r} {[b/l]r}} {\reduce p b}
 \]
 We call $b$ the {\em boundary value} resulting from the split since it represents the data communicated between the first and second stage computations.
 A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
 
-%Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via
-%\texttt{prev}), splitting is also defined on \bbonem\ terms.  However,
-Defining the correctness requirements for splitting \bbonem\ terms is
+\textbf{Correctness condition for \bbonem\ term splitting.} Defining
+the correctness requirements for splitting \bbonem\ terms is
 challenging because unlike \bbtwo\ terms (which reduce to monostage
 residuals that can be directly compared to the monostage result of
 $\sepredtwosym$), \bbonem\ terms reduce to partial values and residual
 tables that represent computations at both stages.
 %One complication arises from the fact that \lang\ terms at world \bbonem\ produce multistage output.
-For example, the \bbonem\ term:
-\begin{lstlisting}
-(next {1+2}, grnd{3+4})
-\end{lstlisting}
-reduces (via $\redonesym$) to the residual table and partial value:
-\begin{lstlisting}
-[yhat |-> 1+2] (next {yhat}, grnd{7})
-\end{lstlisting}
+%For example, the \bbonem\ term:
+%\begin{lstlisting}
+%(next {1+2}, grnd{3+4})
+%\end{lstlisting}
+%reduces (via $\redonesym$) to the residual table and partial value:
+%\begin{lstlisting}
+%[yhat |-> 1+2] (next {yhat}, grnd{7})
+%\end{lstlisting}
 
 To resolve the mismatch between the multi-stage computations
-represented by residual tables and partial values and the desired monostaged
-outputs of splitting,
-% Since this output has interleaved stages, theres no way a syntactically separated term could directly reduce to it.
-we choose to define a translation, called {\em masking}, written $\rtab \xi v \vsplito \mval i q$,
-which converts residual tables and partial values into a syntactically separated {\em masked value}.
-%version $\mathcal{V}$.
-%As before, we enforce the ``syntactically separated'' property by defining $\mathcal{V}$ to have the form $\mval i q$ (called a {\em masked value})
-The first component of the masked value, $i$, is a value holding the
-result of all first stage computations in $v$.  The second component,
-$q$, is a residual representing all second stage computations in $\rtab
-\xi v$.
-
-%where 
-%$i$ is a monostage value representing the first stage part of $v$,
-%and $q$ is a monostage term representing all second-stage computations in $\xi$ and $v$.
-
-%Note that masking is a technical device used to state the correctness of splitting at \bbonem; 
-%it is not part of the splitting algorithm itself.
+represented by residual tables and partial values and the desired
+monostaged outputs of splitting, we choose to define a translation,
+called {\em masking}, written $\rtab \xi v \vsplito \mval i q$, which
+converts residual tables and partial values into a syntactically
+separated {\em masked value}.  The first component of the masked
+value, $i$, is a value holding the result of all first stage
+computations in $v$.  The second component, $q$, is a residual
+representing all second stage computations in $\rtab \xi v$.
 
 We define the requirements for splitting \bbonem\ terms using the
 results of masking. Specifically, for any $\colmix e A$ which reduces
@@ -93,9 +80,6 @@ seperated program $\mathcal{P}$ (via the new relation $e \splitonesym
 the new relation $\sepredtwosym$) where $q'$ is the same as $q$ up to
 an equivalence.
 
-%Given the definition of masking, \bbonem\ terms split via the new
-%relation $e \splitonesym \mathcal{P}$, where $\mathcal{P}$ must have
-%the form $\pipeM c l r$
 Similar to \bbtwo\ term splitting, $\mathcal{P}$ takes the form
 $\pipeM c l r$ where $c$ (called the {\em combined term}) is a
 monostage term encoding all the first-stage computations in $e$, and
