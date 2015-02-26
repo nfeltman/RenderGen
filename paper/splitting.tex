@@ -26,17 +26,16 @@ splitting.
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
 $\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
-yields a pair of monostaged terms $p$ (containing first stage
-computations in $e$) and $l.r$ (containing second stage computations
-in $e$). Executing $p$ in a first pass produces $b$ (via $\reduce p
-b$). Then, in a second pass, $\reduce {[b/l]r} {v'} = v$.  Since
-execution of the first pass serves to generate input for the second
-pass, we say $p$ is a {\em precomputation} that produces a {\em
-  boundary value} ($b$) that is communicated to the {\em resumer}
-($l.r$).
+yields a pair of monostaged terms $p$ (containing all first stage
+computations in $e$) and $l.r$ (containing all second stage
+computations in $e$). Executing $p$ in a first pass produces $b$ (via
+$\reduce p b$). Then, in the second pass, $\reduce {[b/l]r} {v'} = v$.
+Since execution of the first pass serves to generate input for the
+second pass, we say $p$ is a {\em precomputation} that produces a {\em
+  boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-The process of splitting \bbtwo\ terms is given by via the new
-relation~$\splittwosym$.
+% The process of splitting \bbtwo\ terms is given by via the new
+% relation~$\splittwosym$.
 
 % (and the relationship of these
 % operations to the outputs of direct \lang\ evaluation) is provided at
