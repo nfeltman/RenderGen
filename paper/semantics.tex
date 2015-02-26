@@ -42,7 +42,7 @@ a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
 %\bbtwo\ to stage \bbone, and what makes splitting possible.
 
 Although products and functions are restricted to types at the same world,
-$\fut$ allows costruction of ``mixed-stage'' products and functions.
+$\fut$ allows construction of ``mixed-stage'' products and functions.
 For example, quickselect is a function at world \bbonem\ which takes a
 $\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
 second-stage integer) to a $\fut\rmint$ (a second-stage
@@ -84,16 +84,22 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 
 \begin{abstrsyn}
 
-We evaluate \lang\ terms in two stages. The first stage of evaluation has 
-three interdependent modes of operation, depending on the world of the term it is evaluating.
-Specifically, first stage evaluation:
-\begin{enumerate}
+Although the type system of \lang\ (specifically, the opaque nature of $\fut$
+types) ensures that we can perform all first-stage computations before any
+second-stage ones, the fact that first- and second-stage computations are
+interleaved in \lang\ terms means that realizing this notion of staged
+evaluation requires some care.
+
+We evaluate \lang\ terms in two stages. The first stage of evaluation has three
+mutually recursive modes of operation, depending on the world of the term it is
+evaluating. Specifically, first stage evaluation:
+\begin{itemize}
 \item fully reduces terms in \bbonep, as they are purely first-stage;
 \item reduces terms in \bbonem, save for any world \bbtwo\ terms they may
 contain (inside \texttt{next}s);
 \item scans terms in \bbtwo\ for any world \bbonem\ subterms (inside \texttt{prev}s), 
 and reduces those in place.
-\end{enumerate}
+\end{itemize}
 These tasks are accomplished by the $\redsym$, $\redonesym$, and $\redtwosym$
 big-step judgments, respectively (defined in \ref{fig:diaSemantics}).
 

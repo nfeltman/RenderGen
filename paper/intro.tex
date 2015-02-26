@@ -15,47 +15,40 @@ fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ =
 %% takes time $O(n \cdot m)$ where $n$ is the size of the input $x_0$.
 
 Such computations, where we apply a multivariate function to arguments
-where one of the argument remains the same are common.  In fact, many
-research problems aim at improving efficiency of such functions.  For
+where one of the argument remains the same are common. In fact, many
+research problems aim to improve the efficiency of such functions.  For
 example, algorithm design techniques such as dynamic programming
-identify the computation in $f$ that depend on $x$ try to ensure that
+identify the computation in $f$ that depend on $x$, and try to ensure that
 such computations are performed no more than once.  Similarly, crucial
 compiler optimization techniques such as loop hoisting and common
-subexpression elimination take identify common computations across all
+subexpression elimination identify common computations across all
 invocations of $f$ and perform them once and for all at the beginning
 of the computation. The whole area of incremental computation aims at
 adapting a computation to small changes, which may be applicable to
-this problem depending on the closeness of $y_i$'s.
+this problem if the $y_i$'s are sufficiently similar.
 
 The common theme in all such design and optimization techniques is to
-achieve what Jorring and Scherlis back in 1980's called: {\em
-  frequency reduction} or {\em precomputation}~\cite{JS86-staging}.
+achieve what in the 1980s J{\o}rring and Scherlis called {\em
+frequency reduction} or {\em precomputation}~\cite{JS86-staging}.
 The idea behind frequency reduction is to identify computations that
-are performed multiple times and pull them ahead so that they can be
+are performed multiple times and hoist them so that they can be
 performed once and used later as needed.  The idea behind
 precomputation is to identify computations that can be performed
-earlier, for example at compile time if their inputs are available
-statically and perform them at that earlier time. 
-
+earlier---for example, at compile time if their inputs are known
+statically---and perform them at that earlier time. 
 
 There has been much work on language-based techniques for performing
 frequency reduction and precomputation.  Broadly speaking, these
 techniques can be categorized into
 \begin{itemize}
-\item 
-partial evaluation,
-
-\item
-meta programming, and
-
-\item 
-pass separation or data specialization.
-
+\item partial evaluation,
+\item metaprogramming, and
+\item pass separation or data specialization.
 \end{itemize}
 
-Partial evaluation performs precomputation by distinguishing between a
-{\em static} and {\em dynamic} stage and performs all static
-computations first, followed be the dynamic stage.  For example,
+Partial evaluation achieves precomputation by distinguishing between 
+{\em static} and {\em dynamic} stages, and performing all static
+computations first, followed by dynamic ones.  For example,
 suppose that we wish to compute $F(x, y_0 \ldots y_{m-1})$ for a
 statically known $x = [~]$.  We can derive a specialization of $f$ at
 $[~]$, written $f_{[~]}$, such that $f(x,y) = f_{[~]}(y)$ and specialize $F$
@@ -70,9 +63,9 @@ binding-time analysis to determine the static and dynamic parts of $f$
 and $F$ and specializes them based on the results of the binding-time
 analysis.
 
-A closely related technique, {\em meta programming} enables the
+A closely related technique, {\em metaprogramming}, enables the
 programmer to write a program that takes the static values and
-generates a specialized program for those values.  Meta programming
+generates a specialized program for those values.  Metaprogramming
 gives the programmer relatively fine-grained control over partial
 evaluation by requiring staging annotations in the program.  Such
 staging annotations make explicit the stage of each computation and
@@ -138,8 +131,10 @@ multiple strata and because modification to any one stratum requires
 modifying all others to match.  Ideally, we wish to write just one
 program and stratify it into multiple strata automatically.  But such
 automatic stratification turns out to be challenging: the first
+
+Such automatic stratification turns out to be challenging: the first
 successful approach that we know of is by Knoblock and
-Ruf\,\cite{knoblock96}, which like our work was inspired by computer
+Ruf\,\cite{knoblock96}, which, like our work, was inspired by computer
 graphics applications.  While practically effective, Knoblock and Ruf
 consider only a very simple language and are not able to stratify
 recursive programs.  Recent
@@ -155,13 +150,13 @@ time.''
 In this paper we make significant progress on the problem of automatic
 stratification of higher-order functional programs.  As our starting
 point, we take the modal language \langname with explicit staging in
-the style of Davies~\cite{Davies}, where the ``circle'' modality
+the style of Davies~\cite{davies96}, where the ``circle'' modality
 denotes computation in a later stage, and present a staged operational
-semantics similar for \langname (\secref{language}).  We then present
-a splitting algorithm that stratifies a \langname program into a two
-mono-staged programs, one for the first stage and for the second stage
-(\secref{splitting}).  Since each program is at a mono-stage, they are
-expressed in conventional function languages.
+semantics similar for \lang\ (\ref{sec:stagedsemantics}).  We then
+present a splitting algorithm that stratifies a \langname program into
+a two mono-staged programs, one for the first stage and for the second
+stage (\ref{sec:splitting}).  Since each program is monostaged, they
+are expressed in conventional functional languages.
 
 The crux of the splitting algorithm is splitting recursive mixed stage
 functions that involve both a first stage and second stage
@@ -184,9 +179,10 @@ Since it deals with unrestricted recursion and a rich language
 consisting of first-class functions, recursion, and sum and recursive
 types, the splitting algorithm is naturally complex. With some care,
 the algorithm nevertheless can be specified reasonably succinctly.  In
-fact, we have implemented the algorithm (\secref{implementation}) and
-applied to several examples (\secref{examples}).  As an interesting
-example, we consider a function
+fact, we have implemented the algorithm (\ref{sec:implementation}) and
+applied to several examples (\ref{sec:examples}).  As an interesting
+example, we show that a function 
+
 \begin{lstlisting}
 fun @$F(x, y_0, y_1 \ldots y_{m-1}$@ = 
   @$f(x, y_0);  f(x, y_1)  \ldots f(x, y_{m-1})$@,
