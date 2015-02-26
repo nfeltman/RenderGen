@@ -3,16 +3,6 @@
 \begin{figure*}
 \begin{abstrsyn}
 
-\textbf{Masking Partial Values ---
-$\rtab \xi v \vsplito \mval i q$}
-\begin{enumerate}
-\item[] Input $\rtab \xi v$ is the residual table and partial value to be masked.
-\item[] Immediate result $i$ is a monostaged value representing the first-stage
-result.
-\item[] Residual $q$ is a monostaged term representing the second-stage work
-left to do.
-\end{enumerate}
-
 \textbf{Splitting Terms at World \bbtwo\ ---
 $\splittwo e A p l r$}
 \begin{enumerate}
@@ -27,6 +17,16 @@ $\splitone e A c {l.r}$}
 \item[] Input $\colmix e A$ is the \lang\ program to be split.
 \item[] Combined result $c$ is a monostage term containing the program's first-stage computations.
 \item[] Resumer $l.r$ is a monostage term containing the program's second-stage computations.
+\end{enumerate}
+
+\textbf{Masking Partial Values ---
+$\rtab \xi v \vsplito \mval i q$}
+\begin{enumerate}
+\item[] Input $\rtab \xi v$ is the residual table and partial value to be masked.
+\item[] Immediate result $i$ is a monostaged value representing the first-stage
+result.
+\item[] Residual $q$ is a monostaged term representing the second-stage work
+left to do.
 \end{enumerate}
 
 \hrule
