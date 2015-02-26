@@ -197,33 +197,33 @@ Such a combinator, which operates over both stages at once, is possible because 
 
 Note that we have to define a datatype for integer lists at the second stage, which is given by \texttt{list2}.
 \begin{lstlisting} 
-atsignnext{
+1`atsignnext{`2`
   datatype list2 = Empty2 | Cons2 of int * list2
-}
+`1`}
 
-type qsType = ^list*$int->$int
+type qsType = ^list*$`2`int`1`->$`2`int`1`
 
-// map : qsType -> ^list * $list2 -> $list2
+// map : qsType -> ^list * $`2`list2`1` -> $`2`list2`1`
 fun map f (l, q) = 
-next {
+next {`2`
   let 
   fun m Empty2 = Empty2
-    | m (Cons2(h,t)) = Cons2(prev{f (l,next{h})}, m t)
-  in m prev{q}
-}
+    | m (Cons2(h,t)) = Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
+  in m prev{`1`q`2`}
+`1`}
 
-val qsMany = map qs
+val qsMany = map qs`
 \end{lstlisting}
 The \texttt{map} function splits into the following two functions:
 \begin{lstlisting} 
-datatype list2 = Empty2 | Cons2 of int * list2
+2`datatype list2 = Empty2 | Cons2 of int * list2
 
-fun map1 f = (fn (l,()) => ((), #2 (f (l, ()))), ())
-fun map2 (f,()) ((l,q), p : tree) =
+`1`fun map1 f = (fn (l,()) => ((), #2 (f (l, ()))), ())
+`2`fun map2 (f,()) ((l,q), p : tree) =
   let 
   fun m Empty2 = Empty2
     | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
-  in m q
+  in m q`
 \end{lstlisting}
 
 As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
@@ -236,9 +236,9 @@ For instance, a pipeline program which takes input of type $A$ at the first stag
 would simply be encoded by a function of type $A \to \fut B$.
 From here, we could define combinators to combine pipelines, such as,
 \begin{lstlisting} 
-fun par (pipe1 : A -> $B, pipe2 : C -> $D) 
+1`fun par (pipe1 : A -> $`2`B`1`, pipe2 : C -> $`2`D`1`) 
          (a : A, c : C) = 
-  next{(prev{pipe1 a}, prev{pipe2 c}}
+  next{`2`(prev{`1`pipe1 a`2`}, prev{`1`pipe2 c`2`}`1`}
 \end{lstlisting}
 which takes two pipelines makes a pipeline on the products of their inputs and outputs.
 
