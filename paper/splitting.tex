@@ -13,16 +13,21 @@
 %within terms.
 
 In this section, we present a \emph{splitting algorithm} which
-statically converts a term in \lang\ into a pair of 
-%syntactically % I don't like this word but temporarily here for continuity
-separate, monostaged programs that correspond to the first and second stage computations in that term.
+statically converts a term in \lang\ into a pair of separate,
+monostaged terms that individually correspond to the first and second
+stage computations of the \lang\ term. Due to important differences in
+structure, we describe both the correctness condition and algorithm
+for splitting of \bbonem\ terms separately from that of \bbtwo\ terms.
+By construction, \bbonep\ terms are monostage and do not require
+splitting.
 
 %The output of splitting is simpler because it is {\em syntactically separated};
 %The output of splitting is equivalent (to its input) because it can be
 %evaluated to the same residual that would be produced by the semantics of
 %\ref{sec:semantics}.
 
-More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
+%More precisely
+For any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
 $e$ splits into a syntactically separated program $\mathcal{P}$ 
 (via the new relation $e \splittwosym \mathcal{P}$) which is
 reduced to a residual $q'$ (via the new relation $\mathcal{P} \sepredtwosym q'$), which is the same as $q$ up to an equivalence.
@@ -39,12 +44,13 @@ $\sepredtwosym$ is defined by a single rule, which evaluates the precomputation 
 We call $b$ the {\em boundary value} resulting from the split since it represents the data communicated between the first and second stage computations.
 A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
 
-Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via \texttt{prev}), splitting is also defined on 
-\bbonem\ terms.
-However, defining correctness requirements for splitting \bbonem\ terms is
+%Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via
+%\texttt{prev}), splitting is also defined on \bbonem\ terms.  However,
+Defining the correctness requirements for splitting \bbonem\ terms is
 challenging because unlike \bbtwo\ terms (which reduce to monostage
-residuals), \bbonem\ terms reduce to partial values and
-residual tables that represent computations at both stages.
+residuals that can be directly compared to the monostage result of
+$\sepredtwosym$), \bbonem\ terms reduce to partial values and residual
+tables that represent computations at both stages.
 %One complication arises from the fact that \lang\ terms at world \bbonem\ produce multistage output.
 For example, the \bbonem\ term:
 \begin{lstlisting}
@@ -59,13 +65,14 @@ To resolve the mismatch between the multi-stage computations
 represented by residual tables and partial values and the desired monostaged
 outputs of splitting,
 % Since this output has interleaved stages, theres no way a syntactically separated term could directly reduce to it.
-we define a translation, called {\em masking}, written $\rtab \xi v \vsplito \mathcal{V}$,
-which converts residual tables and partial values into a syntactically separated {\em masked value} of the form $\mval i q$.
+we choose to define a translation, called {\em masking}, written $\rtab \xi v \vsplito \mval i q$,
+which converts residual tables and partial values into a syntactically separated {\em masked value}.
 %version $\mathcal{V}$.
 %As before, we enforce the ``syntactically separated'' property by defining $\mathcal{V}$ to have the form $\mval i q$ (called a {\em masked value})
-The first component, $i$ of the masked value holds the result of all
-first stage computations in $v$.  The second component, $q$ is a
-residual representing all second stage computations in $\rtab \xi v$.
+The first component of the masked value, $i$, is a value holding the
+result of all first stage computations in $v$.  The second component,
+$q$, is a residual representing all second stage computations in $\rtab
+\xi v$.
 
 %where 
 %$i$ is a monostage value representing the first stage part of $v$,
@@ -74,46 +81,45 @@ residual representing all second stage computations in $\rtab \xi v$.
 %Note that masking is a technical device used to state the correctness of splitting at \bbonem; 
 %it is not part of the splitting algorithm itself.
 
-Given this definition of masking, the requirements for splitting
-\bbonem\ terms are as follows. For any $\colmix e A$ which reduces to
-$\rtab \xi v$ (via $\redonesym$), $\rtab \xi v$ masks to $\mval i q$
-(via $\vsplito$), $e$ splits into a syntactically seperated program
-$\mathcal{P}$ of the form $\pipeM c l r$ (via the new relation $e
-\splitonesym \mathcal{P}$) which is reduced to a masked value $\mval i
-{q'}$ (via the new relation $\sepredtwosym$) where $q'$ is the same as
-$q$ up to an equivalence.
+We define the requirements for splitting \bbonem\ terms using the
+results of masking. Specifically, for any $\colmix e A$ which reduces
+to $\rtab \xi v$ (via $\redonesym$), masking yields the masked value
+$\mval i q$ (via $\vsplito$).  Then $e$ splits into a syntactically
+seperated program $\mathcal{P}$ (via the new relation $e \splitonesym
+\mathcal{P}$) which is reduced to a masked value $\mval i {q'}$ (via
+the new relation $\sepredtwosym$) where $q'$ is the same as $q$ up to
+an equivalence.
 
 %Given the definition of masking, \bbonem\ terms split via the new
 %relation $e \splitonesym \mathcal{P}$, where $\mathcal{P}$ must have
 %the form $\pipeM c l r$
-where $c$ (called the {\em combined term}) is
-a monostage term encoding all the first-stage computations in $e$, and
+Similar to \bbtwo\ term splitting, $\mathcal{P}$ takes the form
+$\pipeM c l r$ where $c$ (called the {\em combined term}) is a
+monostage term encoding all the first-stage computations in $e$, and
 $l.r$ (again called the {\em resumer}) is a monostage term encoding
-all the second-stage computations in $e$.
-
-Similar to above, we also define a $\sepredtwosym$ relation 
-which can be used to evaluate these seperated world \bbonep\ terms.
-
-Given this definition of masking, we define $\sepredonesym$ by a single rule that creates masked values:
+all the second-stage computations in $e$.  $\sepredonesym$ is defined
+by a single rule that yields masked values:
 \[
 \infer{\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
 \]
-Here we see the primary difference between world \bbtwo\ terms and world \bbonem\ terms.
-Since $\coltwo e A$ reduces to an entirely second-stage result, 
-its first-stage subcomputations only exist to internally pass their value to the
-second stage;
-but since $\colmix e A$ reduces to a multistage result, 
-its first-stage subcomputations exist {\em both} to pass their value to the
-second stage {\em and} to be present in the result.
-Correspondingly, in the $\sepredtwosym$ rule, the precomputation $p$ reduces only to a boundary value which is passed to the resumer;
-but in the $\sepredonesym$ rule, the combined term $c$ reduces to a tuple containing both the immediate result and the boundary value,
-with only the latter being passed to the resumer.
 
-A summary of these operations and the relationship between them is provided on the left side of \ref{fig:splittingSummary}.
+Note that since $\coltwo e A$ reduces to an entirely second-stage
+residual, its first-stage computations only exist to generate input
+for second stage computations.  In contrast, since $\colmix e A$
+reduces to a multi-stage residual table and partial value, its first
+stage computations serve to both generate the value used as input for
+the second stage {\em and also} produce a first-stage value.
+Correspondingly, in the $\sepredtwosym$ rule, the precomputation $p$
+generated via splitting reduces only to a boundary value $b$ which is
+passed to the resumer; but in the $\sepredonesym$ rule, the combined
+term $c$ reduces to a tuple containing both the first stage result $i$
+and the boundary value $b$. A summary of the relationship between the
+results of directly evaluating \lang\ and the results of splitting is
+provided at left in \ref{fig:splittingSummary}.
 
-This section proceeds by defining masking ($\vsplito$), 
-then using masking to motivate the definition of \bbonem-term splitting ($\splitonesym$),
-and finally coming back to define \bbtwo-term splitting ($\splittwosym$).
+The following subsections formally define the masking transformation
+($\vsplito$), then describe the algorithm for splitting both
+\bbonem\ terms ($\splitonesym$) and \bbtwo\ terms ($\splittwosym$).
   
 \subsection{Masking}
 
