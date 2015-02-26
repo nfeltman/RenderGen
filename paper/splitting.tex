@@ -124,23 +124,55 @@ Remember that masking will not play a role in the final splitting algorithm,
 but instead exists to specify the contract to which splitting at \bbonem\ must adhere.
 Accordingly, masking should be thought of as a definition, and as such it is in some parts arbitrary.
 
-The rules of the masking relation are given in \ref{fig:valMask}.
-Masking operates by first inducting on the entries of the residual table.  
-Being purely second-stage content, these are reified into let statements at the top of the resumer.
-Once the table is empty, masking inducts on value itself.
+So to motivate the definition we chose, consider the following residual table and partial value,
+colored as before:
+\begin{lstlisting}
+2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (grnd{7}, next{`2`yhat`1`}))`
+\end{lstlisting}
+To reduce this term to just its first-stage information ($i$ in the output), we start by redacting all of the second stage (blue) parts,
+along with the surrounding \texttt{next} annotations:
+\begin{lstlisting}
+4`##########`1` (`4`######`1`, injL (grnd{7}, `4`######`1`))`
+\end{lstlisting}
+The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
+\begin{lstlisting}
+1`((), injL (grnd{7},()))`
+\end{lstlisting}
+Finally, we drop \texttt{grnd} annotations:
+\begin{lstlisting}
+1`((), injL (7,()))`
+\end{lstlisting}
+To reduce the original partial value to just its second-stage information ($q$ in the output), 
+we start by redacting all \texttt{grnd} blocks, \texttt{next} annotations, and injection tags
+(essentially, the tuple structure is kept, but all other structure is discarded):
+\begin{lstlisting}
+2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
+\end{lstlisting}
+Where the \texttt{grnd} blocks left a hole, we put in a unit values:
+\begin{lstlisting}
+2`[yhat |-> 1+2] (yhat, ((),yhat))`
+\end{lstlisting}
+Finally, we reify the residual table into \texttt{let} bindings:
+\begin{lstlisting}
+2`let yhat = 1+2 in (yhat, ((),yhat))`
+\end{lstlisting}
 
-Masking assigns ground values to the immediate value
-and likewise assigns references into the residual table to the resumer.
-In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
-Note that the \texttt{grnd} and \texttt{next} annotations are erased.
-
-Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
-However, the tags of injections and rolls are replicated only in the immediate value, 
-since they represent first-stage information.
-
-Since lambdas may represent multistage computations, 
+The formal implementation of the masking relation is given in \ref{fig:valMask}.
+Note that since lambdas may represent multistage computations, 
 masking splits the body of lambdas as general world \bbonem\ terms (as described in \ref{sec:split-one}), 
-and packages the resulting terms as functions.
+and packages the resulting terms as functions in both the first and second stage.
+% Masking operates by first inducting on the entries of the residual table.  
+% Being purely second-stage content, these are reified into let statements at the top of the resumer.
+% Once the table is empty, masking inducts on value itself.
+
+% Masking assigns ground values to the immediate value
+% and likewise assigns references into the residual table to the resumer.
+% In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
+% Note that the \texttt{grnd} and \texttt{next} annotations are erased.
+
+% Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
+% However, the tags of injections and rolls are replicated only in the immediate value, 
+% since they represent first-stage information.
 
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
