@@ -117,53 +117,66 @@ The following subsections formally define the masking transformation
 \subsection{Masking}
 \label{sec:masking}
 
-  Masking converts a partial value and associated residual table into a
-masked value $\mval i q$, where $i$ is a monostage value encoding all
-first stage components of the partial value, and $q$ is a monostage
-term encoding all of the second-stage computations of the partial
-value.  Remember that masking will not play a role in the final
-splitting algorithm, but instead exists to specify the contract to
-which splitting at \bbonem\ must adhere.  Accordingly, masking should
-be thought of as a definition, and as such it is in some parts
-arbitrary.
-
-So to motivate the definition we chose, consider the following residual table and partial value,
-colored as before:
+Masking converts a residual table and associated partial value into a
+masked value $\mval i q$.
+%that explicitly separates the first stage components of 
+%result from the residual.
+%where $i$ is a monostage value encoding all
+%first stage components of the partial value, and $q$ is a monostage
+%term encoding all of the second-stage computations of the partial
+%value.
+Masking is not a transformation performed as part of the splitting
+algorithm.  Instead, masking defines an intuitive notion of the first
+stage and second stage ``components'' of residual tables and partial
+values, and it is used to define the requirements of what output
+splitting of \bbonem\ terms must produce.  A precise definition of the
+masking relation is given in \ref{fig:valMask}, but to gain intuition
+about the intent of masking operations, consider the following
+residual table and partial value, colored as before:
 \begin{lstlisting}
 2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (grnd{7}, next{`2`yhat`1`}))`
 \end{lstlisting}
-To reduce this term to just its first-stage information ($i$ in the output), we start by redacting all of the second stage (blue) parts,
-along with the surrounding \texttt{next} annotations:
-\begin{lstlisting}
-4`##########`1` (`4`######`1`, injL (grnd{7}, `4`######`1`))`
-\end{lstlisting}
-The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
+To construct a value representing its first-stage components ($i$ in
+the resulting masked value), masking first redacts all second stage
+(blue) parts, along with the surrounding \texttt{next}
+annotations. (This redaction removes the entire residual table since
+it only represents stage two computations.) The resulting ``holes'' in
+the term are replaced with unit values.
+%\begin{lstlisting}
+%4`##########`1` (`4`######`1`, injL (grnd{7}, `4`######`1`))`
+%\end{lstlisting}
+%The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
 \begin{lstlisting}
 1`((), injL (grnd{7},()))`
 \end{lstlisting}
-Finally, we drop \texttt{grnd} annotations:
+Finally, masking dropping \texttt{grnd} annotations yielding a value.
 \begin{lstlisting}
 1`((), injL (7,()))`
 \end{lstlisting}
-To reduce the original partial value to just its second-stage information ($q$ in the output), 
-we start by redacting all \texttt{grnd} blocks, \texttt{next} annotations, and injection tags
-(essentially, the tuple structure is kept, but all other structure is discarded):
-\begin{lstlisting}
-2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
-\end{lstlisting}
-Where the \texttt{grnd} blocks left a hole, we put in a unit values:
+To construct a residual corresponding to the stage two computations
+represented by the residual table and partial value ($q$ in resulting
+the masked value), masking first redacts all \texttt{grnd} blocks
+(replaced with unit), \texttt{next} annotations, and injection tags
+(essentially, the tuple structure is kept, but all other structure is
+discarded):
+%\begin{lstlisting}
+%2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
+%\end{lstlisting}
+%Where the \texttt{grnd} blocks left a hole, we put in a unit values:
 \begin{lstlisting}
 2`[yhat |-> 1+2] (yhat, ((),yhat))`
 \end{lstlisting}
-Finally, we reify the residual table into \texttt{let} bindings:
+Then masking reifies the residual table into \texttt{let} bindings,
+yielding a residual:
 \begin{lstlisting}
 2`let yhat = 1+2 in (yhat, ((),yhat))`
 \end{lstlisting}
 
-The formal implementation of the masking relation is given in \ref{fig:valMask}.
-Note that since lambdas may represent multistage computations, 
-masking splits the body of lambdas as general world \bbonem\ terms (as described in \ref{sec:split-one}), 
-and packages the resulting terms as functions in both the first and second stage.
+Note in \ref{fig:valMask} that since lambdas may represent multistage
+computations, masking splits the body of lambdas as general world
+\bbonem\ terms (as described in \ref{sec:split-one}), and packages the
+resulting terms as functions in both the first and second stage parts
+of the masked value.
 % Masking operates by first inducting on the entries of the residual table.  
 % Being purely second-stage content, these are reified into let statements at the top of the resumer.
 % Once the table is empty, masking inducts on value itself.
