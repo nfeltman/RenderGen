@@ -182,22 +182,38 @@ pursuant to the correctness condition given in \ref{fig:splittingSummary}.
 The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
 which proceeds recursively on the structure of~$e$.
 
-When $e$ is unit or a variable,
-splitting yields a combined term formed by tupling $e$ with a $\tup{}$ precomputation.
-These expressions, as they contain no second-stage subcomputations, have a trivial resumer, $\tup{}$.
-Similarly, the contents of a \texttt{grnd} block are assigned entirely to the immediate value,
-with trivial precomputation and resumer.
+We start with splitting the unit value, $\tup{}$.
+Masking tells us that units, being trivial, only split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
+Plugging this in to the contract for splitting at \bbonem\ gives:
+\[
+	\text{if } \splitone {\tup {}} A c {l.r} \text{ then } \reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
+\]
+Although the only hard requirement for $b$, $c$, and $l.r$ is to satisfy these relations,
+our actual choices are designed to do the least work possible.
+In particular, we choose $b = \tup{}$; $c=\tup{\tup{},\tup{}}$; and $l.r = \_.\tup{}$.
+That is, we choose a trivial boundary value.
+All together, this yield the rule in \cref{fig:termSplit}.
+This exercise proceeds much the same way for \texttt{grnd} blocks, 
+with the purely first stage contents of the block standing in for one of the $\tup{}$s.
 
-For all non-terminals (except \texttt{next}),
-splitting descends into $e$, recursively splitting its $n$ subterms
-to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
-The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
-to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
-to isolate immediate results from boundary values. Then,
-the immediate result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
-The resumer binds the boundary values $b_1,\ldots,b_n$ to an
-argument $(l_1,\ldots,l_n)$ in a term that has the same structure
-of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
+We next consider splitting a non-terminal, namely $\inl {e}$.
+From the semantics, we already know that 
+for some $\xi$ and $v$, $\diaone {e} \xi v$ and $\diaone {\inl e} \xi {\inl v}$.
+Masking these outputs then gives $\rtab \xi v \vsplito \mval i q$ 
+and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$.
+Since splitting works from the inside out, we already know that
+\[
+	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
+\]
+and what we need to do is find some $b'$, $c'$, and $l'.r'$ satisfying
+\[
+	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l']r' \equiv q
+\]
+Once again, we take the simplest solution, which in this case is $b' = b$; $l'.r' = l.r$;
+and $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$.  
+This sort of technique generalize to all constructs which don't involve control flow.
+
+\nr{working from here down}
 
 Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
 The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$).   
