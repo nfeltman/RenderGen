@@ -1,72 +1,73 @@
 \section{Introduction}
 
-Consider a function $F$ which takes an $x$ and $y_1,\dots,y_{m-1}$, in order to
-compute $f(x,y_i)$ for each $y_i$:
+Consider a function $F$ which takes an $x$ and $y_1,\dots,y_{m-1}$, and computes
+$f(x,y_i)$ for each $y_i$:
 \begin{lstlisting}
-fun F(x, @$y_0$@, @$y_1$@, @$\ldots$@ @$y_{m-1}$@) = 
-  f(x, @$y_0$@);  f(x, @$y_1$@); @$\ldots$@ f(x, @$y_{m-1}$@)
+fun @$F(x, y_0, y_1, \ldots, y_{m-1})$@ = 
+  @$f(x, y_0);  f(x, y_1); \ldots; f(x, y_{m-1})$@
 \end{lstlisting}
 %
-Such computations, in which a multivariate function is applied many times with
-one argument fixed, are common. Many algorithm design techniques revolve around
-the idea of finding the computations in $f$ that depend only on $x$, and
-performing them only once. Similarly, compiler optimization techniques like loop
-hoisting and common subexpression elimination serve to identify the computations
-common to all invocations of $f$, and perform them a single time at the
-beginning of the computation.
+This scenario, in which a multivariate function is applied many times with one
+argument fixed, arises frequently. 
+\crem{?? Many algorithm design techniques revolve around the idea of finding the
+computations in $f$ that depend only on $x$, and
+performing them only once.
+\\
+?? It's advantageous to find the computations in f that depend on x and perform
+them only once.}
+This is the intent of compiler optimization techniques like loop hoisting and
+common subexpression elimination, which identify the computations common to all
+invocations of $f$, and perform them once at the beginning of the computation.
 
-These techniques are particularly essential in real-time computer graphics; in
-fact, modern graphics architectures \emph{require} that code be separated into
-distinct {\em passes} based on their required frequency of execution. For
-example, graphics computations are expressed as a sequence of passes where each
-pass may perform a computation at increasingly finer grain, e.g., per object,
-per region of the screen, and per pixel, where later computations use the
-results from the prior computations.
+Programs structured in this way are particularly important in real-time computer
+graphics; in fact, modern graphics architectures \emph{require} that graphics
+computations be organized into distinct {\em passes} which perform increasingly
+fine-grained computations (for example, per object, per region of the screen,
+and per pixel, where later computations use the results from the prior
+computations).
 
-While performant, programming with manually separated passes results
-in complex code where invariants must hold across different passes,
-and local changes for one pass may require changes to other passes to
+While performant, this paradigm of programming with explicit collections of
+passes results in complex code where invariants must hold across different
+passes, and local changes for one pass may require changes to other passes to
 ``plumb'' inputs from all other frequencies\,\cite{Foley:2011}.
 %
-In other words, manual pass separation breaks key programming
+In other words, requiring manual separation of passes breaks key programming
 abstractions such as composition and modularity.
 %
-Graphics researchers therefore have suggested using explicitly staged
-programming languages\,\cite{Proudfoot:2001,Foley:2011,He:2014},
-deferring to the compiler the tedious task of separating the code into
-passes. However, all prior efforts have been limited to simple
-languages that do not support recursion or first-class functions.
+Graphics researchers therefore have suggested using explicitly staged programs
+\,\cite{Proudfoot:2001,Foley:2011,He:2014}, deferring to the compiler the
+mechanical task of separating such programs into passes. However, prior work in
+automatic pass separation has been limited to simple languages that do not
+support recursion or first-class functions.
 
-Programming-languages researchers have studied similar problems. In
-the 1980s, J{\o}rring and Scherlis identified {\em frequency
-reduction} and {\em precomputation}~\cite{JS86-staging} as common
-mechanisms for evaluating efficiently staged computations.  The idea
-behind frequency reduction is to identify computations that are
-performed multiple times and hoist them so that they can be performed
-once and used later as needed.  The idea behind precomputation is to
-identify computations that can be performed earlier---for example, at
-compile time if their inputs are known statically---and perform them
-at that earlier time.
+Programming languages researchers have studied similar problems. In the 1980s,
+J{\o}rring and Scherlis identified {\em frequency reduction} and {\em
+precomputation}~\cite{JS86-staging} as mechanisms for efficiently evaluating
+staged computations. To perform frequency reduction, one identifies and hoists
+computations that are performed multiple times, in order to compute them only
+once. To perform precomputation, one identifies computations that can be
+performed in advance, and does so---for example, at compile time if the relevant
+inputs are statically known.
 
 There has been much work on language-based techniques for performing
 precomputation. Partial evaluation~\cite{futamura71,jones96} achieves
-precomputation by specializing functions for specific values. Going back to our
-example, we can specialize $f$ at $[1,2, \ldots, n]$, written $f_{[1,2, \ldots,
-n]}$, such that $f(x,y) = f_{[1,2, \ldots, n]}(y)$ and specialize $F$ for the
-same input as
+precomputation by specializing functions to specific arguments. Going back to
+our example, if we specialize $f$ to a particular $v$, written $f_v$, such that
+$f(v,y) = f_v(y)$, then we can specialize $F$ to $v$ as
 \begin{lstlisting}
-fun @$F_{[1,2, \ldots, n]}(y_0, y_1 \ldots y_{m-1})$@ = 
-  @$(f_{[1,2, \ldots, n]}(y_0);  f_{0}(y_1)  \ldots f_{0}(y_{m-1}))$@.
+fun @$F_v(y_0, y_1, \ldots, y_{m-1})$@ = 
+  @$f_v(y_0);  f_v(y_1); \ldots; f_v(y_{m-1})$@.
 \end{lstlisting}
+eliminating the need to recompute
+\crem{WIP especially below here}
+TODO.
 %
-Partial evaluation typically proceeds by performing a
-binding-time analysis to determine the static and dynamic parts of $f$
-and $F$ and specializes them based on the results of the binding-time
-analysis. A closely related technique, {\em metaprogramming}, enables
-the programmer to write programs that generate specialized code.
-Metaprogramming enables fine-grained control over specialization by
-requiring staging annotations that make explicit the stage of each
-computation.
+A closely related technique, {\em metaprogramming}, allows writing programs that
+generate specialized code. Metaprogramming enables fine-grained control over
+specialization by requiring staging annotations that make explicit the stage of
+each computation. (In partial evaluation, we typically assume that a
+\emph{binding-time analysis} has automatically determined which parts of $f$ can
+be specialized.)
 
 While previous work shows that precomputation can be performed
 essentially automatically (via partial evaluation or meta
