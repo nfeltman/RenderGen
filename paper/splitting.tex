@@ -182,27 +182,25 @@ A precise definition of the masking relation is given in
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
 
-We now show how to translate terms $\colmix e A$ into the form $\pipeM c l r$,
-pursuant to our splitting invariant.
-The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
-which proceeds recursively on the structure of~$e$. We derive a few cases here.
+We now describe how to split \bbonem\ terms. The algorithm, given in
+\cref{fig:termSplit}, proceeds recursively on the structure of~$e$. We
+derive a few cases here.
 
-\paragraph {Unit} 
-Consider splitting the unit value, $\tup{}$.
-Masking says that units, being trivial, only split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
-So in order for the split $\splitone {\tup {}} A c {l.r}$ to be valid, 
-we need a $c$ and $l.r$ satisfying,
+\paragraph {Unit.} 
+As a simple first case, consider splitting the unit value, $\tup{}$
+which masks to $\mval {\tup{}} {\tup{}}$.
+%Units trivial contain unit split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
+Splitting must produce a $c$ and $l.r$ satisfying,
 \[
 	\reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
 \]
 Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
-Splitting $\pure{e}$ follows in similar fashion, 
-where the immediate result is instead the result of evaluating $e$.
+Splitting $\pure{e}$ follows in similar fashion, except the immediate
+result is instead the result of evaluating the \bbonep\ term $e$.
 
-\paragraph {Injections} 
-Now consider splitting a non-terminal, $\inl {e}$,
-where $\diaone {e} \xi v$ and $\rtab \xi v \vsplito \mval i q$, 
-and by the splitting invariant for $e$,
+\paragraph {Injections.}
+Now consider splitting the non-terminal, $\inl {e}$, where $\diaone
+{e} \xi v$ and $\rtab \xi v \vsplito \mval i q$. Therefore:
 \[
 	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
 \]
@@ -214,7 +212,7 @@ the validity of the split $\splitone {\inl e} A {c'} {l.r'}$ requires,
 To satisfy this, our algorithm uses the same boundary value as the subexpression,
 and so $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' = l.r$.
 
-\paragraph{Tuple} 
+\paragraph{Tuple.} 
 For an example with more than one argument, consider a tuple $\tup{e_1,e_2}$,
 where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito \mval {i_k} {q_k}$
 for $k = 1,2$.
