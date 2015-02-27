@@ -204,19 +204,21 @@ Now consider splitting the non-terminal, $\inl {e}$, where $\diaone
 \[
 	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
 \]
-Since, $\diaone {\inl e} \xi {\inl v}$ and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$,
-the validity of the split $\splitone {\inl e} A {c'} {l.r'}$ requires,
+Since $\diaone {\inl e} \xi {\inl v}$ and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$,
+splitting must produce a $c'$ and $l.r'$ satisfying,
 \[
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
-To satisfy this, our algorithm uses the same boundary value as the subexpression,
-and so $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' = l.r$.
-
-\paragraph{Tuple.} 
-For an example with more than one argument, consider a tuple $\tup{e_1,e_2}$,
-where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito \mval {i_k} {q_k}$
-for $k = 1,2$.
-Likewise, the splitting invariants for $e_1$ and $e_2$ give
+Our algorithm simply emits the resumer of the subexpression ($l.r' =
+l.r$), and generates a first-pass term $c'$ that produces the same
+boundary value ($b$) as the subexpression. The entire first-pass term
+is:
+\[
+c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
+\]
+\paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
+where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
+\mval {i_k} {q_k}$ for $k = 1,2$.  Inductively:
 \[
 	\splitone {e_k} A {c_k} {l_k.r_k} \text{ and } \reduce {c_k} {\tup{i_k,b_k}} \text{ and } [b_k/l_k]r_k \equiv q_k
 \]
