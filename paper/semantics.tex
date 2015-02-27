@@ -17,7 +17,6 @@ and second-stage computations (\bbtwo).
 
 \subsection{Statics}
 
-
 \input{figures/statics}
 
 \begin{abstrsyn}
@@ -93,14 +92,6 @@ $\prev$ unwraps first-stage $\fut\rmint$s (the results of the recursive calls
 to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
 $\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
 second-stage $\rmint$.
-
-\crem{does this remark go anywhere?}
-
-Thus, if we are willing to change the evaluation order of the
-language (and evaluate under the \texttt{case} statement), it should
-be possible to force \emph{all} the computations involving \texttt{l}
-to be performed before \emph{any} of the computations involving
-\texttt{k}.
 
 \end{abstrsyn}
 
@@ -184,8 +175,8 @@ given in \ref{fig:values}.
 \paragraph{First-stage evaluation at \bbtwo\ ($\redtwosym$).}
 Since terms at world \bbtwo\ represent second-stage computations, we should not
 evaluate them yet. However, we do need to evaluate any first-stage computations
-they contain (inside $\prev$), even if those computations are underneath
-binders.
+they contain (inside $\prev$), \emph{even if} those computations are guarded or
+underneath binders.
 
 For all constructs other than $\prev{e}$, $\redtwosym$ evaluation proceeds
 recursively on all subterms, yielding a monostaged residual $q$. At $\prev{e}$,
