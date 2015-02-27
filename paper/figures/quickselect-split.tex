@@ -6,23 +6,23 @@ fun partition (p : int, l : list) = ...`
 datatype tree = Leaf
               | Branch of int * int * tree * tree
 
-1`fun qSelect1 (l : list) : tree =
+1`fun qs1 (l : list) : tree =
   case l of
     Empty => Leaf
   | Cons ht => 
-      let (left,right,n) = partition ht in
-      Branch (n, #1 ht, qSelect1 left, qSelect1 right)`
+      let (left,right,i) = partition ht in
+      Branch (i, #1 ht, qs1 left, qSelect1 right)`
 
-2`fun qSelect2 (p : tree, k : int) : int = 
+2`fun qs2 (p : tree, k : int) : int = 
   case p of
     Leaf => 0
-  | Branch (n,h,p1,p2) => 
-      case compare k n of
-        LT => qSelect2 (p1,k)
+  | Branch (i,h,p1,p2) => 
+      case compare k i of
+        LT => qs2 (p1,k)
       | EQ => h
-      | GT => qSelect2 (p2,k-n-1)`
+      | GT => qs2 (p2,k-i-1)`
 \end{lstlisting}
-\caption{Split (two-phase) implementation of quickselect.}
+\caption{Two-pass implementation of quickselect.}
 \label{fig:qs-split}
 \end{figure}
 
