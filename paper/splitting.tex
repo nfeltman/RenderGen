@@ -8,21 +8,31 @@
 \begin{abstrsyn}
 
 Splitting statically transforms terms in \lang\ into a pair of
-monostaged terms that correspond to the first stage and second stage
-computations in the original term. The idea is that evaluating the
-first monostaged term in a first pass, and then evaluating the second
-monostaged term on the results of the first pass, yields the same
-result as fully evaluating the original \lang\ program (performing
-both first stage and second stage evaluation).  While world
-\bbtwo\ terms fully evaluate to values in stage two, complexity arises
-because evaluation of \bbonem\ terms may also generate results in the
-first stage. (For example, a \bbonem\ term of type $\curr \rmint$
-results in an \rmint\ in the first stage.) Handling this asymmetry
-between the results of evaluating \bbonem\ terms (which may produce
-results at both the first and second stage) and \bbtwo\ terms (which
-only produce second stage results) is fundamental to the structure of
-the splitting algorithm presented in this section.  By construction,
-\bbonep\ terms are monostage and do not require splitting.
+monostaged terms ($f_1$ and $f_2(-)$) that correspond to the first
+stage and second stage computations in the original term. Since full
+evaluation of world \bbtwo\ terms (both first stage and second stage
+evaluation) only produces values in stage two, the idea of splitting
+is to generate terms where evaluating $f_1$ in a first pass, and then
+evaluating $f_2$ on the result of the first pass, yields the same
+value as full evaluation of the original \lang\ program.
+
+Similarly, when splitting \bbonem\ terms, first pass evaluation of
+$f_1$ should produce the same value as first stage evaluation of the
+original \lang\ term.  However, complexity arises because
+\bbonem\ terms may also contain computations to be evaluated in the
+second stage. (For example, a \bbonem\ term of type $\fut \rmint$
+results in an \rmint\ value in the second stage.) Thus we also want
+the second pass evaluation of $f_2$ on the outputs of $f_1$ to yield
+the same value as fully evaluating all second stage computations in
+the original \bbonem\ term. Finally, when splitting \bbonep\ terms,
+which only produce values in the first stage, we only need to compare
+the result of $f_1$ with that of the \lang\ term.
+
+Handling the asymmetry between the results of evaluating
+\bbonem\ terms (which may produce results at both the first and second
+stage) and \bbtwo\ terms (which only produce second stage results) is
+fundamental to the structure of the splitting algorithm presented in
+this section.
 
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
