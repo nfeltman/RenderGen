@@ -225,16 +225,17 @@ where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
 \]
 Since $\diaone {\tup{e_i,e_2}} {\xi_1,\xi_2} {\tup{v_1,v_2}}$ 
 and $\rtab {\xi_1,\xi_2} {\tup{v_1,v_2}} \vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}$,
-the validity of the split $\splitone {\tup{e_1,e_2}} A {c} {l.r}$ requires,
+splitting generates:
 \[
 	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
 \]
-To satisfy this, our algorithm uses a boundary value which is the tuple of the boundary values of the subexpressions,
-$b = \tup{b_1,b_2}$. This is deconstructed with a tuple pattern, $l.r = \tup{l_1,l_2}.\tup{r_1,r_2}$,
-and constructed using,
+The resulting boundary value is the tuple of the boundary values of
+the subexpressions, $b = \tup{b_1,b_2}$.  The value is 
+constructed using,
 \[
 c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
 \]
+And deconstructed with a tuple pattern, $l.r = \tup{l_1,l_2}.\tup{r_1,r_2}$,
 
 \paragraph {Case}
 Splitting is most complicated at $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms because of their divergent control flow.
