@@ -1,0 +1,384 @@
+%!TEX root = paper.tex
+
+\section{Overview}
+\label{sec:examplea}
+
+We present an overview of our approach by considering an example.  To
+highlight the ideas, we abstract over some technical details, which
+are fully formalized in the rest of the paper.  The example itself is
+also implemented in our implementation.
+
+\paragraph{Computing order statistics.}
+
+\begin{abstrsyn}
+
+\input{figures/quickselect-aligned}
+
+Suppose that we wish to compute a series of order statistics queries
+on a list \texttt{l}. To this end, we can use
+quickselect~\cite{Hoare:1961}, which give a list \texttt{l} and a rank
+\texttt{k}, returns the element of \texttt{l} with rank \texttt{k}.
+As implemented in an ML-like language in \ref{fig:qs-unstaged},
+function \texttt{qs} partitions the list by using the first element as
+a pivot and then recurs on one of the two resulting sides to find the
+desired element based on the relationship of \texttt{k} to the size of
+the first half \texttt{i}.  Assuming that the input is uniformly
+randomly ordered (which can be achieved by pre-permutation of the
+input), function \texttt{qs} runs in expected linear time.
+%
+\footnote{We assume that the list is prepermuted to guarantee the
+  expected linear time behavior.} 
+%
+Using function \texttt{qs}, we can perform many order statistics
+queries, for example but with $m$ different ranks
+$\mathtt{k_1},\dots,\mathtt{k_m}$ as follows
+%
+\begin{lstlisting}
+qs l @$\mathtt{k_1}$@; qs l @$\mathtt{k_2}$@; @$\ldots$@; qs l @$\mathtt{k_m}$@.
+\end{lstlisting}
+%
+Unfortunately, this approach requires $O(n \cdot m)$ time, making it
+expensive to perform order statistics on more than a small number of
+times. This is unfortunate, because for example, because we wish to be
+able to map \texttt{qs} to over another list and do so
+efficiently. 
+
+One way to regain efficiency is to change the algorithm that we use to
+perform the computation in multiple passes.  One option would be to
+pre-sort the input list \texttt{l} into a sorted list \texttt{s} in
+the first pass, and then perform lookups in \texttt{s} in the second
+pass.  Unfortunately, since \texttt{s} is a list, a lookup would
+require linear time (also on average), leading to no improvement in
+efficiency.  We can resolve this issue by using a data structure that
+can provide faster access.  For example, after sorting \texttt{s} we
+can copy in into an array and then perform binary searches to find the
+element with the desired rank (copying the input to an array and
+sorting would not work well in a functional language).  As another
+option, we can represent construct a binary search tree from the input
+and perform size-based searches on the binary search tree to find the
+elements with the desired rank.  Such an approach would fit nicely
+into the functional paradigm of computing but requires additional
+algorithmic ingenuity: to ensure efficiency we would need to store at
+each note the size of its subtree (these are sometimes called
+``augmented trees'').  In summary, we are able to improve efficiency
+by replacing our simple solution with a multi-pass algorithm that
+first preprocesses the input to generate a lookup data structure and
+then in the second pass performs fast lookups.  As outlined above, in
+addition, this transformation is highly non-trivial as it involves
+reasoning about intricate algorithmic concerns, and implementing more
+complex algorithms.
+
+Such transformations, called pass-separation by J{\o}rring and
+Scherlis are commonly employed.  For example, as briefly mentioned in
+the introduction, modern graphics software is written exactly in this
+way.  Unfortunately, as the example illustrates, they lead to complex
+software, leading to the question of whether it would be possible to
+perform such transformations automatically.  We answer this question
+affirmatively.  Our approach is to start with a staged language and
+then use a splitting algorithm to generate multi-pass programs from
+staged programs.
+
+
+\subsection{Staging}
+
+The idea behind staged programming is to use staging annotations or
+types so indicate the stage of each expression.  To apply this
+technique to our example, suppose that we have a language with two
+stages.  We can now write a staged version of \texttt{qs}, called
+\texttt{qss} in \ref{fig:qs-staged}, making the input list a stage-1
+and the rank a stage-2, more precisely the input list has type
+$\curr\mathrm{list}$ (an integer list ``now''), the rank has type
+$\fut\rmint$ (an integer in the ``future''), and return has type
+$\fut\rmint$.  We can then annotate the rest of the body of
+\texttt{qs}, by using the staging annotations \texttt{prev} and
+\texttt{next}, which respectively include a stage-1 expressions in
+stage-2, and a stage-2 expression in stage-1.  To help readability, we
+write the first-stage computations in red, and the second-stage
+computations in blue.
+
+
+
+the
+function \texttt{qs} does \emph{not} depend on the rank \texttt{k};
+for example, the list is partitioned before \texttt{k} is ever
+used. Moreover, while the recursive calls to \texttt{qSelect} are
+guarded by a comparison to \texttt{k}, \texttt{k} does not determine
+the arguments to those recursive calls---it only determines which call
+is made. Thus, if we are willing to change the evaluation order of the
+language (and evaluate under the \texttt{case} statement), it should
+be possible to force \emph{all} the computations involving \texttt{l}
+to be performed before \emph{any} of the computations involving
+\texttt{k}.
+
+We can formalize this intuition by writing quickselect in a \emph{staged}
+language. In this paper, we choose \lang\ (\ref{sec:semantics}), a staged, typed
+lambda calculus. This allows us to directly express the idea that the argument
+\texttt{l} is known at the \emph{first} stage of the computation, while the
+argument \texttt{k} is only known at the \emph{second}, and all
+first-stage computations occur before any second-stage computations.
+
+We define a staged version of quickselect in \ref{fig:qs-staged}, writing
+first-stage computations in red, and second-stage computations in blue. While
+\texttt{qSelect} sends a \textrm{list} and $\rmint$ to an $\rmint$,
+\texttt{qsStaged} has a more precise type---it is a first-stage function which
+takes a $\curr\mathrm{list}$ (an integer list now) and a $\fut\rmint$
+(an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
+
+Ignoring for the moment all \texttt{grnd} annotations, the first-stage code in
+\texttt{qsStaged} looks like \texttt{qSelect}: in the first stage, terms of
+non-circle type are available for immediate use. Indeed, we case on the list as
+usual, and in the \texttt{Cons} branch, \texttt{part}ition it.
+
+The \texttt{case} expression in \texttt{qSelect} depends on \texttt{k}, whose
+type $\fut\rmint$ indicates that it is only available to second-stage
+computations. Since \texttt{qsStaged} itself produces a $\fut\rmint$, the
+remainder of the function is second-stage code.
+
+The $\next$ wraps a second-stage expression of type $\rmint$ (the \texttt{case}
+expression) as a first-stage expression of type $\fut\rmint$ (the result 
+of \texttt{qsStaged}). Inside the \texttt{LT} and \texttt{GT} branches, the
+$\prev$ unwraps first-stage $\fut\rmint$s (the results of the recursive calls
+to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
+$\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
+second-stage $\rmint$.
+
+The process of adding staging annotations ($\fut$ types, $\next$, and $\prev$)
+to unstaged code has been the subject of extensive research under the
+name of \emph{binding time analysis}. In this paper, we assume that these
+annotations have been provided by the programmer (or perhaps a binding time
+analysis tool), and do not consider the problem of generating such annotations.
+There are many ways to annotate any program, including \texttt{qSelect}; we
+chose annotations which maximize the work performed in the first stage.
+
+\lang's type system, discussed in \ref{sec:semantics}, ensures that the staging
+annotations are consistent, in the sense that computations marked as
+first-stage cannot depend on ones marked as second-stage. The $\curr$ and
+\texttt{grnd} (``ground'') annotations further distinguish those first-stage computations
+which do not contain any embedded second-stage code. (Code \emph{inside}
+\texttt{grnd}, like the \texttt{part}ition function, is guaranteed not to
+contain second-stage code; first stage code outside a \texttt{grnd}, 
+like \texttt{qsStaged}, may.) We will
+discuss the importance of this additional distinction in \ref{sec:splitting}.
+
+
+
+\subsection{Splitting Staged Programs}
+
+\input{figures/quickselect-split}
+
+It is well-known that for any given input list with $n$ elements, the
+quick-select algorithm requires $\Theta(n)$ expected time (for any
+second argument) if we select keys for the partition function
+uniformly randomly or identically if we permute the input. Under this
+assumption, our example program requires expected $\Theta(nm)$ time.
+
+Suppose now that $m$ is large (close to $n$ for example).  In this
+case, our program is essentially a quadratic-time algorithm, which can
+be very slow even for modest values of $m$ and $n$. In this case, to
+improve the run-time it appears that we have no choice but rewrite our
+program to use a different algorithm.  One way to do this would be to
+pre-sort the input list $l$ and then lookup the element with the
+desired rank (as specified by the second argument).  While this
+approach might sound sensible, attaining the desired performance
+requires answering one more important question: what should the data
+structure for storing the sorted input be?  Unfortunately using a list
+does not work, because each look up in a list requires linear time on
+average. One option is to use arrays but in this case, we would need
+to implement a binary search to perform the lookup.  Another option is
+to implement a balanced binary search tree data structure for storing
+the elements in the list and then use balanced binary-search-tree
+lookups, which are logarithmic time.  Using either one of these
+techniques, we can reduce the run-time to $\Theta(n\log{n} + m\log{n})$,
+which is significantly better that $\Theta(n^2)$.
+
+
+In summary, to achieve the desired improvement, we wrote a two-pass
+program, where the first pass sorts the input and the second pass
+performs a binary search either on an array or a balanced tree. As is
+probably apparent to the reader, the resulting program is both
+algorithmically and structurally more complex: it requires conversions
+between different data structures (list to array or binary search
+tree) and requires implementing additional algorithms such as sorting
+and binary search or possibly binary search trees.  
+
+%% As suggested by this relatively small example and experienced for
+%% example by the graphics community, the design, implementation, and
+%% maintenance of such multi-pass programs can be difficult due to the
+%% increased complexity.
+
+
+Instead of relying an writing multipass programs manually, in this
+paper, we present techniques for automatically splitting staged
+programs into multi-pass programs.  The key innovation behind our
+approach is a {\em splitting algorithm} that splits a multistage
+program into separate passes where each pass is a conventional program
+expressed in a conventional functional language.  Our splitting
+algorithm makes no restrictions on the input program: essentially any
+functional program, including higher order programs, can be split.
+Furthermore, the splitting algorithm is able to perform highly
+non-trivial transformations on the program that can improve efficiency
+significantly. 
+
+When applied to the quick-select example as described, our splitting
+algorithm yields a two-pass program that uses the binary-search-tree
+based implementation outlined above.  Specifically, in the first pass,
+the program takes the input list and constructs a probabilistically
+balanced binary search tree, which is isomorphic to a treap data
+structure~\cite{treaps}.  In the second pass, the program performs,
+for each rank, a binary search tree lookup, by walking the tree to
+find the element with the desired rank.  The resulting program, shown
+in \ref{fig:????}  takes the $O(n\log{n} + m\log{n})$.
+
+To create the multi-pass algorithm, the splitting algorithm operates
+by composing local transformations on the subterms of the input
+program.  In particular, the algorithm has no special knowledge of the
+quick-select algorithm, binary search trees, or how to perform lookups
+on binary search trees, but it is able to derive all of these from the
+input program.  But how?
+%
+The details of the algorithm are relatively involved but in the hope
+that it aids understanding we present a brief informal overview of how
+the algorithm operates.  
+%
+%% This exposition is necessarily imprecise but the algorithm is made
+%% precise in \ref{sec:splitting} and implemented
+%% (\ref{sec:implementation}{sec:examples}).
+%
+
+
+At a high level, the splitting algorithm operates on our example by
+using the program code and the knowledge that the list (the first
+argument) is first-stage and the rank ( the second argument) is second
+stage, the algorithm then derives two functions: \texttt{qsStage1} and
+\texttt{qsStage2} as follows.
+
+
+\paragraph{Pass-1 code.}
+The splitting algorithm scans the program and imitates an execution of
+\texttt{qs} with just the first-stage input by evaluating as much code
+as possible with the available first-stage values.  Specifically the
+algorithm generates a function \texttt{qsStage1} to perform all the
+recursive calls of \texttt{qs} and to evaluate all instances of the
+partition function, which depend only on the input list.  The function
+\texttt{qsStage1} produces a trace of the execution of \texttt{qs} on
+its first input by generating a tree that collects the results from
+all recursive calls along with a tag that indicates the control
+branches taken.  The trace is represented as a tree because
+\texttt{qs} has a binary control structure (casing on the list), which
+leads to a binary tree data structure.  To ensure that the trace
+contains the necessary results to complete the execution in the second
+pass, where second-stage values may be used, the function
+\texttt{qsStage1} includes in the nodes of the tree information such
+as the key used for splitting the list at that recursive call.  The
+resulting tree is thus a binary search tree, keyed by the ``pivot''
+used by the partition.  In general we refer to the result data
+structure of \texttt{qsStace1} as the {\em boundary}, as it passes
+information from the first pass to the second.
+
+\paragraph{Pass-2 code}
+As the splitting algorithm scans \texttt{qs} for computations that can
+be performed in the first stage and collects them into
+\texttt{qsStage1}, it also collects computations that must be left to
+the second stage in a separate function \texttt{qsStage2}.  This
+function, which is executed in the second pass, takes as argument the
+boundary and the second-stage argument (the rank) and performs a
+lookup in the boundary data structure.  But how does \texttt{qsStage2}
+knows to traverse the tree? It does not. Since the splitting algorithm
+recorded the control flow of the first stage execution in the boundary
+data structure, \texttt{qsStage2} simply follows this control
+structure and performs at each point the parts of the computation from
+\texttt{qs} that can now be performed in the presence of the
+second-stage argument (the rank).  In the context of our example, this
+performs a lookup on the boundary data structure by using the supplied
+rank.  
+
+\paragraph{Summary.}
+In summary, the splitting algorithm scans the program code for
+first-stage computations (which depend only on first-stage values) and
+separates them into function of the first pass. This function performs
+the stage-1 computations and places the results into a boundary data
+structure that both records the control flow and the results from the
+first stage computation at each control-flow point.  As the splitting
+function generates the code for the first pass, it also generates the
+code for the second pass as a function that walks both the boundary
+data (which essentially imitates execution) and at each control point
+performs the part of the computation that depends on second-stage
+values. We evaluate the resulting program by first evaluating the
+function for the first pass and passing its return value (the
+boundary) to the second pass, which then returns the desired result.
+
+
+
+\begin{comment}
+
+An astute programmer, having noticed that \texttt{quickselect} can be staged in
+this fashion, might try to split it into a pair of functions, one which performs
+all the work depending only on \texttt{l} (the first stage), and one which uses
+that partial result and \texttt{k} to compute the element with
+rank \texttt{k} in \texttt{l}. 
+
+Intuitively, \texttt{l} determines the result of all calls to
+\texttt{part}ition, and \texttt{k} only determines which calls are made. So we
+can preprocess \texttt{l} by recursively dividing it into halves smaller and
+greater than the pivot---that is, building a binary search tree. Then, once we
+have \texttt{k}, we can recur on this tree, choosing whichever branch has the
+\texttt{k}${}^\textit{th}$ leftmost element until we reach a leaf. And because
+\texttt{part}ition contains no second-stage code, we can run it entirely in the
+first stage.
+
+We have implemented this splitting of quickselect in \ref{fig:qs-split}.
+\texttt{qSelect1} builds a binary search tree from the list \texttt{l}, and
+\texttt{qSelect2} takes such a tree and a rank \texttt{k} and computes the
+answer. This allows us to efficiently perform many order statistics queries on
+\texttt{l} by caching the tree and reusing it for many different ranks
+$\mathtt{k_1},\dots,\mathtt{k_m}$:
+%
+\begin{lstlisting}
+let b = qSelect1 l in
+  qSelect2 b @$k_1$@
+  qSelect2 b @$k_2$@
+   @$\vdots$@ 
+  qSelect2 b @$k_m$@.
+\end{lstlisting}
+
+Assuming \texttt{l} contains $n$ elements, this optimization changes the
+asymptotic complexity from expected (randomized) $\Theta(n \cdot m)$ to
+$\Theta(n\log{n} + m\log{n})$, which for any $m \approx n$ reduces the
+complexity from $\Theta (n^2)$ to $\Theta(n\log{n})$---a significant improvement. 
+
+In this paper, we develop a splitting algorithm
+(\ref{sec:splitting,sec:implementation}) which, given a program $e$ in \lang,
+produces an equivalent pair of programs which correspond precisely to the two
+stages of computation in $e$.
+(Splitting is always possible because the staging annotations in $e$ are
+consistent, because $e$ is well-typed in \lang.) In the case of
+\texttt{qsStaged}, our splitting algorithm produces the algorithm described
+above.
+\end{comment}
+%\texttt{qSelect l k = qSelect2 (qSelect1 l) k}.
+
+%Because the tree passes information across the stage boundary, we call it the
+%\emph{boundary data structure}.
+
+%Note that the desired optimized code shows above is intellectually more
+%sophisticated than the code that we have started with: the optimized code is
+%able to create a data structure, a balanced binary tree augmented with indexing
+%information, and use a binary search technique over this tree to compute the
+%result asymptotically more efficiently.
+
+%In fact, based our teaching experience, we can imagine this kind of problem to
+%be a moderately difficult exam question in an undergraduate algorithms class, as
+%it not only requires understanding of data structures such as binary search
+%trees but also requires modifying them to augment with indexing information to
+%support rank-based search.
+
+%(I also want to make it clear that recognizing \lang's appropriateness for this
+%is itself is a contribution.)
+
+\subsection{Quickselect in more detail}
+
+Carlo writes this.
+
+
+
+\end{abstrsyn}
