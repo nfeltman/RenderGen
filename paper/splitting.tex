@@ -297,19 +297,18 @@ regardless of what branch is eventually executed in the second stage.
 Since \texttt{next} and \texttt{prev} do nothing more than convert between 
 second stage terms at \bbtwo\ and second stage terms encapsulated within $\fut$s at \bbonem,
 their splitting rules are relatively simple.
-
-Given an $\splittwo e ? p l r$ and $\diatwo e q$ for which the splitting invariant holds, we know
+Given an $\splittwo e ? p l r$ and $\diatwo e q$, the splitting invariant says,
 \[
 	\reduce p b \text{ and } [b/l]r \equiv q
 \]
-The splitting invariant for $\splitone {\next {e'}} ? {c'} {l'.r'}$ 
-and $\diaone {\next {e'}} {\yhat \mapsto q} {\next \yhat}$
+The splitting invariant for $\splitone {\next {e'}} ? {c'} {l'.r'}$,
+where $\diaone {\next {e'}} {\yhat \mapsto q} {\next \yhat}$
 and $\rtab {\yhat \mapsto q} {\next \yhat} \vsplito \mval {\tup{}} {\letin \yhat q \yhat}$
-is
+then requires
 \[
 	\reduce {c'} {\tup {\tup{},b'}} \text{ and } [b'/l']r' \equiv \letin \yhat q \yhat
 \]
-which can be fulfilled using $c' = \tup{\tup{},p}$ and $l.r = l'.r'$.
+which can be fulfilled using $c' = \tup{\tup{},p}$ and $l'.r' = l.r$.
 Applying this process in reverse yields a splitting rule for $\prev e$ which applies \texttt{pi1} to the combined term of $e$.
 
 \subsection {Role of World \bbonep}
