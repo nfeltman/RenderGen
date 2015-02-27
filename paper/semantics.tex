@@ -117,7 +117,7 @@ syntactically interleaved within an individual term. For example,
 \texttt{case}; thus, an ordinary outermost-first evaluation strategy would not
 be properly staged.
 
-\paragraph{First-stage evaluation at \bbonem\ ($\redonesym$)}
+\paragraph{First-stage evaluation at \bbonem\ ($\redonesym$).}
 The difficulty of evaluating terms at \bbonem\ is that they contain both terms
 at \bbonep\ (via $\curr$) and at \bbtwo\ (via $\fut$); the other evaluation
 rules are ordinary call-by-value rules. When we encounter $\pure{e}$, we
@@ -152,7 +152,7 @@ given in \ref{fig:values}.
 %system ensures that those must occur under a $\next$. Consequently $\redonesym$
 %will never directly encounter a variable.
 
-\paragraph{First-stage evaluation at \bbtwo\ ($\redtwosym$)}
+\paragraph{First-stage evaluation at \bbtwo\ ($\redtwosym$).}
 Since terms at world \bbtwo\ represent second-stage computations, we should not
 evaluate them yet. However, we do need to evaluate any first-stage computations
 they contain (inside $\prev$), even if those computations are underneath
@@ -186,7 +186,7 @@ stage of evaluation is $e\mathbin{\redtwosym} q$, which reduces all code at
 \mathbin{\redsym} u$, or monostaged evaluation of the residual $q$, which yields
 a value $u$.
 
-A multistage function, such as \texttt{qsStaged} from \ref{sec:example}, has
+A multistage function, such as \texttt{qsStaged} from \ref{sec:examplea}, has
 type $A\to \fut (B \to C)$ at \bbonem.%
 \footnote{We can rewrite \texttt{qsStaged} in this curried form, or apply a
 higher-order currying function.}
