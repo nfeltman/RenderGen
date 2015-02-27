@@ -37,7 +37,7 @@ this section.
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
 $\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
-yields a pair of monostaged terms $p$ and $l.r$. ($p$ and $l.r$
+yields a pair of monostaged terms $\pipeS p l r$. ($p$ and $l.r$
 contain all first and second stage computations in $e$ respectively.)
 Executing $p$ in a first pass produces $b$ (via $\reduce p b$). Then,
 in the second pass, $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
@@ -52,19 +52,20 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 
 \textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
 to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
-relation~$\splitonesym$) again yields the pair of monostage terms $c$
-and $l.r$. Evaluating $c$ in the first pass produces the pair $(i,b)$,
-where the first element $i$ matches the first stage results contained
-in $v$.  For example, in the simple case where $\rtab \xi v$ contains
-entirely first stage computation, such as:
+relation~$\splitonesym$) again yields the pair of monostage terms
+$\pipeM c l r$. Evaluating $c$ in the first pass produces the pair
+$(i,b)$, where the first element $i$ matches the first stage results
+contained in $v$.  For example, in the simple case where $\rtab \xi v$
+contains entirely first stage computation, such as:
 \begin{lstlisting}
 2`[]`1` grnd{1+2}`
 \end{lstlisting}
 the first stage result is the value 3.  The second element of the pair
-is used as input to the resumer in second pass evaluation as $\reduce
-{[b/l]r} {v'}$, where $v'$ is the same as result produced by second
-stage computations in $e$.  For example, in the case where $\rtab \xi
-v$ contains entirely second stage computation, such as:
+is the boundary value used as input to the resumer in second pass
+evaluation as $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
+result produced by second stage computations in $e$.  For example, in
+the case where $\rtab \xi v$ contains entirely second stage
+computation, such as:
 \begin{lstlisting}
 2`[yhat |-> 2+3]`1` next{`2`yhat`1`}`
 \end{lstlisting}
@@ -72,9 +73,9 @@ the second stage result is the value 5. Since in general residual
 tables and partial values describe a mixture of both first and second
 stage computations, in the subsequent subsection we define an
 operation, called {\em masking}, that separates residual tables and
-partial values into stage one and stage two results. We then describe
-the algorithm for splitting both \bbonem\ terms ($\splitonesym$) and
-\bbtwo\ terms ($\splittwosym$).
+partial values into their first and second stage results. We then
+describe the algorithm for splitting both \bbonem\ terms
+($\splitonesym$) and \bbtwo\ terms ($\splittwosym$).
 
 
 %Since $c$ ensapulates computations that produce both $e$'s first-stage
@@ -181,72 +182,76 @@ A precise definition of the masking relation is given in
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
 
-We now show how to translate terms $\colmix e A$ into the form $\pipeM c l r$,
-pursuant to our splitting invariant.
-The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
-which proceeds recursively on the structure of~$e$. We derive a few cases here.
+Given the definition of masking, we now describe how to split
+\bbonem\ terms. The algorithm, given in \cref{fig:termSplit}, proceeds
+recursively on the structure of~$e$. We derive a few cases here.
 
-\paragraph {Unit} 
-Consider splitting the unit value, $\tup{}$.
-Masking says that units, being trivial, only split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
-So in order for the split $\splitone {\tup {}} A c {l.r}$ to be valid, 
-we need a $c$ and $l.r$ satisfying,
+\paragraph {Unit.} 
+As a simple first case, consider splitting the unit value, $\tup{}$
+which masks to $\mval {\tup{}} {\tup{}}$.
+%Units trivial contain unit split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
+Splitting must produce a $c$ and $l.r$ satisfying,
 \[
 	\reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
 \]
-Our algorithm chooses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
-Splitting $\pure{e}$ follows in similar fashion, 
-where the immediate result is instead the result of evaluating $e$.
+Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
+Splitting $\pure{e}$ follows in similar fashion, except the immediate
+result now becomes the result of evaluating the \bbonep\ term $e$.
 
-\paragraph {Injections} 
-Now consider splitting a non-terminal, $\inl {e}$,
-where $\diaone {e} \xi v$ and $\rtab \xi v \vsplito \mval i q$, 
-and by the splitting invariant for $e$,
+\paragraph {Injections.}
+Now consider splitting the non-terminal, $\inl {e}$, where $\diaone
+{e} \xi v$ and $\rtab \xi v \vsplito \mval i q$. Therefore:
 \[
 	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
 \]
-Since, $\diaone {\inl e} \xi {\inl v}$ and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$,
-the validity of the split $\splitone {\inl e} A {c'} {l.r'}$ requires,
+Since $\diaone {\inl e} \xi {\inl v}$ and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$,
+splitting must produce a $c'$ and $l.r'$ satisfying,
 \[
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
-Our algorithm chooses $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' = l.r$.
+Our algorithm generates a first-pass term $c'$ that produces the same
+boundary value ($b$) as the split of the subexpression $e$:
+\[
+c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
+\]
+Splitting also generates the same resumer as the split of the
+subexpression ($l.r' = l.r$)
 
-\paragraph{Tuple} 
-For an example with more than one argument, consider a tuple $\tup{e_1,e_2}$,
-where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito \mval {i_k} {q_k}$
-for $k = 1,2$.
-Likewise, the splitting invariants for $e_1$ and $e_2$ give
+\paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
+where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
+\mval {i_k} {q_k}$ for $k = 1,2$.  Inductively:
 \[
 	\splitone {e_k} A {c_k} {l_k.r_k} \text{ and } \reduce {c_k} {\tup{i_k,b_k}} \text{ and } [b_k/l_k]r_k \equiv q_k
 \]
 Since $\diaone {\tup{e_i,e_2}} {\xi_1,\xi_2} {\tup{v_1,v_2}}$ 
 and $\rtab {\xi_1,\xi_2} {\tup{v_1,v_2}} \vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}$,
-the validity of the split $\splitone {\tup{e_1,e_2}} A {c'} {l.r'}$ requires,
+splitting generates:
 \[
-	\reduce {c'} {\tup{\tup{i_1,i_2},b'}} \text{ and } [b'/l]r' \equiv q
+	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
 \]
+The resulting boundary value is the tuple of the boundary values of
+the subexpressions, $b = \tup{b_1,b_2}$.  The value is 
+constructed using,
+\[
+c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
+\]
+And deconstructed with a tuple pattern, $l.r = \tup{l_1,l_2}.\tup{r_1,r_2}$,
 
 \paragraph {Case}
-The most complicated rule is that of $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms, because of their divergent control flow.
-We derive the correct splitting rule by considering the two possible execution paths seperately.
-If the first branch was taken, then the predicate evaluated to $\diaone {e_1} {\xi_1} {\inl {v_1}}$ 
-and the first branch evaluated to $\diaone {[v_1/x_2]e_2} {\xi_2} {v_2}$.
-Similarly these ouputs mask as $\rtab {\xi_1,\xi _2} {v_2} \vsplito \mval {i_2} {q_2}$ and $\rtab {\xi_1,\xi _2} {v_2} \vsplito \mval {i_2} {q_2}$.
-Again because splitting works from the inside out, we already know that that the predicate obeys
-\[
-	\splitone {e_1} A {c_1} {l_1.r_1} \text{ and } \reduce {c_1} {\tup{\inl {i_1},b_1}} \text{ and } [b_1/l_1]r_1 \equiv q_1
-\]
-and the first branch obeys
-\[
-	\splitone {e_2} A {c_2} {l_2.r_2} \text{ and } \reduce {[i_1/x_2]c_2} {\tup{i_2,b_2}} \text{ and } [b_2/l_2]r_2 \equiv q_2
-\]
+Splitting is most complicated at $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms because of their divergent control flow.
+Consider that when $\reduce {e_1} {\inl {v_1}}$, both the first and second stage component of $e_2$ will be executed, 
+but $e_3$ will be ignored entirely. The reverse occurs when $\reduce {e_1} {\inr {v_1}}$.
+This implies that both the first and second stage results of splitting will need to have \texttt{case} statements.
 
-Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
-The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$). 
-$b_i$ is cased in the resumer to determine which branch's resumer should be executed.
-{\tt case} is the only rule where splitting adds non-trivial logic is added to the precomputation.
+Recovering first stage divergence is easy, since for $\splitone {e_1} ? {c_1} {l_1.r_1}$, 
+$\reduce {e_1} {\inl {v_1}}$ implies $\reduce {c_1} {\tup{\inl {i_1},b_1}}$.
+Thus the algorithm cases on $c_1$ to run the correct branch of first stage code.
+The boundary value from this correct branch, $b_2$ or $b_3$, is packaged as either $\tup {b_1, \inl {b_2}}$ or $\tup {b_1, \inr {b_3}}$.
 
+The resumer for \texttt{case} operates by untupling the boundary value to get $b_1$ and either $\inl {b_2}$ or $\inr {b_3}$.
+The resumer of the predicate is run using $b_1$, and the remaining injection is inspected to run the correct branch resumer.
+
+\paragraph {Function} 
 Function introduction has a $\tup{}$ boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multistage, splitting must continue into it.
@@ -255,31 +260,27 @@ The resumer is a new function formed out of the second-stage part of the origina
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
 
-Since the results of splitting \texttt{next} terms depend on the output of
-splitting its world \bbtwo\ subterm,
-we defer description of \texttt{next} until after describing world \bbtwo\ term splitting.
-
 \subsection{Term Splitting at \bbtwo}
 
 Because world \bbtwo\ terms in \lang\ reduce to monostage residuals (as opposed to partial values),
-term splitting at world \bbtwo\ assumes a simpler form than the version at \bbonem\ does. 
+term splitting at world \bbtwo\ is simpler and more uniform than the version at \bbonem. 
 The algorithm is specified by the $\splittwosym$ relation in \cref{fig:termSplit}.
 
-In the terminal cases of
-constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers consisting of the original term.
-For example, the integer constant \texttt{3} splits into the
-precomputation \texttt{()} and resumer \texttt{\_=>3}.
-
-More generally, for all (except \texttt{prev}) 
-$n$-ary terms $e = \mathcal{C}\ttlpar e_1 \ttsemi \ldots \ttsemi e_n \ttrpar$ 
-the precomputation is the tupled precomputations of $e$'s $n$ subterms:
-$p=(p_1,\ldots,p_n)$.  The resumer binds each boundary value to an
-argument $(l_1,\ldots,l_n)$ in a term that has the same structure
-of~$e$ but where each subterm is replaced by its corresponding resumer:
-$r = \mathcal{C}\ttlpar r_1 \ttsemi \ldots \ttsemi r_n \ttrpar$ .
-Notably, at \texttt{case}s and functions the
-precomputation of subterms is lifted out from underneath world \bbtwo\ binders.  
-% TODO: should probably draw a parallel to the same behavior in dynamics
+Consider any (except \texttt{prev}) 
+$n$-ary term $e = \scriptCapp {e_1 \ttsemi \ldots \ttsemi e_n}$.
+First note that for any $\diatwo e q$, $q$ must have the form $\scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}$,
+even under binders and for nullary terms.
+For each $k \in \{1,\ldots,n\}$, the invariant for stage \bbtwo\ splitting of $e_k$ is,
+\[
+	\splittwo {e_k} A {p_k} {l_k} {r_k} \text{ and } \reduce {p_k} {b_k} \text{ and } [{b_k}/{l_k}]{r_k} \equiv {q_k}
+\]
+To match the invariant for a split $\splittwo {\scriptCapp {e_1 \ttsemi \ldots \ttsemi e_n}} A p l r$, we require,
+\[
+	\reduce p b \text{ and } [b/l]r \equiv \scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}
+\]
+Our algorithm accomplishes this by using $p = \tup {p_1, \ldots, p_n}$ and
+$l.r = \tup {l_1, \ldots, l_n}.\scriptCapp {r_1 \ttsemi \ldots \ttsemi r_n}$.
+Again, this works even for nullary terms and under binders.
 
 Splitting \texttt{prev} generates a precomputation that projects the immediate
 result of its world \bbone\ subterm.
@@ -287,28 +288,33 @@ Since the argument to \texttt{prev} is of $\fut$ type, its immediate result redu
 Finally, splitting \texttt{next} simply tuples up the precomputation of its
 world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
-\subsection {Necessity of \bbonep}
+\subsection {Role of World \bbonep}
 \label{sec:needGround}
 
-We have not yet given a justification for why first stage code must be
-partitioned between the worlds \bbonem\ and \bbonep.
-Certainly one could imagine a simpler system without all the \texttt{grnd} annotations.  
-Why wouldn't this work?
+The splitting algorithm described in the previous subsections operates
+purely on the local structure of \lang\ terms.  One artifact of this design
+is that splitting \bbonem\ terms may generate resumers containing
+unnecessary logic.  For example, the rule for splitting
+\bbonem\ \texttt{case} terms inserts the tag from the \texttt{case}
+argument into the boundary value, then decodes this tag in the
+resumer. This logic occurs regardless of whether the terms forming the
+branches of the \texttt{case} contain second stage computations.
+Worse, if this \texttt{case} appeared in the body of a recursive
+function with no other second stage computations, splitting would
+generate a resumer with (useless) recursive calls.
 
-In order to be correct, any code at \bbonem\ must be split with the 
-pessimistic assumption that it may result in work at the second stage.
-When this assumption turns out not to be true---that is, purely monostage code---then 
-splitting may produce second stage code which is needlessly costly 
-(an example of this will occur in \ref{sec:exampleQS}).
-Detecting and optimizing this case is in general a global program analysis,
-since functions can be passed around as values.  
-So instead of relying on hefty analysis, 
-we take the approach of adding enough structure to the input language's type system to
-allow the input code to {\em prove} itself to be---in some parts---monostage.
+Rather than attempt global optimization of the outputs of splitting,
+we instead leverage the type system to indicate when a term contains
+no second-stage computations by adding a third world \bbonep\ whose
+terms are purely first stage.  While not necessary for ordinary staged
+term evaluation (\ref{sec:stagedsemantics}), this annotation is
+particularly useful for splitting. Specifically, splitting $\pure e$
+terms trivially yields a unit resumer.
 
-We find that giving input with \texttt{grnd} annotations is not especially cumbersome in practice.
-Yet even if a language designer desired a different implicit/explicit trade-off,
-then the three-world \lang\ would still be useful as a typed intermediate representation.
+The \texttt{partition} function in the \texttt{quickselect} example in
+\ref{sec:exampleQS} is an example of such a function that contains no
+second stage computations, but, if not defined within a $\pure$
+annotation, would cause splitting to generate a recursive resumer.
 
 \end{abstrsyn}
 

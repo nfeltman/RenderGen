@@ -19,13 +19,6 @@
 									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\tup{y_3,\tup{z_1,z_2,z_3}}\ttrpar\ttrpar\ttrpar}}}
 									\right)}
 									{\tup{l_1,l_2,l_3}.\app{r_1}{\tup{r_2,l_3}}}}													{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplitone [\times I] 		{\splitonetall {\tup{e_1,e_2}}{A\times B}
-									{\left(
-										\talllet{\tup{y_1,z_1}}{c_1}{
-										\talllet{\tup{y_2,z_2}}{c_2}{
-										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}\ttrpar\ttrpar}}
-									\right)}
-									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																	{\sub 1 A & \sub 2 B} \and
 \infersplitone [common1]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}				{\sub {} {A} 
 																																	& \scriptC \in \{\mathtt{pi1},\mathtt{pi2}\}} 			\and
 \infersplitone [common2]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.r}}							{\sub {} {A} 
@@ -41,6 +34,14 @@
 %								\end{array}}}																					{\sub 1 A & \sub [\Gamma,\col{x}{A}] 2 B} 		\and
 %\infersplitone [+ I_1]	{\spl {\inl~e}{A+B}{\talllet{\tup{y,z}}{c}{\tup{\inl~y,z}};l.r}}			{\sub {} A}												\and
 %\infersplitone [+ I_2]	{\spl {\inr~e}{A+B}{\talllet{\tup{y,z}}{c}{\tup{\inr~y,z}};l.r}}			{\sub {} A}												\and
+\infersplitone [\times I] 		{\splitonetall {\tup{e_1,e_2}}{A\times B}
+									{\left(
+										\talllet{\tup{y_1,z_1}}{c_1}{
+										\talllet{\tup{y_2,z_2}}{c_2}{
+										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}\ttrpar\ttrpar}}
+									\right)}
+									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																	{\sub 1 A & \sub 2 B} \and
+\hspace{-.7em} % hax - saves an entire line
 \infersplitone [+ E]		{\splitonetall {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{C}
 								{\left(
 								\talllet{\tup{y_1,z_1}}{c_1}{
@@ -62,9 +63,9 @@
 %									\right); \\
 %									\tup{l_1,l_b}.\tup{r_1;\caseof{l_b}{l_2.r_2}{l_3.r_3}}
 %								\end{array}}}																					{\sub 1 \rmbool & \sub 2 A & \sub 3 A }		\and
-
+%
 %\infersplitone	{\spl {\liftint~e} ? {c;l.r}}											{\sub {} ?}					
-
+%
 \end{mathpar}
 \hrule
 \begin{mathpar}
