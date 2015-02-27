@@ -182,9 +182,9 @@ A precise definition of the masking relation is given in
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
 
-We now describe how to split \bbonem\ terms. The algorithm, given in
-\cref{fig:termSplit}, proceeds recursively on the structure of~$e$. We
-derive a few cases here.
+Given the definition of masking, we now describe how to split
+\bbonem\ terms. The algorithm, given in \cref{fig:termSplit}, proceeds
+recursively on the structure of~$e$. We derive a few cases here.
 
 \paragraph {Unit.} 
 As a simple first case, consider splitting the unit value, $\tup{}$
@@ -196,7 +196,7 @@ Splitting must produce a $c$ and $l.r$ satisfying,
 \]
 Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
 Splitting $\pure{e}$ follows in similar fashion, except the immediate
-result is instead the result of evaluating the \bbonep\ term $e$.
+result now becomes the result of evaluating the \bbonep\ term $e$.
 
 \paragraph {Injections.}
 Now consider splitting the non-terminal, $\inl {e}$, where $\diaone
@@ -209,13 +209,14 @@ splitting must produce a $c'$ and $l.r'$ satisfying,
 \[
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
-Our algorithm simply emits the resumer of the subexpression ($l.r' =
-l.r$), and generates a first-pass term $c'$ that produces the same
-boundary value ($b$) as the subexpression. The entire first-pass term
-is:
+Our algorithm generates a first-pass term $c'$ that produces the same
+boundary value ($b$) as the split of the subexpression $e$:
 \[
 c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
 \]
+Splitting also generates the same resumer as the split of the
+subexpression ($l.r' = l.r$)
+
 \paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
 where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
 \mval {i_k} {q_k}$ for $k = 1,2$.  Inductively:
