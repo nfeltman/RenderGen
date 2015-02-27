@@ -82,20 +82,60 @@ staged programs.
 \subsection{Staging}
 
 The idea behind staged programming is to use staging annotations or
-types so indicate the stage of each expression.  To apply this
+types to indicate the stage of each expression.  To apply this
 technique to our example, suppose that we have a language with two
-stages.  We can now write a staged version of \texttt{qs}, called
-\texttt{qss} in \ref{fig:qs-staged}, making the input list a stage-1
-and the rank a stage-2, more precisely the input list has type
-$\curr\mathrm{list}$ (an integer list ``now''), the rank has type
-$\fut\rmint$ (an integer in the ``future''), and return has type
-$\fut\rmint$.  We can then annotate the rest of the body of
-\texttt{qs}, by using the staging annotations \texttt{prev} and
-\texttt{next}, which respectively include a stage-1 expressions in
-stage-2, and a stage-2 expression in stage-1.  To help readability, we
-write the first-stage computations in red, and the second-stage
-computations in blue.
+worlds representing the two stages and a third, {\em ground} world
+that contains terms with no staging.
 
+We can write a staged version of \texttt{qs}, called
+\texttt{qss} in \ref{fig:qs-staged}, by making the input list a
+stage-1 and the rank a stage-2 argument. 
+%
+More precisely the input list
+has type $\curr\mathrm{list}$ (an integer list ``now''), the rank has
+type $\fut\rmint$ (an integer in the ``future''), and return has type
+$\fut\rmint$.  
+%
+We can then obtain \texttt{qss} by annotating the body of \texttt{qs}
+with the staging annotations \texttt{prev} and \texttt{next}, which
+transition between a stage-1 and stage-2 code, and $\texttt{g}$, which
+marks ground terms.  
+%
+We also use a third function
+\texttt{hold}, which can be implemented with \texttt{prev} and
+\texttt{next}, for promoting a stage-1 integer to a stage-2 integer;
+the signature of \texttt{hold} is
+% 
+\lstinline{1`hold : ^int -> $`2`int`}.
+
+To help readability, we write the first-stage
+computations in red, and the second-stage computations in blue.
+
+Our type system ensures that the staging annotations are consistent,
+in the sense that computations marked as first-stage cannot depend on
+ones marked as second-stage.
+%
+The process of adding staging annotations to unstaged code has been
+the subject of extensive research (\secref{related}). We assume that
+these annotations have been provided; we do not consider the problem
+of generating them. In this example, there are other ways to annotate
+\texttt{qs}, but we chose annotations that maximize the work performed
+in the first stage
+
+
+% The $\curr$ and \texttt{grnd} (``ground'') annotations
+% further distinguish those first-stage computations which do not
+% contain any embedded second-stage code. (Code \emph{inside}
+% \texttt{grnd}, like the \texttt{part}ition function, is guaranteed not
+% to contain second-stage code; first stage code outside a
+% \texttt{grnd}, like \texttt{qsStaged}, may.) We will discuss the
+% importance of this additional distinction in \ref{sec:splitting}.
+
+
+% Ignoring for the moment all \texttt{grnd} annotations, the first-stage code in
+% \texttt{qsStaged} looks like \texttt{qSelect}: in the first stage, terms of
+% non-circle type are available for immediate use. Indeed, we case on the list as
+% usual, and in the \texttt{Cons} branch, \texttt{part}ition it.
 
 
 the
@@ -110,24 +150,7 @@ be possible to force \emph{all} the computations involving \texttt{l}
 to be performed before \emph{any} of the computations involving
 \texttt{k}.
 
-We can formalize this intuition by writing quickselect in a \emph{staged}
-language. In this paper, we choose \lang\ (\ref{sec:semantics}), a staged, typed
-lambda calculus. This allows us to directly express the idea that the argument
-\texttt{l} is known at the \emph{first} stage of the computation, while the
-argument \texttt{k} is only known at the \emph{second}, and all
-first-stage computations occur before any second-stage computations.
 
-We define a staged version of quickselect in \ref{fig:qs-staged}, writing
-first-stage computations in red, and second-stage computations in blue. While
-\texttt{qSelect} sends a \textrm{list} and $\rmint$ to an $\rmint$,
-\texttt{qsStaged} has a more precise type---it is a first-stage function which
-takes a $\curr\mathrm{list}$ (an integer list now) and a $\fut\rmint$
-(an $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
-
-Ignoring for the moment all \texttt{grnd} annotations, the first-stage code in
-\texttt{qsStaged} looks like \texttt{qSelect}: in the first stage, terms of
-non-circle type are available for immediate use. Indeed, we case on the list as
-usual, and in the \texttt{Cons} branch, \texttt{part}ition it.
 
 The \texttt{case} expression in \texttt{qSelect} depends on \texttt{k}, whose
 type $\fut\rmint$ indicates that it is only available to second-stage
@@ -142,23 +165,6 @@ to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
 $\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
 second-stage $\rmint$.
 
-The process of adding staging annotations ($\fut$ types, $\next$, and $\prev$)
-to unstaged code has been the subject of extensive research under the
-name of \emph{binding time analysis}. In this paper, we assume that these
-annotations have been provided by the programmer (or perhaps a binding time
-analysis tool), and do not consider the problem of generating such annotations.
-There are many ways to annotate any program, including \texttt{qSelect}; we
-chose annotations which maximize the work performed in the first stage.
-
-\lang's type system, discussed in \ref{sec:semantics}, ensures that the staging
-annotations are consistent, in the sense that computations marked as
-first-stage cannot depend on ones marked as second-stage. The $\curr$ and
-\texttt{grnd} (``ground'') annotations further distinguish those first-stage computations
-which do not contain any embedded second-stage code. (Code \emph{inside}
-\texttt{grnd}, like the \texttt{part}ition function, is guaranteed not to
-contain second-stage code; first stage code outside a \texttt{grnd}, 
-like \texttt{qsStaged}, may.) We will
-discuss the importance of this additional distinction in \ref{sec:splitting}.
 
 
 
