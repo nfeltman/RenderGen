@@ -18,40 +18,6 @@ and second-stage computations (\bbtwo).
 \subsection{Statics}
 
 
-\fbox{\parbox{5in}{
-\paragraph{Blend.}
-the
-function \texttt{qs} does \emph{not} depend on the rank \texttt{k};
-for example, the list is partitioned before \texttt{k} is ever
-used. Moreover, while the recursive calls to \texttt{qSelect} are
-guarded by a comparison to \texttt{k}, \texttt{k} does not determine
-the arguments to those recursive calls---it only determines which call
-is made. Thus, if we are willing to change the evaluation order of the
-language (and evaluate under the \texttt{case} statement), it should
-be possible to force \emph{all} the computations involving \texttt{l}
-to be performed before \emph{any} of the computations involving
-\texttt{k}.
-
-
-
-The \texttt{case} expression in \texttt{qSelect} depends on \texttt{k}, whose
-type $\fut\rmint$ indicates that it is only available to second-stage
-computations. Since \texttt{qsStaged} itself produces a $\fut\rmint$, the
-remainder of the function is second-stage code.
-
-The $\next$ wraps a second-stage expression of type $\rmint$ (the \texttt{case}
-expression) as a first-stage expression of type $\fut\rmint$ (the result 
-of \texttt{qsStaged}). Inside the \texttt{LT} and \texttt{GT} branches, the
-$\prev$ unwraps first-stage $\fut\rmint$s (the results of the recursive calls
-to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
-$\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
-second-stage $\rmint$.
-
-
-
-}}
-
-
 \input{figures/statics}
 
 \begin{abstrsyn}
@@ -107,6 +73,34 @@ $\rmint$s. In practice, we provide both $\rmint$s and $\pause$ as primitives.
 It is sensible to extend $\pause$ to all base types and to products and sums
 thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 {\em stability} in \cite{krishnaswami13}.}
+
+\crem{blend in the rest of the text in this section:}
+%
+\texttt{qsStaged} has a more precise type---it is a first-stage function which
+takes a $\curr\mathrm{list}$ (an integer list now) and a $\fut\rmint$ (an
+$\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
+
+Indeed, we case on the list as usual, and in the \texttt{Cons} branch,
+\texttt{part}ition it. The \texttt{case} expression in \texttt{qSelect} depends
+on \texttt{k}, whose type $\fut\rmint$ indicates that it is only available to
+second-stage computations. Since \texttt{qsStaged} itself produces a
+$\fut\rmint$, the remainder of the function is second-stage code.
+
+The $\next$ wraps a second-stage expression of type $\rmint$ (the \texttt{case}
+expression) as a first-stage expression of type $\fut\rmint$ (the result 
+of \texttt{qsStaged}). Inside the \texttt{LT} and \texttt{GT} branches, the
+$\prev$ unwraps first-stage $\fut\rmint$s (the results of the recursive calls
+to \texttt{qsStaged}) as second-stage $\rmint$s. In the \texttt{EQ} branch,
+$\pause$ promotes a first-stage $\rmint$ (the head of \texttt{l}) directly to a
+second-stage $\rmint$.
+
+\crem{does this remark go anywhere?}
+
+Thus, if we are willing to change the evaluation order of the
+language (and evaluate under the \texttt{case} statement), it should
+be possible to force \emph{all} the computations involving \texttt{l}
+to be performed before \emph{any} of the computations involving
+\texttt{k}.
 
 \end{abstrsyn}
 
