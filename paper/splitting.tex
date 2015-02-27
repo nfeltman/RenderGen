@@ -280,7 +280,18 @@ To match the invariant for a split $\splittwo {\scriptCapp {e_1 \ttsemi \ldots \
 \]
 Our algorithm accomplishes this by using $p = \tup {p_1, \ldots, p_n}$ and
 $l.r = \tup {l_1, \ldots, l_n}.\scriptCapp {r_1 \ttsemi \ldots \ttsemi r_n}$.
-Again, this works even for nullary terms and under binders.
+
+Again, this holds even for nullary terms and under binders.
+In particular, \texttt{case} splits according to the rule:
+\[
+\infersplittwo	{	\begin{array} {l}
+						\caseof{e_1}{x_2.e_2}{x_3.e_3} \splittwosym \\
+						\hspace{5em} \pipeS {\tup{p_1,p_2,p_3}} {\tup{l_1,l_2,l_3}} {\caseof{r_1}{x_2.r_2}{x_3.r_3}}		
+					\end{array}}	
+				{\sub 1 ? & \sub 2 ? & \sub 3 ?} 								
+\]
+Note how the precomputations are pulled out from underneath the binder into a tuple that is always executed in the first stage,
+regardless of what branch is eventually executed in the second stage.
 
 Splitting \texttt{prev} generates a precomputation that projects the immediate
 result of its world \bbone\ subterm.
