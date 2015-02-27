@@ -190,7 +190,13 @@ In this case, that cost would be $\Theta(n)$ in the size of the input list,
 enough to overpower the asymptotic speedup gained elsewhere.
 With \texttt{grnd} annotations, however, this can be prevented.
 
-\crem{You could map qs and it would work.}
+To run many order statistics queries $\texttt{k1},\dots,\texttt{km}$ on the same
+list, use \texttt{qs1} to compute the boundary tree in the first pass, and in
+the second pass, evaluate \texttt{qs2} on that tree and each rank.
+\begin{lstlisting}
+1`let val (_,t) = qs1 ([7,4,2,5,9,...,3],())
+in `2`(qs2 (((),k1),1`t`),...,qs2 (((),km),1`t`))`
+\end{lstlisting}
 
 \subsection {Composing Graphics Pipeline Programs}
 
