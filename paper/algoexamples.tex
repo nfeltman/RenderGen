@@ -116,14 +116,14 @@ data structures latent in the structure of recursive functions.
 \subsection{Quickselect}
 \label {sec:exampleQS}
 
-Let us return to the \texttt{quickselect} algorithm, which we discussed at
+Let us return to the quickselect algorithm, which we discussed at
 length in \ref{sec:examplea}. (The code is in \ref{fig:qs-staged}.)
-\texttt{quickselect} finds the $k$th largest element of a list $l$ by
+\texttt{qss} finds the $k$th largest element of a list $l$ by
 recursively \texttt{partition}ing the list by its first element, then recurring
 on the side containing the $k$th largest element. $l$ is first-stage and $k$ is
 second-stage.
 
-Stage-splitting \texttt{quickselect} produces:
+Stage-splitting \texttt{qss} produces:
 %
 \begin{lstlisting} 
 datatype list = Empty | Cons of int * list
@@ -159,6 +159,11 @@ fun qs1 (l : list, k : unit) = ((),
       | GT => qs2 (((), k-n-1), right)`
 \end{lstlisting}
 %
+This is nearly identical to the cleaned-up code we presented in
+\ref{fig:qs-split}, except that the mixed-stage argument to both passes is
+is explicitly masked, and we do not suppress the trivial immediate result of
+\texttt{qs1}.
+
 \texttt{qs1} \texttt{partition}s $l$, but since the comparison with $k$ (to
 determine which half of $l$ to recur on) is at the second stage, it simply
 recurs on \emph{both} halves, pairing up the results along with $h$ (the head of
@@ -190,7 +195,13 @@ In this case, that cost would be $\Theta(n)$ in the size of the input list,
 enough to overpower the asymptotic speedup gained elsewhere.
 With \texttt{grnd} annotations, however, this can be prevented.
 
-\crem{You could map qs and it would work.}
+To run many order statistics queries $\texttt{k1},\dots,\texttt{km}$ on the same
+list, use \texttt{qs1} to compute the boundary tree in the first pass, and in
+the second pass, evaluate \texttt{qs2} on that tree and each rank.
+\begin{lstlisting}
+1`let val (_,t) = qs1 ([7,4,2,5,9,...,3],())
+in `2`(qs2 (((),k1),1`t`),...,qs2 (((),km),1`t`))`
+\end{lstlisting}
 
 \subsection {Composing Graphics Pipeline Programs}
 
