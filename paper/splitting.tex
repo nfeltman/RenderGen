@@ -194,7 +194,7 @@ we need a $c$ and $l.r$ satisfying,
 \[
 	\reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
 \]
-Our algorithm chooses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
+Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
 Splitting $\pure{e}$ follows in similar fashion, 
 where the immediate result is instead the result of evaluating $e$.
 
@@ -210,7 +210,8 @@ the validity of the split $\splitone {\inl e} A {c'} {l.r'}$ requires,
 \[
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
-Our algorithm chooses $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' = l.r$.
+To satisfy this, our algorithm uses the same boundary value as the subexpression,
+and so $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' = l.r$.
 
 \paragraph{Tuple} 
 For an example with more than one argument, consider a tuple $\tup{e_1,e_2}$,
@@ -222,31 +223,32 @@ Likewise, the splitting invariants for $e_1$ and $e_2$ give
 \]
 Since $\diaone {\tup{e_i,e_2}} {\xi_1,\xi_2} {\tup{v_1,v_2}}$ 
 and $\rtab {\xi_1,\xi_2} {\tup{v_1,v_2}} \vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}$,
-the validity of the split $\splitone {\tup{e_1,e_2}} A {c'} {l.r'}$ requires,
+the validity of the split $\splitone {\tup{e_1,e_2}} A {c} {l.r}$ requires,
 \[
-	\reduce {c'} {\tup{\tup{i_1,i_2},b'}} \text{ and } [b'/l]r' \equiv q
+	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
+\]
+To satisfy this, our algorithm uses a boundary value which is the tuple of the boundary values of the subexpressions,
+$b = \tup{b_1,b_2}$. This is deconstructed with a tuple pattern, $l.r = \tup{l_1,l_2}.\tup{r_1,r_2}$,
+and constructed using,
+\[
+c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
 \]
 
 \paragraph {Case}
-The most complicated rule is that of $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms, because of their divergent control flow.
-We derive the correct splitting rule by considering the two possible execution paths seperately.
-If the first branch was taken, then the predicate evaluated to $\diaone {e_1} {\xi_1} {\inl {v_1}}$ 
-and the first branch evaluated to $\diaone {[v_1/x_2]e_2} {\xi_2} {v_2}$.
-Similarly these ouputs mask as $\rtab {\xi_1,\xi _2} {v_2} \vsplito \mval {i_2} {q_2}$ and $\rtab {\xi_1,\xi _2} {v_2} \vsplito \mval {i_2} {q_2}$.
-Again because splitting works from the inside out, we already know that that the predicate obeys
-\[
-	\splitone {e_1} A {c_1} {l_1.r_1} \text{ and } \reduce {c_1} {\tup{\inl {i_1},b_1}} \text{ and } [b_1/l_1]r_1 \equiv q_1
-\]
-and the first branch obeys
-\[
-	\splitone {e_2} A {c_2} {l_2.r_2} \text{ and } \reduce {[i_1/x_2]c_2} {\tup{i_2,b_2}} \text{ and } [b_2/l_2]r_2 \equiv q_2
-\]
+Splitting is most complicated at $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms because of their divergent control flow.
+Consider that when $\reduce {e_1} {\inl {v_1}}$, both the first and second stage component of $e_2$ will be executed, 
+but $e_3$ will be ignored entirely. The reverse occurs when $\reduce {e_1} {\inr {v_1}}$.
+This implies that both the first and second stage results of splitting will need to have \texttt{case} statements.
 
-Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
-The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$). 
-$b_i$ is cased in the resumer to determine which branch's resumer should be executed.
-{\tt case} is the only rule where splitting adds non-trivial logic is added to the precomputation.
+Recovering first stage divergence is easy, since for $\splitone {e_1} ? {c_1} {l_1.r_1}$, 
+$\reduce {e_1} {\inl {v_1}}$ implies $\reduce {c_1} {\tup{\inl {i_1},b_1}}$.
+Thus the algorithm cases on $c_1$ to run the correct branch of first stage code.
+The boundary value from this correct branch, $b_2$ or $b_3$, is packaged as either $\tup {b_1, \inl {b_2}}$ or $\tup {b_1, \inr {b_3}}$.
 
+The resumer for \texttt{case} operates by untupling the boundary value to get $b_1$ and either $\inl {b_2}$ or $\inr {b_3}$.
+The resumer of the predicate is run using $b_1$, and the remaining injection is inspected to run the correct branch resumer.
+
+\paragraph {Function} 
 Function introduction has a $\tup{}$ boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multistage, splitting must continue into it.
@@ -254,10 +256,6 @@ The immediate result is a new function formed from the first-stage part of the o
 The resumer is a new function formed out of the second-stage part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
-
-Since the results of splitting \texttt{next} terms depend on the output of
-splitting its world \bbtwo\ subterm,
-we defer description of \texttt{next} until after describing world \bbtwo\ term splitting.
 
 \subsection{Term Splitting at \bbtwo}
 
