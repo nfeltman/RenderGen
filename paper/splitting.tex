@@ -297,17 +297,17 @@ is that splitting \bbonem\ terms may generate resumers containing
 unnecessary logic.  For example, the rule for splitting
 \bbonem\ \texttt{case} terms inserts the tag from the \texttt{case}
 argument into the boundary value, then decodes this tag in the
-resumer.  This logic occurs regardless of whether the terms forming
-the branches of the \texttt{case} contain second stage computations.
+resumer. This logic occurs regardless of whether the terms forming the
+branches of the \texttt{case} contain second stage computations.
 Worse, if this \texttt{case} appeared in the body of a recursive
 function with no other second stage computations, splitting would
 generate a resumer with (useless) recursive calls.
 
 Rather than attempt global optimization of the outputs of splitting,
 we instead introduce world \bbonep\ and use the type system to
-statically prove terms contain no second stage computations.  In these
-situations, splitting is trivial---splitting $\pure e$ terms yields a
-unit resumer.  
+statically prove certain terms contain no second stage computations.
+In these situations, splitting is trivial---splitting $\pure e$ terms
+yields a unit resumer.
 
 The \texttt{partition} function in the \texttt{quickselect} example in
 \ref{sec:exampleQS} is an example of such a function that contains no
