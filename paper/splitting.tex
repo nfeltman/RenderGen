@@ -210,12 +210,12 @@ splitting must produce a $c'$ and $l.r'$ satisfying,
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
 Our algorithm generates a first-pass term $c'$ that produces the same
-boundary value ($b$) as the split of the subexpression $e$:
+boundary value ($b$) as the split of the subterm $e$:
 \[
 c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
 \]
 Splitting also generates the same resumer as the split of the
-subexpression ($l.r' = l.r$)
+subterm ($l.r' = l.r$)
 
 \paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
 where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
@@ -230,7 +230,7 @@ splitting generates:
 	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
 \]
 The resulting boundary value is the tuple of the boundary values of
-the subexpressions, $b = \tup{b_1,b_2}$.  The value is 
+the subterms, $b = \tup{b_1,b_2}$.  The value is 
 constructed using,
 \[
 c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
