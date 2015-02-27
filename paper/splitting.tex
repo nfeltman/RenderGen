@@ -304,10 +304,12 @@ function with no other second stage computations, splitting would
 generate a resumer with (useless) recursive calls.
 
 Rather than attempt global optimization of the outputs of splitting,
-we instead introduce world \bbonep\ and use the type system to
-statically prove certain terms contain no second stage computations.
-In these situations, splitting is trivial---splitting $\pure e$ terms
-yields a unit resumer.
+we instead leverage the type system to indicate when a term contains
+no second-stage computations by adding a third world \bbonep\ whose
+terms are purely first stage.  While not necessary for ordinary staged
+term evaluation (\ref{sec:stagedsemantics}), this annotation is
+particularly useful for splitting. Specifically, splitting $\pure e$
+terms trivially yields a unit resumer.
 
 The \texttt{partition} function in the \texttt{quickselect} example in
 \ref{sec:exampleQS} is an example of such a function that contains no
