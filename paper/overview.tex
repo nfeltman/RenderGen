@@ -116,7 +116,7 @@ in the sense that computations marked as first-stage cannot depend on
 ones marked as second-stage.
 %
 The process of adding staging annotations to unstaged code has been
-the subject of extensive research (\secref{related}). We assume that
+the subject of extensive research (\ref{sec:related}). We assume that
 these annotations have been provided; we do not consider the problem
 of generating them. In this example, there are other ways to annotate
 \texttt{qs}, but we chose annotations that maximize the work performed
@@ -233,7 +233,7 @@ balanced binary search tree, which is isomorphic to a treap data
 structure~\cite{treaps}.  In the second pass, the program performs,
 for each rank, a binary search tree lookup, by walking the tree to
 find the element with the desired rank.  The resulting program, shown
-in \ref{fig:????}  takes the $O(n\log{n} + m\log{n})$.
+in \ref{fig:qs-split}  takes the $O(n\log{n} + m\log{n})$.
 
 To create the multi-pass algorithm, the splitting algorithm operates
 by composing local transformations on the subterms of the input
