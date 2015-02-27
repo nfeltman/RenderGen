@@ -113,7 +113,6 @@ second argument) if we select keys for the partition function
 uniformly randomly or identically if we permute the input. Under this
 assumption, our example program requires expected $\Theta(nm)$ time.
 
-
 Suppose now that $m$ is large (close to $n$ for example).  In this
 case, our program is essentially a quadratic-time algorithm, which can
 be very slow even for modest values of $m$ and $n$. In this case, to
@@ -127,10 +126,11 @@ structure for storing the sorted input be?  Unfortunately using a list
 does not work, because each look up in a list requires linear time on
 average. One option is to use arrays but in this case, we would need
 to implement a binary search to perform the lookup.  Another option is
-to use a balanced binary search tree data structure, which supports
-lookups in logarithmic time.  Using either one of these techniques, we
-can reduce the run-time to $O(n\log{n} + m\log{n})$, which is
-significantly better that $O(n^2)$.
+to implement a balanced binary search tree data structure for storing
+the elements in the list and then use balanced binary-search-tree
+lookups, which are logarithmic time.  Using either one of these
+techniques, we can reduce the run-time to $\Theta(n\log{n} + m\log{n})$,
+which is significantly better that $\Theta(n^2)$.
 
 
 In summary, to achieve the desired improvement, we wrote a two-pass
@@ -140,10 +140,12 @@ probably apparent to the reader, the resulting program is both
 algorithmically and structurally more complex: it requires conversions
 between different data structures (list to array or binary search
 tree) and requires implementing additional algorithms such as sorting
-and binary search, also possibly binary search trees.  As suggested by
-this relatively small example and experienced by the graphics
-community, the design, implementation, and maintenance of such
-multi-pass programs can be difficult due to the increased complexity.
+and binary search or possibly binary search trees.  
+
+%% As suggested by this relatively small example and experienced for
+%% example by the graphics community, the design, implementation, and
+%% maintenance of such multi-pass programs can be difficult due to the
+%% increased complexity.
 
 
 Instead of relying an writing multipass programs manually, in this
@@ -160,57 +162,63 @@ significantly.
 
 When applied to the quick-select example as described, our splitting
 algorithm yields a two-pass program that uses the binary-search-tree
-based implementation described above.  Specifically, in the first
-pass, the program takes the input list and constructs a
-probabilistically balanced binary search tree, which is isomorphic to
-a treap data structure~\cite{treaps}.  In the second pass, the program
-performs a binary search tree lookup, by walking the tree to find the
-element with the desired rank.  The resulting program takes the
-$O(n\log{n} + m\log{n})$.
+based implementation outlined above.  Specifically, in the first pass,
+the program takes the input list and constructs a probabilistically
+balanced binary search tree, which is isomorphic to a treap data
+structure~\cite{treaps}.  In the second pass, the program performs,
+for each rank, a binary search tree lookup, by walking the tree to
+find the element with the desired rank.  The resulting program, shown
+in \ref{fig:????}  takes the $O(n\log{n} + m\log{n})$.
 
-We note that the splitting algorithm operates by composing local
-transformations on the subterms of the input program.  In particular,
-the algorithm has no special knowledge of the quick-select algorithm,
-binary search trees, or how to perform lookups on binary search trees,
-but it is able to derive all of these from the input program.  But
-how? 
+To create the multi-pass algorithm, the splitting algorithm operates
+by composing local transformations on the subterms of the input
+program.  In particular, the algorithm has no special knowledge of the
+quick-select algorithm, binary search trees, or how to perform lookups
+on binary search trees, but it is able to derive all of these from the
+input program.  But how?
+%
+The details of the algorithm are relatively involved but in the hope
+that it aids understanding we present a brief informal overview of how
+the algorithm operates.  
+%
+%% This exposition is necessarily imprecise but the algorithm is made
+%% precise in \ref{sec:splitting} and implemented
+%% (\ref{sec:implementation}{sec:examples}).
+%
 
-The technical detail of the algorithm are relatively involved but in
-the hope that it aids understanding we present a brief informal
-overview of how the algorithm operates.  This exposition is
-necessarily imprecise but the algorithm is made precise in
-\ref{sec:splitting} and implemented
-(\ref{sec:implementation}{sec:examples}).
 
 At a high level, the splitting algorithm operates on our example by
-using the code for quickselect and the knowledge that the list (the
-first argument) is a first-stage argumint and the rank (second
-argument) is a second stage argumunt, the algorithm then derives two
-functions: \texttt{qsStage1} and \texttt{qsStage2} as follows. 
-
+using the program code and the knowledge that the list (the first
+argument) is first-stage and the rank ( the second argument) is second
+stage, the algorithm then derives two functions: \texttt{qsStage1} and
+\texttt{qsStage2} as follows.
 
 
 \paragraph{Pass-1 code.}
-The splitting algorithm ``imitates'' an execution of quick-select with
-just the first-stage input by evaluating as much code as possible with
-the available information.  Specifically the algorithm generates a
-function \texttt{qsStage1} to perform all the recursive calls of
-\texttt{qs} and to evaluate all instances of the partition function,
-which depend only on the input list.  The function \texttt{qsStage1}
-produces a trace of the execution of \texttt{qs} on its first input by
-generating a tree that collects the results from all recursive calls
-along with a tag that indicates the control branches taken.  The trace
-ends up being represented as a tree because \texttt{qs} has a binary
-control structure casing on the list. In fact, function
-\texttt{qsStage1} constructs a binary search tree, keyed by the
-``pivot'' used by the partition, because the ``pivot'' is needed in
-the second stage to construct the result.  We call the result data
-structure of \texttt{qsStace1} the {\em boundary}, as it passes
+The splitting algorithm scans the program and imitates an execution of
+\texttt{qs} with just the first-stage input by evaluating as much code
+as possible with the available first-stage values.  Specifically the
+algorithm generates a function \texttt{qsStage1} to perform all the
+recursive calls of \texttt{qs} and to evaluate all instances of the
+partition function, which depend only on the input list.  The function
+\texttt{qsStage1} produces a trace of the execution of \texttt{qs} on
+its first input by generating a tree that collects the results from
+all recursive calls along with a tag that indicates the control
+branches taken.  The trace is represented as a tree because
+\texttt{qs} has a binary control structure (casing on the list), which
+leads to a binary tree data structure.  To ensure that the trace
+contains the necessary results to complete the execution in the second
+pass, where second-stage values may be used, the function
+\texttt{qsStage1} includes in the nodes of the tree information such
+as the key used for splitting the list at that recursive call.  The
+resulting tree is thus a binary search tree, keyed by the ``pivot''
+used by the partition.  In general we refer to the result data
+structure of \texttt{qsStace1} as the {\em boundary}, as it passes
 information from the first pass to the second.
 
 \paragraph{Pass-2 code}
-As the splitting algorithm ``scans'' \texttt{qs} for computations that
-can be performed in the first stage and collects them into
+As the splitting algorithm scans \texttt{qs} for computations that can
+be performed in the first stage and collects them into
 \texttt{qsStage1}, it also collects computations that must be left to
 the second stage in a separate function \texttt{qsStage2}.  This
 function, which is executed in the second pass, takes as argument the
@@ -221,7 +229,24 @@ recorded the control flow of the first stage execution in the boundary
 data structure, \texttt{qsStage2} simply follows this control
 structure and performs at each point the parts of the computation from
 \texttt{qs} that can now be performed in the presence of the
-second-stage argument (the rank).
+second-stage argument (the rank).  In the context of our example, this
+performs a lookup on the boundary data structure by using the supplied
+rank.  
+
+\paragraph{Summary.}
+In summary, the splitting algorithm scans the program code for
+first-stage computations (which depend only on first-stage values) and
+separates them into function of the first pass. This function performs
+the stage-1 computations and places the results into a boundary data
+structure that both records the control flow and the results from the
+first stage computation at each control-flow point.  As the splitting
+function generates the code for the first pass, it also generates the
+code for the second pass as a function that walks both the boundary
+data (which essentially imitates execution) and at each control point
+performs the part of the computation that depends on second-stage
+values. We evaluate the resulting program by first evaluating the
+function for the first pass and passing its return value (the
+boundary) to the second pass, which then returns the desired result.
 
 
 
