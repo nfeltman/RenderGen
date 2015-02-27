@@ -22,15 +22,15 @@ We allow staging annotations around declarations. For example,
   datatype list = Empty | Cons of int * list
   fun partition (...) = ...
 `3`}`1`
-fun qsStaged (...) = ...`
+fun qss (...) = ...`
 \end{lstlisting}
 declares the \texttt{list} datatype and \texttt{partition} function at world \bbonep,
 by elaborating into:
 \begin{lstlisting}
 1`val 3`grnd{`Empty3`}` = 3`grnd{`roll (inj ...)3`}`
-val 3`grnd{`Cons3`}`  = 3`grnd{`fn (...) => roll (inj ...)3`}`
-val 3`grnd{`partition3`}`  = 3`grnd{`fn (...) => ...3`}`
-val qsStaged    = fn (...) => ...`
+val 3`grnd{`Cons3`}` = 3`grnd{`fn (...) => roll (inj ...)3`}`
+val 3`grnd{`partition3`}` = 3`grnd{`fn (...) => ...3`}`
+val qss = fn (...) => ...`
 \end{lstlisting}
 
 In the splitting algorithm, we perform a number of optimizations which
