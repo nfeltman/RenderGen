@@ -36,9 +36,7 @@ abstractions such as composition and modularity.
 %
 Graphics researchers therefore have suggested using explicitly staged programs
 \,\cite{Proudfoot:2001,Foley:2011,He:2014}, deferring to the compiler the
-mechanical task of separating such programs into passes. However, prior work in
-automatic pass separation has been limited to simple languages that do not
-support recursion or first-class functions.
+mechanical task of separating such programs into passes.
 
 Programming languages researchers have studied similar problems. In the 1980s,
 J{\o}rring and Scherlis identified {\em frequency reduction} and {\em
@@ -58,10 +56,9 @@ $f(v,y) = f_v(y)$, then we can specialize $F$ to $v$ as
 fun @$F_v(y_0, y_1, \ldots, y_{m-1})$@ = 
   @$f_v(y_0);  f_v(y_1); \ldots; f_v(y_{m-1})$@.
 \end{lstlisting}
-eliminating the need to recompute
-\crem{WIP especially below here}
-TODO.
-%
+eliminating the need to recompute the parts of $f(v,-)$ which do not depend on
+the second argument.
+
 A closely related technique, {\em metaprogramming}, allows writing programs that
 generate specialized code. Metaprogramming enables fine-grained control over
 specialization by requiring staging annotations that make explicit the stage of
@@ -69,71 +66,72 @@ each computation. (In partial evaluation, we typically assume that a
 \emph{binding-time analysis} has automatically determined which parts of $f$ can
 be specialized.)
 
-While previous work shows that precomputation can be performed
-essentially automatically (via partial evaluation or meta
-programming), frequency reduction has been less explored.  In their
-original paper, J{\o}rring and Scherlis proposed {\em pass separation}
-as a manual method for {\em splitting} a program into multiple passes.
+While partial evaluation and metaprogramming have been studied extensively,
+frequency reduction techniques have not seen the same attention. In
+\cite{JS86-staging}, J{\o}rring and Scherlis proposed {\em pass separation} as a
+manual method for {\em splitting} a program into multiple passes.
 %
-Applied to our example, pass separation would split the function $f$
-into $f_1$ and $f_2$ such that $f(x,y) = f_2(f_1(x),y)$.  We can then
-rewrite our example as a multi-pass program:
+In our example, pass separation would split the function $f$ into two passes
+$f_1$ and $f_2$ such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
+evaluating the first pass on $x$, and then the second pass on each $y_i$.
 %
 \begin{lstlisting}
-fun @$F(x, y_0, y_1 \ldots y_{m-1})$@ = 
+fun @$F_\textrm{staged}(x, y_0, y_1, \ldots, y_{m-1})$@ = 
   let @$fx = f_1(x)$@
   in @$(f_2(fx, y_0);  f_2(fx, y_1)  \ldots f_2(fx, y_{m-1}))$@.
 \end{lstlisting}
 %
-The key difference between partial evaluation (meta programming) and
-pass separation is that the latter does not require the first
-argument~$x$: it works with all arguments, whereas the partially
-evaluated program is specialized for a particular value of $x$ ($x =
-[1,2, \ldots, n]$ in the example). Specifically, if desired, partial
-evaluation can be applied subsequently in our example, by partially
-evaluating function~$f_2$ on $f_1(x)$.
+The key difference between partial evaluation (or metaprogramming) and pass
+separation is that the latter can be performed without access to the first
+argument $x$: $F_\textrm{staged}$ works for any $x$, while $F_v$ is defined
+only for $x=v$. (Of course, when a particular $v$ \emph{is} known, one may
+always use partial evaluation to specialize $F_\textrm{staged}$ to that $v$.)
 
-However, unlike for precomputation, there is no available technique
-for pass separation except for very simple languages
-\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}.  Notably omitted
-features include recursion and first-class functions.  We are thus
-interested in the problem of splitting automatically a functional
-language.
+Prior work on partial evaluation and metaprogramming has shown that
+precomputation can largely be automated for functional languages. In contrast,
+automatic pass separation has been limited to simple languages that do not
+support recursion or first-class
+functions~\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. In this paper, we
+extend this work by presenting a pass separation algorithm for a typed lambda
+calculus.
+
+As our starting point, we consider an explicitly-two-staged, typed lambda
+calculus \lang\ in the style of Davies~\cite{davies96}, with a $\fut$ modality
+denoting computation in a later stage (\ref{sec:semantics}). We then present a
+splitting algorithm to pass-separate a \lang\ program into two passes
+corresponding to the stages of computation in that program
+(\ref{sec:splitting}). These passes are monostaged programs, expressed in a
+conventional functional language.
+
+The most interesting case involves splitting a mixed-stage function (like $f$ in
+the example) which is moreover recursive. This yields a first pass function
+$f_1$ which computes from its first-stage argument $x$ a \emph{boundary} data
+structure encoding the interstage communication in $f(x,-)$. When $f$ recurs on
+$x$, this boundary structure itself has a recursive type.
 %
+The second pass is a function $f_2$ which takes the boundary data structure
+$f_1(x)$ and a second-stage argument $y_i$, and completes the computation
+$f(x,y_i)$, traversing the boundary structure in light of the particular
+argument $y_i$.
 
-As our starting point, we consider a modal, typed language \lang\ with explicit
-staging in the style of Davies~\cite{davies96}, where the $\fut$
-modality denotes computation in a later stage, and present a staged
-operational semantics similar for \lang\ (\ref{sec:stagedsemantics}).
-We then present a splitting algorithm that pass-separates a \lang\ program
-into two monostaged programs, one for the first stage and for the
-second stage (\ref{sec:splitting}).  Since each program is monostaged,
-they are expressed in conventional functional languages.
+We have implemented this splitting algorithm (\ref{sec:implementation}) and
+applied it to a number of staged programs (\ref{sec:examples}) ranging from
+straight-line arithmetic operations to recursive and higher-order functions. In
+the case of \texttt{quickselect}, which we discuss next, the split code is in
+fact asymptotically faster over many $y_i$.
 
-The crux of the splitting algorithm is splitting recursive mixed stage
-functions that involve both a first stage and second stage
-computations.  When split, such a function turns into a first-pass
-function that yields a {\em boundary value} that encodes the
-``first-stage'' part of the computation.  If the function recurs on a
-first-stage argument, then the boundary value is typically a recursive
-data structure.  In other words, the splitting algorithm maps
-computational recursion into a recursive data type. If the boundary
-structure is generated as a result of a conditional, it is typically
-encoded as a (recursive) sum type, such as a tree, where the kind of
-the node indicates the recursion status of the first-stage evaluation.
-The second-pass part of the computation, which corresponds to the
-``second stage'' takes the boundary value as an argument as well as
-the second-stage argument and uses them to complete the computation,
-often by traversing the now precomputed boundary in light of the now
-available second-stage argument.
-
-Since it deals with unrestricted recursion and a rich language
-consisting of first-class functions, recursion, and sum and recursive
-types, the splitting algorithm is naturally complex. With some care,
-the algorithm nevertheless can be specified reasonably succinctly. In
-fact, we have implemented the algorithm (\ref{sec:implementation}) and
-applied it to a number of staged programs (\ref{sec:examples}) ranging
-from straight-line arithmetic operations to recursive and higher-order
-functions. In the case of \texttt{quickselect}, which we discuss next, 
-the split code is asymptotically faster over many $y_i$.
+%The crux of the splitting algorithm is splitting recursive mixed stage
+%functions that involve both a first stage and second stage computations.  When
+%split, such a function turns into a first-pass function that yields a {\em
+%boundary value} that encodes the ``first-stage'' part of the computation.  If
+%the function recurs on a first-stage argument, then the boundary value is
+%typically a recursive data structure.  In other words, the splitting algorithm
+%maps computational recursion into a recursive data type. If the boundary
+%structure is generated as a result of a conditional, it is typically encoded as
+%a (recursive) sum type, such as a tree, where the kind of the node indicates
+%the recursion status of the first-stage evaluation.  The second-pass part of
+%the computation, which corresponds to the ``second stage'' takes the boundary
+%value as an argument as well as the second-stage argument and uses them to
+%complete the computation, often by traversing the now precomputed boundary in
+%light of the now available second-stage argument.
 
