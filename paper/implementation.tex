@@ -18,18 +18,18 @@ these additional features when convenient.
 
 We allow staging annotations around declarations. For example,
 \begin{lstlisting}
-1`atsigngrnd{
+3`atsigngrnd{`1`
   datatype list = Empty | Cons of int * list
   fun part (...) = ...
-}
+`3`}`1`
 fun qsStaged (...) = ...`
 \end{lstlisting}
 declares the \texttt{list} datatype and \texttt{part} function at world \bbonep,
 by elaborating into:
 \begin{lstlisting}
-1`val grnd{Empty} = grnd{roll (inj ...)}
-val grnd{Cons}  = grnd{fn (...) => roll (inj ...)}
-val grnd{part}  = grnd{fn (...) => ...}
+1`val 3`grnd{`Empty3`}` = 3`grnd{`roll (inj ...)3`}`
+val 3`grnd{`Cons3`}`  = 3`grnd{`fn (...) => roll (inj ...)3`}`
+val 3`grnd{`part3`}`  = 3`grnd{`fn (...) => ...3`}`
 val qsStaged    = fn (...) => ...`
 \end{lstlisting}
 

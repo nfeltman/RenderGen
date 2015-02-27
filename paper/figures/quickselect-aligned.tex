@@ -4,7 +4,7 @@
 \begin{subfigure}[t]{0.45\textwidth}
 \begin{lstlisting} 
 
-datatype intlist = Empty | Cons of int * list
+datatype list = Empty | Cons of int * list
 
 fun partition (p, Empty) = (0,Empty, Empty) 
   | partition (p, Cons (h,t)) = 
@@ -47,7 +47,7 @@ fun qss (`3`g{`1`Empty`3`}`1`,_) = next {`2`0`1`}
              | EQ => prev {`1`hold `3`g{`1`#1 ht`3`}`2`}
              | GT => prev {`1`qss (`3`g{`1`right`3`}`1`, next{`2`k-i-1`1`})`2`}`1`}`
 \end{lstlisting}
-\caption{Staged implementation of quickselect in \lang. FUNCTION HOLD}
+\caption{Staged implementation of quickselect in \lang.}
 
 %\vspace{1.3em}
 \label{fig:qs-staged}
