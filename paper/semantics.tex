@@ -80,7 +80,7 @@ takes a $\curr\mathrm{list}$ (an integer list now) and a $\fut\rmint$ (an
 $\rmint$ \emph{in the future}), and returns a $\fut\rmint$.
 
 Indeed, we case on the list as usual, and in the \texttt{Cons} branch,
-\texttt{part}ition it. The \texttt{case} expression in \texttt{qSelect} depends
+\texttt{partition} it. The \texttt{case} expression in \texttt{qSelect} depends
 on \texttt{k}, whose type $\fut\rmint$ indicates that it is only available to
 second-stage computations. Since \texttt{qsStaged} itself produces a
 $\fut\rmint$, the remainder of the function is second-stage code.
