@@ -1,53 +1,52 @@
 \section{Related Work}
 \label{sec:related}
 
-As Jorring and Scherlis argue frequency reduction and precomputation
-are common techniques for both designing algorithms and performing
-compiler optimizations~\cite{JS86-staging}.  The idea behind frequency
+Frequency reduction and precomputation are common techniques for both
+designing algorithms and performing compiler
+optimizations~\cite{JS86-staging}.  The idea behind frequency
 reduction is to identify computations that are performed multiple
 times and pull them ahead so that they can be performed once and used
-later as needed.  For example, dynamic programming and loop hoisting,
-as well as the work presented here are a frequency reduction
+later as needed.  Dynamic programming, loop hoisting, and pass
+separation (presented here) are all examples of frequency reduction
 techniques.
 %
 The idea behind precomputation is to identify computations that can be
-performed earlier, for example at compile time if their inputs are
-available statically and perform them at that earlier time.  For
-example, dynamic algorithms, partial evaluation, and incremental
-computation are all precomputation techniques.
+performed earlier (e.g., at compile time) if their inputs are
+available statically and perform them at that earlier time. Dynamic
+algorithms, partial evaluation, and incremental computation are all
+examples of precomputation techniques.
 
 \paragraph{Precomputation techniques.}
 Perhaps one of the most well studied example of precomputation is
 partial evaluation.  Partial evaluation distinguishes between a static
 (compile-time) and dynamic (run-time) stage. Given a program and the
-values of its static inputs, which are the subset of the inputs that
-become available at compilation time, partial evaluation generates a
-specialized program by performing the computations that depend on the
-statics inputs~\cite{jones96}.  The roots of partial evaluation go
-back to Kleene, who in 1952 proved that a multivariate program
-(function) $f(x_1, \ldots, x_{n+m})$ can be specialized for any given
-$a_1 \ldots a_m$ to obtain another program $g(x_1, \ldots, x_n)$ such
-that $f(a_1, \ldots, a_m, y_1, \ldots, y_n) = g(y_1, \ldots,
-y_n)$~\cite{Kleene52}.  Kleene did not intend to improve efficiency,
-however.  Lombardi appears to be the first person to use the term in
-his work on incremental computation~\cite{Lombardi67}.  Since then,
-there has a lot of work on partial evaluation, only broad-strokes of
-which we can mention in this here.  We refer the interested reader to
-the excellent book by Jones, Gommard, and Sestoft for a comprehesive
-discussion of work until early 90's~\cite{JGS93}.
+values of static inputs (inputs that are available at compilation
+time), partial evaluation generates a specialized program by
+performing the computations that depend on the statics
+inputs~\cite{jones96}.  The roots of partial evaluation go back to
+Kleene, who in 1952 proved that a multivariate program (function)
+$f(x_1, \ldots, x_{n+m})$ can be specialized for any given $a_1 \ldots
+a_m$ to obtain another program $g(x_1, \ldots, x_n)$ such that $f(a_1,
+\ldots, a_m, y_1, \ldots, y_n) = g(y_1, \ldots, y_n)$~\cite{Kleene52}.
+Kleene did not intend to improve efficiency, however.  Lombardi
+appears to be the first person to use the term in his work on
+incremental computation~\cite{Lombardi67}.  Since then, there has a
+lot of work on partial evaluation, only broad-strokes of which we can
+mention in this here.  We refer the interested reader to the excellent
+book by Jones, Gommard, and Sestoft for a comprehesive discussion of
+work until early 90's~\cite{JGS93}.
 
-At a high level, earlier approaches to partial evaluation can be
-viewed as operating in two stages: binding time analysis and program
-specialization.  For a multivariate program with clearly marked static
-and dynamic arguments, binding-time analysis identifies all the parts
-of the program that can be computed by the knowledge of static
-arguments. Using this information and the static arguments themselves,
-program specialization specializes the program to a partially
-evaluated program that can be used with many different dynamic
-arguments.  This approach has been applied to construct partial
-evaluators for a number of languages such as
-Scheme~\cite{OB91-Similix,Consel88-Schism}, considering for the most
-part first-order subsets.
+Earlier approaches to partial evaluation can be viewed as operating in
+two stages: binding time analysis and program specialization.  For a
+multivariate program with clearly marked static and dynamic arguments,
+binding-time analysis identifies all the parts of the program that can
+be computed by the knowledge of static arguments. Using this
+information and the static arguments themselves, program
+specialization specializes the program to a partially evaluated
+program that can be used with many different dynamic arguments.  This
+approach has been applied to construct partial evaluators for a number
+of languages such as Scheme~\cite{OB91-Similix,Consel88-Schism},
+considering for the most part first-order subsets.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance can be difficult to
@@ -72,26 +71,30 @@ Nanevksi and Pfenning further extended the these techniques by
 allowing free variable to occur within staged
 computations~\cite{NP05-nn}.
 
-The type-system component of our work is closely related to this later
-line of work on metaprogramming and staged computation.  The specific
+The type-system of \lang\ is closely related to this later line of
+work on metaprogramming and staged computation.  The specific
 extension to the typed lambda calculus that we use here is based on
 the circle-modality of Davies~\cite{DP01-modal}.  Our types differ in
 small ways to account for the specific evaluation model that we
 propose.  The key difference between our work and this prior work is
-the staging or the splitting algorithm, which given a two-staged
-program splits it into two stages that can be executed sequentially,
-passing information from the earlier to the latter stage by
-construction. 
+our focus on the problem of pass separation: we developed an algorithm
+for splitting terms in the proposed staged language.
+%the staging or the splitting algorithm, which given a two-staged
+%program splits it into two stages that can be executed sequentially,
+%passing information from the earlier to the latter stage by
+%construction.
 %
-Unlike in partial evaluation, our splitting algorithm requires no
-knowledge of the arguments themselves. The only information that is
-required is their staging. Using just the staging information, the
-splitting algorithm can generate programs that can perform non-trivial
-transformations on the code automatically.  As our examples illustrate
-such staging transformations can improve the efficiency of the source
-program, sometimes in asymptotically significant ways.  
-We are not aware of prior work in the context of higher-order
-functional languages that presents such a splitting algorithm.
+Unlike partial evaluation, splitting requires no knowledge of program
+argument values, only their staging.
+%Using just the staging
+%information, the splitting algorithm can generate programs that can
+%perform non-trivial transformations on the code automatically.  As our
+%examples illustrate such staging transformations can improve the
+%efficiency of the source program, sometimes in asymptotically
+%significant ways.
+We are not aware of prior work in the context of
+higher-order functional languages that presents such a splitting
+algorithm.
 
 
 An important class of pre-computation techniques include incremental
@@ -99,11 +102,11 @@ computation, where a program can respond to small changes to its input
 efficiently by recomputing only the parts of the computation affected
 by the
 changes~\cite{DemersReTe81,PughTe89,RamalingamRe93,AcarBlBlHaTa09}.
-As other pre-computation techniques, incremental computation can be
-thought as a staged model, where changes (inputs) may come over a
-period of time in stages. 
+Like other pre-computation techniques, incremental computation can be
+thought of as a staged model, where changes (in inputs) come over a
+period of time in stages.
 %
-It does not, however, fix any of the inputs or anticipate the future
+However, incremental computation does not fix any of its inputs or anticipate the future
 inputs, allowing in the most general case for all data to change. As a
 result, its benefits are dependent on the data instance (nature of the
 inputs). In addition, incremental computation techniques typically
@@ -118,15 +121,17 @@ addition, such an implementation would maintain rather sophisticated
 data structures dynamically at run time, the benefits of which depend
 highly on the forms of changes applied.
 
+\paragraph{Frequency-reduction via pass separation.}
+Perhaps the closest work to ours is the algorithm for ``data
+specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  Like
+our work, Knoblock and Ruf are concerned about the problem of
+statically splitting an explicitly staged program into two stages.
+However, they only consider simple first-order language and
+straight-line programs and also treat all computations guarded by
+second stage conditionals as second stage computations.
 
-\paragraph{Frequency-reduction techniques.}
-Perhaps the closest work to ours is algorithm for ``data
-specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  As our
-work, Knoblock and Ruf are concerned about the problem of splitting an
-explicitly staged program into two stages.  However, they only
-consider, simple first-order language and straight-line
-programs. Automatic pass seperation has also been a topic of interest
-in programming systems for computer graphics, where, to achieve
+Automatic pass seperation has also been a topic of interest in
+programming systems for computer graphics, where, to achieve
 high-performance, programs are typically manually separated into
 components by frequency of execution (Seperation into a pre-determined
 set of per-frequency modules is \emph{required} by the execution model
@@ -136,7 +141,7 @@ suggestions of writing graphics programs in an explicitly staged
 programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
 deferring the task of pass seperation to the compiler. However, all
 prior efforts, like that of Knock and Ruf\,\cite{knoblock96} have been
-limited to simple, imperative languages.  
+limited to simple, imperative languages.
 
 
 
