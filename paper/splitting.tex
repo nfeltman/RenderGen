@@ -12,16 +12,17 @@ monostaged terms that correspond to the first stage and second stage
 computations in the original term. The idea is that evaluating the
 first monostaged term in a first pass, and then evaluating the second
 monostaged term on the results of the first pass, yields the same
-result as fully evaluating the original \lang\ program.  Complexity
-arises because \lang\ evaluation of \bbonem\ terms may also generate
-results in the first stage. (For example, a \bbonem\ term of type
-$\curr \rmint$ results in an \rmint\ in the first stage.) Handling the
-asymmetry between the results of evaluating \bbonem\ terms (which may
-produce results at both the first and second stage) and \bbtwo\ terms
-(which only produce second stage results) is fundamental to the
-structure of the splitting algorithm presented in this section.  By
-construction, \bbonep\ terms are monostage and do not require
-splitting.
+result as fully evaluating the original \lang\ program (performing
+both first stage and second stage evaluation).  While world
+\bbtwo\ terms fully evaluate to values in stage two, complexity arises
+because evaluation of \bbonem\ terms may also generate results in the
+first stage. (For example, a \bbonem\ term of type $\curr \rmint$
+results in an \rmint\ in the first stage.) Handling this asymmetry
+between the results of evaluating \bbonem\ terms (which may produce
+results at both the first and second stage) and \bbtwo\ terms (which
+only produce second stage results) is fundamental to the structure of
+the splitting algorithm presented in this section.  By construction,
+\bbonep\ terms are monostage and do not require splitting.
 
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
@@ -42,13 +43,10 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 \textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
 to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
 relation~$\splitonesym$) again yields the pair of monostage terms $c$
-and $l.r$
-%(corresponding to the first stage and second stage
-%computations in $e$).
-Evaluating $c$ in the first pass produces the pair $(i,b)$, where the
-first element $i$ matches the first stage results contained in $v$.
-For example, in the simple case where $\rtab \xi v$ contains entirely
-first stage computation, such as:
+and $l.r$. Evaluating $c$ in the first pass produces the pair $(i,b)$,
+where the first element $i$ matches the first stage results contained
+in $v$.  For example, in the simple case where $\rtab \xi v$ contains
+entirely first stage computation, such as:
 \begin{lstlisting}
 2`[]`1` grnd{1+2}`
 \end{lstlisting}
