@@ -261,24 +261,24 @@ and pass it to the resumer version of the function.
 \subsection{Term Splitting at \bbtwo}
 
 Because world \bbtwo\ terms in \lang\ reduce to monostage residuals (as opposed to partial values),
-term splitting at world \bbtwo\ assumes a simpler form than the version at \bbonem\ does. 
+term splitting at world \bbtwo\ is simpler and more uniform than the version at \bbonem. 
 The algorithm is specified by the $\splittwosym$ relation in \cref{fig:termSplit}.
 
-In the terminal cases of
-constants and variables, splitting generates trivial precomputations that are \texttt{()}, and resumers consisting of the original term.
-For example, the integer constant \texttt{3} splits into the
-precomputation \texttt{()} and resumer \texttt{\_=>3}.
-
-More generally, for all (except \texttt{prev}) 
-$n$-ary terms $e = \mathcal{C}\ttlpar e_1 \ttsemi \ldots \ttsemi e_n \ttrpar$ 
-the precomputation is the tupled precomputations of $e$'s $n$ subterms:
-$p=(p_1,\ldots,p_n)$.  The resumer binds each boundary value to an
-argument $(l_1,\ldots,l_n)$ in a term that has the same structure
-of~$e$ but where each subterm is replaced by its corresponding resumer:
-$r = \mathcal{C}\ttlpar r_1 \ttsemi \ldots \ttsemi r_n \ttrpar$ .
-Notably, at \texttt{case}s and functions the
-precomputation of subterms is lifted out from underneath world \bbtwo\ binders.  
-% TODO: should probably draw a parallel to the same behavior in dynamics
+Consider any (except \texttt{prev}) 
+$n$-ary term $e = \scriptCapp {e_1 \ttsemi \ldots \ttsemi e_n}$.
+First note that for any $\diatwo e q$, $q$ must have the form $\scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}$,
+even under binders and for nullary terms.
+For each $k \in \{1,\ldots,n\}$, the invariant for stage \bbtwo\ splitting of $e_k$ is,
+\[
+	\splittwo {e_k} A {p_k} {l_k} {r_k} \text{ and } \reduce {p_k} {b_k} \text{ and } [{b_k}/{l_k}]{r_k} \equiv {q_k}
+\]
+To match the invariant for a split $\splittwo {\scriptCapp {e_1 \ttsemi \ldots \ttsemi e_n}} A p l r$, we require,
+\[
+	\reduce p b \text{ and } [b/l]r \equiv \scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}
+\]
+Our algorithm accomplishes this by using $p = \tup {p_1, \ldots, p_n}$ and
+$l.r = \tup {l_1, \ldots, l_n}.\scriptCapp {r_1 \ttsemi \ldots \ttsemi r_n}$.
+Again, this works even for nullary terms and under binders.
 
 Splitting \texttt{prev} generates a precomputation that projects the immediate
 result of its world \bbone\ subterm.
