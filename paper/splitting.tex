@@ -37,7 +37,7 @@ this section.
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
 $\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
-yields a pair of monostaged terms $p$ and $l.r$. ($p$ and $l.r$
+yields a pair of monostaged terms {$p$|$l.r$}. ($p$ and $l.r$
 contain all first and second stage computations in $e$ respectively.)
 Executing $p$ in a first pass produces $b$ (via $\reduce p b$). Then,
 in the second pass, $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
@@ -52,19 +52,20 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 
 \textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
 to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
-relation~$\splitonesym$) again yields the pair of monostage terms $c$
-and $l.r$. Evaluating $c$ in the first pass produces the pair $(i,b)$,
-where the first element $i$ matches the first stage results contained
-in $v$.  For example, in the simple case where $\rtab \xi v$ contains
-entirely first stage computation, such as:
+relation~$\splitonesym$) again yields the pair of monostage terms
+{$c$|$l.r$}. Evaluating $c$ in the first pass produces the pair
+$(i,b)$, where the first element $i$ matches the first stage results
+contained in $v$.  For example, in the simple case where $\rtab \xi v$
+contains entirely first stage computation, such as:
 \begin{lstlisting}
 2`[]`1` grnd{1+2}`
 \end{lstlisting}
 the first stage result is the value 3.  The second element of the pair
-is used as input to the resumer in second pass evaluation as $\reduce
-{[b/l]r} {v'}$, where $v'$ is the same as result produced by second
-stage computations in $e$.  For example, in the case where $\rtab \xi
-v$ contains entirely second stage computation, such as:
+is the boundary value used as input to the resumer in second pass
+evaluation as $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
+result produced by second stage computations in $e$.  For example, in
+the case where $\rtab \xi v$ contains entirely second stage
+computation, such as:
 \begin{lstlisting}
 2`[yhat |-> 2+3]`1` next{`2`yhat`1`}`
 \end{lstlisting}
@@ -287,13 +288,28 @@ Since the argument to \texttt{prev} is of $\fut$ type, its immediate result redu
 Finally, splitting \texttt{next} simply tuples up the precomputation of its
 world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
-\subsection {Necessity of \bbonep}
+\subsection {Role of World \bbonep}
 \label{sec:needGround}
 
-We have not yet given a justification for why first stage code must be
-partitioned between the worlds \bbonem\ and \bbonep.
-Certainly one could imagine a simpler system without all the \texttt{grnd} annotations.  
-Why wouldn't this work?
+The splitting algorithm described in the previous subsections is
+defined based on the local structure of \lang\ terms.  One artifact of
+this design is that splitting generates
+
+For example, the rule for splitting \bbonem\ case terms
+
+% splitting rules are local term driven
+
+% generate a lot of cruft
+
+% for example, case pushes the state of the case through to 2 even if branches have no stage 1 content
+
+% recursive case would be recursive calls
+
+% Rather than try to optimize globally So we use the type system to prove statically there no stage 1 stuff
+
+% skip splitting.
+
+% example is partition in 6.3
 
 In order to be correct, any code at \bbonem\ must be split with the 
 pessimistic assumption that it may result in work at the second stage.
@@ -306,9 +322,9 @@ So instead of relying on hefty analysis,
 we take the approach of adding enough structure to the input language's type system to
 allow the input code to {\em prove} itself to be---in some parts---monostage.
 
-We find that giving input with \texttt{grnd} annotations is not especially cumbersome in practice.
-Yet even if a language designer desired a different implicit/explicit trade-off,
-then the three-world \lang\ would still be useful as a typed intermediate representation.
+%We find that giving input with \texttt{grnd} annotations is not especially cumbersome in practice.
+%Yet even if a language designer desired a different implicit/explicit trade-off,
+%then the three-world \lang\ would still be useful as a typed intermediate representation.
 
 \end{abstrsyn}
 
