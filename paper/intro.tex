@@ -71,16 +71,18 @@ $f_1$ and $f_2$ such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
 evaluating the first pass on $x$, and then the second pass on each $y_i$.
 %
 \begin{lstlisting}
-fun @$F_\textrm{staged}(x, y_0, y_1, \ldots, y_{m-1})$@ = 
+fun @$F_\textrm{multipass}(x, y_0, y_1, \ldots, y_{m-1})$@ = 
   let @$fx = f_1(x)$@
   in @$(f_2(fx, y_0);  f_2(fx, y_1)  \ldots f_2(fx, y_{m-1}))$@.
 \end{lstlisting}
 %
-The key difference between partial evaluation (or metaprogramming) and pass
-separation is that the latter can be performed without access to the first
-argument $x$: $F_\textrm{staged}$ works for any $x$, while $F_v$ is defined
-only for $x=v$. (Of course, when a particular $v$ \emph{is} known, one may
-always use partial evaluation to specialize $F_\textrm{staged}$ to that $v$.)
+The key difference between partial evaluation (or metaprogramming) and
+pass separation is that the latter can be performed without access to
+the first argument $x$: $F_\textrm{multipass}$ works for any $x$,
+while $F_v$ is defined only for $x=v$.  Note that unlike
+precomputation, frequency reduction does not require knowledge of
+arguments; if a particular $v$ is known, we can use partial evaluation
+to specialize $F_\textrm{multipass}$ to that $v$.
 
 Prior work on partial evaluation and metaprogramming has shown that
 precomputation can largely be automated for functional languages. In contrast,
