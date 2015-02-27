@@ -240,32 +240,65 @@ And deconstructed with a tuple pattern, $l.r = \tup{l_1,l_2}.\tup{r_1,r_2}$,
 
 \paragraph {Case}
 Splitting is most complicated at $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms because of their divergent control flow.
-
-We consider the two possible control paths seperately.  In the first case, 
+Here we consider only the case where
 $\diaone {e_1} {\xi_1} {\inl {v_1}}$ and $\rtab {\xi_1} {\inl {v_1}} \vsplito \mval {\inl {i_1}} {q_1}$.
+(The \texttt{inr} case is analogous.)
+
 Inductively,
 \[
 	\splitone {e_1} A {c_1} {l_1.r_1} \text{ and } \reduce {c_1} {\tup{\inl {i_1},b_1}} \text{ and } [b_1/l_1]r_1 \equiv q_1
 \]
-Additionally, the branch first evaluates $\diaone {[v_1/x_2]e_2} {\xi_2} {v_2}$ and $\rtab {\xi_2} {v_2} \vsplito \mval {i_2} {q_2}$.
+Additionally, the first branch evaluates $\diaone {[v_1/x_2]e_2} {\xi_2} {v_2}$
+and $\rtab {\xi_1,\xi_2} {v_2} \vsplito \mval {i_2} {q_2}$,
+and so the entire case evaluates like:
+$\diaone {\caseof {e_1} {x_2.e_2} {x_3.e_3}} {\xi_1,\xi_2} {v_2}$.
+
 Inductively,
 \[
-	\splitone {e_2} A {c_2} {l_2.r_2} \text{ and } \reduce {[i_1/x_2]e_2} {\tup{i_2,b_2}} \text{ and } [b_2/l_2](\letin x {q_1} {r_2}) \equiv q_2
+	\splitone {e_2} A {c_2} {l_2.r_2} \text{ and } \reduce {[i_1/x_2]c_2} {\tup{i_2,b_2}} 
 \]
+\[
+\text{ and } [q_1/x_2][b_2/l_2]r_2 \equiv q_2
+\]
+(Because $e_2$ is open on $x_2$, $\pipeM{c_2}{l_2}{r_2}$ is also open on $x_2$.
+When we substitute some $v_1$ for $x_2$ in $e_2$, we must substitute the masks
+of $v_1$ into $c_2$ and $l_2.r_2$.)
 
-So we need to satisfy.....
+The invariant, applied to the entire \texttt{case}, requires some $c'$ and
+$l'.r'$ such that 
+\[
+  \reduce {c'} {\tup{i_2,b'}} \text{ and }
+  [b'/l']r' \equiv q_2
+\]
+We choose
+\[
+c' =
+{\left(
+\talllet{\tup{y_1,z_1}}{c_1}{
+\tallcase{y_1}
+{x_2.\letin{\tup{y_2,z_2}}{c_2}{\tup{y_2,\tup{z_1,\inl{z_2}}}}}
+{x_3.\cdots\ttrpar}
+}\right)}
+\]
+\[
+l'.r' =
+\tup{l_1,l_b}.\letin{z}{r_1}{\caseof{l_b}{l_2.[z/x_2]{r_2}}{l_3.\cdots}}
+\]
+If you work it out you will see that $c'$ reduces to
+$\tup{i_2,\tup{b_1,\inl{b_2}}}$, meaning that 
+$b' = \tup{b_1,\inl{b_2}}$, and
+$[b'/l']r'$ essentially reduces to
+$[[b_1/l_1]r_1/x_2][b_2/l_2]r_2$, which is exactly the 
+$[q_1/x_2][b_2/l_2]r_2$ we expected.
 
-Consider that when $\reduce {e_1} {\inl {v_1}}$, both the first and second stage component of $e_2$ will be executed, 
-but $e_3$ will be ignored entirely. The reverse occurs when $\reduce {e_1} {\inr {v_1}}$.
-This implies that both the first and second stage results of splitting will need to have \texttt{case} statements.
+In other words, $c'$ cases on $i_1$ to run the first branch of first stage
+code. The boundary value for that branch, $b_2$, is packaged as $\tup {b_1, \inl
+{b_2}}$. The resumer of the predicate uses $b_1$, and $\inl{b_2}$ signals to run
+the first branch's resumer. The second branches of $c'$ and $l'.r'$ are
+similarly constrained by the $\texttt{inr}$ case.
 
-Recovering first stage divergence is easy, since for $\splitone {e_1} ? {c_1} {l_1.r_1}$, 
-$\reduce {e_1} {\inl {v_1}}$ implies $\reduce {c_1} {\tup{\inl {i_1},b_1}}$.
-Thus the algorithm cases on $c_1$ to run the correct branch of first stage code.
-The boundary value from this correct branch, $b_2$ or $b_3$, is packaged as either $\tup {b_1, \inl {b_2}}$ or $\tup {b_1, \inr {b_3}}$.
-
-The resumer for \texttt{case} operates by untupling the boundary value to get $b_1$ and either $\inl {b_2}$ or $\inr {b_3}$.
-The resumer of the predicate is run using $b_1$, and the remaining injection is inspected to run the correct branch resumer.
+%Recovering first stage divergence is easy, since for $\splitone {e_1} ? {c_1} {l_1.r_1}$, 
+%$\reduce {e_1} {\inl {v_1}}$ implies $\reduce {c_1} {\tup{\inl {i_1},b_1}}$.
 
 \paragraph {Function} 
 Function introduction has a $\tup{}$ boundary value,
