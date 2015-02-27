@@ -1,36 +1,51 @@
-A staged program is a program where expressions are assigned to a
-stage corresponding to their order of evaluation.  For example, in a
-two-staged program, some of the inputs become available in stage-1 and
-others in stage-2.  Evaluation of such a program proceeds by
-evaluating all the stage-1 expressions to construct a stage-2
-expression, which is then evaluated in stage-2.  Programming
-languages, evaluation strategies, and type systems for staged programs
-have been studied extensively in the areas of partial evaluation and
-meta programming.
+Staged program languages assign a stage to each expression and
+evaluate each expression in its assigned stage.  For example, in a
+two-staged program, some expressions are evaluated in the first stage
+and others in the second stage.  Programming languages, evaluation
+strategies, and type systems for staged programs where stages roughly
+correspond to the arrival order of inputs have been studied
+extensively in the areas of partial evaluation and meta programming.
 
-In this paper, we present techniques for splitting staged programs
-into a multi-pass program, where each pass consists of an un-staged,
-conventional program.  To evaluate a multi-pass program, we evaluate
-each pass, passing the output to next pass; the final pass produces
-the result.  This technique, called {\em pass separation} was
-conceived in the 80`s but J{\o}rring and Scherlis and has been studied
-but previously proposed technique all apply only to simple programs
+In this paper, we consider staged programs written in a typed lambda
+calculus with a (``circle'') modality denoting computation in a later
+stages and present techniques for splitting them into multi-pass
+programs. Such multi-pass programs evaluate in a sequence of
+evaluations of un-staged, conventional programs each of which
+corresponds to a pass.  Conceived in the 80`s but J{\o}rring and
+Scherlis, this {\em pass-separation} technique has been studied but
+existing techniques are either manual or apply only to simple programs
 that lack important features such as recursion and first-class
-functions.  Our techniques, formalized by considering a staged lambda
-calculus, make no restrictions on the kinds of programs that can be
-written.  We also present an implementation. 
+functions.
 
-The motivations for pass separation are 1) improvements in efficiency
-by assigning frequent computations to earlier passes so that they can
-be re-used (cheaply) later and, 2) performing such scheduling
-statically at compile time without loss of any generality.  To assess
-the effectiveness of our techniques for pass separation, we consider
-several examples and demonstrate that our implementation is able to
-perform pass separation statically as expected.  In a particularly
-interesting example, involving recursion and recursive data, we show
-that our techniques perform highly non-trivial algorithmic
-transformations, improving efficiency asymptotically by nearly a
-linear factor.
+
+% We make no restrictions on the kinds of programs that can
+% be written.  We also present an implementation.
+% %
+
+Since we build on a lambda calculus, our techniques enable the
+programmer to write staged programs by using powerful programming
+abstractions in a composable and modular fashion. Our splitting
+transformation maps such programs into multi-pass programs that can
+run significantly more efficiently by assigning frequent computations
+to earlier passes so that they can be re-used (cheaply) later.  Our
+experiments based on a prototype implementation show that our
+splitting algorithm is able perform highly non-trivial algorithmic
+transformations, sometimes automatically improving efficiency
+asymptotically by nearly a linear factor.  Since splitting
+transformation takes place at compile time, these benefits are
+achieved without significant run-time penalty.
+
+% The motivations for pass separation are 1) improvements in efficiency
+% by assigning frequent computations to earlier passes so that they can
+% be re-used (cheaply) later and, 2) performing such scheduling
+% statically at compile time without loss of any generality.  To assess
+% the effectiveness of our techniques for pass separation, we consider
+% several examples and demonstrate that our implementation is able to
+% perform pass separation statically as expected.  In a particularly
+% interesting example, involving recursion and recursive data, we show
+% that our techniques perform highly non-trivial algorithmic
+% transformations, improving efficiency asymptotically by nearly a
+% linear factor.
 
 
 
