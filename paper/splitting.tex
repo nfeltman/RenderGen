@@ -73,9 +73,9 @@ the second stage result is the value 5. Since in general residual
 tables and partial values describe a mixture of both first and second
 stage computations, in the subsequent subsection we define an
 operation, called {\em masking}, that separates residual tables and
-partial values into stage one and stage two results. We then describe
-the algorithm for splitting both \bbonem\ terms ($\splitonesym$) and
-\bbtwo\ terms ($\splittwosym$).
+partial values into their first and second stage results. We then
+describe the algorithm for splitting both \bbonem\ terms
+($\splitonesym$) and \bbtwo\ terms ($\splittwosym$).
 
 
 %Since $c$ ensapulates computations that produce both $e$'s first-stage
@@ -289,40 +289,30 @@ world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 \subsection {Role of World \bbonep}
 \label{sec:needGround}
 
-The splitting algorithm described in the previous subsections is
-defined based on the local structure of \lang\ terms.  One artifact of
-this design is that splitting generates
+The splitting algorithm described in the previous subsections operates
+on the local structure of \lang\ terms.  One artifact of this design
+is that splitting \bbonem\ terms may generate resumers containing
+unnecessary logic.  For example, the rule for splitting
+\bbonem\ \texttt{case} terms inserts the tag from the \texttt{case}
+argument into the boundary value, then decodes this tag in the
+resumer. This logic occurs regardless of whether the terms forming the
+branches of the \texttt{case} contain second stage computations.
+Worse, if this \texttt{case} appeared in the body of a recursive
+function with no other second stage computations, splitting would
+generate a resumer with (useless) recursive calls.
 
-For example, the rule for splitting \bbonem\ case terms
+Rather than attempt global optimization of the outputs of splitting,
+we instead leverage the type system to indicate when a term contains
+no second-stage computations by adding a third world \bbonep\ whose
+terms are purely first stage.  While not necessary for ordinary staged
+term evaluation (\ref{sec:stagedsemantics}), this annotation is
+particularly useful for splitting. Specifically, splitting $\pure e$
+terms trivially yields a unit resumer.
 
-% splitting rules are local term driven
-
-% generate a lot of cruft
-
-% for example, case pushes the state of the case through to 2 even if branches have no stage 1 content
-
-% recursive case would be recursive calls
-
-% Rather than try to optimize globally So we use the type system to prove statically there no stage 1 stuff
-
-% skip splitting.
-
-% example is partition in 6.3
-
-In order to be correct, any code at \bbonem\ must be split with the 
-pessimistic assumption that it may result in work at the second stage.
-When this assumption turns out not to be true---that is, purely monostage code---then 
-splitting may produce second stage code which is needlessly costly 
-(an example of this will occur in \ref{sec:exampleQS}).
-Detecting and optimizing this case is in general a global program analysis,
-since functions can be passed around as values.  
-So instead of relying on hefty analysis, 
-we take the approach of adding enough structure to the input language's type system to
-allow the input code to {\em prove} itself to be---in some parts---monostage.
-
-%We find that giving input with \texttt{grnd} annotations is not especially cumbersome in practice.
-%Yet even if a language designer desired a different implicit/explicit trade-off,
-%then the three-world \lang\ would still be useful as a typed intermediate representation.
+The \texttt{partition} function in the \texttt{quickselect} example in
+\ref{sec:exampleQS} is an example of such a function that contains no
+second stage computations, but, if not defined within a $\pure$
+annotation, would cause splitting to generate a recursive resumer.
 
 \end{abstrsyn}
 
