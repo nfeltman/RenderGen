@@ -1,3 +1,21 @@
+A staged program is a program where expressions are assigned to a
+stage corresponding to their order of evaluation.  For example, in a
+two-staged program, some of the inputs become available in stage-1 and
+others in stage-2.  Evaluation of such a program proceeds by
+evaluating all the stage-1 expressions to construct a stage-2
+expression, which is then evaluated in stage-2.  Programming
+languages, evaluation strategies, and type systems for staged programs
+have been studied extensively by the research on partial evaluation
+and meta programming.
+
+In this paper, we consider a relatively less considered evaluation
+strategy for staged programs by splitting a staged program into a
+multiple passes, where each pass corresponds to a stage of evaluation.
+For example, a 2-stage program would be split into two programs pass-1
+and pass-2, one for each phase, and evaluation proceeds by evaluating
+proceeds by evaluating pass-
+
+
 Many algorithms can perform useful work before receiving all of their inputs.
 If we regard those inputs as arriving at different \emph{stages} of the
 computation, then we can \emph{split} those algorithms into, for each stage, a
