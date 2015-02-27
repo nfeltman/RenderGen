@@ -37,7 +37,7 @@ this section.
 \textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
 to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
 $\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
-yields a pair of monostaged terms {$p$|$l.r$}. ($p$ and $l.r$
+yields a pair of monostaged terms $\pipeS p l r$. ($p$ and $l.r$
 contain all first and second stage computations in $e$ respectively.)
 Executing $p$ in a first pass produces $b$ (via $\reduce p b$). Then,
 in the second pass, $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
@@ -53,7 +53,7 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 \textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
 to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
 relation~$\splitonesym$) again yields the pair of monostage terms
-{$c$|$l.r$}. Evaluating $c$ in the first pass produces the pair
+$\pipeM c l r$. Evaluating $c$ in the first pass produces the pair
 $(i,b)$, where the first element $i$ matches the first stage results
 contained in $v$.  For example, in the simple case where $\rtab \xi v$
 contains entirely first stage computation, such as:
