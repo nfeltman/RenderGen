@@ -1,4 +1,5 @@
 \section{Introduction}
+\label{sec:intro}
 
 Consider a function $F$ which takes an $x$ and $y_1,\dots,y_{m-1}$, and computes
 $f(x,y_i)$ for each $y_i$:
@@ -54,12 +55,14 @@ fun @$F_v(y_0, y_1, \ldots, y_{m-1})$@ =
 eliminating the need to recompute the parts of $f(v,-)$ which do not depend on
 the second argument.
 
-A closely related technique, {\em metaprogramming}, allows writing programs that
-generate specialized code. Metaprogramming enables fine-grained control over
-specialization by requiring staging annotations that make explicit the stage of
-each computation. (In partial evaluation, we typically assume that a
-\emph{binding-time analysis} has automatically determined which parts of $f$ can
-be specialized.)
+A closely related technique, {\em metaprogramming}, allows writing
+programs that generate specialized code
+(e.g.,~\cite{davies96,Taha97,DP01-modal,NP05-nn}. Metaprogramming
+enables fine-grained control over specialization by requiring staging
+annotations that make explicit the stage of each computation. (In
+partial evaluation, we typically assume that a \emph{binding-time
+  analysis} has automatically determined which parts of $f$ can be
+specialized.)
 
 While partial evaluation and metaprogramming have been studied extensively,
 frequency reduction techniques have not seen the same attention. In
