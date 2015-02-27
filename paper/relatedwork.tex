@@ -6,15 +6,17 @@ are common techniques for both designing algorithms and performing
 compiler optimizations~\cite{JS86-staging}.  The idea behind frequency
 reduction is to identify computations that are performed multiple
 times and pull them ahead so that they can be performed once and used
-later as needed.  The idea behind precomputation is to identify
-computations that can be performed earlier, for example at compile
-time if their inputs are available statically and perform them at that
-earlier time.  Many interesting algorithm design techniques and
-compiler optimizations perform frequency reduction and precomputation.
-For example, dynamic programming and loop hoisting are a frequency
-reduction techniques, whereas dynamic data structures and incremental
-computation are precomputation techniques.
+later as needed.  For example, dynamic programming and loop hoisting,
+as well as the work presented here are a frequency reduction
+techniques.
+%
+The idea behind precomputation is to identify computations that can be
+performed earlier, for example at compile time if their inputs are
+available statically and perform them at that earlier time.  For
+example, dynamic algorithms, partial evaluation, and incremental
+computation are all precomputation techniques.
 
+\paragraph{Precomputation techniques.}
 Perhaps one of the most well studied example of precomputation is
 partial evaluation.  Partial evaluation distinguishes between a static
 (compile-time) and dynamic (run-time) stage. Given a program and the
@@ -81,9 +83,6 @@ program splits it into two stages that can be executed sequentially,
 passing information from the earlier to the latter stage by
 construction. 
 %
-\ur{Do prior work evaluate first-stage expressions inside second stage
-expressions?}
-%
 Unlike in partial evaluation, our splitting algorithm requires no
 knowledge of the arguments themselves. The only information that is
 required is their staging. Using just the staging information, the
@@ -94,6 +93,33 @@ program, sometimes in asymptotically significant ways.
 We are not aware of prior work in the context of higher-order
 functional languages that presents such a splitting algorithm.
 
+
+An important class of pre-computation techniques include incremental
+computation, where a program can respond to small changes to its input
+efficiently by recomputing only the parts of the computation affected
+by the
+changes~\cite{DemersReTe81,PughTe89,RamalingamRe93,AcarBlBlHaTa09}.
+As other pre-computation techniques, incremental computation can be
+thought as a staged model, where changes (inputs) may come over a
+period of time in stages. 
+%
+It does not, however, fix any of the inputs or anticipate the future
+inputs, allowing in the most general case for all data to change. As a
+result, its benefits are dependent on the data instance (nature of the
+inputs). In addition, incremental computation techniques typically
+utilize significant run-time (dynamic) information, because no
+assumptions about input instances are made.  For example, we can apply
+incremental computation to our quickselect example
+(ref{sec:overview}), but we would not be able to achieve the bounds
+that we did because incremental computation techniques would unfold
+the quickselect function based on the demanded ranks, which can
+require linear time (as opposed to logarithmic) at each stage.  In
+addition, such an implementation would maintain rather sophisticated
+data structures dynamically at run time, the benefits of which depend
+highly on the forms of changes applied.
+
+
+\paragraph{Frequency-reduction techniques.}
 Perhaps the closest work to ours is algorithm for ``data
 specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  As our
 work, Knoblock and Ruf are concerned about the problem of splitting an
@@ -112,10 +138,6 @@ deferring the task of pass seperation to the compiler. However, all
 prior efforts, like that of Knock and Ruf\,\cite{knoblock96} have been
 limited to simple, imperative languages.  
 
-\paragraph{Memoization.} Leaves code structure unchanged.
-
-\paragraph{Incremental computation.} Usually not applicable within a
-computation, require ``mutator'' ``core'' behavior.
 
 
 %% \section{Related Work}
