@@ -11,16 +11,16 @@ datatype tree = Leaf
     Empty => Leaf
   | Cons ht => 
       let (left,right,n) = partition ht in
-      Branch (n, #1 ht, qs1 left, qSelect1 right)`
+      Branch (i, #1 ht, qs1 left, qSelect1 right)`
 
 2`fun qs2 (p : tree, k : int) : int = 
   case p of
     Leaf => 0
-  | Branch (n,h,p1,p2) => 
-      case compare k n of
+  | Branch (i,h,p1,p2) => 
+      case compare k i of
         LT => qs2 (p1,k)
       | EQ => h
-      | GT => qs2 (p2,k-n-1)`
+      | GT => qs2 (p2,k-i-1)`
 \end{lstlisting}
 \caption{Two-pass implementation of quickselect.}
 \label{fig:qs-split}
