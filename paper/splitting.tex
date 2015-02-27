@@ -214,14 +214,18 @@ Our algorithm chooses $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$ and $l.r' =
 
 \paragraph{Tuple} 
 For an example with more than one argument, consider a tuple $\tup{e_1,e_2}$,
-where $\diaone {e_1} \xi {v_1} \vsplito \mval {i_1} {q_1}$
-and $\diaone {e_2} \xi {v_2} \vsplito \mval {i_2} {q_2}$.
-The splitting invariants for $e_1$ and $e_2$ give
+where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito \mval {i_k} {q_k}$
+for $k = 1,2$.
+Likewise, the splitting invariants for $e_1$ and $e_2$ give
 \[
-	\splitone {e_i} A {c_i} {l_i.r_i} \text{ and } \reduce {c_i} {\tup{i_i,b_i}} \text{ and } [b_i/l_i]r_i \equiv q_i
+	\splitone {e_k} A {c_k} {l_k.r_k} \text{ and } \reduce {c_k} {\tup{i_k,b_k}} \text{ and } [b_k/l_k]r_k \equiv q_k
 \]
-for $i=1,2$.
-
+Since $\diaone {\tup{e_i,e_2}} {\xi_1,\xi_2} {\tup{v_1,v_2}}$ 
+and $\rtab {\xi_1,\xi_2} {\tup{v_1,v_2}} \vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}$,
+the validity of the split $\splitone {\tup{e_1,e_2}} A {c'} {l.r'}$ requires,
+\[
+	\reduce {c'} {\tup{\tup{i_1,i_2},b'}} \text{ and } [b'/l]r' \equiv q
+\]
 
 \paragraph {Case}
 The most complicated rule is that of $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms, because of their divergent control flow.
