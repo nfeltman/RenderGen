@@ -19,24 +19,28 @@ let dot = fn ((((),(),z1),((),(),z2)),l_0) : _ => l_0+(z1*z2) in dot ((((), (), 
 
 %% FASTEXP INPUT
 
-let rec exp ((b,e) : $int*int) : $int = 
+let rec exp ((next{b},e) : $int*int) : $int = 
     if e == 0 then 
         next{1} 
     else if (e mod 2) == 0 then
-        next{let val x = prev{exp (b,e/2)} in x*x} 
-    else next{prev{b} * prev{exp (b,e-1)}} 
+        exp (next{b*b},e/2)
+    else 
+        next{b * prev{exp (next{b*b},(e-1)/2)}} 
 in exp (next{3},5)
 
 %% FASTEXP OUTPUT 
 
 let exp =
-    fix (exp,(b,e)) : ((_->_)*_) =>
+    fix (exp,((),e)) : ((_->_)*_) =>
     let (v,p) =
     if e==0 then
         ((), inj (#+_) ())
     else
         let (v,p) =
-        if (emod2)==0 then ((), inj (#+_) (#2 (exp (b, e/2)))) else ((), inj (_+#) (#2 (exp (b, e-1))))
+        if (emod2)==0 then
+            let (v,p) = exp ((), e/2) in (v, inj (#+_) p)
+        else
+            ((), inj (_+#) (#2 (exp ((), (e-1)/2))))
         in
         (v, inj (_+#) p)
     in
@@ -48,9 +52,7 @@ l.
 let exp =
     fix (f,(x,l_0)) : ((_->_)*_) =>
     let ((exp,(b,e)),l_1) = ((f, x), unroll l_0) in
-    case l_1 of
-      () => 1
-    | l_2 => case l_2 of l_3 => let x_0 = exp ((b, ()), l_3) in x_0*x_0 | l_3 => b*exp ((b, ()), l_3)
+    case l_1 of () => 1 | l_2 => case l_2 of l_3 => exp ((b*b, ()), l_3) | l_3 => b*exp ((b*b, ()), l_3)
 in
 exp ((3, ()), l)
 

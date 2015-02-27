@@ -3,9 +3,9 @@
 \section{\texorpdfstring{\lang}{λ12} Statics and Dynamics}
 \label{sec:semantics}
 
-\input{figures/values}
-
 \input{figures/grammars}
+
+\input{figures/values}
 
 We express two-stage programs as terms in \lang, a typed, modal lambda calculus
 with products, sums, and isorecursive types. Its type system has three distinct
@@ -41,11 +41,11 @@ a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
 %This is why well-typed terms cannot have any information flow from stage
 %\bbtwo\ to stage \bbone, and what makes splitting possible.
 
-Although our products and functions are restricted to types at the same world,
-$\fut$ essentially allows us to build ``mixed-stage'' products and functions.
+Although products and functions are restricted to types at the same world,
+$\fut$ allows construction of ``mixed-stage'' products and functions.
 For example, quickselect is a function at world \bbonem\ which takes a
 $\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
-second-stage computation of an integer) to a $\fut\rmint$ (a second-stage
+second-stage integer) to a $\fut\rmint$ (a second-stage
 computation of an integer).
 
 $\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
@@ -84,18 +84,26 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 
 \begin{abstrsyn}
 
-We evaluate \lang\ terms in two stages. The first stage of evaluation:
-\begin{enumerate}
+Although the type system of \lang\ (specifically, the opaque nature of $\fut$
+types) ensures that we can perform all first-stage computations before any
+second-stage ones, the fact that first- and second-stage computations are
+interleaved in \lang\ terms means that realizing this notion of staged
+evaluation requires some care.
+
+We evaluate \lang\ terms in two stages. The first stage of evaluation has three
+mutually recursive modes of operation, depending on the world of the term it is
+evaluating. Specifically, first stage evaluation:
+\begin{itemize}
 \item fully reduces terms in \bbonep, as they are purely first-stage;
-\item reduces terms in \bbonem, skipping over any world \bbtwo\ terms they may
-contain (inside $\next$);
-\item does not reduce terms in \bbtwo, but scans them for any \bbonem\ terms
-they may contain (inside $\prev$) and reduces those.
-\end{enumerate}
+\item reduces terms in \bbonem, save for any world \bbtwo\ terms they may
+contain (inside \texttt{next}s);
+\item scans terms in \bbtwo\ for any world \bbonem\ subterms (inside \texttt{prev}s), 
+and reduces those in place.
+\end{itemize}
 These tasks are accomplished by the $\redsym$, $\redonesym$, and $\redtwosym$
 big-step judgments, respectively (defined in \ref{fig:diaSemantics}).
 
-This process ultimately produces a monostaged term, called a \emph{residual}
+First-stage evaluation ultimately produces a monostaged term, called a \emph{residual}
 (\ref{fig:values}), all of whose redexes are second-stage computations. The
 second stage of evaluation is therefore just ordinary (unstaged) evaluation of
 this residual, which we notate $\redsym$. (For simplicity, we treat residuals
@@ -135,7 +143,7 @@ then proceed by evaluating $[\next{\hat{y}}/x]e'$.
 We achieve this by threading through a \emph{residual table} $\xi$, which
 functions as a top-level sequence of \texttt{let}-bindings of residuals $e$ to
 variables $\hat{y}$ in an evaluated \bbonem\ term. Thus, $\redonesym$ evaluation
-yields a pair $[\xi;v]$ of a residual table and a \emph{partial value} $v$
+yields a pair $\rtab \xi v$ of a residual table and a \emph{partial value} $v$
 containing variables bound in that table. The grammar of residual tables and
 partial values (terms fully evaluated at the first but not second stage) is
 given in \ref{fig:values}.
@@ -152,8 +160,8 @@ binders.
 
 For all constructs other than $\prev{e}$, $\redtwosym$ evaluation proceeds
 recursively on all subterms, yielding a monostaged residual $q$. At $\prev{e}$,
-we evaluate $e$ using $\redonesym$ to $[\xi;v]$. Because $\colmix e{\fut A}$,
-$v$ must be $\next{\hat{y}}$ for some $\hat{y}$ bound in $\xi$. We \emph{reify}
+we evaluate $e$ using $\redonesym$ to $\rtab \xi v$. Because $\colmix e{\fut A}$,
+$v$ must have the canonical form $\next{\hat{y}}$ for some $\hat{y}$ bound in $\xi$. We \emph{reify}
 $\xi$ into a sequence of second-stage \texttt{let} bindings around $\hat{y}$,
 using the auxiliary judgment $\reify\xi q{q'}$ defined in
 \ref{fig:diaSemantics}, then return the resulting residual $q'$.

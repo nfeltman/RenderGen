@@ -3,33 +3,34 @@
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
-\fbox{Stage \bbonem} 
+\fbox{\bbonem\ Terms} 
 \and
 \infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}}}{\_.\tup{}}}											{\cdot} \and
 %\infersplitone [int]			{\spl {i}{\rm int}{\tup{i,\tup{}};\_.\tup{}}}														{\cdot} \and
 \infersplitone [hyp]			{\spl {x}{A}{\tup{x,\tup{}}}{\_.x}}																	{\cdot} \and
-\infersplitone [\to I]			{\splitonetall {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}			{\sub [\Gamma,\col x A] {} B} 									\and
+\infersplitone [\to I]			{\splitonetall {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}			{\sub [\Gamma,\col x A] {} B} 							\and
 \infersplitone [fix]			{\splitonetall 	
 									{\fix{f}{x}{e}} {} 
 									{\tup{\fix f x {\letin{\tup{y,z}}c{\tup{y,\roll z}}}, \tup{}}}
-									{\_.\fix f {\tup {x,l_0}} {\letin{l}{\unroll {l_0}}{r}}}}										{\sub [\Gamma,\col x A] {} B} 									\and
+									{\_.\fix f {\tup {x,l_0}} {\letin{l}{\unroll {l_0}}{r}}}}										{\sub [\Gamma,\col x A] {} B} 							\and
 \infersplitone [\to E]			{\splitonetall {\app {e_1}{e_2}}{B}{\left(
 									\talllet{\tup{y_1,z_1}}{c_1}{
 									\talllet{\tup{y_2,z_2}}{c_2}{
 									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\tup{y_3,\tup{z_1,z_2,z_3}}\ttrpar\ttrpar\ttrpar}}}
 									\right)}
 									{\tup{l_1,l_2,l_3}.\app{r_1}{\tup{r_2,l_3}}}}													{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplitone [\times I] 	{\splitonetall {\tup{e_1,e_2}}{A\times B}
+\infersplitone [\times I] 		{\splitonetall {\tup{e_1,e_2}}{A\times B}
 									{\left(
 										\talllet{\tup{y_1,z_1}}{c_1}{
 										\talllet{\tup{y_2,z_2}}{c_2}{
 										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}\ttrpar\ttrpar}}
 									\right)}
-									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																				{\sub 1 A & \sub 2 B} \and
-\infersplitone [\times E_1]	
-								{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}								
-								{\sub {} {A\times B} 
-								& \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}} \and
+									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																	{\sub 1 A & \sub 2 B} \and
+\infersplitone [common1]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}				{\sub {} {A} 
+																																	& \scriptC \in \{\mathtt{pi1},\mathtt{pi2}\}} 			\and
+\infersplitone [common2]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.r}}							{\sub {} {A} 
+																																	& \scriptC \in \{\mathtt{inl},\mathtt{inr},
+																																	\mathtt{roll},\mathtt{unroll}\}} 						\and
 %\infersplitone [\times E_2]	{\spl {\pit~e}{B}{\talllet{\tup{y,z}}{c}{\tup{\pit~y,z}};l.\pit~r}}								{\sub {} {A\times B}} \and
 %\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
 %								\begin{array}{l}
@@ -67,7 +68,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Stage \bbtwo} 
+\fbox{\bbtwo\ Terms} 
 \and
 \infersplittwo [unit]			{\spl {\tup{}} {\rmunit} {\tup{}} {\_}{\tup{}}}												{\cdot} 														\and
 %\infersplittwo [int]			{\spl {i}{\rm int}{\tup{};\_}{i}}															{\cdot} 														\and

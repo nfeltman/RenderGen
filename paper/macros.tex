@@ -94,6 +94,7 @@
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
 
+	\newcommand {\rtab}  [2] {\llbracket{##1}\rrbracket{##2}}
 	\newcommand {\caseP} [3] {\mytt{caseg(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\pipeM} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
 	\newcommand {\pipeS} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
@@ -132,7 +133,7 @@
 
 \newcommand {\typeslangTwo} [3] [\Gamma] {{#1} \vdash_\bbtwo {#2}:{#3}}
 
-\newcommand {\reify} [3] {[{#1};{#2}]\overset{R}\Rightarrow{#3}}
+\newcommand {\reify} [3] {[{#1};{#2}]\searrow{#3}}
 \newcommand {\erasone} {\Downarrow^e_\bbone}
 \newcommand {\erastwo} {\Downarrow^e_\bbtwo}
 \newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~\myatsign~\bbone}
@@ -146,7 +147,7 @@
 \newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
 %\newcommand {\diaone} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbone [{#3}]}
 %\newcommand {\diatwo} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
-\newcommand {\diaone} [3] [\Gamma] {{#2} \Downarrow_{\bbonem} [{#3}]}
+\newcommand {\diaone} [4] [\Gamma] {{#2} \Downarrow_{\bbonem} \rtab{#3}{#4}}
 \newcommand {\diatwo} [3] [\Gamma] {{#2} \Downarrow_\bbtwo {#3}}
 \newcommand {\sepredonesym} {{\Downarrow_\bbone^S}}
 \newcommand {\sepredtwosym} {{\Downarrow_\bbtwo^S}}
@@ -163,7 +164,7 @@
 %\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
 \newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
 \newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
-\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1};v_{#1}}}
+\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1}}{v_{#1}}}
 \newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
 \newcommand {\masko} [1] {|#1|_{\bbone}}

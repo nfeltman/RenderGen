@@ -3,110 +3,174 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-\input{figures/splitting-overview}
+%\input{figures/splitting-overview}
 
 \begin{abstrsyn}
 
-Although the type system of \lang\ ensures that we can perform all first-stage
-computations before any second-stage ones, actually evaluating terms in this
-fashion is somewhat intricate, because stages are syntactically interleaved
-within terms. In this section, we present a \emph{splitting algorithm} which
-statically converts a term in \lang\ into a pair of 
-syntactically % I don't like this word but temporarily here for continuity
-separate programs corresponding to the two stages of computation in that term.
+Splitting statically transforms terms in \lang\ into a pair of
+monostaged terms that correspond to the first stage and second stage
+computations in the original term. The idea is that evaluating the
+first monostaged term in a first pass, and then evaluating the second
+monostaged term on the results of the first pass, yields the same
+result as fully evaluating the original \lang\ program (performing
+both first stage and second stage evaluation).  While world
+\bbtwo\ terms fully evaluate to values in stage two, complexity arises
+because evaluation of \bbonem\ terms may also generate results in the
+first stage. (For example, a \bbonem\ term of type $\curr \rmint$
+results in an \rmint\ in the first stage.) Handling this asymmetry
+between the results of evaluating \bbonem\ terms (which may produce
+results at both the first and second stage) and \bbtwo\ terms (which
+only produce second stage results) is fundamental to the structure of
+the splitting algorithm presented in this section.  By construction,
+\bbonep\ terms are monostage and do not require splitting.
 
-%The output of splitting is simpler because it is {\em syntactically separated};
-%The output of splitting is equivalent (to its input) because it can be
-%evaluated to the same residual that would be produced by the semantics of
-%\ref{sec:semantics}.
+\textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
+to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
+$\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
+yields a pair of monostaged terms $p$ and $l.r$. ($p$ and $l.r$
+contain all first and second stage computations in $e$ respectively.)
+Executing $p$ in a first pass produces $b$ (via $\reduce p b$). Then,
+in the second pass, $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
+$v$.  Since execution of the first pass serves to generate input for
+the second pass, we say $p$ is a {\em precomputation} that produces a
+{\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-More precisely, for any $\coltwo e A$ which reduces to a residual $q$ (via $\diatwo e q$),
-$e$ splits into a syntactically separated program $\mathcal{P}$ 
-(via the new relation $e \splittwosym \mathcal{P}$), which
-can also be reduced to $q$ (via the new relation $\mathcal{P} \sepredtwosym q$).
-We enforce the ``syntactically separated'' condition by saying that $\mathcal{P}$ 
-can only have one form, namely $\pipeS p l r$, where  
-$p$ (called the {\em precomputation}) is a monostage term encoding all the
-first-stage computation that was in $e$, 
-and $l.r$ (called the {\em resumer}) is a monostage term encoding all the
-second-stage computation that was in $e$.  
-Likewise, $\sepredtwosym$ is defined by a single rule, which evaluates the precomputation and plugs it in for $l$:
-\[
-\infer{\sepredtwo {\pipeS p l r} {[b/l]r}} {\reduce p b}
-\]
-Here we call $b$ the {\em boundary value}, as it represents the communication at the boundary between stages.
-A summary of these operations and the relationship between them is provided on the right side of \ref{fig:splittingSummary}.
+% The process of splitting \bbtwo\ terms is given by via the new
+% relation~$\splittwosym$.
 
-Since terms at world \bbtwo\ can depend on terms at \bbonem\ (via \texttt{prev}),
-we also provide a way to split those as well.
-This is given by the new relation $e \splitonesym \mathcal{P}$,
-where $\mathcal{P}$ must have the form $\pipeM c l r$ where  
-$c$ (called the {\em combined term}) is a monostage term encoding all the first-stage computation that was in $e$, 
-and $l.r$ (again called the {\em resumer}) is a monostage term encoding all the
-second-stage computation that was in $e$.
+%masking yields the masked value $\mval i q$ (via~$\vsplito$)
 
-Similar to above, we also define a $\sepredtwosym$ relation which can be used to evaluate \texttt{sepM} terms,
-with one complication arising from the fact that \lang\ terms at world \bbonem\ produce multistage output.
-For example, consider the term
+\textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
+to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
+relation~$\splitonesym$) again yields the pair of monostage terms $c$
+and $l.r$. Evaluating $c$ in the first pass produces the pair $(i,b)$,
+where the first element $i$ matches the first stage results contained
+in $v$.  For example, in the simple case where $\rtab \xi v$ contains
+entirely first stage computation, such as:
 \begin{lstlisting}
-(next {1+2}, grnd{3+4})
+2`[]`1` grnd{1+2}`
 \end{lstlisting}
-which reduces (via $\redonesym$) to the residual table and partial value
+the first stage result is the value 3.  The second element of the pair
+is used as input to the resumer in second pass evaluation as $\reduce
+{[b/l]r} {v'}$, where $v'$ is the same as result produced by second
+stage computations in $e$.  For example, in the case where $\rtab \xi
+v$ contains entirely second stage computation, such as:
 \begin{lstlisting}
-[yhat |-> 1+2] (next {yhat}, grnd{7})
+2`[yhat |-> 2+3]`1` next{`2`yhat`1`}`
 \end{lstlisting}
-Since this output has interleaved stages, theres no way a syntactically separated term could directly reduce to it.
+the second stage result is the value 5. Since in general residual
+tables and partial values describe a mixture of both first and second
+stage computations, in the subsequent subsection we define an
+operation, called {\em masking}, that separates residual tables and
+partial values into stage one and stage two results. We then describe
+the algorithm for splitting both \bbonem\ terms ($\splitonesym$) and
+\bbtwo\ terms ($\splittwosym$).
 
-We resolve this mismatch by introducing one more translation, called {\em masking} and written $[\xi;v] \vsplito \mathcal{V}$,
-which is just a technical device to convert residual tables and partial values---like the those above---into a syntactically separated version $\mathcal{V}$.
-As before, we enforce the ``syntactically separated'' property structurally,
-saying that $\mathcal{V}$ must have the form $\mval i q$ (called a {\em masked value}) where 
-$i$ is a monostage value representing the first-stage part of $v$,
-and $q$ is a monostage term representing all of the second-stage computation in $\xi$ and $v$.
-Note that masking exists only for the purposes of stating correctness; it is not part of the splitting algorithm itself.
 
-With this machinery in place, we can define $\sepredonesym$ as just creating masked values with the single rule:
-\[
-\infer{\sepredone {\pipeM c l r} {\mval i {[b/l]r}}} {\reduce c {(i,b)}}
-\]
-Here we see the primary difference between world \bbtwo\ terms and world \bbonem\ terms.
-Since $\coltwo e A$ reduces to an entirely second-stage result, 
-its first-stage subcomputations only exist to internally pass their value to the
-second stage;
-but since $\colmix e A$ reduces to a multistage result, 
-its first-stage subcomputations exist {\em both} to pass their value to the
-second stage {\em and} to be present in the result.
-Correspondingly, in the $\sepredtwosym$ rule, the precomptuation $p$ reduces only to a boundary value which is passed to the resumer;
-but in the $\sepredonesym$ rule, the combined term $c$ reduces to a tuple containing both the immediate result and the boundary value,
-with only the latter being passed to the resumer.
+%Since $c$ ensapulates computations that produce both $e$'s first-stage
+%result and also the boundary value required by the resumer, we refer
+%to it as a {\em combined term}.
 
-A summary of these operations and the relationship between them is provided on the left side of \ref{fig:splittingSummary}.
-
-This section proceeds by defining masking ($\vsplito$), 
-then using masking to motivate the definition of \bbonem-translation ($\splitonesym$),
-and finally coming back to define \bbtwo-translation ($\splittwosym$).
-
+%Note that since $\coltwo e A$ reduces to an entirely second-stage
+%residual, its first-stage computations only exist to generate input
+%for second stage computations.  In contrast, since $\colmix e A$
+%reduces to a multi-stage residual table and partial value, its first
+%stage computations serve to both generate the value used as input for
+%the second stage {\em and also} produce a first-stage value.
+%Correspondingly, the precomputation $p$ resulting from splitting
+%\bbtwo\ terms reduces only to a boundary value $b$ which is passed to
+%the resumer; but the combined term $c$ resulting from splitting
+%\bbonem\ terms reduces to a tuple containing both the first stage {\em
+%  immediate result} $i$ and the boundary value $b$ (motivating the
+%name {\em combined term}). 
+  
 \subsection{Masking}
+\label{sec:masking}
 
-The point of the masking operation is simply to convert a partial value into a masked value $\mval i q$
-by assigning all of the first-stage content to $i$ and all of the second-stage content to $q$.
-The rules of the masking relation are given in \ref{fig:valMask}.
+To resolve the mismatch between the multi-stage computations
+represented by residual tables and partial values and the desired
+monostaged outputs of splitting, we choose to define a translation,
+called {\em masking}, written $\rtab \xi v \vsplito \mval i q$, which
+converts residual tables and partial values into a {\em masked value}.
+The first part of the masked value, $i$, is a monostage value holding
+the result of all first stage components of $v$.  The second
+component, $q$, is a residual representing all second stage
+computations in $\xi$ and $v$. (A precise definition of masking is
+given in \ref{sec:masking}.)
 
-Masking operates by first inducting on the entries of the residual table.  
-Being purely second-stage content, these are reified into let statements at the top of the resumer.
-Once the table is empty, masking inducts on value itself.
 
-Masking assigns values in \bbonep\ to the immediate value
-and likewise assigns references into the residual table to the resumer.
-In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
+Masking converts a residual table and associated partial value into a
+masked value $\mval i q$.
+%that explicitly separates the first stage components of 
+%result from the residual.
+%where $i$ is a monostage value encoding all
+%first stage components of the partial value, and $q$ is a monostage
+%term encoding all of the second-stage computations of the partial
+%value.
+Masking is not a transformation performed as part of the splitting
+algorithm.  Instead, masking defines an intuitive notion of the first
+stage and second stage ``components'' of residual tables and partial
+values, and it is used to define the requirements of what output
+splitting of \bbonem\ terms must produce.  A precise definition of the
+masking relation is given in \ref{fig:valMask}, but to gain intuition
+about the intent of masking operations, consider the following
+residual table and partial value, colored as before:
+\begin{lstlisting}
+2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (grnd{7}, next{`2`yhat`1`}))`
+\end{lstlisting}
+To construct a value representing its first-stage components ($i$ in
+the resulting masked value), masking first redacts all second stage
+(blue) parts, along with the surrounding \texttt{next}
+annotations. (This redaction removes the entire residual table since
+it only represents stage two computations.) The resulting ``holes'' in
+the term are replaced with unit values.
+%\begin{lstlisting}
+%4`##########`1` (`4`######`1`, injL (grnd{7}, `4`######`1`))`
+%\end{lstlisting}
+%The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
+\begin{lstlisting}
+1`((), injL (grnd{7},()))`
+\end{lstlisting}
+Finally, masking dropping \texttt{grnd} annotations yielding a value.
+\begin{lstlisting}
+1`((), injL (7,()))`
+\end{lstlisting}
+To construct a residual corresponding to the stage two computations
+represented by the residual table and partial value ($q$ in resulting
+the masked value), masking first redacts all \texttt{grnd} blocks
+(replaced with unit), \texttt{next} annotations, and injection tags
+(essentially, the tuple structure is kept, but all other structure is
+discarded):
+%\begin{lstlisting}
+%2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
+%\end{lstlisting}
+%Where the \texttt{grnd} blocks left a hole, we put in a unit values:
+\begin{lstlisting}
+2`[yhat |-> 1+2] (yhat, ((),yhat))`
+\end{lstlisting}
+Then masking reifies the residual table into \texttt{let} bindings,
+yielding a residual:
+\begin{lstlisting}
+2`let yhat = 1+2 in (yhat, ((),yhat))`
+\end{lstlisting}
 
-Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
-However, the tags of injections and rolls are replicated only in the immediate value, 
-since they represent first-stage information.
+Note in \ref{fig:valMask} that since lambdas may represent multistage
+computations, masking splits the body of lambdas as general world
+\bbonem\ terms (as described in \ref{sec:split-one}), and packages the
+resulting terms as functions in both the first and second stage parts
+of the masked value.
+% Masking operates by first inducting on the entries of the residual table.  
+% Being purely second-stage content, these are reified into let statements at the top of the resumer.
+% Once the table is empty, masking inducts on value itself.
 
-Since lambdas may represent multistage computations, 
-masking splits the body of lambdas as general world \bbonem\ terms (as described in \ref{sec:split-one}), 
-and packages the resulting terms as functions.
+% Masking assigns ground values to the immediate value
+% and likewise assigns references into the residual table to the resumer.
+% In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
+% Note that the \texttt{grnd} and \texttt{next} annotations are erased.
+
+% Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
+% However, the tags of injections and rolls are replicated only in the immediate value, 
+% since they represent first-stage information.
 
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}
@@ -116,22 +180,38 @@ pursuant to the correctness condition given in \ref{fig:splittingSummary}.
 The algorithm is specified by the $\splitonesym$ relation (\cref{fig:termSplit}), 
 which proceeds recursively on the structure of~$e$.
 
-When $e$ is unit or a variable,
-splitting yields a combined term formed by tupling $e$ with a $\tup{}$ precomputation.
-These expressions, as they contain no second-stage subcomputations, have a trivial resumer, $\tup{}$.
-Similarly, the contents of a \texttt{grnd} block are assigned entirely to the immediate value,
-with trivial precomputation and resumer.
+We start with splitting the unit value, $\tup{}$.
+Masking tells us that units, being trivial, only split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
+Plugging this in to the contract for splitting at \bbonem\ gives:
+\[
+	\text{if } \splitone {\tup {}} A c {l.r} \text{ then } \reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
+\]
+Although the only hard requirement for $b$, $c$, and $l.r$ is to satisfy these relations,
+our actual choices are designed to do the least work possible.
+In particular, we choose $b = \tup{}$; $c=\tup{\tup{},\tup{}}$; and $l.r = \_.\tup{}$.
+That is, we choose a trivial boundary value.
+All together, this yield the rule in \cref{fig:termSplit}.
+This exercise proceeds much the same way for \texttt{grnd} blocks, 
+with the purely first stage contents of the block standing in for one of the $\tup{}$s.
 
-For all non-terminals (except \texttt{next}),
-splitting descends into $e$, recursively splitting its $n$ subterms
-to produce their respective combined terms $c_1,\ldots,c_n$ and resumers $r_1, \ldots, r_n$.
-The combined term of $e$ is formed by binding $c_1,\ldots,c_n$
-to the patterns $(y_1,z_1),\ldots,(y_n,z_n)$
-to isolate immediate results from boundary values. Then,
-the immediate result of $e$ is formed by replacing $e$'s subterms with $y_1,\ldots,y_n$.
-The resumer binds the boundary values $b_1,\ldots,b_n$ to an
-argument $(l_1,\ldots,l_n)$ in a term that has the same structure
-of~$e$ but where each subterm is replaced by its resumer ($r_i$'s).
+We next consider splitting a non-terminal, namely $\inl {e}$.
+From the semantics, we already know that 
+for some $\xi$ and $v$, $\diaone {e} \xi v$ and $\diaone {\inl e} \xi {\inl v}$.
+Masking these outputs then gives $\rtab \xi v \vsplito \mval i q$ 
+and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$.
+Since splitting works from the inside out, we already know that
+\[
+	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
+\]
+and what we need to do is find some $b'$, $c'$, and $l'.r'$ satisfying
+\[
+	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l']r' \equiv q
+\]
+Once again, we take the simplest solution, which in this case is $b' = b$; $l'.r' = l.r$;
+and $c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}$.  
+This sort of technique generalize to all constructs which don't involve control flow.
+
+\nr{working from here down}
 
 Splitting {\tt case} yields a combined term that executes one of the branches' combined terms based on the immediate result $y_1$ of the predicate.
 The boundary value $b_i$ for this branch is injected and bundled with that of the predicate ($b_1$).   
@@ -179,36 +259,20 @@ Finally, splitting \texttt{next} simply tuples up the precomputation of its
 world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
 
 \subsection {Necessity of \bbonep}
+\label{sec:needGround}
 
 We have not yet given a justification for why first stage code must be
 partitioned between the worlds \bbonem\ and \bbonep.
 Certainly one could imagine a simpler system without all the \texttt{grnd} annotations.  
 Why wouldn't this work?
 
-To see why, consider a function with a monostage body. 
-For example, one which simply doubles its argument:
-\begin{lstlisting}
-2`prev{
-  1`let fun double (n : int) = n + n
-  in next{`2`hold {`1`double 5`2`}-7`1`}`2`
-}`
-\end{lstlisting}
-Using the rule for splitting at \bbonem, this term splits into:
-\begin{lstlisting}
-1`let fun double (n : int) = (n+n, ())
-in double 5`
-
-2`l => 
-let fun double (n : unit, l0 : unit) = ()
-in (double (pi2 l); pi1 l)-7`
-\end{lstlisting}
-
-Observe that it's wasteful to run the stage \bbtwo\ version of \texttt{double}, since it always returns \texttt{()}. 
-In this case, the wasted work is small, but if \texttt{double} were a recursive function,
-then it's runtime may be unbounded.
-
-Optimizing such an inefficiency away after-the-fact is in general a global program analysis,
-since functions like \texttt{double} could be passed around as values.  
+In order to be correct, any code at \bbonem\ must be split with the 
+pessimistic assumption that it may result in work at the second stage.
+When this assumption turns out not to be true---that is, purely monostage code---then 
+splitting may produce second stage code which is needlessly costly 
+(an example of this will occur in \ref{sec:exampleQS}).
+Detecting and optimizing this case is in general a global program analysis,
+since functions can be passed around as values.  
 So instead of relying on hefty analysis, 
 we take the approach of adding enough structure to the input language's type system to
 allow the input code to {\em prove} itself to be---in some parts---monostage.
@@ -219,5 +283,5 @@ then the three-world \lang\ would still be useful as a typed intermediate repres
 
 \end{abstrsyn}
 
-\input{figures/splitting-term}
 \input{figures/splitting-misc}
+\input{figures/splitting-term}

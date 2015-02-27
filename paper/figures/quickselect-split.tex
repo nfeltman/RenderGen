@@ -2,9 +2,9 @@
 \begin{lstlisting}
 1`datatype list = Empty | Cons of int * list
 fun partition (p : int, l : list) = ...`
-	
-datatype tree = Branch of int * int * tree * tree
-                | Leaf
+
+datatype tree = Leaf
+              | Branch of int * int * tree * tree
 
 1`fun qSelect1 (l : list) : tree =
   case l of

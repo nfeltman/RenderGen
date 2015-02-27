@@ -1,213 +1,219 @@
 %!TEX root = paper.tex
- \section{Examples of Algorithm Derivation}
+ \section{Examples of Splitting}
 \label{sec:examples}
 
-We investigate the behavior of our splitting algorithm on several examples.
-While our splitting algorithm does not produce typed output terms,
-we find that in practice there do exist valid type annotation for small examples.
-For the sake of readability in presenting the output of our splitting algorithm,
-we take this liberty along with other minor clean-up and inverse-elaboration.
+Now we investigate the behavior of our splitting algorithm on several examples.
+The split code that follows is the output of our splitting implementation; for
+clarity, we have performed some minor optimizations and manually added type
+annotations (including datatype declarations and constructor names), as our
+algorithm does not type its output.
 
 \subsection{Dot Product}
 
-Our first example concerns the dot product of (integer) 3-vectors where 
-the first two coordinates are known at the first stage and the 
-third coordinate is known at the second stage.
-The result is an integer at the second stage.
-This example, largely lifted from \cite{knoblock96}, requires only straight-line code:
+Our first example, \texttt{dot}, appears in \cite{knoblock96}. \texttt{dot} is a
+first-order, non-recursive function---precisely the sort of code studied in
+prior work on pass separation for imperative languages. \texttt{dot} takes the
+dot product of two three-dimensional integer vectors, where the first two
+coordinates are first-stage, and the last coordinate is second-stage. 
+%
 \begin{lstlisting} 
-type vec = ^int * ^int * $int
+1`type vec = ^int * ^int * $`2`int`
 
-// dot : vec * vec -> $int
+1`//dot : vec * vec -> $int
 fun dot (
-  (grnd{x1},grnd{y1},next{z1}): vec, 
-  (grnd{x2},grnd{y2},next{z2}): vec) = 
+  (3`grnd{`1`xliteralone`3`}`1`,`3`grnd{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}): vec,
+  (3`grnd{`1`xliteraltwo`3`}`1`,`3`grnd{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`}): vec) = 
 next{
-  prev{hold grnd{(x1*x2) + (y1*y2)}} + (z1*z2)
-}
+  2`prev{`1`hold `3`grnd{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)`
+1`}`
 \end{lstlisting}
-The \texttt{dot} function splits into the two functions:
+%
+The body of \texttt{dot} is a \rmint{} term at world \bbtwo\ containing a
+\rmint\ computation of \texttt{(x1*x2) + (y1*y2)} which is promoted from world
+\bbonep\ to world \bbtwo. We would expect the first stage of the split program
+to take the first two coordinates of each vector and perform that first-stage
+computation; and the second stage to take the final coordinates and the result
+of the first stage, then multiply and add.
+
+Our algorithm splits \texttt{dot} into the two functions:
+%
 \begin{lstlisting} 
+1`fun dot1 ((x1,y1,()),(x2,y2,())) 
+  = ((), (x1*x2)+(y1*y2))`
 
-fun dot1 ((x1,y1,()),(x2,y2,())) 
-  = ((), (x1*x2)+(y1*y2))
-
-fun dot2 ((((),(),z1),((),(),z2)),l) 
-  = l+(z1*z2)
+2`fun dot2 ((((),(),z1),((),(),z2)),l) 
+  = l+(z1*z2)`
 \end{lstlisting}
-Here, \texttt{dot1} calculates the products and sum on the first two coordinates and returns it as the precomputation,
-then \texttt{dot2} adds that precompuation to the product of the last coordinate.
+%
+As expected, \texttt{dot1} returns \texttt{(x1*x2)+(y1*y2)} as the
+precomputation, and \texttt{dot2} adds that precomputation to the products of
+the final coordinates. This is exactly what is done in \cite{knoblock96}, except
+that they write the precomputation into a mutable cache.
 
-\subsection{Fast Exponent}
+\subsection{Exponentiation by Squaring}
 
-We next consider an example with recursion.
-Here, the \texttt{exp} function calculates the exponent $b^e$
-by considering three cases for $e$: zero, even (but not zero), and odd.
-We stage the function by saying that the exponent is known at the first stage,
-but the base is known at the second stage.
-The result is an integer at the second stage.
+Our next example, \texttt{exp}, is a mainstay of the partial evaluation
+literature (for example, in \cite{jones96}). \texttt{exp} recursively computes
+$b^e$ using exponentiation by squaring, where $e$ is known at the first stage,
+and $b$ is known at the second stage. 
+%
 \begin{lstlisting} 
-fun exp (b : $int , e : int) = 
-  if e == 0 then 
-    next{1} 
-  else if (e mod 2) == 0 then
-    next{let val x = prev{exp (b,e/2)} in x*x} 
+1`fun exp (next{`2`b`1`} : $`2`int`1` , `3`grnd{`1`e`3`}`1` : ^int) = 
+  if `3`grnd{`1`e == 0`3`}`1` then 
+    next{`2`literalone`1`}
+  else if `3`grnd {`1`(e mod 2) == 0`3`}`1` then
+    exp(next{`2`b*b`1`},`3`grnd{`1`e/literaltwo`3`}`1`)
   else 
-    next{prev{b} * prev{exp (b,e-1)}}
+    next{`2`b * prev{`1`exp(next{`2`b*b`1`},`3`grnd{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
 \end{lstlisting}
-\noindent
-From this, splitting creates the following two functions:
-\begin{lstlisting} 
-datatype nat = Zero | Even of nat | Odd of nat
+%
+Because \texttt{exp} is a recursive function whose conditionals test the parity
+of the exponent argument, the sequence of branches taken corresponds exactly to
+the binary representation of $e$. Partially evaluating \texttt{exp} with $e$
+eliminates all of the conditionals, selecting and expanding the appropriate
+branch in each case.
 
-fun exp1 (b : unit, e : int) =
+Our algorithm, on the other hand, produces:
+%
+\begin{lstlisting} 
+datatype binnat = Zero | Even of nat | Odd of nat
+
+1`fun exp1 (b : unit, e : int) =
   if e==0 then
     ((), Zero)
   else if (e mod 2)==0 then 
-    ((), Even (#2 (exp (b, e/2))))
+    ((), Even (#2 (exp1 ((), e/2))))
   else 
-    ((), Odd (#2 (exp (b, e-1))))
+    ((), Odd (#2 (exp1 ((), (e-1)/2))))`
 
-fun exp2 ((b : int, e : unit), l : nat) = 
+2`fun exp2 ((b : int, e : unit), l : binnat) =
     case l of
       Zero => 1
-    | Even n => let x = exp ((b, ()), n) in x*x 
-    | Odd n => b * exp ((b, ()), n)
+    | Even n => exp2 ((b*b, ()), n)
+    | Odd n => b * exp2 ((b*b, ()), n)`
 \end{lstlisting}
-Splitting has produced two recursive functions,
-one (\texttt{exp1}) which builds up an intermediate data structure (\texttt{nat}),
-and another (\texttt{exp2}) which consumes that data structure.  
-Noticing that said structure is just a binary representation of the exponent,
-we've given it an appropriate name.
+%
+\texttt{exp1} recursively performs parity tests on $e$, but unlike \texttt{exp},
+it simply computes a data structure (a \texttt{binnat}) recording which branches
+were taken. \texttt{exp2} takes $b$ and a \texttt{binnat} $l$, and uses $l$ to
+determine how to compute with $b$.
 
-This may seem like a deep observation, 
-that integers can be decomposed into a binary respresation,
-but it actually follows from the recursive structure of the original program:
-just as \texttt{exp} could either terminate or recur in one of two ways,
-\texttt{nat} likewise has a base case and two recursive cases.
-Splitting oberves this only by following local structure.
+Of course, the \texttt{binnat} computed by \texttt{exp1} is precisely the binary
+representation of $e$! While partial evaluation realizes \texttt{exp}'s
+control-flow dependency on a fixed $e$ by recursively expanding its branches in
+place, we explicitly record this dependency generically over all $e$ by creating
+a boundary data structure. This occurs in the $\splitonesym$ rule for
+\texttt{case}, which emits a tag corresponding to the taken branch in the
+precomputation, and \texttt{case}s on it (as $l_b$) in the residual.
 
-Of course, since integers are usually stored in a binary format anyway, 
-this isn't practically useful, but it's a clear exposition of the technique.
-Partially evaluating this code is typically more useful,
-as that would eliminate branches in the residual,
-and exponents tend to be small enough to keep code size reasonable.
+Because splitting \texttt{exp} does not eliminate its conditionals, partial
+evaluation is more useful in this case. (Notice, however, that partially
+evaluating \texttt{exp2} on a \texttt{binnat} is essentially the same as as
+partially evaluating \texttt{exp} on the corresponding \rmint.) Nevertheless,
+splitting \texttt{exp} still demonstrates how our algorithm finds interesting
+data structures latent in the structure of recursive functions.
 
 \subsection{Quickselect}
+\label {sec:exampleQS}
 
-\crem{Revise to take section 2 into account.}
+Let us return to the \texttt{quickselect} algorithm, which we discussed at
+length in \ref{sec:example}. (The code is in \ref{fig:qs-staged}.)
+\texttt{quickselect} finds the $k$th largest element of a list $l$ by
+recursively \texttt{partition}ing the list by its first element, then recurring
+on the side containing the $k$th largest element. $l$ is first-stage and $k$ is
+second-stage.
 
-We now move on to our marquee example: quickselect.
-The function {\tt qs} in the code below is a staged version of the quickselect algorithm.
-Standard quickselect finds the $k$th largest number in a list (l) by recursively partitioning the list by its 
-first element and picking the side which contains the $k$th largest element.
-In this case, we've staged quickselect by saying that the list is stage \bbone\ and $k$ is stage \bbtwo.
-The helper function {\tt partition} operates entirely in stage \bbone, and so we have wrapped it in a \texttt{grnd}.
-In this example, we make use of the behavior where first stage code is executed even under second stage branches.
-
+Stage-splitting \texttt{quickselect} produces:
+%
 \begin{lstlisting} 
-atsigngrnd { 
-  datatype list = Empty | Cons of int * list
-  fun partition ((p,l) : int*list) : (int*list*list) = 
-    case unroll l of 
-      Empty => (0, Empty, Empty) 
-    | Cons (h,t) => 
+datatype list = Empty | Cons of int * list
+datatype tree = Leaf
+              | Branch of int * tree * int * tree
+
+1`fun partition ((p,l):int*list) : (int*list*list) = 
+  case l of 
+    Empty => (0,Empty, Empty) 
+  | Cons (h,t) => 
       let val (s,left,right) = partition (p,t) in 
       if h<p 
       then (s+1,Cons(h,left),right) 
       else (s,left,Cons(h,right))
-}
 
-fun qs (grnd{Empty}, next{i}) = next {0} 
-  | qs (grnd{Cons ht}, next{i}) =
-    let 
-      val grnd{(n,left,right)} = grnd{partition ht}
-      val next{n} = hold grnd{n}
-    in
-    next { 
-      case unroll (compare (i,n)) of
-        LT => prev{qs (grnd{left},next{i})}
-      | EQ => prev{hold grnd{#1 ht}}
-      | GT => prev{qs (grnd{right},next{i-n-1})}
-    }
-\end{lstlisting}
-Running stage splitting on this code produces:
-\begin{lstlisting} 
-datatype list = Empty | Cons of int * list
-datatype tree = Leaf of unit 
-              | Branch of int * tree * int * tree
-fun partition ((p,l) : int*list) : (int*list*list) = 
-  case l of 
-    Empty => (0,Empty, Empty) 
-  | Cons (h,t) => 
-    let val (s,left,right) = partition (p,t) in 
-    if h<p 
-    then (s+1,Cons(h,left),right) 
-    else (s,left,Cons(h,right))
-
-fun qs1 (l : list, i : int) = ((), 
+fun qs1 (l : list, k : unit) = ((), 
   case l of
-    Empty => Leaf ()
+    Empty => Leaf
   | Cons (h,t) => 
       Branch (
-        let (left,right,n) = partition h t in
-        (n, #2 (qs1 left i), h, #2 (qs1 right i))
+        let (left,right,n) = partition (h,t) in
+        (n, #2 (qs1 left k), h, #2 (qs1 right k))
       )
-  )
+  )`
 
-fun qs2 (((), i : int), p : tree) = 
+2`fun qs2 (((), k : int), p : tree) = 
   case p of
-    Leaf () => 0
+    Leaf => 0
   | Branch (n,left,h,right) =>
-        case compare (i, n) of 
-          LT => qs (((), i), left) 
-        | EQ => h 
-        | GT => qs (((), i-n-1), right)
-
+      case compare (k, n) of 
+        LT => qs2 (((), k), left) 
+      | EQ => h 
+      | GT => qs2 (((), k-n-1), right)`
 \end{lstlisting}
+%
+\texttt{qs1} \texttt{partition}s $l$, but since the comparison with $k$ (to
+determine which half of $l$ to recur on) is at the second stage, it simply
+recurs on \emph{both} halves, pairing up the results along with $h$ (the head of
+$l$) and $n$ (the size of the left half). \texttt{qs2} takes $k$ and this tree
+$p$, and uses $k$ to determine how to traverse $p$.
 
-These functions recursively build ({\tt qs\_1}) and then search ({\tt qs\_2}) a binary tree,
-which stores a set element and subtree size at every branch.
-All of the list partitioning work now occurs within the precomputation.
-Thus, {\tt qs\_1} performs $\Theta(n \log n)$ work per call, whereas {\tt qs\_2} performs expected $\Theta(\log n)$ work.
-This results in a net speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on the same list. 
+How does our splitting algorithm generate binary search trees and a traversal
+algorithm? The $\splittwosym$ rule for \texttt{case} tuples up the
+precomputations for its branches, and in the residual, selects the residual
+corresponding to the appropriate branch. The tree is implicit in the structure
+of the code; ordinarily, the quickselect algorithm only explores a single
+branch, but the staging annotations force the entire tree to be built.
 
-\subsection {Mixed Map Combinator}
+This is an instance where stage-splitting is more practical than partial
+evaluation---if $l$ is large, partially evaluating \texttt{quickselect} requires
+runtime generation of a huge amount of code simultaneously encoding the tree and
+traversal algorithm. (Avoiding the code blowup, by not expanding some calls to
+\texttt{partition}, would result in duplicating first-stage computations.)
 
-In the previous example, we suggested that staged quickselect could be applied to one list and many queries.
-In this example, we implement that behavior by passing \texttt{qs} to a higher order function.
-Such a combinator, which operates over both stages at once, is possible because of the generality of \lang's abstractions.
+Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
+\texttt{qs2} performs expected $\Theta(\log n)$ work.  This results in a net
+speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on
+the same list. 
 
-Note that we have to define a datatype for integer lists at the second stage, which is given by \texttt{list2}.
+Note that the recursive \texttt{partition} function is defined within a \texttt{grnd}
+annotation.  As explained in \ref{sec:needGround}, defining \texttt{partition}
+at \bbonem\ would cause it to split in a way that incurs extra cost at the second stage.
+In this case, that cost would be $\Theta(n)$ in the size of the input list,
+enough to overpower the asymptotic speedup gained elsewhere.
+With \texttt{grnd} annotations, however, this can be prevented.
+
+\crem{You could map qs and it would work.}
+
+\subsection {Combining Pixel Computations}
+
+\crem{Text is out of sync with example.}
+
+Due to its generality, \lang\ could make a good basis for modular programming of pipeline systems like those of modern graphics architectures.
+For instance, a pipeline program which takes input of type $A$ at the first stage and produces an output of type $B$ at the second stage 
+would simply be encoded by a function of type $A \to \fut B$.
+
 \begin{lstlisting} 
-atsignnext{
-  datatype list2 = Empty2 | Cons2 of int * list2
-}
+1`datatype object = ...`
+2`atsignnext{
+  type coord = int * int
+  type color = int
+}`
 
-type qsType = ^list*$int->$int
-
-// map : qsType -> ^list * $list2 -> $list2
-fun map f (l, q) = 
-next {
-  let 
-  fun m Empty2 = Empty2
-    | m (Cons2(h,t)) = Cons2(prev{f (l,next{h})}, m t)
-  in m prev{q}
-}
-
-val qsMany = map qs
-\end{lstlisting}
-The \texttt{map} function splits into the following two functions:
-\begin{lstlisting} 
-datatype list2 = Empty2 | Cons2 of int * list2
-
-fun map1 f = (fn (l,()) => ((), #2 (f (l, ()))), ())
-fun map2 (f,()) ((l,q), p : tree) =
-  let 
-  fun m Empty2 = Empty2
-    | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
-  in m q
+1`fun sum (f : object * $2`coord` -> $2`color`,
+         g : object * $2`coord` -> $2`color`)
+        (x : object, next{2`c`} : $2`coord`) : $2`color` =
+  2`prev{`1`f (x,next{2`c`})`2`} + prev{`1`g (x,next{2`c`})`2`}`
 \end{lstlisting}
 
-As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
-whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) is executed once per query.
+Most pipeline programming models either force the user to manually split their programs (which harms modularity).
+Others, such as \cite{Foley:2011}, offer only a few multistage types (namely, first order functions) and give 
+combinators like \texttt{par} as language features.
+In contrast, \lang\ is powerful enough to define those combinators in-language.

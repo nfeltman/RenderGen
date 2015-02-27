@@ -19,6 +19,7 @@
 \usepackage[utf8x]{inputenc}
 \PrerenderUnicode{λ}
 \usepackage{verbatim}
+\usepackage{xspace}
 
 \usepackage{cleveref}
 \AtBeginDocument{\renewcommand\ref\cref}
@@ -54,6 +55,7 @@
         moredelim=*[is][\color{stageOneColor}]{1`}{`},
         moredelim=*[is][\color{stageTwoColor}]{2`}{`},
         moredelim=*[is][\color{stageMonoColor}]{3`}{`},
+        moredelim=*[is][\colorbox{black}]{4`}{`},
         literate={|->}{{\ $\mapsto$\ }}1
                  {xhat}{{$\hat{\texttt{x}}$}}1
                  {yhat}{{$\hat{\texttt{y}}$}}1
@@ -62,6 +64,8 @@
                  {alpha}{{$\alpha$}}1
                  {beta}{{$\beta$}}1
                  {atsign}{{@}}1
+                 {literalone}{1}1 % hax
+                 {literaltwo}{2}1 % hax
                  {^}{{$\curr$}}1
                  {$}{{$\fut$}}1}
 
@@ -87,7 +91,11 @@
 %\titlebanner{banner above paper title}        % These are ignored unless
 %\preprintfooter{short description of paper}   % 'preprint' option specified.
 
+%% Vote on your favorite title! Lower is better!
 \title{Data Specialization for a Staged Lambda Calculus}
+\title{Algorithmically Staged Lambda Calculus}
+\title{Algorithmic Staging}
+\title{Automatically Splitting a Staged Lambda Calculus}
 
 \authorinfo{Nicolas Feltman \and Carlo Angiuli \and Umut Acar \and Kayvon Fatahalian}
            {Carnegie Mellon University}
@@ -122,21 +130,18 @@
 \input{implementation}
 
 \input{algoexamples}
-%\input{relatedwork}
+\input{relatedwork}
 %\input{umut}
-
-%\appendix
-%\section{Appendix Title}
-%This is the text of the appendix, if you need one.
 
 %\acks
 %Acknowledgments, if needed.
 
-% We recommend abbrvnat bibliography style.
+\bibliography{paper}
+\bibliographystyle{abbrvnat}
 
 %% %\vfill\eject\pagebreak
 
-\bibliography{paper}
-\bibliographystyle{abbrvnat}
+\newpage\appendix
+\input{appendix}
 
 \end{document}
