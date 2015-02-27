@@ -2,20 +2,6 @@
 
 As Jorring and Scherlis argue frequency reduction and precomputation
 are common techniques for both designing algorithms and performing
-<<<<<<< HEAD
-compiler optimizations~\cite{JS86-staging}.  The idea behind
-frequency reduction is to identify computations that are performed
-multiple times and pull them ahead so that they can be performed once
-and used as needed later.  The idea behind precomputation is to
-identify computations that can be performed earlier, for example at
-compile time if their inputs are available statically and perform them
-at that earlier time. It is not difficult to see that many interesting
-algorithm design techniques and compiler optimizations do exactly
-frequency reduction and precomputation.  For example, dynamic
-programming and loop hoisting are a frequency reduction techniques,
-whereas dynamic data structures and incremental computation are
-frequency reduction techniques.
-=======
 compiler optimizations~\cite{JS86-staging}.  The idea behind frequency
 reduction is to identify computations that are performed multiple
 times and pull them ahead so that they can be performed once and used
@@ -27,7 +13,6 @@ compiler optimizations perform frequency reduction and precomputation.
 For example, dynamic programming and loop hoisting are a frequency
 reduction techniques, whereas dynamic data structures and incremental
 computation are precomputation techniques.
->>>>>>> 7c1c9f155757cbb2bf32bc2392fb175ef5f29f36
 
 Perhaps one of the most well studied example of precomputation is
 partial evaluation.  Partial evaluation distinguishes between a static
@@ -42,46 +27,6 @@ $a_1 \ldots a_m$ to obtain another program $g(x_1, \ldots, x_n)$ such
 that $f(a_1, \ldots, a_m, y_1, \ldots, y_n) = g(y_1, \ldots,
 y_n)$~\cite{Kleene52}.  Kleene did not intend to improve efficiency,
 however.  Lombardi appears to be the first person to use the term in
-<<<<<<< HEAD
-his work on incremental computation~\cite{Lombardi67}.  Since then,
-there has a lot of work on partial evaluation, the only broad-strokes
-of which we can mention in this here.  We refer the interested reader
-to the excellent book by Jones, Gommard, and Sestoft for a
-comprehesive discussion of work until early 90's~\cite{JGS93}.
-
-At a high level, earlier approaches to partial evaluation can be
-viewed as operating in two stages: binding time analysis and program
-specialization.  For a multivariate program, e.g., $f(x_s,x_d)$, with
-clearly marked static and dynamic arguments, binding-time analysis
-identifies all the parts of the program that can be computed by the
-knowledge of static arguments. Using this information and the static
-arguments themselves, program specialization specializes the program
-to a partially evaluated program that can be used with many different
-dynamic arguments.  This approach has been applied to construct
-partial evaluators for a number of languages such as 
-Scheme~\cite{OB91-Similix,Consel88-Schism}, considering for the most
-part first-order subsets.
-
-Subsequence experience with binding time analysis based approach
-showed that it can be difficult to control, leading to specialized
-programs whose performance can be difficult to predict. This led to
-investigations based on type systems for making explicit in the
-program the stage of each
-computation~\cite{GJ91-lambda,NN92-twolevel}.  Davies~\cite{Davies96}
-presented a logical construction of binding-time type systems by
-deriving a type system via the Curry-Howard isomorphism applied to
-temporal logic.  In subsequence work, Davies and Pfenning proposed a
-new type system for staged computation based on a particular fragment
-of modal logic~\cite{DP01-modal}.  These later approaches can be
-viewed more generally meta programming, where evaluating a program at
-a certain stage with its inputs at that stage gives another program to
-be executed at the next stage (e.g.,~\cite{JS86-staging}). The work on
-MetaML scaled type-based ideas to a full-scale language by developing
-statically typed programming language based on ML that enables the
-programmer to express programs with multiple
-stages~\cite{Taha97,taha-thesis-99}.  MetaML's type system is similar
-to Davies~\cite{Davies96} but extends it in several important ways.
-=======
 his work on incremental computation~\cite{Lombardi67}.  Since then,
 there has a lot of work on partial evaluation, only broad-strokes of
 which we can mention in this here.  We refer the interested reader to
@@ -120,7 +65,6 @@ developing statically typed programming language based on ML that
 enables the programmer to express programs with multiple
 stages~\cite{Taha97,taha-thesis-99}.  MetaML's type system is similar
 to Davies~\cite{davies96} but extends it in several important ways.
->>>>>>> 7c1c9f155757cbb2bf32bc2392fb175ef5f29f36
 Nanevksi and Pfenning further extended the these techniques by
 allowing free variable to occur within staged
 computations~\cite{NP05-nn}.
@@ -149,13 +93,6 @@ program, sometimes in asymptotically significant ways.
 We are not aware of prior work in the context of higher-order
 functional languages that presents such a splitting algorithm.
 
-<<<<<<< HEAD
-Perhaps the closest work to ours is the work on ``data
-specialization'' by Knoblock and Ruf~\cite{knoblock96}.  As our work,
-Knoblock and Ruf are concerned about the problem of splitting a
-program into two stages.  They only consider, however, a very simple
-first-order language and straightline programs.
-=======
 Perhaps the closest work to ours is algorithm for ``data
 specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  As our
 work, Knoblock and Ruf are concerned about the problem of splitting an
@@ -172,13 +109,12 @@ suggestions of writing graphics programs in an explicitly staged
 programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
 deferring the task of pass seperation to the compiler. However, all
 prior efforts, like that of Knock and Ruf\,\cite{knoblock96} have been
-limited to simple, imperitive languages.  
+limited to simple, imperative languages.  
 
 \paragraph{Memoization.} Leaves code structure unchanged.
 
 \paragraph{Incremental computation.} Usually not applicable within a
 computation, require ``mutator'' ``core'' behavior.
->>>>>>> 7c1c9f155757cbb2bf32bc2392fb175ef5f29f36
 
 
 %% \section{Related Work}
