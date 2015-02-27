@@ -210,12 +210,12 @@ splitting must produce a $c'$ and $l.r'$ satisfying,
 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
 \]
 Our algorithm generates a first-pass term $c'$ that produces the same
-boundary value ($b$) as the split of the subexpression $e$:
+boundary value ($b$) as the split of the subterm $e$:
 \[
 c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
 \]
 Splitting also generates the same resumer as the split of the
-subexpression ($l.r' = l.r$)
+subterm ($l.r' = l.r$)
 
 \paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
 where $\diaone {e_k} {\xi_k} {v_k}$ and $\rtab {\xi_k} {v_k} \vsplito
@@ -230,7 +230,7 @@ splitting generates:
 	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
 \]
 The resulting boundary value is the tuple of the boundary values of
-the subexpressions, $b = \tup{b_1,b_2}$.  The value is 
+the subterms, $b = \tup{b_1,b_2}$.  The value is 
 constructed using,
 \[
 c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
@@ -293,11 +293,24 @@ In particular, \texttt{case} splits according to the rule:
 Note how the precomputations are pulled out from underneath the binder into a tuple that is always executed in the first stage,
 regardless of what branch is eventually executed in the second stage.
 
-Splitting \texttt{prev} generates a precomputation that projects the immediate
-result of its world \bbone\ subterm.
-Since the argument to \texttt{prev} is of $\fut$ type, its immediate result reduces to $\tup{}$, justifying why it can be thrown away.
-Finally, splitting \texttt{next} simply tuples up the precomputation of its
-world \bbtwo\ subterm with a trivial immediate result $\tup{}$.
+\paragraph{Next and Prev}
+Since \texttt{next} and \texttt{prev} do nothing more than convert between 
+second stage terms at \bbtwo\ and second stage terms encapsulated within $\fut$s at \bbonem,
+their splitting rules are relatively simple.
+
+Given an $\splittwo e ? p l r$ and $\diatwo e q$ for which the splitting invariant holds, we know
+\[
+	\reduce p b \text{ and } [b/l]r \equiv q
+\]
+The splitting invariant for $\splitone {\next {e'}} ? {c'} {l'.r'}$ 
+and $\diaone {\next {e'}} {\yhat \mapsto q} {\next \yhat}$
+and $\rtab {\yhat \mapsto q} {\next \yhat} \vsplito \mval {\tup{}} {\letin \yhat q \yhat}$
+is
+\[
+	\reduce {c'} {\tup {\tup{},b'}} \text{ and } [b'/l']r' \equiv \letin \yhat q \yhat
+\]
+which can be fulfilled using $c' = \tup{\tup{},p}$ and $l.r = l'.r'$.
+Applying this process in reverse yields a splitting rule for $\prev e$ which applies \texttt{pi1} to the combined term of $e$.
 
 \subsection {Role of World \bbonep}
 \label{sec:needGround}
