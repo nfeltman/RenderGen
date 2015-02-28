@@ -7,13 +7,13 @@ correspond to the arrival order of inputs have been studied
 extensively in the areas of partial evaluation and meta programming.
 
 In this paper, we consider staged programs written in a typed lambda
-calculus with a (``circle'') modality denoting computation in a later
+calculus with a $\fut$ modality denoting computation in a later
 stages and present techniques for splitting them into multi-pass
 programs. Such multi-pass programs evaluate in a sequence of
-evaluations of un-staged, conventional programs each of which
-corresponds to a pass.  Conceived in the 80's but J{\o}rring and
-Scherlis, this {\em pass-separation} technique has been studied but
-existing techniques are either manual or apply only to simple programs
+evaluations of unstaged, conventional programs each of which
+corresponds to a pass.  Conceived in the 80's by J{\o}rring and
+Scherlis, this {\em pass-separation} technique has been studied, but
+existing techniques are either manual or applicable only to simple programs
 that lack important features such as recursion and first-class
 functions.
 
@@ -27,7 +27,7 @@ programmer to write staged programs by using powerful programming
 abstractions in a composable and modular fashion. Our splitting
 transformation maps such programs into multi-pass programs that can
 run significantly more efficiently by assigning frequent computations
-to earlier passes so that they can be re-used (cheaply) later.  Our
+to earlier passes so that they can be reused (cheaply) later.  Our
 experiments based on a prototype implementation show that our
 splitting algorithm is able perform highly non-trivial algorithmic
 transformations, sometimes automatically improving efficiency

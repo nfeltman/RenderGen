@@ -1,11 +1,11 @@
 \section{Introduction}
 \label{sec:intro}
 
-Consider a function $F$ which takes an $x$ and $y_1,\dots,y_{m-1}$, and computes
+Consider a function $F$ which takes an $x$ and $y_1,\dots,y_m$, and computes
 $f(x,y_i)$ for each $y_i$:
 \begin{lstlisting}
-fun @$F(x, y_0, y_1, \ldots, y_{m-1})$@ = 
-  @$f(x, y_0);  f(x, y_1); \ldots; f(x, y_{m-1})$@
+fun @$F(x, y_1, y_2 \ldots, y_m)$@ = 
+  @$f(x, y_1);  f(x, y_2); \ldots; f(x, y_m)$@
 \end{lstlisting}
 %
 In this common scenario, a multivariate function is applied many times with one
@@ -49,17 +49,17 @@ precomputation by specializing functions to specific arguments. Going back to
 our example, if we specialize $f$ to a particular $v$, written $f_v$, such that
 $f(v,y) = f_v(y)$, then we can specialize $F$ to $v$ as
 \begin{lstlisting}
-fun @$F_v(y_0, y_1, \ldots, y_{m-1})$@ = 
-  @$f_v(y_0);  f_v(y_1); \ldots; f_v(y_{m-1})$@.
+fun @$F_v(y_1, y_2, \ldots, y_m)$@ = 
+  @$f_v(y_1);  f_v(y_2); \ldots; f_v(y_m)$@.
 \end{lstlisting}
-eliminating the need to recompute the parts of $f(v,-)$ which do not depend on
-the second argument.
+eliminating the need to compute $m$ times those parts of $f(v,-)$ which do not
+depend on the second argument.
 
 A closely related technique, {\em metaprogramming}, allows writing
-programs that generate specialized code
-(e.g.,~\cite{davies96,Taha97,DP01-modal,NP05-nn}. Metaprogramming
-enables fine-grained control over specialization by requiring staging
-annotations that make explicit the stage of each computation. (In
+programs that generate specialized
+code~\cite{davies96,Taha97,DP01-modal,NP05-nn}. Metaprogramming
+enables fine-grained control over specialization by requiring \emph{staging
+annotations} that explicitly mark the stage of each computation. (In
 partial evaluation, we typically assume that a \emph{binding-time
   analysis} has automatically determined which parts of $f$ can be
 specialized.)
@@ -74,17 +74,17 @@ $f_1$ and $f_2$ such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
 evaluating the first pass on $x$, and then the second pass on each $y_i$.
 %
 \begin{lstlisting}
-fun @$F_\textrm{multipass}(x, y_0, y_1, \ldots, y_{m-1})$@ = 
-  let @$fx = f_1(x)$@
-  in @$(f_2(fx, y_0);  f_2(fx, y_1)  \ldots f_2(fx, y_{m-1}))$@.
+fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ = 
+  let @$z = f_1(x)$@
+  in @$f_2(z, y_1);  f_2(z, y_2); \ldots; f_2(z, y_m)$@
 \end{lstlisting}
 %
-The key difference between partial evaluation (or metaprogramming) and
-pass separation is that the latter can be performed without access to
-the first argument $x$: $F_\textrm{multipass}$ works for any $x$,
+The key difference between pass separation and partial evaluation (or
+metaprogramming) is that the former can be performed without access to
+the first argument $x$; $F_\textrm{multipass}$ works for any $x$,
 while $F_v$ is defined only for $x=v$.  Note that unlike
 precomputation, frequency reduction does not require knowledge of
-arguments; if a particular $v$ is known, we can use partial evaluation
+arguments; however, if a particular $v$ is known, we can use partial evaluation
 to specialize $F_\textrm{multipass}$ to that $v$.
 
 Prior work on partial evaluation and metaprogramming has shown that

@@ -21,10 +21,10 @@ coordinates are first-stage, and the last coordinate is second-stage.
 
 1`//dot : vec * vec -> $int
 fun dot (
-  (3`grnd{`1`xliteralone`3`}`1`,`3`grnd{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}): vec,
-  (3`grnd{`1`xliteraltwo`3`}`1`,`3`grnd{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`}): vec) = 
+  (3`gr{`1`xliteralone`3`}`1`,`3`gr{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}): vec,
+  (3`gr{`1`xliteraltwo`3`}`1`,`3`gr{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`}): vec) = 
 next{
-  2`prev{`1`hold `3`grnd{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)`
+  2`prev{`1`hold `3`gr{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)`
 1`}`
 \end{lstlisting}
 %
@@ -58,13 +58,13 @@ $b^e$ using exponentiation by squaring, where $e$ is known at the first stage,
 and $b$ is known at the second stage. 
 %
 \begin{lstlisting} 
-1`fun exp (next{`2`b`1`} : $`2`int`1` , `3`grnd{`1`e`3`}`1` : ^int) = 
-  if `3`grnd{`1`e == 0`3`}`1` then 
+1`fun exp (next{`2`b`1`} : $`2`int`1` , `3`gr{`1`e`3`}`1` : ^int) = 
+  if `3`gr{`1`e == 0`3`}`1` then 
     next{`2`literalone`1`}
-  else if `3`grnd {`1`(e mod 2) == 0`3`}`1` then
-    exp(next{`2`b*b`1`},`3`grnd{`1`e/literaltwo`3`}`1`)
+  else if `3`gr{`1`(e mod 2) == 0`3`}`1` then
+    exp(next{`2`b*b`1`},`3`gr{`1`e/literaltwo`3`}`1`)
   else 
-    next{`2`b * prev{`1`exp(next{`2`b*b`1`},`3`grnd{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
+    next{`2`b * prev{`1`exp(next{`2`b*b`1`},`3`gr{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
 \end{lstlisting}
 %
 Because \texttt{exp} is a recursive function whose conditionals test the parity
@@ -188,12 +188,12 @@ Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
 speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on
 the same list. 
 
-Note that the recursive \texttt{partition} function is defined within a \texttt{grnd}
+Note that the recursive \texttt{partition} function is defined within a \texttt{gr}
 annotation.  As explained in \ref{sec:needGround}, defining \texttt{partition}
 at \bbonem\ would cause it to split in a way that incurs extra cost at the second stage.
 In this case, that cost would be $\Theta(n)$ in the size of the input list,
 enough to overpower the asymptotic speedup gained elsewhere.
-With \texttt{grnd} annotations, however, this can be prevented.
+With \texttt{gr} annotations, however, this can be prevented.
 
 To run many order statistics queries $\texttt{k1},\dots,\texttt{km}$ on the same
 list, use \texttt{qs1} to compute the boundary tree in the first pass, and in

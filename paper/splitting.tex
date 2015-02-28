@@ -58,7 +58,7 @@ $(i,b)$, where the first element $i$ matches the first stage results
 contained in $v$.  For example, in the simple case where $\rtab \xi v$
 contains entirely first stage computation, such as:
 \begin{lstlisting}
-2`[]`1` grnd{1+2}`
+2`[]`1` 3`gr{`1`literalone+literaltwo`3`}`
 \end{lstlisting}
 the first stage result is the value 3.  The second element of the pair
 is the boundary value used as input to the resumer in second pass
@@ -125,7 +125,7 @@ computations in $\xi$ and $v$.
 To provide intuition about the intent of masking, consider the
 following residual table and partial value:
 \begin{lstlisting}
-2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (grnd{7}, next{`2`yhat`1`}))`
+2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (3`gr{`1`7`3`}`, next{`2`yhat`1`}))`
 \end{lstlisting}
 To construct the value $i$ representing its first-stage components,
 masking first redacts all second stage (blue) parts, along with the
@@ -134,22 +134,22 @@ entire residual table since it only represents second stage
 computations.) The resulting ``holes'' in the term are replaced with
 unit values.
 %\begin{lstlisting}
-%4`##########`1` (`4`######`1`, injL (grnd{7}, `4`######`1`))`
+%4`##########`1` (`4`######`1`, injL (gr{7}, `4`######`1`))`
 %\end{lstlisting}
 %The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
 \begin{lstlisting}
-1`((), injL (grnd{7},()))`
+1`((), injL (3`gr{`1`7`3`}`,()))`
 \end{lstlisting}
-Finally, masking drops \texttt{grnd} annotations yielding:
+Finally, masking drops \texttt{gr} annotations yielding:
 \begin{lstlisting}
 1`((), injL (7,()))`
 \end{lstlisting}
-To construct the residual $q$ (corresponding to second stage computations) masking first redacts all \texttt{grnd} blocks
+To construct the residual $q$ (corresponding to second stage computations) masking first redacts all \texttt{gr} blocks
 (replacing them with unit), \texttt{next} annotations, and injection tags:
 %\begin{lstlisting}
 %2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
 %\end{lstlisting}
-%Where the \texttt{grnd} blocks left a hole, we put in a unit values:
+%Where the \texttt{gr} blocks left a hole, we put in a unit values:
 \begin{lstlisting}
 2`[yhat |-> 1+2] (yhat, ((),yhat))`
 \end{lstlisting}
@@ -173,7 +173,7 @@ A precise definition of the masking relation is given in
 % Masking assigns ground values to the immediate value
 % and likewise assigns references into the residual table to the resumer.
 % In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
-% Note that the \texttt{grnd} and \texttt{next} annotations are erased.
+% Note that the \texttt{gr} and \texttt{next} annotations are erased.
 
 % Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
 % However, the tags of injections and rolls are replicated only in the immediate value, 

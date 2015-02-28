@@ -220,7 +220,7 @@ We can also directly observe the reuse of first-stage computations across
 multiple second-stage computations. To run many order statistics queries
 $\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
 \begin{lstlisting}
-2`let val qs = prev{`1`qss `3`grnd{`1`[7,4,2,5,9,...,3]`3`}`2`}`
+2`let val qs = prev{`1`qss `3`gr{`1`[7,4,2,5,9,...,3]`3`}`2`}`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
 To see that the partial application of \texttt{qss} is only evaluated once,
