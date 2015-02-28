@@ -39,7 +39,10 @@ The \texttt{map} function splits into the following two functions:
   let 
   fun m Empty2 = Empty2
     | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
-  in m q`
+  in m q
+
+`1`val (qsMany1,()) = map1 qs
+`2`val qsMany2 = map2 (qs, ()) `
 \end{lstlisting}
 
 As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
