@@ -28,7 +28,6 @@ ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
 %
 Unfortunately, this approach requires $O(n \cdot m)$ time.
 
-\pagebreak
 We can attempt to improve on this algorithm by factoring out computations shared
 between these calls to \texttt{qs}. In particular, the comparisons performed by
 \texttt{partition} depend only on \texttt{l}, although different calls to
