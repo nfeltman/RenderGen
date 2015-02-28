@@ -214,7 +214,7 @@ Pipeline programs can be directly expressed as staged functions in \lang\, with 
 used to generate monostaged code required for each GPU pipeline stage
 (as well as the plumbing to communicate values between the stages).
 Composition of such functions in \lang\ allows more complex pipelines to be expressed in a modular programming style
-that is becoming increasingly desirable in graphics shading languages\,\cite{Foley:2011,He:2014}. A simple example of composition of staged functions (representing GPU pipeline programs) is given below.  The code defines a pipeline as a staged function that takes an object definition in first stage (\texttt{obj}) and a pixel coordinate (\texttt{xy}) in the second stage and emits the color of the object at the specified pixel. The code defines a pipeline combinator \texttt{shade} which modulates the results of the object's reflectance at a given pixel with the results of a function that computes the object's albedo (surface color).  
+that is becoming increasingly desirable in graphics shading languages\,\cite{Foley:2011,He:2014}. A simple example of composition of staged functions (representing GPU pipeline programs) is given below.  The code defines a pipeline as a staged function that takes an object definition in the first stage (\texttt{obj}) and a pixel coordinate (\texttt{xy}) in the second stage and emits the color of the object at the specified pixel. The code defines a pipeline combinator \texttt{shade} which modulates the results of the object's reflectance at a given pixel with the results of a function that computes the object's albedo (surface color).  
 %
 \begin{lstlisting} 
 1`datatype object = ...`

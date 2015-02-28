@@ -183,7 +183,7 @@ that must be left to the second stage in a separate function
 takes as argument the boundary and the second-stage argument (the
 rank) and performs a lookup in the boundary data structure.  But how
 does \texttt{qs2} knows to traverse the tree? It does not. Since
-the splitting algorithm recorded the control flow of the first stage
+the splitting algorithm recorded the control flow of the first-stage
 execution in the boundary data structure, \texttt{qs2} simply follows
 this control structure and performs at each point the parts of the
 computation from \texttt{qss} that can now be performed in the
