@@ -88,8 +88,8 @@ that contains terms with no staging.
 We can write a staged version of \texttt{qs}, called \texttt{qss},
 whose code is shown in \ref{fig:qs-staged}, where the first-stage code
 are typeset in red, and the second-stage code are typeset in blue.  To
-obtain \texttt{qss} from \texttt{qs}, we first make the input list a
-stage-1 and the rank a stage-2 argument.
+obtain \texttt{qss} from \texttt{qs}, we first make the input list 
+first-stage and the rank second-stage.
 %
 More precisely the input list has type $\curr\mathrm{list}$ (an
 integer list ``now''), the rank has type $\fut\rmint$ (an integer in
@@ -97,12 +97,12 @@ the ``future''), and the return has type $\fut\rmint$.
 %
 We can then obtain \texttt{qss} by annotating the body of \texttt{qs}
 with the staging annotations \texttt{prev} and \texttt{next}, which
-transition between a stage-1 and stage-2 code, and~$\texttt{g}$, which
-marks ground terms.  
+transition between first-stage and second-stage code, and~$\texttt{g}$, 
+which marks ground terms.  
 %
 We also use a third function
 \texttt{hold}, which can be implemented with \texttt{prev} and
-\texttt{next}, for promoting a stage-1 integer to a stage-2 integer;
+\texttt{next}, for promoting a first-stage integer to a second-stage integer;
 the signature of \texttt{hold} is
 % 
 \lstinline{1`hold : ^int -> $`2`int`}.
@@ -159,7 +159,7 @@ program.
 The splitting algorithm scans the program code for first-stage
 computations (which depend only on first-stage values) and separates
 them into the function, \texttt{qs1} of the first pass. This function
-performs the stage-1 computations and places the results into a
+performs the first-stage computations and places the results into a
 boundary data structure that both records the control flow and the
 results from the first stage at relevant control-flow points.  More
 specifically, the function \texttt{qs1} performs all the recursive
