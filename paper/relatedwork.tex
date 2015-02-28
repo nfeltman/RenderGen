@@ -118,13 +118,13 @@ highly on input changes applied.
 
 \paragraph{Frequency-reduction via pass separation.}
 Perhaps the closest work to ours is the algorithm for ``data
-specialization'' given by Knoblock and Ruf~\cite{knoblock96}.  Like
-our work, Knoblock and Ruf are concerned about the problem of
-statically splitting an explicitly staged program into two stages.
-However, they only consider a simple first-order language and
+specialization'' given by Knoblock and Ruf~\cite{knoblock96}, which
+also seeks to statically split an explicitly staged program into two
+stages.  However, they only consider a simple first-order language and
 straight-line programs. Their work also treats all computations
 guarded by second-stage conditionals as second-stage computations,
-which would prevent optimization of programs such as quickselect.
+which would prevent optimization (via splitting) of programs such as
+quickselect.
 
 Automatic pass separation has also been a topic of interest in
 programming systems for computer graphics, where, to achieve
@@ -136,10 +136,10 @@ challenges modifying multiple per-stage programs have led to
 suggestions of writing graphics programs in an explicitly staged
 programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
 deferring the task of pass separation to the compiler. However, all
-prior efforts, like that of Knock and Ruf\,\cite{knoblock96} have been
-limited to simple, imperative languages. We are not aware of prior
-work the presents a splitting algorithm in the context of higher-order
-functional languages.
+prior efforts, like that of Knoblock and Ruf\,\cite{knoblock96} have
+been limited to simple, imperative languages. We are not aware of
+prior work the presents a splitting algorithm in the context of
+higher-order functional languages.
 
 
 %% \section{Related Work}
