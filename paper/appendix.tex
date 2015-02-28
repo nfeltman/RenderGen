@@ -50,22 +50,22 @@ whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) 
 
 \subsection{Trie}
 
-Our last example generates a trie intermediate data structure.
+The function {\tt exists} determines whether a query string \texttt{s} occurs in
+a given list of strings (over the alphabet $\{A,B,C\}$). It starts by
+partitioning the provided set of strings into three subsets, corresponding to
+the set of strings starting with $A$ (resp., $B$ and $C$), and stripping that
+first letter off of each of those strings. While processing the input list, it
+also keeps track of whether the empty string has been encountered.
+%
+We then look at the query string \texttt{s}. If it's empty, we return whether
+the empty string was encountered. Otherwise, we choose the partition which
+agrees with the first letter of \texttt{s}, and recursively searches that list
+of strings for the remainder of \texttt{s}.
 
-The function {\tt exists} below determines whether a query string (s) occurs in a given set of strings (from the alphabet $\{A, B,C\}$).
-It solves this problem by partitioning the provided set of strings into three subsets,
-one which contains all words that start with $A$,
-one which contains all words that start with $B$, and one for $C$.
-When partitioning, we also throw away the first letter, since we know it's uniform for the whole subset.
-Also while doing this partitioning, we also keep track of whether the empty word occurred at all.
-We then look at the query string.  If it's empty, we return whether the empty word was in the set.
-Otherwise, we look at the first letter, pick the appropriate subset, 
-and recursively search for the rest of our query string in that.
-
-We stage this algorithm by saying that the word set comes at stage \bbone\
-and the query string comes at stage \bbtwo.
+Our staging annotations indicate that the list of strings are first-stage, while
+the query string is second-stage.
 \begin{lstlisting} 
-atsignmono { 
+atsigngr { 
 datatype letter = A | B | C 
 datatype string = EmptyS | ConsS of letter * string
 datatype list   = EmptyL | ConsL of string * list
@@ -84,16 +84,16 @@ datatype letter2 = A2 | B2 | C2
 datatype string2 = EmptyS2 | ConsS2 of letter2 * string2
 }
 
-fun exists (mono{EmptyL},next{s}) = next{false} 
-  | exists (mono{ConsL ht},next{s}) = 
-	let atsignmono{
+fun exists (gr{EmptyL},next{s}) = next{false} 
+  | exists (gr{ConsL ht},next{s}) = 
+	let atsigngr{
 	  val (anyEmpty,a,b,c) = partition (ConsL ht)
 	} in next { 
 	case s of 
-	  EmptyS2 => prev{hold mono{anyEmpty}} 
-	| ConsS2 (A2,z) => prev{exists(mono{a},next{z})} 
-	| ConsS2 (B2,z) => prev{exists(mono{b},next{z})}
-	| ConsS2 (C2,z) => prev{exists(mono{c},next{z})}  
+	  EmptyS2 => prev{hold gr{anyEmpty}} 
+	| ConsS2 (A2,z) => prev{exists(gr{a},next{z})} 
+	| ConsS2 (B2,z) => prev{exists(gr{b},next{z})}
+	| ConsS2 (C2,z) => prev{exists(gr{c},next{z})}  
 	} 
 \end{lstlisting}
 Running the splitting algorithm on this code produces:
@@ -135,4 +135,6 @@ fun exists (((),s), Leaf) = false
 
 \end{lstlisting}
 
-As promised, this split version creates a trie in the first stage, and consumes it in the second stage.
+\texttt{exists1} creates a trie (or prefix tree) as the boundary data structure,
+which is traversed by \texttt{exists2}.
+
