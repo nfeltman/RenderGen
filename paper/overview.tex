@@ -3,81 +3,68 @@
 \section{Overview}
 \label{sec:overview}
 
-We present an overview of our approach by considering an example.  To
-highlight the ideas, we abstract over some technical details, which
-are fully formalized in the rest of the paper.  The example itself is
-also implemented in our implementation.
-
-\paragraph{Computing order statistics.}
-
 \begin{abstrsyn}
 
 \input{figures/quickselect}
 
-Suppose that we wish to compute a series of order statistics queries
-on a list \texttt{l}. To this end, we can use
-quickselect~\cite{Hoare:1961}, which given a list \texttt{l} and a rank
+Suppose that we wish to perform a series of order statistics queries
+on a list \texttt{l}. To this end, we can use the quickselect
+algorithm~\cite{Hoare:1961}, which given a list \texttt{l} and a rank
 \texttt{k}, returns the element of \texttt{l} with rank \texttt{k}.
 As implemented in an ML-like language in \ref{fig:qs-unstaged},
-function \texttt{qs} partitions the list by using the first element as
-a pivot and then recurs on one of the two resulting sides to find the
-desired element based on the relationship of \texttt{k} to the size of
-the first half \texttt{i}.  Assuming that the input is uniformly
-randomly ordered (which can be achieved by pre-permutation of the
-input), function \texttt{qs} runs in expected $O(n)$ time.
+\texttt{qs} partitions \texttt{l} using the first element as
+a pivot, and then recurs on one of the two resulting sides, depending on
+the relationship of \texttt{k} to the size \texttt{i} of the first half, in
+order to find the desired element.  Assuming that the input is uniformly
+randomly ordered (which can be achieved by prepermuting the input), \texttt{qs}
+runs in expected $O(n)$ time.
 %
-Using function \texttt{qs}, we can perform many order statistics
-queries, for example with $m$ different ranks
-$\mathtt{k_1},\dots,\mathtt{k_m}$ as follows
+Using \texttt{qs}, we can perform $m$ different order statistics queries with
+ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
 %
 \begin{lstlisting}
-qs l @$\mathtt{k_1}$@; qs l @$\mathtt{k_2}$@; @$\ldots$@; qs l @$\mathtt{k_m}$@.
+(qs l k1, qs l k2, ..., qs l km)
 \end{lstlisting}
 %
-Unfortunately, this approach requires $O(n \cdot m)$ time, making it
-expensive to perform order statistics on more than a small number of
-times. This is unfortunate: we wish to be able to map \texttt{qs} to
-over another list and do so efficiently.
+Unfortunately, this approach requires $O(n \cdot m)$ time.
 
-One way to regain efficiency is to use a multi-pass algorithm that
-performs frequently performed computations first so that they can be
-reused.  It is nontrivial what such computations are in this example
-but after some reflection, we can realize that they are the
-comparisons performed by the partition function.  To minimize them, we
-can pre-sort the input list \texttt{l} into a sorted list \texttt{s}
-in the first pass, and then perform lookups in \texttt{s} in the
-second pass.  Unfortunately, since \texttt{s} is a list, a lookup
-would require linear time (also on average), leading to no improvement
-in efficiency.  But this is not too hard: after sorting \texttt{s} we
-can copy in into an array and use binary search to find the element
-with the desired rank.  As another option, we can construct a binary
-search tree from the input and perform size-based searches on the
-binary search tree to find the elements with the desired rank.  Such
-an approach would fit nicely into the functional paradigm but requires
-one more additional algorithmic ingenuity: to ensure efficiency we
-would need to store at each note the size of its subtree (these are
-sometimes called ``augmented trees'').  In summary, we are able to
-improve efficiency by replacing our simple solution with a multi-pass
-algorithm that first preprocesses the input to generate a lookup data
-structure and then in the second pass performs fast lookups.  As
-outlined above, in addition, this transformation is highly non-trivial
-as it involves reasoning about intricate algorithmic concerns, and
-implementing more complex algorithms and data structures.  Both of
-these approaches however improve the run-time to (expected)
-$\Theta(n\log{n} + m\log{n})$, a near linear-time improvement in $m$.
+\pagebreak
+We can attempt to improve on this algorithm by factoring out computations shared
+between these calls to \texttt{qs}. In particular, the comparisons performed by
+\texttt{partition} depend only on \texttt{l}, although different calls to
+\texttt{partition} are made by each call to \texttt{qs}.
 
-Such transformations, called pass-separation by J{\o}rring and
-Scherlis are commonly employed.  For example, as briefly mentioned in
-\ref{sec:intro}, modern graphics software is written exactly in this
-way.  Unfortunately, as the example illustrates, multipass programs
-are naturally complex.  We thus ask: is it possible to
-perform such transformations automatically.  We answer this question
-affirmatively.  Our approach is to start with a staged language and
-then use a splitting algorithm to generate multi-pass programs from
-staged programs.
+A first cut at a solution might be to, in a first pass, sort \texttt{l} into
+\texttt{s}, and then in a second pass, perform lookups in \texttt{s}.
+Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since since
+\texttt{s} is a list, leading to no improvement in efficiency.  
 
+A more sophisticated solution is to, in a first pass, construct a binary search
+tree out of \texttt{l}, and in a second pass, simply look for the \texttt{k}th
+leftmost element of that tree. To do this efficiently requires one more
+innovation---storing at each node the size of its left subtree (i.e., using
+\emph{augmented trees}). This approach has (expected) runtime $\Theta(n\log{n} +
+m\log{n})$, a nearly linear-time improvement in $m$.
+
+In both cases, we replace our simple solution with a two-pass algorithm which
+first processes the input into a lookup data structure, and then subsequently
+performs fast lookups. Improving algorithms in this way is highly non-trivial,
+as it requires reasoning about intricate algorithmic concerns, and implementing
+more complex algorithms and data structures.  
+
+In this paper, we present a splitting algorithm which transforms staged programs
+into multi-pass programs. In certain cases, this algorithm \emph{automatically}
+improves algorithms in the way described above.
+
+%Such transformations, called pass-separation by J{\o}rring and
+%Scherlis are commonly employed.  For example, as briefly mentioned in
+%\ref{sec:intro}, modern graphics software is written exactly in this
+%way.  Unfortunately, as the example illustrates, multipass programs
+%are naturally complex.  
 
 \subsection{Staging}
+
+%The example itself is also implemented in our implementation.
 
 The idea behind staged programming is to use staging annotations or
 types to indicate the stage of each subterm.  To apply this
