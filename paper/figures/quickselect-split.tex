@@ -10,7 +10,7 @@ datatype tree = Leaf
   case l of
     Empty => Leaf
   | Cons ht => 
-      let (left,right,i) = partition ht in
+      let val (left,right,i) = partition ht in
       Branch (i, #1 ht, qs1 left, qSelect1 right)`
 
 2`fun qs2 (p : tree, k : int) : int = 
