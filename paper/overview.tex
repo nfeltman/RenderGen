@@ -72,10 +72,11 @@ language \lang\ with two modal worlds representing the two stages, and a third
 
 In \ref{fig:qs-staged} we show a staged version of \texttt{qs}, called
 \texttt{qss}, where first-stage code is colored red, and second-stage blue. In
-\texttt{qss}, we regard the input list as arriving in the first stage
-(with type $\curr\mathrm{list}$, a list ``now''), the input rank as arriving in
-the second stage (with type $\fut\rmint$, an integer in the ``future''), and the
-result as being produced in the second stage (with type $\fut\rmint$).
+\texttt{qss}, we regard the input list \texttt{l} as arriving in the first stage
+(with type $\curr\mathrm{list}$, a list ``now''), the input rank \texttt{k} as
+arriving in the second stage (with type $\fut\rmint$, an integer in the
+``future''), and the result as being produced in the second stage (with type
+$\fut\rmint$).
 
 \texttt{qss} is obtained from \texttt{qs} by wrapping certain computations with
 \texttt{prev} and \texttt{next}, signaling transitions between first- and
