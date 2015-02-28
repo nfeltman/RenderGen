@@ -24,7 +24,7 @@ a pivot and then recurs on one of the two resulting sides to find the
 desired element based on the relationship of \texttt{k} to the size of
 the first half \texttt{i}.  Assuming that the input is uniformly
 randomly ordered (which can be achieved by pre-permutation of the
-input), function \texttt{qs} runs in expected linear time.
+input), function \texttt{qs} runs in expected $O(n)$ time.
 %
 Using function \texttt{qs}, we can perform many order statistics
 queries, for example with $m$ different ranks
@@ -68,9 +68,9 @@ $\Theta(n\log{n} + m\log{n})$, a near linear-time improvement in $m$.
 
 Such transformations, called pass-separation by J{\o}rring and
 Scherlis are commonly employed.  For example, as briefly mentioned in
-\secref{intro}, modern graphics software is written exactly in this
+\ref{sec:intro}, modern graphics software is written exactly in this
 way.  Unfortunately, as the example illustrates, multipass programs
-are naturally complex.  We thus ask: is it would be possible to
+are naturally complex.  We thus ask: is it possible to
 perform such transformations automatically.  We answer this question
 affirmatively.  Our approach is to start with a staged language and
 then use a splitting algorithm to generate multi-pass programs from
@@ -80,7 +80,7 @@ staged programs.
 \subsection{Staging}
 
 The idea behind staged programming is to use staging annotations or
-types to indicate the stage of each expression.  To apply this
+types to indicate the stage of each subterm.  To apply this
 technique to our example, suppose that we have a language with two
 worlds representing the two stages and a third, {\em ground} world
 that contains terms with no staging.

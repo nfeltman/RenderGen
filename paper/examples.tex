@@ -139,15 +139,13 @@ datatype tree = Leaf
       then (s+1,Cons(h,left),right) 
       else (s,left,Cons(h,right))
 
-fun qs1 (l : list, k : unit) = ((), 
-  case l of
+fun qs1 (l : list, k : unit) = 
+  ((), case l of
     Empty => Leaf
   | Cons (h,t) => 
       Branch (
         let (left,right,n) = partition (h,t) in
-        (n, #2 (qs1 left k), h, #2 (qs1 right k))
-      )
-  )`
+        (n, #2 (qs1 left k), h, #2 (qs1 right k))))`
 
 2`fun qs2 (((), k : int), p : tree) = 
   case p of
@@ -161,8 +159,8 @@ fun qs1 (l : list, k : unit) = ((),
 %
 This is nearly identical to the cleaned-up code we presented in
 \ref{fig:qs-split}, except that the mixed-stage argument to both passes is
-is explicitly masked, and we do not suppress the trivial immediate result of
-\texttt{qs1}.
+is explicitly masked, and we do not suppress the trivial first-stage result
+returned by \texttt{qs1}.
 
 \texttt{qs1} \texttt{partition}s $l$, but since the comparison with $k$ (to
 determine which half of $l$ to recur on) is at the second stage, it simply

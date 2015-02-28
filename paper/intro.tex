@@ -46,8 +46,8 @@ inputs are statically known.
 There has been much work on language-based techniques for performing
 precomputation. Partial evaluation~\cite{futamura71,jones96} achieves
 precomputation by specializing functions to specific arguments. Going back to
-our example, if we specialize $f$ to a particular $v$, written $f_v$, such that
-$f(v,y) = f_v(y)$, then we can specialize $F$ to $v$ as
+our example, if $f$ specializes to a particular $v$, written $f_v$, such that
+$f(v,y) = f_v(y)$, then $F$ can be specialized to $v$ as
 \begin{lstlisting}
 fun @$F_v(y_1, y_2, \ldots, y_m)$@ = 
   @$f_v(y_1);  f_v(y_2); \ldots; f_v(y_m)$@.

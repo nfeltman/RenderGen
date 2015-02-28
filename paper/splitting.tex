@@ -195,8 +195,8 @@ Splitting must produce a $c$ and $l.r$ satisfying,
 	\reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
 \]
 Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
-Splitting $\pure{e}$ follows in similar fashion, except the immediate
-result now becomes the result of evaluating the \bbonep\ term $e$.
+Splitting $\pure{e}$ follows in similar fashion, except the first 
+component of $c$ now becomes the result of evaluating the \bbonep\ term $e$.
 
 \paragraph {Injections.}
 Now consider splitting the non-terminal, $\inl {e}$, where $\diaone
@@ -304,7 +304,7 @@ similarly constrained by the $\texttt{inr}$ case.
 Function introduction has a $\tup{}$ boundary value,
 since functions are already fully reduced in our semantics.
 However, since the body of a function may itself be multistage, splitting must continue into it.
-The immediate result is a new function formed from the first-stage part of the original body.
+The $i$ is a new function formed from the first-stage part of the original body.
 The resumer is a new function formed out of the second-stage part of the original body.
 It is the responsibility of the application site to save the precomputation of the function body
 and pass it to the resumer version of the function.
