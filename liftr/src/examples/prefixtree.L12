@@ -18,15 +18,30 @@ let
 	@next { datatype letter2 = A2 | B2 | C2 }
 	@next { datatype string2 = EmptyS2 | ConsS2 of letter2 * string2 }
 
-	rec exists ((mono{l},s) : ^list * $string2) : $bool = 
+	rec exists ((mono{l},next{s}) : ^list * $string2) : $bool = 
 	case pushS mono{unroll l} of 
 	  _ => next{false} 
-	| _ =>  next{true}
+	| mono{ht} =>  
+		let 
+			val mono{(anyEmpty, a, b, c)} = mono{partition (ConsL ht)} 
+		in 
+		next { 
+			case unroll s of 
+				 em => prev{hold mono{anyEmpty}} 
+			| (z,zs) => 
+				case unroll z of  
+				  A => prev{exists (mono{a},next{zs})}  
+				| B => prev{exists (mono{b},next{zs})}  
+				| C => prev{exists (mono{c},next{zs})}  
+		} 
 
-	val answer = 
-	exists(  
-	let val c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)),  
-	next{let val c = ConsS2 in c(A2,c(B2,c(C2,EmptyS2)))})
+	val testlist = mono{
+			let val c = ConsS
+			in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL))}
+	val query = next{
+			let val c = ConsS2
+			in c(A2,c(B2,c(C2,EmptyS2)))}
+
+	val answer = exists( testlist, query)
 in 
-
-3
+answer
