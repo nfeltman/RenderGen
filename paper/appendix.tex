@@ -17,36 +17,35 @@ datatype for integer lists at the second stage, which is given by
   datatype list2 = Empty2 | Cons2 of int * list2
 `1`}
 
-type qsType = ^list*$`2`int`1`->$`2`int`1`
-
-// map : qsType -> ^list * $`2`list2`1` -> $`2`list2`1`
-fun map f (l, q) = 
-next {`2`
+map : (^list * $`2`int`1` -> $`2`int`1`)
+      -> ^list * $`2`list2`1` -> $`2`list2`1`
+fun map f (l, q) = next {`2`
   let 
   fun m Empty2 = Empty2
-    | m (Cons2(h,t)) = Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
-  in m prev{`1`q`2`}
-`1`}
+    | m (Cons2(h,t)) =
+                    Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
+  in m prev{`1`q`2`}`1`}
 
-val qsMany = map qs`
+val mapqss = map qss`
 \end{lstlisting}
 The \texttt{map} function splits into the following two functions:
 \begin{lstlisting} 
 2`datatype list2 = Empty2 | Cons2 of int * list2
 
-`1`fun map1 f = (fn (l,()) => ((), #2 (f (l, ()))), ())
+`1`fun map1 f = (fn (l,()) => ((),#2 (f (l,()))),())
 `2`fun map2 (f,()) ((l,q), p : tree) =
   let 
   fun m Empty2 = Empty2
     | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
   in m q
 
-`1`val (qsMany1,()) = map1 qs
-`2`val qsMany2 = map2 (qs, ()) `
+`1`val (mapqss1,()) = map1 qs1
+`2`val mapqss2 = map2 (qs2, ())`
 \end{lstlisting}
-
-As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
-whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) is executed once per query.
+%
+Indeed, \texttt{qs1}, which is passed to \texttt{map1}, is evaluated only in the
+first pass, whereas \texttt{qs2}, which is passed to \texttt{map2}, is evaluated
+in the second pass, once per query \texttt{k}.
 
 \subsection{Trie}
 
