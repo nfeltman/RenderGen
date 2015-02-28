@@ -39,7 +39,10 @@ The \texttt{map} function splits into the following two functions:
   let 
   fun m Empty2 = Empty2
     | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
-  in m q`
+  in m q
+
+`1`val (qsMany1,()) = map1 qs
+`2`val qsMany2 = map2 (qs, ()) `
 \end{lstlisting}
 
 As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
@@ -69,7 +72,7 @@ datatype string = EmptyS | ConsS of letter * string
 datatype list   = EmptyL | ConsL of string * list
 
 fun partition (EmptyL) = (false,EmptyL,EmptyL,EmptyL) 
-| partition (ConsL (s,ss)) = 
+  | partition (ConsL (s,ss)) = 
   let val (anyEmpty,a,b,c) = partition ss in 
   case s of 
     EmptyS => (true,a,b,c) 
@@ -99,48 +102,42 @@ fun exists (mono{EmptyL},next{s}) = next{false}
 Running the splitting algorithm on this code produces:
 
 \begin{lstlisting} 
-datatype _ = EmptyS | ConsS of _
-datatype _ = EmptyL | ConsL of _
-fun partition l =
- case l of
-   EmptyL => (false,EmptyL,EmptyL,EmptyL)
- | ConsL (s,ss) =>
-     let (anyEmpty,a,b,c) = partition ss in
-     case unroll s of
-       EmptyS => (true,a,b,c)
-     | ConsS (z,zs) =>
-         case z of 
-           A => (anyEmpty, ConsL(zs,a), b, c) 
-         | B => (anyEmpty, a, ConsL(zs,b), c) 
-         | C => (anyEmpty, a, b, ConsL(zs, c))
-fun exists1 (l,s) = roll ((), 
- case l of 
-   EmptyL => inj1 ()
- | ConsL _ => 
-   let (anyEmpty, a, b, c) = partition l in
-   inj2 (
-   	if anyEmpty then inj1 () else inj2 (), 
-   	#2 (exists1 (a,())), 
-   	#2 (exists1 (b,())), 
-   	#2 (exists1 (c,()))
-   )
- )
 
-datatype _ = EmptyS | ConsS of _
-fun exists2 ((l,s), p) =
- case unroll p of 
-   inj1 () => false
- | inj2 (anyEmpty,p_a,p_b,p_c) => 
-     case s of
-       EmptyS => 
-         case anyEmpty of 
-           inj1 () => true 
-         | inj2 () => false
-     | ConsS (z,zs) =>
-         case z of
-           A => exists2 (((),zs),p_a)
-         | B => exists2 (((),zs),p_b)
-         | C => exists2 (((),zs),p_c)
+datatype trie = Leaf 
+			  | Branch of bool * trie * trie * trie
+
+1`datatype letter = A | B | C 
+datatype string = EmptyS | ConsS of letter * string
+datatype list   = EmptyL | ConsL of string * list
+fun partition (EmptyL) = (false,EmptyL,EmptyL,EmptyL) 
+  | partition (ConsL (s,ss)) = 
+  let val (anyEmpty,a,b,c) = partition ss in 
+  case s of 
+    EmptyS => (true,a,b,c) 
+  | ConsS (A,z) => (anyEmpty,ConsL(z,a),b,c) 
+  | ConsS (B,z) => (anyEmpty,a,ConsL(z,b),c) 
+  | ConsS (C,z) => (anyEmpty,a,b,ConsL(z,c)) 
+in
+fun exists (EmptyL,()) = ((), Leaf)
+  | exists (ConsL ht,()) =
+	let 
+	  val (anyEmpty,a,b,c) = partition (ConsL ht) 
+	in ((), 
+		Branch (anyEmpty, 
+			#2 (exists (a, ())), 
+			#2 (exists (b, ())), 
+			#2 (exists (c, ()))))
+
+`2`datatype letter2 = A2 | B2 | C2
+datatype string2 = EmptyS2 | ConsS2 of letter2 * string2
+fun exists (((),s), Leaf) = false
+  | exists (((),s), Branch (e,a,b,c)) = 
+    case s of
+	  EmptyS2 => e
+	| ConsS2 (A,z) => exists (((), z), a)
+	| ConsS2 (B,z) => exists (((), z), b)
+	| ConsS2 (C,z) => exists (((), z), c)`
+
 \end{lstlisting}
 
 As promised, this split version creates a trie in the first stage, and consumes it in the second stage.
