@@ -41,9 +41,9 @@ Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since since
 A more sophisticated solution is to, in a first pass, construct a binary search
 tree out of \texttt{l}, and in a second pass, simply look for the \texttt{k}th
 leftmost element of that tree. To do this efficiently requires one more
-innovation---storing at each node the size of its left subtree (i.e., using
-\emph{augmented trees}). This approach has (expected) runtime $\Theta(n\log{n} +
-m\log{n})$, a nearly linear-time improvement in $m$.
+innovation---augmenting the tree by storing at each node the size of its left
+subtree. This approach has (expected) runtime $\Theta(n\log{n} + m\log{n})$, a
+nearly linear-time improvement in $m$.
 
 In both cases, we replace our simple solution with a two-pass algorithm which
 first processes the input into a lookup data structure, and then subsequently
@@ -51,9 +51,9 @@ performs fast lookups. Improving algorithms in this way is highly non-trivial,
 as it requires reasoning about intricate algorithmic concerns, and implementing
 more complex algorithms and data structures.  
 
-In this paper, we present a splitting algorithm which transforms staged programs
-into multi-pass programs. In certain cases, this algorithm \emph{automatically}
-improves algorithms in the way described above.
+In this paper, we present a splitting algorithm which automatically transforms
+staged programs into multi-pass programs. In certain cases, this algorithm even
+improves input algorithms in the way described above!
 
 %Such transformations, called pass-separation by J{\o}rring and
 %Scherlis are commonly employed.  For example, as briefly mentioned in
@@ -79,10 +79,10 @@ result as being produced in the second stage (with type $\fut\rmint$).
 
 \texttt{qss} is obtained from \texttt{qs} by wrapping certain computations with
 \texttt{prev} and \texttt{next}, signaling transitions between first- and
-second-stage code, and $\texttt{g}$, signaling ground terms.  
+second-stage code, and $\texttt{gr}$, signaling ground terms.  
 %
-We also use a function \texttt{hold},
-\lstinline{1`hold : ^int -> $`2`int`},
+We also use a function
+%\lstinline{1`hold : ^int -> $`2`int`},
 to promote first-stage integers to second-stage integers.
 %
 Our type system ensures that the staging annotations in \texttt{qss} are
@@ -99,73 +99,51 @@ maximize the work performed in the first stage.
 
 \input{figures/quickselect-split}
 
-The staged quickselect code shown in \ref{fig:qs-staged} makes
-explicit the staging of all terms, making it natural to ask, whether
-we can transform this code into manually implemented multi-pass code
-described above and match the efficiency improvements of the manual
-implementation. Considering the algorithmic knowledge and the
-considerations needed, this may seem like a tall order.
-Interestingly, our splitting algorithm achieves exactly this.
-In the rest of this section, we present a brief, high-level overview
-of the main ideas behind this algorithm using the quickselect example.
+In the rest of this section, we present a high-level overview of the main ideas
+behind our splitting algorithm, applied to \texttt{qss}.
 %
-
-When applied to the staged code in \ref{fig:qs-staged}, our splitting
-algorithm yields a two-pass program that uses the binary-search-tree
-based implementation.  Specifically, in its first pass, the two-pass
-program takes the input list and constructs a probabilistically
-balanced binary search tree, which is isomorphic to a treap data
-structure~\cite{SeidelAr96}.  In the second pass, the program performs,
-for each rank, a binary search tree lookup, by walking the tree to
-find the element with the desired rank.
+Splitting \texttt{qss} yields a two-pass program that creates a
+probabilistically balanced, augmented binary search tree (which is isomorphic to
+a treap data structure~\cite{SeidelAr96}) as an intermediate data structure. In
+particular, its first pass (\texttt{qs1}) constructs such a binary search tree,
+and its second pass (\texttt{qs2}) traverses the tree, using the embedded size
+information to find the element of the desired rank.
 %
-\ref{fig:qs-staged} illustrates the code for the first and second
-passes \texttt{qs1} and \texttt{qs2} of the staged function
-\texttt{qss}.
+The code for \texttt{qs1} and \texttt{qs2} is in \ref{fig:qs-staged}.
 
+%Our splitting algorithm is guided by the local structure of the input program.
+%In particular, the algorithm has no special knowledge of the quickselect
+%algorithm, binary search trees, or how to perform lookups on binary search
+%trees, but it is able to derive them from the input program.
 
-To create the multi-pass algorithm, the splitting algorithm operates
-by composing local transformations on the subterms of the input
-program.  In particular, the algorithm has no special knowledge of the
-quickselect algorithm, binary search trees, or how to perform lookups
-on binary search trees, but it is able to derive them from the input
-program.
+Our splitting algorithm scans \texttt{qss} for first-stage computations,
+gathering them into \texttt{qs1}. Given \texttt{l}, this pass performs these
+computations and places the information needed by the subsequent pass into a
+boundary data structure.
 %
+In particular, \texttt{qs1} performs all recursive calls and evaluates all
+instances of \texttt{partition} (since it depends only on \texttt{l}). It
+produces a boundary data structure that collects the results from these
+recursive calls, tagged by the branch (\texttt{LT}, \texttt{EQ}, or \texttt{GT})
+in which that call occurred. Since the recursive calls occur in two different
+branches (\texttt{LT} and \texttt{GT}) the boundary structure is a binary tree.  
+%
+Lastly, it records \texttt{i} (the size of the left subtree) and \texttt{\#1 ht}
+(the pivot/head of the list) in the boundary structure, because those
+computations are \emph{held} for use in the second stage.
+%
+The final result is a binary search tree augmented with size information, and
+whose keys are the pivots.
 
-The splitting algorithm scans the program code for first-stage
-computations (which depend only on first-stage values) and separates
-them into the function, \texttt{qs1} of the first pass. This function
-performs the first-stage computations and places the results into a
-boundary data structure that both records the control flow and the
-results from the first stage at relevant control-flow points.  More
-specifically, the function \texttt{qs1} performs all the recursive
-calls and evaluates all instances of the partition function, which
-depend only on the input list.  The function produces a boundary data
-structure that collects the results from all recursive calls along
-with a tag that indicates the control branches taken.  Since
-\texttt{qss} has a binary control structure (casing on the list), the
-boundary is a binary tree.  To ensure that the trace contains the
-necessary results to complete the execution in the second pass, where
-second-stage values may be used, the splitting algorithm includes in
-the nodes of the tree information such as the "pivot" used for
-splitting and the size of the subtree at that note.  The resulting
-tree is thus not just a tree but a binary search tree, keyed by the
-pivot and augmented with "size" information.
-
-As the splitting algorithm scans \texttt{qss} for computations that
-can be performed in the first stage, it also collects computations
-that must be left to the second stage in a separate function
-\texttt{qs2}.  This function, which is executed in the second pass,
-takes as argument the boundary and the second-stage argument (the
-rank) and performs a lookup in the boundary data structure.  But how
-does \texttt{qs2} knows to traverse the tree? It does not. Since
-the splitting algorithm recorded the control flow of the first-stage
-execution in the boundary data structure, \texttt{qs2} simply follows
-this control structure and performs at each point the parts of the
-computation from \texttt{qss} that can now be performed in the
-presence of the second-stage argument (the rank).  In the context of
-our example, this performs a lookup on the boundary data structure by
-using the supplied rank.
+Our splitting algorithm simultaneously scans \texttt{qss} for second-stage
+computations, gathering them into \texttt{qs2}. This pass is given the boundary
+data structure and the rank \texttt{k}, and finishes the computation. Now that
+\texttt{k} is known, the conditional on \texttt{compare k i} can be evaluated,
+choosing which recursive call of \texttt{qss} is actually relevant for this
+\texttt{k}. Since the boundary data structure contains the first-stage data for
+\emph{all} of the recursive calls, performing these comparisons essentially
+walks the tree, using the rank along with the size data \texttt{i} in order to
+look up the \texttt{k}th leftmost node in the tree.
 
 \begin{theorem}
   Consider an execution of \texttt{qs1} with a randomly permuted input
@@ -175,12 +153,12 @@ using the supplied rank.
 \end{theorem}
 \begin{proof}
   We use a few standard facts.  We note first that \texttt{qs1} is
-  isomorphic to a quick-sort algorithm but builds a binary search tree
+  isomorphic to a quicksort algorithm but builds a binary search tree
   instead of combining the returned results in a list.  The run-time
   for \texttt{qs1} is thus (expected) $\Theta(n\log{n})$.
 %
   The depth of the tree generated by \texttt{qs1} is isomorphic to the
-    depth of a run of the quickselect algorithm or equivalently to the
+    depth of a run of the quickselect algorithm, or equivalently to the
     span of a parallel implementation of the quicksort algorithm, both
     of which are known to be (expected) $\Theta(\log{n})$.
 %
@@ -189,7 +167,7 @@ using the supplied rank.
     $\Theta(\log{n})$. Consider now a random variable for each of the
     $m$ invocations of \texttt{qs2}, each of which takes expected
     $\Theta(\log{n})$ time.  Since the total time is the sum of these
-    random variables and since the expectation of the sum is sum of
+    random variables, and the expectation of the sum is the sum of
     the expectations of the random variables, the bound follows.
 \end{proof}
 
