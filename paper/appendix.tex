@@ -65,7 +65,7 @@ of strings for the remainder of \texttt{s}.
 Our staging annotations indicate that the list of strings are first-stage, while
 the query string is second-stage.
 \begin{lstlisting} 
-atsigngr { 
+3`atsigngr { `1`
 datatype letter = A | B | C 
 datatype string = EmptyS | ConsS of letter * string
 datatype list   = EmptyL | ConsL of string * list
@@ -78,23 +78,23 @@ fun partition (EmptyL) = (false,EmptyL,EmptyL,EmptyL)
   | ConsS (A,z) => (anyEmpty,ConsL(z,a),b,c) 
   | ConsS (B,z) => (anyEmpty,a,ConsL(z,b),c) 
   | ConsS (C,z) => (anyEmpty,a,b,ConsL(z,c)) 
-}
-atsignnext { 
+`3`}`1`
+atsignnext { `2`
 datatype letter2 = A2 | B2 | C2
 datatype string2 = EmptyS2 | ConsS2 of letter2 * string2
-}
+`1`}
 
-fun exists (gr{EmptyL},next{s}) = next{false} 
-  | exists (gr{ConsL ht},next{s}) = 
-	let atsigngr{
+fun exists (`3`gr{`1`EmptyL`3`}`1`,next{`2`s`1`}) = next{`2`false`1`} 
+  | exists (`3`gr{`1`ConsL ht`3`}`1`,next{`2`s`1`}) = 
+	let `3`atsigngr{`1`
 	  val (anyEmpty,a,b,c) = partition (ConsL ht)
-	} in next { 
+	`3`}`1` in next { `2`
 	case s of 
-	  EmptyS2 => prev{hold gr{anyEmpty}} 
-	| ConsS2 (A2,z) => prev{exists(gr{a},next{z})} 
-	| ConsS2 (B2,z) => prev{exists(gr{b},next{z})}
-	| ConsS2 (C2,z) => prev{exists(gr{c},next{z})}  
-	} 
+	  EmptyS2 => prev{`1`hold `3`gr{`1`anyEmpty`3`}`2`} 
+	| ConsS2 (A2,z) => prev{`1`exists(`3`gr{`1`a`3`}`1`,next{`2`z`1`})`2`} 
+	| ConsS2 (B2,z) => prev{`1`exists(`3`gr{`1`b`3`}`1`,next{`2`z`1`})`2`}
+	| ConsS2 (C2,z) => prev{`1`exists(`3`gr{`1`c`3`}`1`,next{`2`z`1`})`2`}  
+	`1`}` 
 \end{lstlisting}
 Running the splitting algorithm on this code produces:
 \begin{lstlisting} 
@@ -113,25 +113,26 @@ fun partition (EmptyL) = (false,EmptyL,EmptyL,EmptyL)
   | ConsS (B,z) => (anyEmpty,a,ConsL(z,b),c) 
   | ConsS (C,z) => (anyEmpty,a,b,ConsL(z,c)) 
 in
-fun exists (EmptyL,()) = ((), Leaf)
-  | exists (ConsL ht,()) =
+fun exists1 (EmptyL,()) = ((), Leaf)
+  | exists1 (ConsL ht,()) =
 	let 
 	  val (anyEmpty,a,b,c) = partition (ConsL ht) 
 	in ((), 
 		Branch (anyEmpty, 
-			#2 (exists (a, ())), 
-			#2 (exists (b, ())), 
-			#2 (exists (c, ()))))
+			#2 (exists1 (a, ())), 
+			#2 (exists1 (b, ())), 
+			#2 (exists1 (c, ()))))
 
 `2`datatype letter2 = A2 | B2 | C2
-datatype string2 = EmptyS2 | ConsS2 of letter2 * string2
-fun exists (((),s), Leaf) = false
-  | exists (((),s), Branch (e,a,b,c)) = 
+datatype string2 = EmptyS2 
+                 | ConsS2 of letter2 * string2
+fun exists2 (((),s), Leaf) = false
+  | exists2 (((),s), Branch (e,a,b,c)) = 
     case s of
 	  EmptyS2 => e
-	| ConsS2 (A,z) => exists (((), z), a)
-	| ConsS2 (B,z) => exists (((), z), b)
-	| ConsS2 (C,z) => exists (((), z), c)`
+	| ConsS2 (A,z) => exists2 (((), z), a)
+	| ConsS2 (B,z) => exists2 (((), z), b)
+	| ConsS2 (C,z) => exists2 (((), z), c)`
 
 \end{lstlisting}
 
