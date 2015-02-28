@@ -1,35 +1,32 @@
 Staged programming languages assign a stage to each expression and
-evaluate each expression in its assigned stage.  For example, in a
-two-staged program, some expressions are evaluated in the first stage
-and others in the second stage.  Programming languages, evaluation
-strategies, and type systems for staged programs where stages roughly
-correspond to the arrival order of inputs have been studied
-extensively in the areas of partial evaluation and meta programming.
-
-In this paper, we consider staged programs written in a typed lambda
-calculus with a $\fut$ modality denoting computation in a later
-stages and present techniques for splitting them into multi-pass
-programs. Such multi-pass programs evaluate in a sequence of
-evaluations of unstaged, conventional programs each of which
-corresponds to a pass.  Conceived in the 80's by J{\o}rring and
-Scherlis, this {\em pass-separation} technique has been studied, but
-existing techniques are either manual or applicable only to simple programs
+evaluate each expression in its assigned stage.
+%For example, in a
+%two-staged program, some expressions are evaluated in the first stage
+%and others in the second stage.
+%Programming languages, evaluation
+%strategies, and type systems for staged programs where stages roughly
+%correspond to the arrival order of inputs have been studied
+%extensively in the areas of partial evaluation and meta programming.
+While staged programming has been studied extensively in the areas of
+partial evaluation and meta programming, in this paper we present an
+algorithm for statically {\em splitting} programs witten in a
+two-stage typed lambda calculus (with a $\fut$ modality denoting
+computation in a later stage) into multi-pass programs that are
+structured as two dependent, unstaged programs and are evaluated using
+two distinct execution passes.  While splitting, also called pass
+separation or data specialization, has been studied in the past, prior
+techniques were either manual or applicable only to simple programs
 that lack important features such as recursion and first-class
 functions.
 
-
-% We make no restrictions on the kinds of programs that can
-% be written.  We also present an implementation.
-% %
-
-Since we build on a lambda calculus, our techniques enable the
-programmer to write staged programs by using powerful programming
-abstractions in a composable and modular fashion. Our splitting
-transformation maps such programs into multi-pass programs that can
-run significantly more efficiently by assigning frequent computations
-to earlier passes so that they can be reused (cheaply) later.  Our
-experiments based on a prototype implementation show that our
-splitting algorithm is able perform highly non-trivial algorithmic
+Since our work builds on a lambda calculus, our splitting algorithm
+enables the programmer to write staged programs by using powerful
+programming abstractions in a composable and modular fashion. Our
+splitting transformation maps such programs into multi-pass programs
+that can run significantly more efficiently by assigning frequent
+computations to earlier passes so that they can be reused (cheaply)
+later.  Our experiments based on a prototype implementation show that
+our splitting algorithm is able perform highly non-trivial algorithmic
 transformations, sometimes automatically improving efficiency
 asymptotically by nearly a linear factor.  Since splitting
 transformation takes place at compile time, these benefits are

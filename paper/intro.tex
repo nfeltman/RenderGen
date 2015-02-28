@@ -21,7 +21,6 @@ graphics computations be organized into distinct {\em passes} which perform
 increasingly fine-grained computations (for example, per object, per region of
 the screen, and per pixel, where many computations in later passes use the
 results from a single computation in an earlier pass)\,\cite{OpenGL4Spec}.
-
 While performant, this paradigm of programming with explicit passes results in
 complex code where invariants must hold across different passes, and local
 changes for one pass may require changes to other passes to ``plumb'' inputs
