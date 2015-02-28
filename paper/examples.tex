@@ -19,7 +19,7 @@ coordinates are first-stage, and the last coordinate is second-stage.
 \begin{lstlisting} 
 1`type vec = ^int * ^int * $`2`int`
 
-1`//dot : vec * vec -> $int
+1`dot : vec * vec -> $int
 fun dot (
   (3`gr{`1`xliteralone`3`}`1`,`3`gr{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}): vec,
   (3`gr{`1`xliteraltwo`3`}`1`,`3`gr{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`}): vec) = 
@@ -144,7 +144,7 @@ fun qs1 (l : list, k : unit) =
     Empty => Leaf
   | Cons (h,t) => 
       Branch (
-        let (left,right,n) = partition (h,t) in
+        let val (left,right,n) = partition (h,t) in
         (n, #2 (qs1 left k), h, #2 (qs1 right k))))`
 
 2`fun qs2 (((), k : int), p : tree) = 
