@@ -2,15 +2,16 @@
 
 \section{Additional examples}
 
-Here we include some additional examples of our splitting algorithm.
+This appendix includes additional examples of the behavior of our
+splitting algorithm.
 
 \subsection {Mixed Map Combinator}
 
-In \ref{sec:exampleQS}, we suggested that staged quickselect could be applied to one list and many queries.
-In this example, we implement that behavior by passing \texttt{qs} to a higher order function.
-Such a combinator, which operates over both stages at once, is possible because of the generality of \lang's abstractions.
-
-Note that we have to define a datatype for integer lists at the second stage, which is given by \texttt{list2}.
+In \ref{sec:exampleQS}, we showed the output of splitting quickselect
+applied to one list and $m$ queries.  Here, we generalize to mapping
+quickselect onto a list of queries. Note that we have to define a
+datatype for integer lists at the second stage, which is given by
+\texttt{list2}.
 \begin{lstlisting} 
 1`atsignnext{`2`
   datatype list2 = Empty2 | Cons2 of int * list2
