@@ -50,7 +50,7 @@ whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) 
 
 \subsection{Trie}
 
-Our last example is one which generates a trie intermediate data structure.
+Our last example generates a trie intermediate data structure.
 
 The function {\tt exists} below determines whether a query string (s) occurs in a given set of strings (from the alphabet $\{A, B,C\}$).
 It solves this problem by partitioning the provided set of strings into three subsets,
@@ -64,7 +64,6 @@ and recursively search for the rest of our query string in that.
 
 We stage this algorithm by saying that the word set comes at stage \bbone\
 and the query string comes at stage \bbtwo.
-
 \begin{lstlisting} 
 atsignmono { 
 datatype letter = A | B | C 
@@ -97,12 +96,8 @@ fun exists (mono{EmptyL},next{s}) = next{false}
 	| ConsS2 (C2,z) => prev{exists(mono{c},next{z})}  
 	} 
 \end{lstlisting}
-
-\noindent
 Running the splitting algorithm on this code produces:
-
 \begin{lstlisting} 
-
 datatype trie = Leaf 
 			  | Branch of bool * trie * trie * trie
 
