@@ -9,13 +9,13 @@ evaluate each expression in its assigned stage.
 %extensively in the areas of partial evaluation and meta programming.
 While staged programming has been studied extensively in the areas of
 partial evaluation and meta programming, in this paper we present an
-algorithm for statically {\em splitting} programs witten in a
+algorithm for statically {\em splitting} programs written in a
 two-stage typed lambda calculus (with a $\fut$ modality denoting
 computation in a later stage) into multi-pass programs that are
 structured as two dependent, unstaged programs and are evaluated using
-two distinct execution passes.  While splitting, also called pass
-separation or data specialization, has been studied in the past, prior
-techniques were either manual or applicable only to simple programs
+two distinct execution passes.  While splitting has been studied in the past
+under the names \emph{pass separation} and \emph{data specialization},
+such techniques were either manual or applicable only to simple programs
 that lack important features such as recursion and first-class
 functions.
 
@@ -26,9 +26,9 @@ splitting transformation maps such programs into multi-pass programs
 that can run significantly more efficiently by assigning frequent
 computations to earlier passes so that they can be reused (cheaply)
 later.  Our experiments based on a prototype implementation show that
-our splitting algorithm is able perform highly non-trivial algorithmic
+our splitting algorithm is able to perform highly non-trivial algorithmic
 transformations, sometimes automatically improving efficiency
-asymptotically by nearly a linear factor.  Since splitting
+asymptotically by nearly a linear factor.  Since the splitting
 transformation takes place at compile time, these benefits are
 achieved without significant run-time penalty.
 
