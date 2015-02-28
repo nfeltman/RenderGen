@@ -46,3 +46,104 @@ The \texttt{map} function splits into the following two functions:
 As desired, \texttt{qs1} (which is passed to \texttt{map1} via variable \texttt{f}) is executed only once per invocation of \texttt{map},
 whereas \texttt{qs2} (which is passed to \texttt{map2} via variable \texttt{f}) is executed once per query.
 
+\subsection{Trie}
+
+Our last example is one which generates a trie intermediate data structure.
+
+The function {\tt exists} below determines whether a query string (s) occurs in a given set of strings (from the alphabet $\{A, B,C\}$).
+It solves this problem by partitioning the provided set of strings into three subsets,
+one which contains all words that start with $A$,
+one which contains all words that start with $B$, and one for $C$.
+When partitioning, we also throw away the first letter, since we know it's uniform for the whole subset.
+Also while doing this partitioning, we also keep track of whether the empty word occurred at all.
+We then look at the query string.  If it's empty, we return whether the empty word was in the set.
+Otherwise, we look at the first letter, pick the appropriate subset, 
+and recursively search for the rest of our query string in that.
+
+We stage this algorithm by saying that the word set comes at stage \bbone\
+and the query string comes at stage \bbtwo.
+
+\begin{lstlisting} 
+datatype letter = A | B | C
+datatype string = EmptyS | ConsS of letter * string
+datatype list = EmptyL | ConsL of string * list
+/* helper function */
+fun partition (l : list) : (bool * list * list * list) =
+ case l of
+   EmptyL => (false,EmptyL,EmptyL,EmptyL)
+ | ConsL (s,ss) =>
+     let (anyEmpty,a,b,c) = partition ss in
+     case unroll s of
+       EmptyS => (true,a,b,c)
+     | ConsS (z,zs) =>
+         case z of 
+           A => (anyEmpty, ConsL(zs,a), b, c) 
+         | B => (anyEmpty, a, ConsL(zs,b), c) 
+         | C => (anyEmpty, a, b, ConsL(zs, c))
+fun exists ((l,s) : list * $string) : $bool =
+ case l of 
+   EmptyL => next{false} 
+ | ConsL _ => 
+   let (anyEmpty, a, b, c) = partition l in
+   next {
+     case prev{s} of
+       EmptyS => prev{
+         if anyEmpty then next{true} else next{false}
+         }
+     | ConsS (z,zs) =>
+         case z of
+           A => prev{exists (a,next{zs})}
+         | B => prev{exists (b,next{zs})} 
+         | C => prev{exists (c,next{zs})}
+   }
+\end{lstlisting}
+
+\noindent
+Running the splitting algorithm on this code produces:
+
+\begin{lstlisting} 
+datatype _ = EmptyS | ConsS of _
+datatype _ = EmptyL | ConsL of _
+fun partition l =
+ case l of
+   EmptyL => (false,EmptyL,EmptyL,EmptyL)
+ | ConsL (s,ss) =>
+     let (anyEmpty,a,b,c) = partition ss in
+     case unroll s of
+       EmptyS => (true,a,b,c)
+     | ConsS (z,zs) =>
+         case z of 
+           A => (anyEmpty, ConsL(zs,a), b, c) 
+         | B => (anyEmpty, a, ConsL(zs,b), c) 
+         | C => (anyEmpty, a, b, ConsL(zs, c))
+fun exists1 (l,s) = roll ((), 
+ case l of 
+   EmptyL => inj1 ()
+ | ConsL _ => 
+   let (anyEmpty, a, b, c) = partition l in
+   inj2 (
+   	if anyEmpty then inj1 () else inj2 (), 
+   	#2 (exists1 (a,())), 
+   	#2 (exists1 (b,())), 
+   	#2 (exists1 (c,()))
+   )
+ )
+
+datatype _ = EmptyS | ConsS of _
+fun exists2 ((l,s), p) =
+ case unroll p of 
+   inj1 () => false
+ | inj2 (anyEmpty,p_a,p_b,p_c) => 
+     case s of
+       EmptyS => 
+         case anyEmpty of 
+           inj1 () => true 
+         | inj2 () => false
+     | ConsS (z,zs) =>
+         case z of
+           A => exists2 (((),zs),p_a)
+         | B => exists2 (((),zs),p_b)
+         | C => exists2 (((),zs),p_c)
+\end{lstlisting}
+
+As promised, this split version creates a trie in the first stage, and consumes it in the second stage.
