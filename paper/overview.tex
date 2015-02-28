@@ -65,45 +65,35 @@ improves algorithms in the way described above.
 
 %The example itself is also implemented in our implementation.
 
-The idea behind staged programming is to use staging annotations or
-types to indicate the stage of each subterm.  To apply this
-technique to our example, suppose that we have a language with two
-worlds representing the two stages and a third, {\em ground} world
-that contains terms with no staging.
+The idea behind staged programming is to use staging annotations---in our case,
+guided by types---to indicate the stage of each subterm. We consider a
+language \lang\ with two modal worlds representing the two stages, and a third
+{\em ground} world of unstaged terms.
 
-We can write a staged version of \texttt{qs}, called \texttt{qss},
-whose code is shown in \ref{fig:qs-staged}, where the first-stage code
-are typeset in red, and the second-stage code are typeset in blue.  To
-obtain \texttt{qss} from \texttt{qs}, we first make the input list 
-first-stage and the rank second-stage.
-%
-More precisely the input list has type $\curr\mathrm{list}$ (an
-integer list ``now''), the rank has type $\fut\rmint$ (an integer in
-the ``future''), and the return has type $\fut\rmint$.
-%
-We can then obtain \texttt{qss} by annotating the body of \texttt{qs}
-with the staging annotations \texttt{prev} and \texttt{next}, which
-transition between first-stage and second-stage code, and~$\texttt{g}$, 
-which marks ground terms.  
-%
-We also use a third function
-\texttt{hold}, which can be implemented with \texttt{prev} and
-\texttt{next}, for promoting a first-stage integer to a second-stage integer;
-the signature of \texttt{hold} is
-% 
-\lstinline{1`hold : ^int -> $`2`int`}.
+In \ref{fig:qs-staged} we show a staged version of \texttt{qs}, called
+\texttt{qss}, where first-stage code is colored red, and second-stage blue. In
+\texttt{qss}, we regard the input list as arriving in the first stage
+(with type $\curr\mathrm{list}$, a list ``now''), the input rank as arriving in
+the second stage (with type $\fut\rmint$, an integer in the ``future''), and the
+result as being produced in the second stage (with type $\fut\rmint$).
 
-Our type system ensures that the staging annotations are consistent,
-in the sense that computations marked as first-stage cannot depend on
-ones marked as second-stage.
+\texttt{qss} is obtained from \texttt{qs} by wrapping certain computations with
+\texttt{prev} and \texttt{next}, signaling transitions between first- and
+second-stage code, and $\texttt{g}$, signaling ground terms.  
 %
+We also use a function \texttt{hold},
+\lstinline{1`hold : ^int -> $`2`int`},
+to promote first-stage integers to second-stage integers.
+%
+Our type system ensures that the staging annotations in \texttt{qss} are
+consistent, in the sense that computations marked as first-stage cannot depend
+on ones marked as second-stage.
+
 The process of adding staging annotations to unstaged code has been
-the subject of extensive research (\ref{sec:related}). We assume that
-these annotations have been provided; we do not consider the problem
-of generating them. In this example, there are other ways to annotate
-\texttt{qs}, but we chose annotations that maximize the work performed
-in the first stage.
-
+the subject of extensive research (\ref{sec:related}). In this paper, we do not
+consider this problem, instead assuming that the annotations have been provided.
+In the case of \texttt{qss}, we have specifically chosen annotations which
+maximize the work performed in the first stage.
 
 \subsection{Splitting Staged Programs}
 
