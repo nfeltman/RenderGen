@@ -337,34 +337,29 @@ Our algorithm accomplishes this by using $p = \tup {p_1, \ldots, p_n}$ and
 $l.r = \tup {l_1, \ldots, l_n}.\scriptCapp {r_1 \ttsemi \ldots \ttsemi r_n}$.
 
 Again, this holds even for nullary terms and under binders.
-In particular, \texttt{case} splits according to the rule:
+In particular, $\caseof{e_1}{x_2.e_2}{x_3.e_3}$ splits into:
 \[
-\infersplittwo	{	\begin{array} {l}
-						\caseof{e_1}{x_2.e_2}{x_3.e_3} \splittwosym \\
-						\hspace{5em} \pipeS {\tup{p_1,p_2,p_3}} {\tup{l_1,l_2,l_3}} {\caseof{r_1}{x_2.r_2}{x_3.r_3}}		
-					\end{array}}	
-				{\sub 1 ? & \sub 2 ? & \sub 3 ?} 								
+\pipeS {\tup{p_1,p_2,p_3}} {\tup{l_1,l_2,l_3}} {\caseof{r_1}{x_2.r_2}{x_3.r_3}}
 \]
-Note how the precomputations are pulled out from underneath the binder
-into a tuple that is always executed in the first stage. This occurs
-regardless of what branch is eventually executed in the second stage.
+Note how the precomputations of $e_2$ and $e_3$ are pulled out from
+underneath the binder into a tuple that is always executed in the
+first stage. This occurs regardless of what branch is eventually
+executed in the second stage.
 
 \paragraph{Next and Prev.}
 Since \texttt{next} and \texttt{prev} do nothing more than convert between 
-second-stage terms at \bbtwo\ and second-stage terms encapsulated within $\fut$s at \bbonem,
+second-stage terms at \bbtwo\ and encapsulated second-stage terms at \bbonem,
 their splitting rules are relatively simple.
-Given an $\splittwo e ? p l r$ and $\diatwo e q$, the splitting invariant says,
+Given $\diatwo e q$, splitting yields $p$ and $l.r$ where:
 \[
 	\reduce p b \text{ and } [b/l]r \equiv q
 \]
-The splitting invariant for $\splitone {\next {e'}} ? {c'} {l'.r'}$,
-where $\diaone {\next {e'}} {{\hat y} \mapsto q} {\next {\hat y}}$
-and $\rtab {{\hat y} \mapsto q} {\next {\hat y}} \vsplito \mval {\tup{}} {\letin {\hat y} q {\hat y}}$
-then requires
+Then for $\diaone {\next {e}} {{\hat y} \mapsto q} {\next {\hat y}}$
+and\\ $\rtab {{\hat y} \mapsto q} {\next {\hat y}} \vsplito \mval {\tup{}} {\letin {\hat y} q {\hat y}}$, splitting must produce $c'$ and $l'.r'$ where:
 \[
 	\reduce {c'} {\tup {\tup{},b'}} \text{ and } [b'/l']r' \equiv \letin {\hat y} q {\hat y}
 \]
-which can be fulfilled using $c' = \tup{\tup{},p}$ and $l'.r' = l.r$.
+Our algorithm chooses $c' = \tup{\tup{},p}$ and $l'.r' = l.r$.
 Applying this process in reverse yields a splitting rule for $\prev e$ which applies \texttt{pi1} to the combined term of $e$.
 
 \subsection {Role of World \bbonep}
@@ -390,7 +385,7 @@ term evaluation (\ref{sec:stagedsemantics}), this annotation is
 particularly useful for splitting. Specifically, splitting $\pure e$
 terms trivially yields a unit resumer.
 
-The \texttt{partition} function in the \texttt{quickselect} example in
+The \texttt{partition} function in the quickselect example in
 \ref{sec:exampleQS} is an example of such a function that contains no
 second-stage computations, but, if not defined within a $\pure$
 annotation, would cause splitting to generate a recursive resumer.
