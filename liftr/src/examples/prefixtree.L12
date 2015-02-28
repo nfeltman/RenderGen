@@ -1,32 +1,32 @@
 let 
-	datatype letter = A | B | C 
-	datatype string = EmptyS | ConsS of letter * string
+	@mono { datatype letter = A | B | C }
+	@mono { datatype string = EmptyS | ConsS of letter * string }
+	@mono { datatype list = EmptyL | ConsL of string * list }
+
+	@mono{
+	rec partition (l : list) : (bool * list * list * list) = 
+		case unroll l of  
+		em => (false,EmptyL,EmptyL,EmptyL) 
+		| (s,ss) => 
+			let val (anyEmpty,a,b,c) = partition ss in 
+			case unroll s of 
+				 em => (true,a,b,c) 
+			| (z,zs) =>  
+				case unroll z of A => (anyEmpty,ConsL(zs,a),b,c) | B => (anyEmpty,a,ConsL(zs,b),c) | C => (anyEmpty,a,b,ConsL(zs,c)) 
+	}
+
 	@next { datatype letter2 = A2 | B2 | C2 }
 	@next { datatype string2 = EmptyS2 | ConsS2 of letter2 * string2 }
-	datatype list = EmptyL | ConsL of string * list 
-in 
-let rec partition (l : list) : (bool * list * list * list) = 
-	case unroll l of  
-	em => (false,EmptyL,EmptyL,EmptyL) 
-	| (s,ss) => 
-		let val (anyEmpty,a,b,c) = partition ss in 
-		case unroll s of 
-			 em => (true,a,b,c) 
-		| (z,zs) =>  
-			case unroll z of A => (anyEmpty,ConsL(zs,a),b,c) | B => (anyEmpty,a,ConsL(zs,b),c) | C => (anyEmpty,a,b,ConsL(zs,c)) 
-in 
-let rec exists ((l,s) : list * $string2) : $bool = 
-	case unroll l of em => next{false} | notempty =>  
-		let val (anyEmpty, a, b, c) = partition l in 
-		next { 
-			case unroll prev{s} of 
-				 em => prev{if anyEmpty then next{true} else next{false}} 
-			| (z,zs) => 
-				case unroll z of  
-				  A => prev{exists (a,next{zs})}  
-				| B => prev{exists (b,next{zs})}  
-				| C => prev{exists (c,next{zs})}  
-		} in 
-exists(  
+
+	rec exists ((mono{l},s) : ^list * $string2) : $bool = 
+	case pushS mono{unroll l} of 
+	  _ => next{false} 
+	| _ =>  next{true}
+
+	val answer = 
+	exists(  
 	let val c = ConsS in ConsL(c(A,c(B,c(C,EmptyS))),ConsL(c(B,c(B,EmptyS)),EmptyL)),  
 	next{let val c = ConsS2 in c(A2,c(B2,c(C2,EmptyS2)))})
+in 
+
+3
