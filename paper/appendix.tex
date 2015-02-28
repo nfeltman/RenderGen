@@ -81,7 +81,8 @@ fun partition (EmptyL) = (false,EmptyL,EmptyL,EmptyL)
 `3`}`1`
 atsignnext { `2`
 datatype letter2 = A2 | B2 | C2
-datatype string2 = EmptyS2 | ConsS2 of letter2 * string2
+datatype string2 = EmptyS2 
+				 | ConsS2 of letter2 * string2
 `1`}
 
 fun exists (`3`gr{`1`EmptyL`3`}`1`,next{`2`s`1`}) = next{`2`false`1`} 
