@@ -1,19 +1,19 @@
 \section{Conclusion}
 
-This paper presents an algorithm for translating programs written in a
-staged lambda calculus into multi-pass programs, which evaluate as two
-monostage programs in a sequence of two dependent passes. We present a
-formalization of the techniques in a way that can be implemented in
-practice.  While we have provided an implementation of this algorithm
-that successfully splits the examples considered in this paper, we
-have stopped short of offering a full proof of correctness, which we
-leave for future work. 
+This paper provides a formal presentation of an algorithm for
+statically translating programs written in a two-stage lambda calculus
+into multi-pass programs, which evaluate as two monostage programs in
+two dependent passes.  While we have provided an implementation of
+this algorithm that successfully splits the examples considered in
+this paper, we have stopped short of offering a full proof of
+correctness, which we leave for future work.
 
-In addition, we are interested in providing a more complete system
-implementation as well as investigating how ideas from \lang\ and the
-its splitting algorithm can be integrated into existing practical
-systems such as staged programming systems for computer graphics
-pipelines.  On the more conceptual side, it would be interesting to
-consider the extension of our splitting techniques to richer source
-languages, for example, those that include parallelism.
+In addition, we are interested in exploring the behavior of splitting
+for a broader set of examples as well as investigating how ideas from
+\lang\ and its splitting algorithm can be integrated into existing
+practical systems such as staged programming systems for computer
+graphics pipelines.  On the more conceptual side, it would be
+interesting to consider the extension of our splitting techniques to
+richer source languages that include mutation, parallel constructs,
+and more than two stages.
 
