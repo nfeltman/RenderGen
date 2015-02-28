@@ -82,7 +82,7 @@ result as being produced in the second stage (with type $\fut\rmint$).
 second-stage code, and $\texttt{gr}$, signaling ground terms.  
 %
 We also use a function
-%\lstinline{1`hold : ^int -> $`2`int`},
+\lstinline{1`hold : ^int -> $`2`int`},
 to promote first-stage integers to second-stage integers.
 %
 Our type system ensures that the staging annotations in \texttt{qss} are
@@ -145,12 +145,12 @@ choosing which recursive call of \texttt{qss} is actually relevant for this
 walks the tree, using the rank along with the size data \texttt{i} in order to
 look up the \texttt{k}th leftmost node in the tree.
 
-\begin{theorem}
+\begin{theorem*}
   Consider an execution of \texttt{qs1} with a randomly permuted input
   of $n$ keys and performing $m$ executions of \texttt{qs2} with the
   result of \texttt{qs1}.  The total run-time for this computation is
   $\Theta(n\log{n} + m\log{n})$ in expectation.
-\end{theorem}
+\end{theorem*}
 \begin{proof}
   We use a few standard facts.  We note first that \texttt{qs1} is
   isomorphic to a quicksort algorithm but builds a binary search tree

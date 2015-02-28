@@ -70,7 +70,8 @@ manual method for {\em splitting} a program into multiple passes.
 %
 In our example, pass separation would split the function $f$ into two passes
 $f_1$ and $f_2$ such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
-evaluating the first pass on $x$, and then the second pass on each $y_i$.
+evaluating the first pass on $x$, and using the result $z$ to evaluate the
+second pass on each $y_i$.
 %
 \begin{lstlisting}
 fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ = 
