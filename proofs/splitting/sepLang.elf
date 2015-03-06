@@ -1,0 +1,20 @@
+%{ sepLang.elf }%
+
+%% OUTPUT LANGUAGE
+seperatedM : type.
+seperatedS : type.
+pipeS : term -> (term -> term) -> seperatedS.
+trivS : term -> seperatedS.
+pipeM : term -> (term -> term) -> seperatedM.
+trivM : term -> term -> seperatedM.
+
+mval : term -> type.
+mval-ztup : mval ztup.
+mval-tup  : mval (tup E1 E2)
+			<- mval E2
+			<- mval E1.
+mval-lam  : mval (lam _ _).
+
+pval : seperatedM -> type.
+pval-s	: pval (trivM I Q)
+		<- mval I.

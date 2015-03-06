@@ -1,59 +1,100 @@
 %{ splitting.elf }%
 
-split1 : term -> term -> (term -> term) -> type.
-split2 : term -> term -> (term -> term) -> type.
-%mode split1 +E -C -R.
-%mode split2 +E -P -R.
 
-spl1-ztup	: split1 ztup (tup ztup ztup) ([x:term] ztup). 
-spl1-tup	: split1 (tup E1 E2) 
-				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
-			<- split1 E2 C2 R2
-			<- split1 E1 C1 R1.
-spl1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l))
-			<- split1 E C R.
-spl1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l))
-			<- split1 E C R.
-spl1-lam	: split1 (lam _ M) (tup (lam unit C) ztup) ([_] lam unit ([xl] lett xl R))
-			<- {x : term} split1 x x ([_:term] x) -> split1 (M x) (C x) ([l:term] R x l).
+
+
+%% SPLITTING
+split1 : term -> seperatedM -> type.
+split2 : term -> seperatedS -> type.
+%mode split1 +E -P.
+%mode split2 +E -P.
+
+appBoth : seperatedM -> (term -> term) -> seperatedM -> type.
+%mode appBoth +P +F -P'.
+appBoth-p : appBoth (pipeM C R) F (pipeM (lett C ([y] [z] tup (F y) z)) ([l] F (R l))).
+appBoth-t : appBoth (trivM I Q) F (trivM (F I) (F Q)).
+
+appBoth2 : seperatedM -> seperatedM -> seperatedM -> type.
+%mode appBoth2 +P1 +P2 -P'.
+appBoth2-pp : appBoth2 (pipeM C1 R1) (pipeM C2 R2)
+				(pipeM 
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
+					([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
+				).
+appBoth2-pt : appBoth2 (pipeM C1 R1) (trivM I2 Q2)
+				(pipeM (lett C1 ([y1] [z1] tup y1 (tup z1 I2))) ([l] tup (R1 l) Q2)).
+appBoth2-tp : appBoth2 (trivM I1 Q1) (pipeM C2 R2)
+				(pipeM (lett C2 ([y2] [z2] tup y2 (tup I1 z2))) ([l] tup Q1 (R2 l))).
+appBoth2-tt : appBoth2 (trivM I1 Q1) (trivM I2 Q2) (trivM (tup I1 I2) (tup Q1 Q2)).
+
+spl1-ztup	: split1 ztup (trivM ztup ztup). 
+spl1-tup	: split1 (tup E1 E2) S'
+			<- split1 E2 S2
+			<- split1 E1 S1
+			<- appBoth2 S1 S2 S'.
+spl1-pi1	: split1 (pi1 E) S'
+			<- split1 E S
+			<- appBoth S pi1 S'.
+spl1-pi2	: split1 (pi2 E) S'
+			<- split1 E S
+			<- appBoth S pi2 S'.
+spl1-lam	: split1 (lam _ M) (trivM (lam unit C) (lam unit ([xl] lett xl R)))
+			<- {x : term} split1 x (trivM x x) -> split1 (M x) (pipeM (C x) ([l:term] R x l)).
 spl1-app	: split1 (app E1 E2) 
-				(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3))))) 
-				([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
-			<- split1 E2 C2 R2
-			<- split1 E1 C1 R1.
-spl1-let	: split1 (let E M) 
-				(lett C1 ([x] [z1] lett (C2 x) ([y] [z2] tup y (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- ({x : term} split1 x x ([_] x) -> split1 (M x) (C2 x) ([l] R2 x l))
-			<- split1 E C1 R1.
-spl1-next : split1 (next E) (tup ztup P) R
-			<- split2 E P R. 
+				(pipeM
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
+					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
+				)
+			<- split1 E2 (pipeM C2 R2)
+			<- split1 E1 (pipeM C1 R1).
+spl1-next-p	: split1 (next E) (pipeM (tup ztup P) R)
+			<- split2 E (pipeS P R). 
+spl1-next-t	: split1 (next E) (trivM ztup Q)
+			<- split2 E (trivS Q). 
 %{split1-letn : split1 (letn E M) 
 				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
 			<- split1 E C1 R1
 			<- {x : term} split2 x ztup ([_] x) -> split1 (M x) C2 ([l] R2 x l).}%
-			
-spl2-ztup : split2 ztup ztup ([_] ztup).
-spl2-tup	: split2 (tup E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
-			<- split2 E2 P2 R2
-			<- split2 E1 P1 R1.
-spl2-pi1  : split2 (pi1 E) P ([l] pi1 (R l))
-			<- split2 E P R.
-spl2-pi2  : split2 (pi2 E) P ([l] pi2 (R l))
-			<- split2 E P R.
-spl2-lam  : split2 (lam _ M) P ([l] lam unit ([x] R x l))
-			<- {x : term} split2 x ztup ([_] x) -> split2 (M x) P ([l] R x l).
-spl2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2)))
-			<- split2 E2 P2 R2
-			<- split2 E1 P1 R1.
-spl2-let	: split2 (let E M) (tup P1 P2) ([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- ({x : term} split2 x ztup ([_] x) -> split2 (M x) P2 ([l] R2 x l))
-			<- split2 E P1 R1.
-spl2-prev : split2 (prev E) (pi2 C) R
-			<- split1 E C R.
 
+appRes : seperatedS -> (term -> term) -> seperatedS -> type.
+%mode appRes +P +F -P'.
+appRes-pipeS : appRes (pipeS P R) F (pipeS P ([l] F (R l))).
+
+appRes2 : seperatedS -> seperatedS -> (term -> term -> term) -> seperatedS -> type.
+%mode appRes2 +P1 +P2 +F -P'.
+appRes2-pipeS : appRes2 (pipeS P1 R1) (pipeS P2 R2) F (pipeS (tup P1 P2) ([l] lett l ([l1] [l2] F (R1 l1) (R2 l2)))).
+
+spl2-ztup	: split2 ztup (pipeS ztup ([_] ztup)).
+spl2-tup	: split2 (tup E1 E2) S'
+			<- split2 E2 S2
+			<- split2 E1 S1
+			<- appRes2 S1 S2 tup S'.
+spl2-pi1	: split2 (pi1 E) P'
+			<- split2 E P
+			<- appRes P pi1 P'.
+spl2-pi2	: split2 (pi2 E) P'
+			<- split2 E P
+			<- appRes P pi2 P'.
+spl2-lam	: split2 (lam _ M) (pipeS P ([l] lam unit ([x] R x l)))
+			<- {x : term} split2 x (pipeS ztup ([_] x)) -> split2 (M x) (pipeS P ([l] R x l)).
+spl2-app	: split2 (app E1 E2) S'
+			<- split2 E2 S2
+			<- split2 E1 S1
+			<- appRes2 S1 S2 app S'.
+spl2-prev	: split2 (prev E) (pipeS (pi2 C) R)
+			<- split1 E (pipeM C R).
+
+%{spl1-let	: split1 (let E M) 
+				(pipeM
+					(lett C1 ([x] [z1] lett (C2 x) ([y] [z2] tup y (tup z1 z2)))) 
+					([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
+				)
+			<- ({x : term} split1 x (pipeM x ([_] x)) -> split1 (M x) (pipeM (C2 x) ([l] R2 x l)))
+			<- split1 E (pipeM C1 R1).}%
+%{spl2-let	: split2 (let E M) (pipeS (tup P1 P2) ([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2))))
+			<- ({x : term} split2 x (pipeS ztup ([_] x)) -> split2 (M x) (pipeS P2 ([l] R2 x l)))
+			<- split2 E (pipeS P1 R1).}%
 
 %{
 ztup  : term.

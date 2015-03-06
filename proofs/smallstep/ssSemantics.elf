@@ -1,32 +1,36 @@
 %{ monostage.elf }%
 
+%% TABLE ENTRY
+variable : term -> type.
+%mode variable +E.
+
 %% VALUE
 done : wor -> term -> type. %name done Ddone.
-%mode done +W +E.
+%%mode done +W +E.
 done-ztup	: done W ztup.
 done-tup	: done W (tup E1 E2)
 				<- done W E2
 				<- done W E1.
 val-lam		: done wor1 (lam _ _).
 val-next	: done wor1 (next E)
-				<- done wor2 E. %% needs stricter criterion
+				<- variable E.
 res-pi1		: done wor2 (pi1 E)
 				<- done wor2 E.
 res-pi2		: done wor2 (pi2 E)
 				<- done wor2 E.
 res-lam		: done wor2 (lam _ M)
-				<- {x : term} done wor2 x -> done wor2 (M x).
+				<- {x : term} variable x -> done wor2 x -> done wor2 (M x).
 res-app		: done wor2 (app E1 E2)
 				<- done wor2 E2
 				<- done wor2 E1.
 res-let		: done wor2 (let E M)
 				<- done wor2 E
-				<- {x:term} done wor2 x -> done wor2 (M x).
+				<- {x:term} variable x -> done wor2 x -> done wor2 (M x).
 
 
 %% M STEP - SUBSTEP RULES
 mstep : wor -> term -> term -> type.
-%mode mstep +W +E -E'.
+%%mode mstep +W +E -E'.
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
 			<- mstep W E1 E1'.
 ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
@@ -46,10 +50,10 @@ ms-let-s1	: mstep W (let E M) (let E' M)
 ms-lett-s1	: mstep W (lett E M) (lett E' M)
 			<- mstep W E E'.
 ms-lam-s	: mstep wor2 (lam T M) (lam T M')
-			<- {x:term} done wor2 x -> mstep wor2 (M x) (M' x).
+			<- {x:term} variable x -> done wor2 x -> mstep wor2 (M x) (M' x).
 ms-let-s2	: mstep wor2 (let E M) (let E M')
 			<- done wor2 E
-			<- {x:term} done wor2 x -> mstep wor2 (M x) (M' x).
+			<- {x:term} variable x -> done wor2 x -> mstep wor2 (M x) (M' x).
 
 %% M STEP - REDUCTION RULES
 ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
@@ -64,7 +68,7 @@ ms-let-r	: mstep wor1 (let E M) (M E)
 			
 %% SECOND-STAGE VARIABLE STEP
 mstep* : term -> term -> (term -> term) -> type.
-%mode mstep* +E -Q -E'.
+%%mode mstep* +E -Q -E'.
 ms*-tup-s1	: mstep* (tup E1 E2) Q ([x] tup (E1' x) E2)
 			<- mstep* E1 Q E1'.
 ms*-tup-s2	: mstep* (tup E1 E2) Q ([x] tup E1 (E2' x))
@@ -97,4 +101,4 @@ ms-prev-r	: mstep wor2 (prev (next E)) E
 			
 			
 %%  USEFUL BLOCKS
-%block spec-block : some {A : ty} block {x:term} {dof : of x A wor2} {ddone : done wor2 x}.
+%block spec-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of x A wor2} {ddone : done wor2 x}.

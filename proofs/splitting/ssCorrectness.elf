@@ -1,8 +1,31 @@
 %{ ssCorrectness.elf }%
 
-sc1 : split1 E C R -> mstep wor1 E E' -> split1 E' C' R' -> mstep wor1 C C' -> type.
-%mode sc1 +Dspl +DstepE -Dspl' -DstepP.
 
+var_spl : variable E -> split2 E (trivS E) -> type.
+%mode var_spl +Dvar -Dspl.
+
+%block spl-block : some {A : ty} block {x:term} {dvar : variable x} {dspl : split2 x (trivS x)} {dvarspl : var_spl dvar dspl}.
+%worlds (spl-block) (var_spl _ _).
+%total (Dvar) (var_spl Dvar _).
+
+%%NEED ANOTHER
+
+%% PARTIAL VALUES TO PARTIAL VALUES LEMMA
+pv2pv : done wor1 E -> split1 E S -> pval S -> type.
+%mode pv2pv +Dval +Dsplit -Dval'.
+- : pv2pv done-ztup spl1-ztup (pval-s mval-ztup).
+- : pv2pv val-lam (spl1-lam _) (pval-s mval-lam).
+- : pv2pv (done-tup Dval1 Dval2) (spl1-tup appBoth2-tt Dspl1 Dspl2) (pval-s (mval-tup Dmval1 Dmval2))
+	<- pv2pv Dval1 Dspl1 (pval-s Dmval1)
+	<- pv2pv Dval2 Dspl2 (pval-s Dmval2).
+- : pv2pv (val-next Dvar) (spl1-next-t Dspl) (pval-s mval-ztup)
+	<- var_spl Dvar Dspl.
+%worlds (spl-block) (pv2pv _ _ _).
+%total (Dval) (pv2pv Dval _ _).
+
+sc1 : split1 E (pipeM C R) -> mstep wor1 E E' -> split1 E' (pipeM C' R') -> mstep wor1 C C' -> type.
+%mode sc1 +Dspl +DstepE -Dspl' -DstepP.
+%{
 - : sc1 (spl1-tup Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup Dspl1' Dspl2) (ms-lett-s1 Dstep')
 	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
 - : sc1 (spl1-pi1 Dspl) (ms-pi1-s Dstep) (spl1-pi1 Dspl') (ms-lett-s1 Dstep')
@@ -11,8 +34,10 @@ sc1 : split1 E C R -> mstep wor1 E E' -> split1 E' C' R' -> mstep wor1 C C' -> t
 	<- sc1 Dspl Dstep Dspl' Dstep'.
 - : sc1 (spl1-app Dspl1 Dspl2) (ms-app-s1 Dstep) (spl1-app Dspl1' Dspl2) (ms-lett-s1 Dstep')
 	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
-- : sc1 (spl1-let Dspl1 Dspl2) (ms-let-s1 Dstep) (spl1-let Dspl1' Dspl2) (ms-lett-s1 Dstep')
-	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+}%
+	
+%{- : sc1 (spl1-let Dspl1 Dspl2) (ms-let-s1 Dstep) (spl1-let Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.}%
 
 %{
 %% M STEP - SUBSTEP RULES

@@ -1,9 +1,19 @@
 
+
 %% DONE-OR-STEP JUDGEMENT
 dos : wor -> term -> type.
 dos-done	: done W E -> dos W E.
 dos-step	: mstep W E E' -> dos W E.
 dos-step*	: mstep* E Q E' -> dos wor1 E.
+
+
+var_res : variable E -> done wor2 E -> type.
+%mode var_res +Dvar -Ddone.
+
+%block prog-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of x A wor2} {ddone : done wor2 x} {dvarres : var_res dvar ddone}.
+
+%worlds (prog-block) (var_res _ _).
+%total (Dvar) (var_res Dvar _).
 
 %% PROGRESS LEMMAS
 prog/tup : dos W E1 -> dos W E2 -> dos W (tup E1 E2) -> type.
@@ -34,10 +44,10 @@ prog/pi2 : dos W E -> of E (prod T1 T2) W -> dos W (pi2 E) -> type.
 %worlds (spec-block) (prog/pi2 _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _).
 
-prog/lam : ({x:term} done wor2 x -> dos wor2 (M x)) -> {T: ty} dos wor2 (lam T M) -> type.
+prog/lam : ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> {T: ty} dos wor2 (lam T M) -> type.
 %mode prog/lam +Ddos +Dof -Ddos'.
-- : prog/lam ([x] [ddone] dos-step (Dstep x ddone)) _ (dos-step (ms-lam-s Dstep)).
-- : prog/lam ([x] [ddone] dos-done (Dres x ddone)) _ (dos-done (res-lam Dres)).
+- : prog/lam ([x] [dvar] [ddone] dos-step (Dstep x dvar ddone)) _ (dos-step (ms-lam-s Dstep)).
+- : prog/lam ([x] [dvar] [ddone] dos-done (Dres x dvar ddone)) _ (dos-done (res-lam Dres)).
 %worlds (spec-block) (prog/lam _ _ _).
 %total (Ddos) (prog/lam Ddos _ _).
 
@@ -60,11 +70,11 @@ prog/let1 : dos wor1 E -> of (let E M) T wor1 -> dos wor1 (let E M) -> type.
 %worlds (spec-block) (prog/let1 _ _ _).
 %total (Ddos) (prog/let1 Ddos _ _).
 
-prog/let2 : dos wor2 E -> ({x:term} done wor2 x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
+prog/let2 : dos wor2 E -> ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
 %mode prog/let2 +Ddos1 +Ddos2 -Ddos'.
 - : prog/let2 (dos-step Dstep) _ (dos-step (ms-let-s1 Dstep)).
-- : prog/let2 (dos-done Dres) ([x] [ddone] dos-step (Dstep x ddone)) (dos-step (ms-let-s2 Dstep Dres)).
-- : prog/let2 (dos-done Dres1) ([x] [ddone] dos-done (Dres2 x ddone)) (dos-done (res-let Dres2 Dres1)).
+- : prog/let2 (dos-done Dres) ([x] [dvar] [ddone] dos-step (Dstep x dvar ddone)) (dos-step (ms-let-s2 Dstep Dres)).
+- : prog/let2 (dos-done Dres1) ([x] [dvar] [ddone] dos-done (Dres2 x dvar ddone)) (dos-done (res-let Dres2 Dres1)).
 %worlds (spec-block) (prog/let2 _ _ _).
 %total (Ddos) (prog/let2 Ddos _ _).
 
@@ -79,8 +89,9 @@ prog/prev : dos wor1 E -> of E (fut T) wor1 -> dos wor2 (prev E) -> type.
 %mode prog/prev +Ddos +Dof -Ddos'.
 - : prog/prev (dos-step Dstep) _ (dos-step (ms-prev-s Dstep)).
 - : prog/prev (dos-step* Dstep) _ (dos-step (ms-prev-s* Dstep)).
-- : prog/prev (dos-done (val-next Dres)) _ (dos-step (ms-prev-r Dres)).
-%worlds (spec-block) (prog/prev _ _ _).
+- : prog/prev (dos-done (val-next Dvar)) _ (dos-step (ms-prev-r Dres))
+	<- var_res Dvar Dres.
+%worlds (prog-block) (prog/prev _ _ _).
 %total (Ddos) (prog/prev Ddos _ _).
 
 %% PROGRESS
@@ -99,8 +110,8 @@ prog : of E T W -> dos W E -> type.
 	<- prog/pi2 Ddos Dof Ddos'.
 - : prog _ (dos-done val-lam).
 - : prog (of-lam _ DofM) Ddos'
-	<- ({x:term} {dof: of x T wor2} {ddone : done wor2 x} 
-		prog dof (dos-done ddone) -> prog (DofM x dof) (Ddos x ddone))
+	<- ({x:term} {dvar : variable x} {dof: of x T wor2} {ddone : done wor2 x} 
+		var_res dvar ddone -> prog dof (dos-done ddone) -> prog (DofM x dof) (Ddos x dvar ddone))
 	<- prog/lam Ddos T Ddos'.
 - : prog (of-app Dof1 Dof2) Ddos
 	<- prog Dof1 Ddos1
@@ -111,8 +122,8 @@ prog : of E T W -> dos W E -> type.
 	<- prog/let1 Ddos (of-let DofM DofE) Ddos'.
 - : prog (of-let DofM DofE) Ddos'
 	<- prog DofE DdosE
-	<- ({x:term} {dof: of x T wor2} {ddone : done wor2 x} 
-		prog dof (dos-done ddone) -> prog (DofM x dof) (DdosM x ddone))
+	<- ({x:term} {dvar : variable x} {dof: of x T wor2} {ddone : done wor2 x} 
+		var_res dvar ddone -> prog dof (dos-done ddone) -> prog (DofM x dof) (DdosM x dvar ddone))
 	<- prog/let2 DdosE DdosM Ddos'.
 - : prog (of-next Dof) Ddos'
 	<- prog Dof Ddos
@@ -120,6 +131,6 @@ prog : of E T W -> dos W E -> type.
 - : prog (of-prev Dof) Ddos'
 	<- prog Dof Ddos
 	<- prog/prev Ddos Dof Ddos'.
-%block prog-block : some {A : ty} block {x:term} {dof : of x A wor2} {ddone : done wor2 x} {_: prog dof (dos-done ddone)}.
+%block prog-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of x A wor2} {ddone : done wor2 x} {dvarres : var_res dvar ddone} {_: prog dof (dos-done ddone)}.
 %worlds (prog-block) (prog _ _).
 %total (Ddos) (prog Ddos _).

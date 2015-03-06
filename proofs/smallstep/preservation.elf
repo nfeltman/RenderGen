@@ -16,11 +16,11 @@ pres : mstep W E E' -> of E T W -> of E' T W -> type.
 - : pres (ms-let-s1 Dstep) (of-let DofM DofE) (of-let DofM DofE') 
 	<- pres Dstep DofE DofE'.
 - : pres (ms-lam-s Dstep) (of-lam Dwf DofM) (of-lam Dwf DofM') 
-	<- {x:term} {dof : of x T wor2} {ddone : done wor2 x} 
-		pres (Dstep x ddone) (DofM x dof) (DofM' x dof).
+	<- {x:term} {dvar : variable x} {dof : of x T wor2} {ddone : done wor2 x} 
+		pres (Dstep x dvar ddone) (DofM x dof) (DofM' x dof).
 - : pres (ms-let-s2 Dstep _) (of-let DofM DofE) (of-let DofM' DofE) 
-	<- {x:term} {dof : of x T wor2} {ddone : done wor2 x} 
-		pres (Dstep x ddone) (DofM x dof) (DofM' x dof).
+	<- {x:term} {dvar : variable x} {dof : of x T wor2} {ddone : done wor2 x} 
+		pres (Dstep x dvar ddone) (DofM x dof) (DofM' x dof).
 
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
 - : pres (ms-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
