@@ -8,8 +8,19 @@ var_spl : variable E -> split2 E (trivS E) -> type.
 %worlds (spl-block) (var_spl _ _).
 %total (Dvar) (var_spl Dvar _).
 
-%%NEED ANOTHER
+%% PARTIAL VALUES SPLIT TRIVIALLY
+is-triv : seperatedM -> type.
+is-triv-only : is-triv (trivM _ _).
+pv-triv : done wor1 E -> split1 E S -> is-triv S -> type.
+- : pv-triv done-ztup spl1-ztup is-triv-only.
+- : pv-triv val-lam (spl1-lam _) is-triv-only.
+- : pv-triv (val-next Dvar) (spl1-next-t Dspl) is-triv-only
+	<- var_spl Dvar Dspl.
+%mode pv-triv +Dval +Dspl -Dtriv.
+%worlds (spl-block) (pv-triv _ _ _).
+%total (Dval) (pv-triv Dval _ _).
 
+%{
 %% PARTIAL VALUES TO PARTIAL VALUES LEMMA
 pv2pv : done wor1 E -> split1 E S -> pval S -> type.
 %mode pv2pv +Dval +Dsplit -Dval'.
@@ -21,11 +32,11 @@ pv2pv : done wor1 E -> split1 E S -> pval S -> type.
 - : pv2pv (val-next Dvar) (spl1-next-t Dspl) (pval-s mval-ztup)
 	<- var_spl Dvar Dspl.
 %worlds (spl-block) (pv2pv _ _ _).
-%total (Dval) (pv2pv Dval _ _).
+%total (Dval Dsplit) (pv2pv Dval Dsplit _).
 
 sc1 : split1 E (pipeM C R) -> mstep wor1 E E' -> split1 E' (pipeM C' R') -> mstep wor1 C C' -> type.
 %mode sc1 +Dspl +DstepE -Dspl' -DstepP.
-%{
+
 - : sc1 (spl1-tup Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup Dspl1' Dspl2) (ms-lett-s1 Dstep')
 	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
 - : sc1 (spl1-pi1 Dspl) (ms-pi1-s Dstep) (spl1-pi1 Dspl') (ms-lett-s1 Dstep')
