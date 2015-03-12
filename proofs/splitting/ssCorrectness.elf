@@ -49,14 +49,17 @@ pv2pv : done wor1 E -> split1 E S -> pval S -> type.
 %worlds (spl-block) (pv2pv _ _ _).
 %total (Dval) (pv2pv Dval _ _).
 
-%{
-sc1 : split1 E (pipeM C R) -> mstep wor1 E E' -> split1 E' (pipeM C' R') -> mstep wor1 C C' -> type.
-%mode sc1 +Dspl +DstepE -Dspl' -DstepP.
 
-- : sc1 (spl1-tup Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup Dspl1' Dspl2) (ms-lett-s1 Dstep')
+sc1 : split1 E S -> mstep wor1 E E' -> split1 E' S' -> mstep wor1 C C' -> type.
+%mode sc1 +Dspl +DstepE +Dspl' -DstepP.
+
+%{
+- : sc1 (spl1-tup appBoth2-pp Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup appBoth2-pp Dspl1' Dspl2) (ms-lett-s1 Dstep')
 	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
-- : sc1 (spl1-pi1 Dspl) (ms-pi1-s Dstep) (spl1-pi1 Dspl') (ms-lett-s1 Dstep')
+}%
+- : sc1 (spl1-pi1 appBoth-p Dspl) (ms-pi1-s Dstep) (spl1-pi1 appBoth-p Dspl') (ms-lett-s1 Dstep')
 	<- sc1 Dspl Dstep Dspl' Dstep'.
+%{
 - : sc1 (spl1-pi2 Dspl) (ms-pi2-s Dstep) (spl1-pi2 Dspl') (ms-lett-s1 Dstep')
 	<- sc1 Dspl Dstep Dspl' Dstep'.
 - : sc1 (spl1-app Dspl1 Dspl2) (ms-app-s1 Dstep) (spl1-app Dspl1' Dspl2) (ms-lett-s1 Dstep')
