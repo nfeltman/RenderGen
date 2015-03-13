@@ -1,12 +1,5 @@
 \documentclass{article}
 
-% The following \documentclass options may be useful:
-
-% preprint      Remove this option only once the paper is in final form.
-% 10pt          To set in 10-point type instead of 9-point.
-% 11pt          To set in 11-point type instead of 9-point.
-% authoryear    To obtain author/year citation style instead of numeric.
-
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
@@ -20,6 +13,8 @@
 \usepackage{centernot}
 \usepackage[usenames,dvipsnames]{color}
 
+\pagenumbering{gobble}
+
 \newcommand {\next}{asdlfkj}
 \input{../../paper/macros}
 
@@ -29,10 +24,11 @@
 \newcommand{\stepsone}{\rightbarharpoon}
 \newcommand{\stepstwo}{\barrightharpoon}
 
-\newcommand{\bit}[2]{\noindent{#1}:\\{#2}}
+\newcommand{\bit}[1]{\noindent{#1}:\\}
 
 \begin{document}
 
-\include{bits}
+\include{outputs/bit}
+%\include{bits}
 
 \end{document}
