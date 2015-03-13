@@ -1,0 +1,94 @@
+%!TEX root = presentationbits.tex
+
+\bit{Intro1}{\[ 
+	\calp \val 
+\]}
+
+\bit{Intro2}{\[
+	\calp \steps \calp'
+\]}
+
+\bit{Intro3}{\[
+	\calp_1 \steps \calp_2 \steps \cdots \steps \calp' 
+	\text{ where } \calp \val
+\]}
+
+\bit{Intro4}{\[
+	\calp_1 \steps \calp_2 \steps \cdots
+\]}
+
+\bit{Examples1}{
+\[
+	1+\pi_1(2+3,4) \steps 1+\pi_1(5,4) \steps 1+5 \steps 6
+\]}
+
+\bit{Examples2}{\[
+(\lambda x. x+x)(4+5)\steps (\lambda x.x+x) 9 \steps 9+9 \steps 18
+\]}
+
+\bit{Value Rules}
+{\begin{mathpar}
+\infer{\overn \val}{\cdot} \and
+\infer{\lambda x.e \val}{\cdot} \and
+\infer{(v_1,v_2) \val}{v_1 \val & v_2 \val}
+\end{mathpar}}
+
+\bit{Beta Rules}
+{\begin{mathpar}
+\infer{\overn [1] + \overn [2] \steps \overn [3]}{n_1 + n_2 = n_3} \and
+\infer{(\lambda x.e) v \steps [v/x] e}{v \val} \and
+\infer{\pi_1(v_1,v_2) \steps v_1}{(v_1,v_2) \val} \and
+\infer{\pi_2(v_1,v_2) \steps v_2}{(v_1,v_2) \val}
+\end{mathpar}}
+
+\bit{Substep Rules}
+{\begin{mathpar}
+\infer{e_1 + e_2 \steps e_1' + e_2}{e_1 \steps e_1'} \and
+\infer{\overn[1] + e_2 \steps \overn[1] + e_2'}{e_2 \steps e_2'} \and
+\infer{e_1~e_2 \steps e_1'~e_2}{e_1 \steps e_1'} \and
+\infer{(\lambda x.e)~e_2 \steps (\lambda x.e)~e_2'}{e_2 \steps e_2'} \and
+\infer{\pi_1 e \steps \pi_1 e'}{e \steps e'}\and
+\infer{\pi_2 e \steps \pi_2 e'}{e \steps e'}
+\end{mathpar}}
+
+\bit{Progress Bad}{\[
+\text{For all terms } e \text{, either } e \val \text{ or } e \steps e'
+\]}
+
+\bit{Counterexample}{\[
+(1,2)+3
+\]}
+
+\bit{Progress}{\[
+\text{For all terms } e:A \text{, either } e \val \text{ or } e \steps e'
+\]}
+
+\bit{Preservation}{\[
+\text{For all terms } e:A \text{, if } e \steps e' \val \text{ then } e':A
+\]}
+
+\bit{Intro Multistage}{\[
+\calp \stepsone \cdots \stepsone \calp' \stepstwo \cdots \stepstwo \calp'' 
+\text{ where } \calp' \pval \text{ and } \calp'' \fval
+\]}
+
+\bit{L12 Judgments}{\[
+\begin{array}{llll}
+e \stepsone e'~@~\bbonem 
+& e \pval~@~\bbonem 
+& e \stepstwo e'~@~\bbonem 
+& e \fval~@~\bbonem \\
+e \stepsone e'~@~\bbtwo 
+& e \pval~@~\bbtwo 
+& e \stepstwo e'~@~\bbtwo 
+& e \fval~@~\bbtwo \\
+\end{array}
+\]}
+
+\bit{Partial Values}
+{\begin{mathpar}
+\infer{\overn \pval~@~\bbonem}{\cdot} \and
+\infer{\lambda x.e \pval~@~\bbonem}{\cdot} \and
+\infer{(e_1,e_2) \pval~@~\bbonem}{e_1 \pval~@~\bbonem & e_2 \pval~@~\bbonem} \and
+\infer{\next~e \pval~@~\bbonem}{e \pval~@~\bbtwo}
+\end{mathpar}}
