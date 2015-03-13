@@ -56,7 +56,7 @@
 %beginbit
 \begin{mathpar}
 \infer{\overn [1] + \overn [2] \steps \overn [3]}{n_1 + n_2 = n_3} \and
-\infer{(\lambda x.e) v \steps [v/x] e}{v \val} \and
+\infer{(\lambda x.e) v \steps [v/x] e}{v \val} \\
 \infer{\pi_1(v_1,v_2) \steps v_1}{(v_1,v_2) \val} \and
 \infer{\pi_2(v_1,v_2) \steps v_2}{(v_1,v_2) \val}
 \end{mathpar}
@@ -98,7 +98,7 @@
 \bit{Preservation}
 %beginbit
 \[
-\text{For all terms } e:A \text{, if } e \steps e' \val \text{ then } e':A
+\text{For all terms } e:A \text{, if } e \steps e' \text{ then } e':A
 \]
 %endbit
 
@@ -132,6 +132,14 @@ e \stepsone e'~@~\bbtwo
 \infer{\overn \pval~@~\bbonem}{\cdot} \and
 \infer{\lambda x.e \pval~@~\bbonem}{\cdot} \and
 \infer{(e_1,e_2) \pval~@~\bbonem}{e_1 \pval~@~\bbonem & e_2 \pval~@~\bbonem} \and
-\infer{\next~e \pval~@~\bbonem}{e \pval~@~\bbtwo}
+\infer{\next~e \pval~@~\bbonem}{e \pval~@~\bbtwo} \and
+\infer{\overn \pval~@~\bbtwo}{\cdot} \and
+\infer{e_1 + e_2 \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{\lambda x.e \pval~@~\bbtwo}{e \pval~@~\bbtwo} \and
+\infer{x \pval~@~\bbtwo}{\cdot} \and
+\infer{e_1~e_2 \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{(e_1,e_2) \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{\pi_1e \pval~@~\bbtwo}{e \pval~@~\bbtwo} \and
+\infer{\pi_2e \pval~@~\bbtwo}{e \pval~@~\bbtwo} 
 \end{mathpar}
 %endbit
