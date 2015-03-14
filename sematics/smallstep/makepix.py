@@ -18,12 +18,17 @@ for bit in bits:
 	fullfile = litdict.copy()
 	fullfile[bit.start()] = bit.group(1)
 
+	tempname = 'temp'
+	temptexfile = tempname+'.tex'
+	tempdvifile = tempname+'.dvi'
+	temppngfile = tempname+'.png'
 
-	bitfile = open ('temp.tex','w')
+	bitfile = open (temptexfile,'w')
 	for (loc,text) in iter(sorted(fullfile.items())):
 		bitfile.write(text)	
 	bitfile.close()
 	
-	call (['latex', 'temp.tex'])
-	call (['dvipng', '-T', 'tight', '-D', '480', '-Q', '7', '-o', 'temp.png', 'temp.dvi'])
-	call (['mv', 'temp.png', 'outputs/'+name+'.png'])
+	call (['latex', temptexfile])
+	call (['dvipng', '-T', 'tight', '-D', '480', '-Q', '7', '-o', temppngfile, tempdvifile])
+	call (['mv', temppngfile, 'outputs/'+name+'.png'])
+	call (['rm', tempdvifile, temptexfile])
