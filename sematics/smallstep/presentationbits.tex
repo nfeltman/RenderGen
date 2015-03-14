@@ -1,3 +1,4 @@
+%beginlit
 \documentclass{article}
 
 \usepackage{amsmath}
@@ -24,8 +25,152 @@
 \newcommand{\bit}[1]{\noindent{#1}:\\}
 
 \begin{document}
+%endlit
 
-\include{outputs/bit}
-%\include{bits}
+\bit{Intro1}
+%beginbit
+\[ 
+\calp \val 
+\]
+%endbits
 
+\bit{Intro2}
+%beginbit
+\[
+	\calp \steps \calp'
+\]
+%endbit
+
+\bit{Intro3}
+%beginbit
+\[
+	\calp_1 \steps \calp_2 \steps \cdots \steps \calp' 
+	\text{ where } \calp \val
+\]
+%endbit
+
+\bit{Intro4}
+%beginbit
+\[
+	\calp_1 \steps \calp_2 \steps \cdots
+\]
+%endbit
+
+\bit{Examples1}
+%beginbit 
+\[
+	1+\pi_1(2+3,4) \steps 1+\pi_1(5,4) \steps 1+5 \steps 6
+\]
+%endbit
+
+\bit{Examples2}
+%beginbit
+\[
+(\lambda x. x+x)(4+5)\steps (\lambda x.x+x) 9 \steps 9+9 \steps 18
+\]
+%endbit
+
+\bit{Value Rules}
+%beginbit
+\begin{mathpar}
+\infer{\overn \val}{\cdot} \and
+\infer{\lambda x.e \val}{\cdot} \and
+\infer{(v_1,v_2) \val}{v_1 \val & v_2 \val}
+\end{mathpar}
+%endbit
+
+\bit{Beta Rules}
+%beginbit
+\begin{mathpar}
+\infer{\overn [1] + \overn [2] \steps \overn [3]}{n_1 + n_2 = n_3} \and
+\infer{(\lambda x.e) v \steps [v/x] e}{v \val} \\
+\infer{\pi_1(v_1,v_2) \steps v_1}{(v_1,v_2) \val} \and
+\infer{\pi_2(v_1,v_2) \steps v_2}{(v_1,v_2) \val}
+\end{mathpar}
+%endbit
+
+\bit{Substep Rules}
+%beginbit
+\begin{mathpar}
+\infer{e_1 + e_2 \steps e_1' + e_2}{e_1 \steps e_1'} \and
+\infer{\overn[1] + e_2 \steps \overn[1] + e_2'}{e_2 \steps e_2'} \and
+\infer{e_1~e_2 \steps e_1'~e_2}{e_1 \steps e_1'} \and
+\infer{(\lambda x.e)~e_2 \steps (\lambda x.e)~e_2'}{e_2 \steps e_2'} \and
+\infer{\pi_1 e \steps \pi_1 e'}{e \steps e'}\and
+\infer{\pi_2 e \steps \pi_2 e'}{e \steps e'}
+\end{mathpar}
+%endbit
+
+\bit{Progress Bad}
+%beginbit
+\[
+\text{For all terms } e \text{, either } e \val \text{ or } e \steps e'
+\]
+%endbit
+
+\bit{Counterexample}
+%beginbit
+\[
+(1,2)+3
+\]
+%endbit
+
+\bit{Progress}
+%beginbit
+\[
+\text{For all terms } e:A \text{, either } e \val \text{ or } e \steps e'
+\]
+%endbit
+
+\bit{Preservation}
+%beginbit
+\[
+\text{For all terms } e:A \text{, if } e \steps e' \text{ then } e':A
+\]
+%endbit
+
+\bit{Intro Multistage}
+%beginbit
+\[
+\calp \stepsone \cdots \stepsone \calp' \stepstwo \cdots \stepstwo \calp'' 
+\text{ where } \calp' \pval \text{ and } \calp'' \fval
+\]
+%endbit
+
+\bit{L12 Judgments}
+%beginbit
+\[
+\begin{array}{llll}
+e \stepsone e'~@~\bbonem 
+& e \pval~@~\bbonem 
+& e \stepstwo e'~@~\bbonem 
+& e \fval~@~\bbonem \\
+e \stepsone e'~@~\bbtwo 
+& e \pval~@~\bbtwo 
+& e \stepstwo e'~@~\bbtwo 
+& e \fval~@~\bbtwo \\
+\end{array}
+\]
+%endbit 
+
+\bit{Partial Values}
+%beginbit
+\begin{mathpar}
+\infer{\overn \pval~@~\bbonem}{\cdot} \and
+\infer{\lambda x.e \pval~@~\bbonem}{\cdot} \and
+\infer{(e_1,e_2) \pval~@~\bbonem}{e_1 \pval~@~\bbonem & e_2 \pval~@~\bbonem} \and
+\infer{\next~e \pval~@~\bbonem}{e \pval~@~\bbtwo} \and
+\infer{\overn \pval~@~\bbtwo}{\cdot} \and
+\infer{e_1 + e_2 \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{\lambda x.e \pval~@~\bbtwo}{e \pval~@~\bbtwo} \and
+\infer{x \pval~@~\bbtwo}{\cdot} \and
+\infer{e_1~e_2 \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{(e_1,e_2) \pval~@~\bbtwo}{e_1 \pval~@~\bbtwo & e_2 \pval~@~\bbtwo} \and
+\infer{\pi_1e \pval~@~\bbtwo}{e \pval~@~\bbtwo} \and
+\infer{\pi_2e \pval~@~\bbtwo}{e \pval~@~\bbtwo} 
+\end{mathpar}
+%endbit
+
+%beginlit
 \end{document}
+%endlit
