@@ -29,6 +29,6 @@ for bit in bits:
 	bitfile.close()
 	
 	call (['latex', temptexfile])
-	call (['dvipng', '-T', 'tight', '-D', '480', '-Q', '7', '-o', temppngfile, tempdvifile])
+	call (['dvipng', '-T', 'tight', '-D', '480', '-Q', '7', '-bg', 'Transparent', '-o', temppngfile, tempdvifile])
 	call (['mv', temppngfile, 'outputs/'+name+'.png'])
 	call (['rm', tempdvifile, temptexfile])
