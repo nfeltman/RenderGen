@@ -117,9 +117,9 @@ prog : of E T W -> dos W E -> type.
 	<- prog Dof1 Ddos1
 	<- prog Dof2 Ddos2
 	<- prog/app Ddos1 Ddos2 Dof1 Ddos.
-- : prog (of-let DofM DofE) Ddos'
+%{- : prog (of-let DofM DofE) Ddos'
 	<- prog DofE Ddos
-	<- prog/let1 Ddos (of-let DofM DofE) Ddos'.
+	<- prog/let1 Ddos (of-let DofM DofE) Ddos'.}%
 - : prog (of-let DofM DofE) Ddos'
 	<- prog DofE DdosE
 	<- ({x:term} {dvar : variable x} {dof: of x T wor2} {ddone : done wor2 x} 

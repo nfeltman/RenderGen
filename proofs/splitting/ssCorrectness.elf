@@ -49,16 +49,32 @@ pv2pv : done wor1 E -> split1 E S -> pval S -> type.
 %worlds (spl-block) (pv2pv _ _ _).
 %total (Dval) (pv2pv Dval _ _).
 
+%% THINGS THAT SPLIT TRIVIALLY CANNOT TAKE STEPS TO THINGS THAT SPLIT NON-TRIVIALLY
+triv-step-triv :  mstep wor1 E E' -> split1 E (trivM _ _) -> split1 E' (pipeM _ _) -> false -> type.
+%mode triv-step-triv +Dspl +DstepE +Dspl' -Dfalse.
+- : triv-step-triv (ms-tup-s1 Dstep) (spl1-tup appBoth2-tt Dspl1 Dspl2) (spl1-tup appBoth2-pt Dspl1' Dspl2') Dfalse
+	<- triv-step-triv Dstep Dspl1 Dspl1' Dfalse.
+- : triv-step-triv (ms-tup-s1 Dstep) (spl1-tup appBoth2-tt Dspl1 Dspl2) (spl1-tup appBoth2-pp Dspl1' Dspl2') Dfalse
+	<- triv-step-triv Dstep Dspl1 Dspl1' Dfalse.
 
-sc1 : split1 E S -> mstep wor1 E E' -> split1 E' S' -> mstep wor1 C C' -> type.
+	
+- : triv-step-triv (ms-pi1-s Dstep) (spl1-pi1 appBoth-t Dspl) (spl1-pi1 appBoth-p Dspl') Dfalse
+	<- triv-step-triv Dstep Dspl Dspl' Dfalse.
+- : triv-step-triv (ms-pi2-s Dstep) (spl1-pi2 appBoth-t Dspl) (spl1-pi2 appBoth-p Dspl') Dfalse
+	<- triv-step-triv Dstep Dspl Dspl' Dfalse.
+
+
+sc1 :  mstep wor1 E E' -> split1 E S -> split1 E' S' -> sstepM S S' -> type.
 %mode sc1 +Dspl +DstepE +Dspl' -DstepP.
 
 %{
 - : sc1 (spl1-tup appBoth2-pp Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup appBoth2-pp Dspl1' Dspl2) (ms-lett-s1 Dstep')
 	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
 }%
-- : sc1 (spl1-pi1 appBoth-p Dspl) (ms-pi1-s Dstep) (spl1-pi1 appBoth-p Dspl') (ms-lett-s1 Dstep')
-	<- sc1 Dspl Dstep Dspl' Dstep'.
+- : sc1 (ms-pi1-s Dstep) (spl1-pi1 appBoth-p Dspl) (spl1-pi1 appBoth-p Dspl') (sstepM-p (ms-lett-s1 Dstep'))
+	<- sc1 Dstep Dspl Dspl' (sstepM-p Dstep').
+- : sc1 (ms-pi1-s Dstep) (spl1-pi1 appBoth-t Dspl) (spl1-pi1 appBoth-t Dspl') (sstepM-t (ms-pi1-s Dstep'))
+	<- sc1 Dstep Dspl Dspl' (sstepM-t Dstep').
 %{
 - : sc1 (spl1-pi2 Dspl) (ms-pi2-s Dstep) (spl1-pi2 Dspl') (ms-lett-s1 Dstep')
 	<- sc1 Dspl Dstep Dspl' Dstep'.

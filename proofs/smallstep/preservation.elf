@@ -26,7 +26,7 @@ pres : mstep W E E' -> of E T W -> of E' T W -> type.
 - : pres (ms-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
 - : pres (ms-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
 - : pres (ms-app-r _) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
-- : pres (ms-let-r _) (of-let DofM DofE) (DofM E DofE).
+%%- : pres (ms-let-r _) (of-let DofM DofE) (DofM E DofE).
 
 %% STARRED STEP PRESERVATION
 pres* : mstep* E Q E' -> of E T wor1 -> of Q TQ wor2 -> ({x:term} of x TQ wor2 -> of (E' x) T wor1) -> type.
@@ -43,8 +43,8 @@ pres* : mstep* E Q E' -> of E T wor1 -> of Q TQ wor2 -> ({x:term} of x TQ wor2 -
 	<- pres* Dstep Dof1 DofQ Dof1'.
 - : pres* (ms*-app-s2 Dstep _) (of-app Dof1 Dof2) DofQ ([x] [dof] of-app Dof1 (Dof2' x dof))
 	<- pres* Dstep Dof2 DofQ Dof2'.
-- : pres* (ms*-let-s1 Dstep) (of-let DofM DofE) DofQ ([x] [dof] of-let DofM (DofE' x dof))
-	<- pres* Dstep DofE DofQ DofE'.
+%{- : pres* (ms*-let-s1 Dstep) (of-let DofM DofE) DofQ ([x] [dof] of-let DofM (DofE' x dof))
+	<- pres* Dstep DofE DofQ DofE'.}%
 
 
 %% STAGING FEATURE PRESERVATION

@@ -1,0 +1,142 @@
+%% SPLITTING IS TOTAL FOR WELL-TYPED TERMS
+
+%block spl-var1 : some {A : ty} block {x:term} {dof : of x A wor1} {dspl : split1 x (trivM x x)}.
+%block spl-var2 : some {A : ty} block {x:term} {dof : of x A wor2} {dspl : split2 x (trivS x)}.
+%block spl-block = (spl-var1 | spl-var2).
+
+spl1-total/lam : ({x:term} split1 x (trivM x x) -> split1 (E x) (S1 x)) -> {A} split1 (lam A E) S -> type.
+%mode spl1-total/lam +Dspl1 +Dty -Dspl.
+- : spl1-total/lam Dspl1 _ (spl1-lam-t Dspl1).
+- : spl1-total/lam Dspl1 _ (spl1-lam-p Dspl1).
+%worlds (spl-block) (spl1-total/lam _ _ _).
+%total Dspl (spl1-total/lam Dspl _ _).
+
+%% TODO: this needs a strengthening lemma to prove that x doesn't appear in P in pipes
+spl2-total/lam : 
+	({x:term} of x A wor2 -> of (E x) B wor2) -> 
+	({x:term} split2 x (trivS x) -> split2 (E x) (S1 x)) -> 
+	split2 (lam A E) S -> 
+	type.
+%mode spl2-total/lam +Dty +Dspl1 -Dspl.
+- : spl2-total/lam _ Dspl1 (spl2-lam-t Dspl1).
+- : spl2-total/lam _ Dspl1 (spl2-lam-p Dspl1).
+%worlds (spl-block) (spl2-total/lam _ _ _).
+%%total Dspl (spl2-total/lam _ Dspl _).
+
+spl2-total/app : split2 E1 S1 -> split2 E2 S2 -> split2 (app E1 E2) S -> type.
+%mode spl2-total/app +Dspl1 +Dspl2 -Dspl.
+- : spl2-total/app Dspl1 Dspl2 (spl2-app appRes2-tt Dspl1 Dspl2).
+- : spl2-total/app Dspl1 Dspl2 (spl2-app appRes2-tp Dspl1 Dspl2).
+- : spl2-total/app Dspl1 Dspl2 (spl2-app appRes2-pt Dspl1 Dspl2).
+- : spl2-total/app Dspl1 Dspl2 (spl2-app appRes2-pp Dspl1 Dspl2).
+%worlds (spl-block) (spl2-total/app _ _ _).
+%total (Dspl) (spl2-total/app Dspl _ _).
+
+spl1-total/tup : split1 E1 S1 -> split1 E2 S2 -> split1 (tup E1 E2) S -> type.
+%mode spl1-total/tup +Dspl1 +Dspl2 -Dspl.
+- : spl1-total/tup Dspl1 Dspl2 (spl1-tup appBoth2-tt Dspl1 Dspl2).
+- : spl1-total/tup Dspl1 Dspl2 (spl1-tup appBoth2-tp Dspl1 Dspl2).
+- : spl1-total/tup Dspl1 Dspl2 (spl1-tup appBoth2-pt Dspl1 Dspl2).
+- : spl1-total/tup Dspl1 Dspl2 (spl1-tup appBoth2-pp Dspl1 Dspl2).
+%worlds (spl-block) (spl1-total/tup _ _ _).
+%total (Dspl) (spl1-total/tup Dspl _ _).
+
+spl2-total/tup : split2 E1 S1 -> split2 E2 S2 -> split2 (tup E1 E2) S -> type.
+%mode spl2-total/tup +Dspl1 +Dspl2 -Dspl.
+- : spl2-total/tup Dspl1 Dspl2 (spl2-tup appRes2-tt Dspl1 Dspl2).
+- : spl2-total/tup Dspl1 Dspl2 (spl2-tup appRes2-tp Dspl1 Dspl2).
+- : spl2-total/tup Dspl1 Dspl2 (spl2-tup appRes2-pt Dspl1 Dspl2).
+- : spl2-total/tup Dspl1 Dspl2 (spl2-tup appRes2-pp Dspl1 Dspl2).
+%worlds (spl-block) (spl2-total/tup _ _ _).
+%total (Dspl) (spl2-total/tup Dspl _ _).
+
+spl1-total/pi1 : split1 E1 S1 -> split1 (pi1 E1) S -> type.
+%mode spl1-total/pi1 +Dspl1 -Dspl.
+- : spl1-total/pi1 Dspl1 (spl1-pi1 appBoth-t Dspl1).
+- : spl1-total/pi1 Dspl1 (spl1-pi1 appBoth-p Dspl1).
+%worlds (spl-block) (spl1-total/pi1 _ _).
+%total (Dspl) (spl1-total/pi1 Dspl _).
+
+spl2-total/pi1 : split2 E1 S1 -> split2 (pi1 E1) S -> type.
+%mode spl2-total/pi1 +Dspl1 -Dspl.
+- : spl2-total/pi1 Dspl1 (spl2-pi1 appRes-t Dspl1).
+- : spl2-total/pi1 Dspl1 (spl2-pi1 appRes-p Dspl1).
+%worlds (spl-block) (spl2-total/pi1 _ _).
+%total (Dspl) (spl2-total/pi1 Dspl _).
+
+spl1-total/pi2 : split1 E1 S1 -> split1 (pi2 E1) S -> type.
+%mode spl1-total/pi2 +Dspl1 -Dspl.
+- : spl1-total/pi2 Dspl1 (spl1-pi2 appBoth-t Dspl1).
+- : spl1-total/pi2 Dspl1 (spl1-pi2 appBoth-p Dspl1).
+%worlds (spl-block) (spl1-total/pi2 _ _).
+%total (Dspl) (spl1-total/pi2 Dspl _).
+
+spl2-total/pi2 : split2 E1 S1 -> split2 (pi2 E1) S -> type.
+%mode spl2-total/pi2 +Dspl1 -Dspl.
+- : spl2-total/pi2 Dspl1 (spl2-pi2 appRes-t Dspl1).
+- : spl2-total/pi2 Dspl1 (spl2-pi2 appRes-p Dspl1).
+%worlds (spl-block) (spl2-total/pi2 _ _).
+%total (Dspl) (spl2-total/pi2 Dspl _).
+
+spl1-total/next : split2 E1 S1 -> split1 (next E1) S -> type.
+%mode spl1-total/next +Dspl1 -Dspl.
+- : spl1-total/next Dspl1 (spl1-next-t Dspl1).
+- : spl1-total/next Dspl1 (spl1-next-p Dspl1).
+%worlds (spl-block) (spl1-total/next _ _).
+%total (Dspl) (spl1-total/next Dspl _).
+
+spl2-total/prev : split1 E1 S1 -> split2 (prev E1) S -> type.
+%mode spl2-total/prev +Dspl1 -Dspl.
+- : spl2-total/prev Dspl1 (spl2-prev-t Dspl1).
+- : spl2-total/prev Dspl1 (spl2-prev-p Dspl1).
+%worlds (spl-block) (spl2-total/prev _ _).
+%total (Dspl) (spl2-total/prev Dspl _).
+
+spl1-total : of E T wor1 -> split1 E _ -> type.
+%mode spl1-total +Dof -Dspl.
+spl2-total : of E T wor2 -> split2 E _ -> type.
+%mode spl2-total +Dof -Dspl.
+- : spl1-total of-ztup spl1-ztup.
+- : spl2-total of-ztup spl2-ztup.
+- : spl1-total (of-tup Dof1 Dof2) Dspl
+	<- spl1-total Dof1 Dspl1
+	<- spl1-total Dof2 Dspl2
+	<- spl1-total/tup Dspl1 Dspl2 Dspl.
+- : spl2-total (of-tup Dof1 Dof2) Dspl
+	<- spl2-total Dof1 Dspl1
+	<- spl2-total Dof2 Dspl2
+	<- spl2-total/tup Dspl1 Dspl2 Dspl.
+- : spl1-total (of-pi1 Dof) Dspl
+	<- spl1-total Dof Dspl1
+	<- spl1-total/pi1 Dspl1 Dspl.
+- : spl2-total (of-pi1 Dof) Dspl
+	<- spl2-total Dof Dspl1
+	<- spl2-total/pi1 Dspl1 Dspl.
+- : spl1-total (of-pi2 Dof) Dspl
+	<- spl1-total Dof Dspl1
+	<- spl1-total/pi2 Dspl1 Dspl.
+- : spl2-total (of-pi2 Dof) Dspl
+	<- spl2-total Dof Dspl1
+	<- spl2-total/pi2 Dspl1 Dspl.
+- : spl1-total (of-lam Dwf Dof) DsplR
+	<- ({x : term} {dof : of x A wor1} {dspl : split1 x (trivM x x)} 
+		spl1-total (Dof x dof) (Dspl x dspl))
+	<- spl1-total/lam Dspl A DsplR.
+- : spl2-total (of-lam Dwf Dof) DsplR
+	<- ({x : term} {dof : of x A wor2} {dspl : split2 x (trivS x)} 
+		spl2-total (Dof x dof) (Dspl x dspl))
+	<- spl2-total/lam Dof Dspl DsplR.
+- : spl1-total (of-app Dof1 Dof2) (spl1-app Dspl1 Dspl2)
+	<- spl1-total Dof1 Dspl1
+	<- spl1-total Dof2 Dspl2.
+- : spl2-total (of-app Dof1 Dof2) Dspl
+	<- spl2-total Dof1 Dspl1
+	<- spl2-total Dof2 Dspl2
+	<- spl2-total/app Dspl1 Dspl2 Dspl.
+- : spl1-total (of-next Dof) Dspl
+	<- spl2-total Dof Dspl1
+	<- spl1-total/next Dspl1 Dspl.
+- : spl2-total (of-prev Dof) Dspl
+	<- spl1-total Dof Dspl1
+	<- spl2-total/prev Dspl1 Dspl.
+%worlds (spl-block) (spl1-total _ _) (spl2-total _ _).

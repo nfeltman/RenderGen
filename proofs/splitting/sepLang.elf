@@ -1,8 +1,8 @@
 %{ sepLang.elf }%
 
 %% OUTPUT LANGUAGE
-seperatedM : type.
-seperatedS : type.
+seperatedM : type. %name seperatedM S.
+seperatedS : type. %name seperatedS S.
 pipeS : term -> (term -> term) -> seperatedS.
 trivS : term -> seperatedS.
 pipeM : term -> (term -> term) -> seperatedM.
@@ -20,5 +20,5 @@ pval-s	: pval (trivM I Q)
 		<- mval I.
 
 sstepM  : seperatedM -> seperatedM -> type.
-sstepM-t : mstep wor1 I I' -> sstepM (trivM I Q) (trivM I' Q) -> type.
-sstepM-p : mstep wor1 C C' -> sstepM (pipeM C R) (pipeM C' R) -> type.
+sstepM-t : mstep wor1 I I' -> sstepM (trivM I Q) (trivM I' Q).
+sstepM-p : mstep wor1 C C' -> sstepM (pipeM C R) (pipeM C' R).
