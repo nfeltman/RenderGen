@@ -42,7 +42,24 @@ spl1-lam-t	: split1 (lam _ M) (trivM (lam unit ([x] tup (I x) ztup)) (lam unit (
 			<- {x : term} split1 x (trivM x x) -> split1 (M x) (trivM (I x) (Q x)).
 spl1-lam-p	: split1 (lam _ M) (trivM (lam unit C) (lam unit ([xl] lett xl R)))
 			<- {x : term} split1 x (trivM x x) -> split1 (M x) (pipeM (C x) ([l:term] R x l)).
-spl1-app	: split1 (app E1 E2) 
+spl1-app-tt	: split1 (app E1 E2) (pipeM (lett (app I1 I2) ([y] [z] tup y z)) ([l] app Q1 (tup Q2 l)))
+			<- split1 E2 (trivM I2 Q2)
+			<- split1 E1 (trivM I1 Q1).
+spl1-app-tp	: split1 (app E1 E2) 
+				(pipeM
+					(lett C2 ([y2] [z2] lett (app Q1 y2) ([y3] [z3] tup (y3) (tup z2 z3))))
+					([l] lett l ([l2] [l3] app Q1 (tup (R2 l2) l3)))
+				)
+			<- split1 E2 (pipeM C2 R2)
+			<- split1 E1 (trivM I1 Q1).
+spl1-app-pt	: split1 (app E1 E2) 
+				(pipeM
+					(lett C1 ([y1] [z1] lett (app y1 I2) ([y3] [z3] tup (y3) (tup z1 z3))))
+					([l] lett l ([l1] [l3] app (R1 l1) (tup Q2 l3)))
+				)
+			<- split1 E2 (trivM I2 Q2)
+			<- split1 E1 (pipeM C1 R1).
+spl1-app-pp	: split1 (app E1 E2) 
 				(pipeM
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
 					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))

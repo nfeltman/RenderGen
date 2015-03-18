@@ -1,9 +1,17 @@
 %% SPLITTING IS TOTAL FOR WELL-TYPED TERMS
+spl1-total : of E T wor1 -> split1 E _ -> type.
+%mode spl1-total +Dof -Dspl.
+spl2-total : of E T wor2 -> split2 E _ -> type.
+%mode spl2-total +Dof -Dspl.
 
-%block spl-var1 : some {A : ty} block {x:term} {dof : of x A wor1} {dspl : split1 x (trivM x x)}.
-%block spl-var2 : some {A : ty} block {x:term} {dof : of x A wor2} {dspl : split2 x (trivS x)}.
+%% BLOCKS
+%block spl-var1 : some {A : ty} block 
+	{x:term} {dof : of x A wor1} {dspl : split1 x (trivM x x)} {dtot : spl1-total dof dspl}.
+%block spl-var2 : some {A : ty} block 
+	{x:term} {dof : of x A wor2} {dspl : split2 x (trivS x)} {dtot : spl2-total dof dspl}.
 %block spl-block = (spl-var1 | spl-var2).
 
+%% TOTALITY LEMMAS
 spl1-total/lam : ({x:term} split1 x (trivM x x) -> split1 (E x) (S1 x)) -> {A} split1 (lam A E) S -> type.
 %mode spl1-total/lam +Dspl1 +Dty -Dspl.
 - : spl1-total/lam Dspl1 _ (spl1-lam-t Dspl1).
@@ -11,7 +19,6 @@ spl1-total/lam : ({x:term} split1 x (trivM x x) -> split1 (E x) (S1 x)) -> {A} s
 %worlds (spl-block) (spl1-total/lam _ _ _).
 %total Dspl (spl1-total/lam Dspl _ _).
 
-%% TODO: this needs a strengthening lemma to prove that x doesn't appear in P in pipes
 spl2-total/lam : 
 	({x:term} of x A wor2 -> of (E x) B wor2) -> 
 	({x:term} split2 x (trivS x) -> split2 (E x) (S1 x)) -> 
@@ -19,9 +26,19 @@ spl2-total/lam :
 	type.
 %mode spl2-total/lam +Dty +Dspl1 -Dspl.
 - : spl2-total/lam _ Dspl1 (spl2-lam-t Dspl1).
+%% TODO: this needs a strengthening lemma to prove that x doesn't appear in P in pipes
 - : spl2-total/lam _ Dspl1 (spl2-lam-p Dspl1).
 %worlds (spl-block) (spl2-total/lam _ _ _).
 %%total Dspl (spl2-total/lam _ Dspl _).
+
+spl1-total/app : split1 E1 S1 -> split1 E2 S2 -> split1 (app E1 E2) S -> type.
+%mode spl1-total/app +Dspl1 +Dspl2 -Dspl.
+- : spl1-total/app Dspl1 Dspl2 (spl1-app-tt Dspl1 Dspl2).
+- : spl1-total/app Dspl1 Dspl2 (spl1-app-tp Dspl1 Dspl2).
+- : spl1-total/app Dspl1 Dspl2 (spl1-app-pt Dspl1 Dspl2).
+- : spl1-total/app Dspl1 Dspl2 (spl1-app-pp Dspl1 Dspl2).
+%worlds (spl-block) (spl1-total/app _ _ _).
+%total (Dspl) (spl1-total/app Dspl _ _).
 
 spl2-total/app : split2 E1 S1 -> split2 E2 S2 -> split2 (app E1 E2) S -> type.
 %mode spl2-total/app +Dspl1 +Dspl2 -Dspl.
@@ -92,10 +109,7 @@ spl2-total/prev : split1 E1 S1 -> split2 (prev E1) S -> type.
 %worlds (spl-block) (spl2-total/prev _ _).
 %total (Dspl) (spl2-total/prev Dspl _).
 
-spl1-total : of E T wor1 -> split1 E _ -> type.
-%mode spl1-total +Dof -Dspl.
-spl2-total : of E T wor2 -> split2 E _ -> type.
-%mode spl2-total +Dof -Dspl.
+%% MAIN PROOF OF TOTALITY
 - : spl1-total of-ztup spl1-ztup.
 - : spl2-total of-ztup spl2-ztup.
 - : spl1-total (of-tup Dof1 Dof2) Dspl
@@ -119,16 +133,19 @@ spl2-total : of E T wor2 -> split2 E _ -> type.
 	<- spl2-total Dof Dspl1
 	<- spl2-total/pi2 Dspl1 Dspl.
 - : spl1-total (of-lam Dwf Dof) DsplR
-	<- ({x : term} {dof : of x A wor1} {dspl : split1 x (trivM x x)} 
+	<- ({x : term} {dof : of x A wor1} {dspl : split1 x (trivM x x)}
+		spl1-total dof dspl ->
 		spl1-total (Dof x dof) (Dspl x dspl))
 	<- spl1-total/lam Dspl A DsplR.
 - : spl2-total (of-lam Dwf Dof) DsplR
 	<- ({x : term} {dof : of x A wor2} {dspl : split2 x (trivS x)} 
+		spl2-total dof dspl ->
 		spl2-total (Dof x dof) (Dspl x dspl))
 	<- spl2-total/lam Dof Dspl DsplR.
-- : spl1-total (of-app Dof1 Dof2) (spl1-app Dspl1 Dspl2)
+- : spl1-total (of-app Dof1 Dof2) Dspl
 	<- spl1-total Dof1 Dspl1
-	<- spl1-total Dof2 Dspl2.
+	<- spl1-total Dof2 Dspl2
+	<- spl1-total/app Dspl1 Dspl2 Dspl.
 - : spl2-total (of-app Dof1 Dof2) Dspl
 	<- spl2-total Dof1 Dspl1
 	<- spl2-total Dof2 Dspl2
@@ -140,3 +157,4 @@ spl2-total : of E T wor2 -> split2 E _ -> type.
 	<- spl1-total Dof Dspl1
 	<- spl2-total/prev Dspl1 Dspl.
 %worlds (spl-block) (spl1-total _ _) (spl2-total _ _).
+%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).
