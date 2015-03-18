@@ -118,9 +118,9 @@ of-wf : of E T W -> ty-wf T W -> type.
 %worlds (var-of-wf) (of-wf _ _).
 %total D (of-wf D _).
 
-%% TERM IDENTITY
-eidty : term -> term -> type.
-eidty/refl : eidty E E.
+%% TERM EQUALITY
+eq-term  : term -> term -> type.
+eq-term_ : eq-term E E.
 
 %% TYPE IDENTITY
 idty : ty -> ty -> type.

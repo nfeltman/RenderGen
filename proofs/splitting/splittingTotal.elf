@@ -1,3 +1,11 @@
+%% PRECOMPUTATIONS CANNOT DEPEND ON STAGE TWO VARIABLES
+p-strengthen1 : ({x : term} of x A wor2 -> split1 (E x) (pipeM (C x) _)) -> ({x :term} eq-term (C x) C') -> type.
+%mode p-strengthen1 +Dspl -Deq.
+p-strengthen2 : ({x : term} of x A wor2 -> split2 (E x) (pipeS (P x) _)) -> ({x :term} eq-term (P x) P') -> type.
+%mode p-strengthen2 +Dspl -Deq.
+
+
+%{
 %% SPLITTING IS TOTAL FOR WELL-TYPED TERMS
 spl1-total : of E T wor1 -> split1 E _ -> type.
 %mode spl1-total +Dof -Dspl.
@@ -29,7 +37,7 @@ spl2-total/lam :
 %% TODO: this needs a strengthening lemma to prove that x doesn't appear in P in pipes
 - : spl2-total/lam _ Dspl1 (spl2-lam-p Dspl1).
 %worlds (spl-block) (spl2-total/lam _ _ _).
-%%total Dspl (spl2-total/lam _ Dspl _).
+%total Dspl (spl2-total/lam _ Dspl _).
 
 spl1-total/app : split1 E1 S1 -> split1 E2 S2 -> split1 (app E1 E2) S -> type.
 %mode spl1-total/app +Dspl1 +Dspl2 -Dspl.
@@ -157,4 +165,5 @@ spl2-total/prev : split1 E1 S1 -> split2 (prev E1) S -> type.
 	<- spl1-total Dof Dspl1
 	<- spl2-total/prev Dspl1 Dspl.
 %worlds (spl-block) (spl1-total _ _) (spl2-total _ _).
-%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).
+%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).\
+}%
