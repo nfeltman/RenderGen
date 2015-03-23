@@ -27,7 +27,7 @@ appBoth2-tp : appBoth2 (trivM I1 Q1) (pipeM C2 R2)
 				(pipeM (lett C2 ([y2] [z2] tup y2 (tup I1 z2))) ([l] tup Q1 (R2 l))).
 appBoth2-tt : appBoth2 (trivM I1 Q1) (trivM I2 Q2) (trivM (tup I1 I2) (tup Q1 Q2)).
 
-spl1-ztup	: split1 ztup (trivM ztup ztup). 
+spl1-ztup	: split1 ztup (trivM ztup ztup).
 spl1-tup	: split1 (tup E1 E2) S'
 			<- split1 E2 S2
 			<- split1 E1 S1
@@ -41,7 +41,7 @@ spl1-pi2	: split1 (pi2 E) S'
 spl1-lam-t	: split1 (lam _ M) (trivM (lam unit ([x] tup (I x) ztup)) (lam unit ([xl] lett xl ([_] Q))))
 			<- {x : term} split1 x (trivM x x) -> split1 (M x) (trivM (I x) (Q x)).
 spl1-lam-p	: split1 (lam _ M) (trivM (lam unit C) (lam unit ([xl] lett xl R)))
-			<- {x : term} split1 x (trivM x x) -> split1 (M x) (pipeM (C x) ([l:term] R x l)).
+			<- {x : term} split1 x (trivM x x) -> split1 (M x) (pipeM (C x) ([l:term] R x l)). %{
 spl1-app-tt	: split1 (app E1 E2) (pipeM (lett (app I1 I2) ([y] [z] tup y z)) ([l] app Q1 (tup Q2 l)))
 			<- split1 E2 (trivM I2 Q2)
 			<- split1 E1 (trivM I1 Q1).
@@ -69,7 +69,7 @@ spl1-app-pp	: split1 (app E1 E2)
 spl1-next-p	: split1 (next E) (pipeM (tup ztup P) R)
 			<- split2 E (pipeS P R). 
 spl1-next-t	: split1 (next E) (trivM ztup Q)
-			<- split2 E (trivS Q). 
+			<- split2 E (trivS Q). }%
 %{split1-letn : split1 (letn E M) 
 				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))

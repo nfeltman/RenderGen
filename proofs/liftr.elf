@@ -122,6 +122,39 @@ of-wf : of E T W -> ty-wf T W -> type.
 eq-term  : term -> term -> type.
 eq-term_ : eq-term E E.
 
+%block just-var : block {x : term}.
+
+%% TERM EQUALITY IS A CONGRUENCE
+eq-cong/lam : ({x} eq-term (M x) (M' x)) -> {A} eq-term (lam A M) (lam A M') -> type.
+%mode eq-cong/lam +Deq +E -Deq'.
+- : eq-cong/lam ([x] eq-term_) _ eq-term_.
+%worlds (just-var) (eq-cong/lam _ _ _).
+%total {} (eq-cong/lam _ _ _).
+
+eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
+%mode eq-cong/lett +Deq +E -Deq'.
+- : eq-cong/lett eq-term_ _ eq-term_.
+%worlds (just-var) (eq-cong/lett _ _ _).
+%total {} (eq-cong/lett _ _ _).
+
+eq-cong/tup : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (tup E1 E2) (tup E1' E2') -> type.
+%mode eq-cong/tup +Deq1 +Deq2 -Deq'.
+- : eq-cong/tup eq-term_ eq-term_ eq-term_.
+%worlds (just-var) (eq-cong/tup _ _ _).
+%total {} (eq-cong/tup _ _ _).
+
+eq-cong/pi1 : eq-term E E' -> eq-term (pi1 E) (pi1 E') -> type.
+%mode eq-cong/pi1 +Deq -Deq'.
+- : eq-cong/pi1 eq-term_ eq-term_.
+%worlds (just-var) (eq-cong/pi1 _ _).
+%total {} (eq-cong/pi1 _ _).
+
+eq-cong/pi2 : eq-term E E' -> eq-term (pi2 E) (pi2 E') -> type.
+%mode eq-cong/pi2 +Deq -Deq'.
+- : eq-cong/pi2 eq-term_ eq-term_.
+%worlds (just-var) (eq-cong/pi2 _ _).
+%total {} (eq-cong/pi2 _ _).
+
 %% TYPE IDENTITY
 idty : ty -> ty -> type.
 idty/refl : idty T T.
