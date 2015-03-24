@@ -65,11 +65,11 @@ spl1-app-pp	: split1 (app E1 E2)
 					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
 				)
 			<- split1 E2 (pipeM C2 R2)
-			<- split1 E1 (pipeM C1 R1).%{
+			<- split1 E1 (pipeM C1 R1).
 spl1-next-p	: split1 (next E) (pipeM (tup ztup P) R)
-			<- split2 E (pipeS P R). 
+			<- split2 E (pipeS P R).
 spl1-next-t	: split1 (next E) (trivM ztup Q)
-			<- split2 E (trivS Q). }%
+			<- split2 E (trivS Q). 
 %{split1-letn : split1 (letn E M) 
 				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
 				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
@@ -88,7 +88,7 @@ appRes2-tp : appRes2 (trivS Q1) (pipeS P2 R2) F (pipeS P2 ([l] F Q1 (R2 l))).
 appRes2-pt : appRes2 (pipeS P1 R1) (trivS Q2) F (pipeS P1 ([l] F (R1 l) Q2)).
 appRes2-tt : appRes2 (trivS Q1) (trivS Q2) F (trivS (F Q1 Q2)).
 
-spl2-ztup	: split2 ztup (pipeS ztup ([_] ztup)).
+spl2-ztup	: split2 ztup (pipeS ztup ([_] ztup)). 
 spl2-tup	: split2 (tup E1 E2) S'
 			<- split2 E2 S2
 			<- split2 E1 S1
