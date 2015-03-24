@@ -18,7 +18,7 @@ mval-lam  : mval (lam _ _).
 pval : seperatedM -> type.
 pval-s	: pval (trivM I Q)
 		<- mval I.
-
+%{
 sstepM  : seperatedM -> seperatedM -> type.
 sstepM-t : mstep wor1 I I' -> sstepM (trivM I Q) (trivM I' Q).
-sstepM-p : mstep wor1 C C' -> sstepM (pipeM C R) (pipeM C' R).
+sstepM-p : mstep wor1 C C' -> sstepM (pipeM C R) (pipeM C' R).}%

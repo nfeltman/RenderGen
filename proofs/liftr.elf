@@ -63,9 +63,9 @@ of-lam 	: of (lam A ([x] M x)) (arr A B) W
 of-app  : of (app E1 E2) B W
 			<- of E2 A W
 			<- of E1 (arr A B) W.
-of-let  : of (let E ([x] M x)) B wor2
+%{of-let  : of (let E ([x] M x)) B wor2
 			<- of E A wor2
-			<- ({x:term} of x A wor2 -> of (M x) B wor2).
+			<- ({x:term} of x A wor2 -> of (M x) B wor2). }%
 of-next	: of (next E) (fut A) wor1
 			<- of E A wor2.
 %{of-letn : of (letn E M) B wor1
@@ -97,9 +97,9 @@ of-wf : of E T W -> ty-wf T W -> type.
 	<- ({x:term} {Dof : of x A W} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).
 - : of-wf (of-app Dof1 Dof2) Dwf
 	<- of-wf Dof1 (ty-wf-arr _ Dwf). 
-- : of-wf (of-let DofM DofE) Dwf2
+%{- : of-wf (of-let DofM DofE) Dwf2
 	<- of-wf DofE Dwf1
-	<- ({x:term} {Dof : of x A wor2} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).
+	<- ({x:term} {Dof : of x A wor2} {_ : of-wf Dof Dwf1} of-wf (DofM x Dof) Dwf2).}%
 - : of-wf (of-next Dof) (ty-wf-fut Dwf)
 	<- of-wf Dof Dwf.
 %{- : of-wf (of-letn DofM DofE) Dwf2
