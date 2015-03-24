@@ -131,6 +131,12 @@ eq-cong/lam : ({x} eq-term (M x) (M' x)) -> {A} eq-term (lam A M) (lam A M') -> 
 %worlds (just-var) (eq-cong/lam _ _ _).
 %total {} (eq-cong/lam _ _ _).
 
+eq-cong/app : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (app E1 E2) (app E1' E2') -> type.
+%mode eq-cong/app +Deq1 +Deq2 -Deq'.
+- : eq-cong/app eq-term_ eq-term_ eq-term_.
+%worlds (just-var) (eq-cong/app _ _ _).
+%total {} (eq-cong/app _ _ _).
+
 eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
 %mode eq-cong/lett +Deq +E -Deq'.
 - : eq-cong/lett eq-term_ _ eq-term_.

@@ -1,57 +1,96 @@
 %% PRECOMPUTATIONS CANNOT DEPEND ON STAGE TWO VARIABLES
-c-strengthen1 : ({x : term} split2 x (trivS x)-> split1 (E x) (pipeM (C x) _)) -> ({x :term} eq-term (C x) C') -> type.
-%mode c-strengthen1 +Dspl -Deq.
-i-strengthen1 : ({x : term} split2 x (trivS x)-> split1 (E x) (trivM (I x) _)) -> ({x :term} eq-term (I x) I') -> type.
-%mode i-strengthen1 +Dspl -Deq.
-p-strengthen2 : ({x : term} of x A wor2 -> split2 (E x) (pipeS (P x) _)) -> ({x :term} eq-term (P x) P') -> type.
-%mode p-strengthen2 +Dspl -Deq.
+c-strengthen : ({x : term} split2 x (trivS x) -> split1 (E x) (pipeM (C x) _)) -> ({x :term} eq-term (C x) C') -> type.
+%mode c-strengthen +Dspl -Deq.
+i-strengthen : ({x : term} split2 x (trivS x) -> split1 (E x) (trivM (I x) _)) -> ({x :term} eq-term (I x) I') -> type.
+%mode i-strengthen +Dspl -Deq.
+p-strengthen : ({x : term} split2 x (trivS x) -> split2 (E x) (pipeS (P x) _)) -> ({x :term} eq-term (P x) P') -> type.
+%mode p-strengthen +Dspl -Deq.
 
 %block strengthening-var1 : block 
-	{x:term} {dspl : split1 x (trivM x x)} {dstr : i-strengthen1 ([x][dsplx] dspl) ([x]eq-term_)}.
+	{x:term} {dspl : split1 x (trivM x x)} {dstr : i-strengthen ([x][dsplx] dspl) ([x]eq-term_)}.
 
-- : c-strengthen1 ([x] [dspl] Dspl : split1 E (pipeM C _)) ([x] eq-term_).
-- : i-strengthen1 ([x] [dspl] Dspl : split1 E (trivM I _)) ([x] eq-term_).
-- : c-strengthen1 ([x] [dspl] spl1-pi1 appBoth-p (Dspl x dspl)) Deq'
-	<- c-strengthen1 Dspl Deq
+%% ZTUP
+- : i-strengthen ([x] [dspl] spl1-ztup) ([x] eq-term_).
+- : p-strengthen ([x] [dspl] spl2-ztup) ([x] eq-term_).
+
+%% PI1
+- : c-strengthen ([x] [dspl] spl1-pi1 appBoth-p (Dspl x dspl)) Deq'
+	<- c-strengthen Dspl Deq
 	<- {x} eq-cong/lett (Deq x) ([y] [z] eq-term_) (Deq' x).
-- : i-strengthen1 ([x] [dspl] spl1-pi1 appBoth-t (Dspl x dspl)) Deq'
-	<- i-strengthen1 Dspl Deq
+- : i-strengthen ([x] [dspl] spl1-pi1 appBoth-t (Dspl x dspl)) Deq'
+	<- i-strengthen Dspl Deq
 	<- {x} eq-cong/pi1 (Deq x) (Deq' x).
-- : c-strengthen1 ([x] [dspl] spl1-pi2 appBoth-p (Dspl x dspl)) Deq'
-	<- c-strengthen1 Dspl Deq
+
+%% PI2
+- : c-strengthen ([x] [dspl] spl1-pi2 appBoth-p (Dspl x dspl)) Deq'
+	<- c-strengthen Dspl Deq
 	<- {x} eq-cong/lett (Deq x) ([y] [z] eq-term_) (Deq' x).
-- : i-strengthen1 ([x] [dspl] spl1-pi2 appBoth-t (Dspl x dspl)) Deq'
-	<- i-strengthen1 Dspl Deq
+- : i-strengthen ([x] [dspl] spl1-pi2 appBoth-t (Dspl x dspl)) Deq'
+	<- i-strengthen Dspl Deq
 	<- {x} eq-cong/pi2 (Deq x) (Deq' x).
-- : i-strengthen1 ([x] [dspl] spl1-tup appBoth2-tt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
-	<- i-strengthen1 Dspl1 Deq1
-	<- i-strengthen1 Dspl2 Deq2
+
+%% TUP
+- : i-strengthen ([x] [dspl] spl1-tup appBoth2-tt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- i-strengthen Dspl1 Deq1
+	<- i-strengthen Dspl2 Deq2
 	<- {x} eq-cong/tup (Deq1 x) (Deq2 x) (Deq x).
-- : c-strengthen1 ([x] [dspl] spl1-tup appBoth2-tp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
-	<- i-strengthen1 Dspl1 Deq1
-	<- c-strengthen1 Dspl2 Deq2
+- : c-strengthen ([x] [dspl] spl1-tup appBoth2-tp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- i-strengthen Dspl1 Deq1
+	<- c-strengthen Dspl2 Deq2
 	<- ({x}{z} eq-cong/tup (Deq1 x) eq-term_ (Deq1' x z))
 	<- ({x}{y}{z} eq-cong/tup eq-term_ (Deq1' x z) (Deq1'' x z y))
 	<- {x} eq-cong/lett (Deq2 x) ([y] [z] Deq1'' x z y) (Deq x).
-- : c-strengthen1 ([x] [dspl] spl1-tup appBoth2-pt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
-	<- c-strengthen1 Dspl1 Deq1
-	<- i-strengthen1 Dspl2 Deq2
+- : c-strengthen ([x] [dspl] spl1-tup appBoth2-pt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- c-strengthen Dspl1 Deq1
+	<- i-strengthen Dspl2 Deq2
 	<- ({x}{z} eq-cong/tup eq-term_ (Deq2 x) (Deq2' x z))
 	<- ({x}{y}{z} eq-cong/tup eq-term_ (Deq2' x z) (Deq2'' x z y))
 	<- {x} eq-cong/lett (Deq1 x) ([y] [z] Deq2'' x z y) (Deq x).
-- : c-strengthen1 ([x] [dspl] spl1-tup appBoth2-pp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
-	<- c-strengthen1 Dspl1 Deq1
-	<- c-strengthen1 Dspl2 Deq2
+- : c-strengthen ([x] [dspl] spl1-tup appBoth2-pp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- c-strengthen Dspl1 Deq1
+	<- c-strengthen Dspl2 Deq2
 	<- ({x}{y}{z} eq-cong/lett (Deq2 x) ([x2] [y2] eq-term_) (Deq2' x z y))
 	<- {x} eq-cong/lett (Deq1 x) ([y] [z] Deq2' x z y) (Deq x).
-- : i-strengthen1 
+
+%% LAM
+- : i-strengthen 
 		([x] [dspl] spl1-lam-p ([y] [dsply] DsplM y dsply x dspl) : split1 (lam A _) _) 
 		Deq'
-	<- ({y} {dsply : split1 y (trivM y y)} i-strengthen1 ([x][dsplx] dsply) ([x]eq-term_) -> 
-		c-strengthen1 (DsplM y dsply) (Deq y))
+	<- ({y} {dsply : split1 y (trivM y y)} i-strengthen ([x][dsplx] dsply) ([x]eq-term_) -> 
+		c-strengthen (DsplM y dsply) (Deq y))
 	<- {x} eq-cong/lam ([y] Deq y x) unit (Deq' x).
-%worlds (strengthening-var1) (c-strengthen1 _ _) (i-strengthen1 _ _).
-%total (Dspl1 Dspl2) (c-strengthen1 Dspl1 _) (i-strengthen1 Dspl2 _).
+- : i-strengthen 
+		([x] [dspl] spl1-lam-t ([y] [dsply] DsplM y dsply x dspl) : split1 (lam A _) _) 
+		Deq''
+	<- ({y} {dsply : split1 y (trivM y y)} i-strengthen ([x][dsplx] dsply) ([x]eq-term_) -> 
+		i-strengthen (DsplM y dsply) (Deq y))
+	<- ({x}{y} eq-cong/tup (Deq y x) eq-term_ (Deq' y x))
+	<- {x} eq-cong/lam ([y] Deq' y x) unit (Deq'' x).
+
+%% APP
+- : c-strengthen ([x] [dspl] spl1-app-tt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- i-strengthen Dspl1 Deq1
+	<- i-strengthen Dspl2 Deq2
+	<- {x} eq-cong/app (Deq1 x) (Deq2 x) (Deq x).
+- : c-strengthen ([x] [dspl] spl1-app-tp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- i-strengthen Dspl1 Deq1
+	<- c-strengthen Dspl2 Deq2
+	<- ({x}{y} eq-cong/app (Deq1 x) eq-term_ (Deq1' x y))
+	<- ({x}{y}{z} eq-cong/lett (Deq1' x y) ([y2][z2] eq-term_) (Deq1'' x y z))
+	<- {x} eq-cong/lett (Deq2 x) ([y] [z] Deq1'' x y z) (Deq x).
+- : c-strengthen ([x] [dspl] spl1-app-pt (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- c-strengthen Dspl1 Deq1
+	<- i-strengthen Dspl2 Deq2
+	<- ({x}{y} eq-cong/app eq-term_ (Deq2 x) (Deq2' x y))
+	<- ({x}{y}{z} eq-cong/lett (Deq2' x y) ([y2][z2] eq-term_) (Deq2'' x y z))
+	<- {x} eq-cong/lett (Deq1 x) ([y] [z] Deq2'' x y z) (Deq x).
+- : c-strengthen ([x] [dspl] spl1-app-pp (Dspl1 x dspl) (Dspl2 x dspl)) Deq
+	<- c-strengthen Dspl1 Deq1
+	<- c-strengthen Dspl2 Deq2
+	<- ({x}{y}{z} eq-cong/lett (Deq2 x) ([x2] [y2] eq-term_) (Deq2' x z y))
+	<- {x} eq-cong/lett (Deq1 x) ([y] [z] Deq2' x z y) (Deq x).
+%worlds (strengthening-var1) (c-strengthen _ _) (i-strengthen _ _) (p-strengthen _ _).
+%total (Dspl1 Dspl2 Dspl3) (c-strengthen Dspl1 _) (i-strengthen Dspl2 _) (p-strengthen Dspl3 _).
 
 %{
 %% SPLITTING IS TOTAL FOR WELL-TYPED TERMS
