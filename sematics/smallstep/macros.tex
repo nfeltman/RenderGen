@@ -1,0 +1,253 @@
+%!TEX root = paper.tex
+
+\newcommand {\TODO} {\textbf{TODO:} }
+
+\definecolor{needsfixcolor}{rgb}{0.8,0.0,0.0}
+\newcommand{\needsfix}[1]{{\color{needsfixcolor}\textbf{#1}}}
+
+% core conventions and language names
+\newcommand {\bbone} {\ensuremath{\mathbbmss{1}}}
+\newcommand {\bbonep} {\ensuremath{\mathbbmss{1G}}}
+\newcommand {\bbonem} {\ensuremath{\mathbbmss{1M}}}
+\newcommand {\bbtwo} {\ensuremath{\mathbbmss{2}}}
+\newcommand {\ellStaged} {$\mathrm{L}^{\bbone\bbtwo}$}
+\newcommand {\ellResid} {$\mathrm{L^R}$}
+\newcommand {\ellTarget} {$\mathrm{L^T}$}
+\newcommand {\lamStaged} {$\lambda^{\bbone\bbtwo}$}
+\newcommand {\lamCircle} {$\lambda^{\fut}$}
+\newcommand {\lamResid} {$\mathrm{\lambda^R}$}
+\newcommand {\lamTarget} {$\mathrm{\lambda^T}$}
+\newcommand {\lang} {\lamStaged}
+\newcommand {\langTwo} {$\lambda^\bbtwo$}
+\newcommand {\langS} {$\lambda^\&$}
+\newcommand {\langmono} {$\lambda^{\textrm{U}}$}
+\newcommand {\rmint} {{\rm int}}
+\newcommand {\rmunit} {{\rm unit}}
+\newcommand {\rmbool} {{\rm bool}}
+
+% metatheory
+\newcommand{\wfsym}{\ensuremath{\mathsf{wf}}}
+\newcommand{\pvalsym}{\ensuremath{\mathsf{pval}}}
+\newcommand{\ressym}{\ensuremath{\mathsf{res}}}
+\newcommand{\valsym}{\ensuremath{\mathsf{val}}}
+\newcommand{\fvalsym}{\ensuremath{\mathsf{fval}}}
+\newcommand{\cpvalsym}{\ensuremath{\mathsf{cpval}}}
+\newcommand{\wf}{\ \wfsym}
+\newcommand{\pval}{\ \pvalsym}
+\newcommand{\res}{\ \ressym}
+\newcommand{\val}{\ \valsym}
+\newcommand{\fval}{\ \fvalsym}
+\newcommand{\cpval}{\ \cpvalsym}
+
+% bnf stuff
+\newcommand {\myit} [1]{\operatorname{\it{#1}}}
+\newcommand {\stage} {\langle\mathit{stage}\rangle}
+\newcommand {\type} {\tau}
+\newcommand {\typeo} {\langle\bbone\text{-}\mathit{type}\rangle}
+\newcommand {\typet} {\langle\bbtwo\text{-}\mathit{type}\rangle}
+\newcommand {\expr} {e}
+\newcommand {\brancho} {\langle\bbone\text{-}\mathit{brn}\rangle}
+\newcommand {\brancht} {\langle\bbtwo\text{-}\mathit{brn}\rangle}
+\newcommand {\expro} {\langle\bbone\text{-}\mathit{exp}\rangle}
+\newcommand {\exprt} {\langle\bbtwo\text{-}\mathit{exp}\rangle}
+%\newcommand {\val} {\langle\mathit{val}\rangle}
+\newcommand {\valo} {\langle\bbone\text{-}\mathit{val}\rangle}
+\newcommand {\valt} {\langle\bbtwo\text{-}\mathit{val}\rangle}
+\newcommand {\world} {w}
+\newcommand {\var} {x}
+\newcommand {\emptyC} {\bullet}
+\newcommand {\context} {\Gamma}
+\newcommand {\inte} {i}
+\newcommand {\bool} {b}
+\newcommand {\resi} {\langle\mathit{res}\rangle}
+\newcommand {\gbar} {~~|~~}
+
+% nodes
+\newcommand {\yhat} {\ensuremath{\mathtt{\hat y}}}
+\newcommand {\curr} {\nabla}
+\newcommand {\fut} {\bigcirc}
+
+
+\newcommand {\pause} {{\tt hold}}
+\renewcommand {\next} {{\tt next}}
+\newcommand {\prev} {{\tt prev}}
+
+\newenvironment{abstrsyn}
+{ 
+	\newcommand {\mytt} [1] {\texttt{##1}}
+	\renewcommand {\pause} [1] {\mytt{hold(}##1\mytt{)}}
+	\renewcommand {\next} [1] {\mytt{next(}##1\mytt{)}}
+	\renewcommand {\prev} [1] {\mytt{prev(}##1\mytt{)}}
+	\newcommand {\pure} [1] {\mytt{gr(}##1\mytt{)}}
+	\newcommand {\inl} [1] {\mytt{inl}\mytt{(}{##1}\mytt{)}}
+	\newcommand {\inr} [1] {\mytt{inr}\mytt{(}{##1}\mytt{)}}
+	\newcommand {\tup} [1] {\mytt{<} ##1 \mytt{>}}
+	\newcommand {\pio} [1] {\mytt{pi1(}##1\mytt{)}}
+	\newcommand {\pit} [1] {\mytt{pi2(}##1\mytt{)}}
+	\newcommand {\roll} [1] {\mytt{roll}\mytt{(}##1\mytt{)}}
+	\newcommand {\unroll} [1] {\mytt{unroll(}##1\mytt{)}}
+	\newcommand {\lifttag} [1] {\mytt{lifttag(}##1\mytt{)}}
+	\newcommand {\push} {\mytt{unroll}}
+	\newcommand {\letp} [3] {\mytt{letg(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
+
+	\newcommand {\letin} [3] {\mytt{let(}{##2}\mytt{;}{##1}.{##3}\mytt{)}}
+	\newcommand {\talllet} [3] {\begin{array}{@{}l@{}} \mytt{let(}{##2}\mytt{;}{##1}\mytt{.}\\{##3}\end{array}}
+
+	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
+	\newcommand {\mediumcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}{##3}\mytt{)} \end{array}}
+
+	\newcommand {\rtab}  [2] {\llbracket{##1}\rrbracket{##2}}
+	\newcommand {\caseP} [3] {\mytt{caseg(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\pipeM} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
+	\newcommand {\pipeS} [3] {\mytt{\{}{##1}\mytt{|}{##2}\mytt{.}{##3}\mytt{\}}}
+	\newcommand {\mval}  [2] {\mytt{\{}{##1}\mytt{;}{##2}\mytt{\}}}
+
+	\newcommand {\app} [2] {\mytt{app}\mytt{(}{##1}\mytt{;}{##2}\mytt{)}}
+	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
+	\newcommand {\fix} [3] {\mytt{fix}\mytt{(}{##1}\mytt{.}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\valprod} [2] {({##1},{##2})}
+	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
+
+	\newcommand {\mualphatau} {\mu \alpha.\tau}
+
+	\newcommand {\scriptC} {\mathcal C}
+	\newcommand {\scriptCapp} [1] {\scriptC\mytt{(}##1\mytt{)}}
+}
+{ }
+
+
+\newcommand {\myatsign} {\hspace{-0.15em}\text{@}\hspace{-0.2em}}
+
+%judgments
+\newcommand {\colone} [2] {{#1}:{#2}~\myatsign~\bbone}
+\newcommand {\coltwo} [2] {{#1}:{#2}~\myatsign~\bbtwo}
+\newcommand {\colmix} [2] {{#1}:{#2}~\myatsign~\bbonem}
+\newcommand {\colpure} [2] {{#1}:{#2}~\myatsign~\bbonep}
+\newcommand {\colwor} [2] {{#1}:{#2}~\myatsign~w}
+\newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colone{#2}{#3}}
+\newcommand {\typespure} [3] [\Gamma] { {#1} \vdash \colpure{#2}{#3}}
+\newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
+\newcommand {\typeswor} [3] [] { \Gamma{#1} \vdash \colwor{#2}{#3}}
+\newcommand {\types} [3] [\Gamma] {{#1} \vdash {#2}:{#3}}
+\newcommand {\istypemix} {\ \mathsf{type}~\myatsign~\bbonem}
+\newcommand {\istypetwo} {\ \mathsf{type}~\myatsign~\bbtwo}
+\newcommand {\istypepure} {\ \mathsf{type}~\myatsign~\bbonep}
+\newcommand {\istypewor} {\ \mathsf{type}~\myatsign~w}
+
+\newcommand {\typeslangTwo} [3] [\Gamma] {{#1} \vdash_\bbtwo {#2}:{#3}}
+
+\newcommand {\reify} [3] {[{#1};{#2}]\searrow{#3}}
+\newcommand {\erasone} {\Downarrow^e_\bbone}
+\newcommand {\erastwo} {\Downarrow^e_\bbtwo}
+\newcommand {\isvalone} [1] {\Gamma \vdash {#1}~{\rm val}~\myatsign~\bbone}
+\newcommand {\isvaltwo} {~{\rm val}~\myatsign~\bbtwo}
+\newcommand {\isvalwor} {~{\rm val}~\myatsign~w}
+\newcommand {\isseppval} {~{\rm pval^S}}
+%\newcommand {\reducexpl} [4] {{#3} \Downarrow_{#1}^{#2} {#4}}
+%\newcommand {\redone} [2] {{#1} \Downarrow_\bbone^L {#2}}
+%\newcommand {\redtwo} [2] {{#1} \Downarrow_\bbtwo^\bbtwo {#2}}
+%\newcommand {\reducewor} [2] {{#1} \Downarrow_w^L {#2}}
+\newcommand {\specwor} [2] [] {{#2} \downarrow_{#1}}
+%\newcommand {\diaone} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbone [{#3}]}
+%\newcommand {\diatwo} [3] [\Gamma] {{#1} \vdash {#2} \Downarrow_\bbtwo {#3}}
+\newcommand {\diaone} [4] [\Gamma] {{#2} \Downarrow_{\bbonem} \rtab{#3}{#4}}
+\newcommand {\diatwo} [3] [\Gamma] {{#2} \Downarrow_\bbtwo {#3}}
+\newcommand {\sepredonesym} {{\Downarrow_\bbone^S}}
+\newcommand {\sepredtwosym} {{\Downarrow_\bbtwo^S}}
+\newcommand {\sepredone} [2] {{#1} \sepredonesym {#2}}
+\newcommand {\sepredtwo} [2] {{#1} \sepredtwosym {#2}}
+\newcommand {\reduce} [2] {{#1} \Downarrow {#2}}
+\newcommand {\reifysym} {\overset{R}\Rightarrow}
+\newcommand {\redsym} {{\Downarrow}}
+\newcommand {\redonesym} {{\Downarrow_{\bbonem}}}
+\newcommand {\redtwosym} {{\Downarrow_\bbtwo}}
+\newcommand {\tworedsym} {{\downarrow_\bbtwo}}
+
+%\newcommand {\reduceonesub} [1] [] {\reduceone{e_{#1}}{v_{#1}}}
+%\newcommand {\reducetwosub} [1] [] {\reducetwo{e_{#1}}{v_{#1}}}
+\newcommand {\reduceworsub} [1] [] {\reducewor{e_{#1}}{v_{#1}}}
+\newcommand {\specworsub} [1] [] {\specwor{e_{#1}}}
+\newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1}}{v_{#1}}}
+\newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
+
+\newcommand {\masko} [1] {|#1|_{\bbone}}
+\newcommand {\maskt} [1] {|#1|_{\bbtwo}}
+
+\newcommand {\vsplito} {\curvearrowbotright}
+\newcommand {\vsplitt} {\overset{\bbtwo}\curvearrowbotright}
+\newcommand {\tsplito} {\overset{\bbone}\curvearrowright}
+\newcommand {\tsplits} {\overset{\bbtwo}\curvearrowright}
+\newcommand {\csplit} {\curvearrowright}
+\newcommand {\ssplit} {\curvearrowbotright}
+
+\newcommand {\splitonesym} {\overset{\bbonem}\rightsquigarrow}
+\newcommand {\splittwosym} {\overset{\bbtwo}\rightsquigarrow}
+\newcommand {\splitone} 	[5] [\Gamma] {{#2} \splitonesym \mytt{\{}{#4}\mytt{|}{#5}\mytt{\}}}
+\newcommand {\splitonetall} [5] [\Gamma] {{#2} \splitonesym \left\{\begin{array}{@{}l@{}}{#4}\\\mytt{|}{#5}\end{array}\right\}}
+\newcommand {\splittwo} 	[6] [\Gamma] {{#2} \splittwosym \pipeS{#4}{#5}{#6} }
+\newcommand {\splittwotall} [6] [\Gamma] {{#2} \splittwosym \left\{\begin{array}{@{}l@{}}{#4}\\\mytt{|}{#5}.{#6}\end{array}\right\}}
+\newcommand {\splittwotaller}[6][\Gamma] {{#2} \splittwosym \left\{\begin{array}{@{}l@{}}{#4}\\\mytt{|}{#5}.\\\hspace{1em}{#6}\end{array}\right\}}
+\newcommand {\splitonesub}	[3] [\Gamma] {\splitone [{#1}] {e_{#2}}{#3}{c_{#2}}{l_{#2}.r_{#2}}}
+\newcommand {\splittwosub}	[3] [\Gamma] {\splittwo [{#1}] {e_{#2}}{#3}{p_{#2}}{l_{#2}}{r_{#2}}}
+
+%misc
+\newcommand{\dom}[1]{\mathsf{dom}(#1)}
+\newcommand {\gcomp} [2] {\xi_{#1}, \xi_{#2}}
+\newcommand {\daviesz} {\overset 0 \hookrightarrow}
+\newcommand {\davieso} {\overset 1 \hookrightarrow}
+\newcommand {\ttrpar} {\texttt{)}}
+\newcommand {\ttlpar} {\texttt{(}}
+\newcommand {\ttsemi} {\texttt{;}}
+
+%default stuff
+\newcommand \ty \typesone
+\newcommand \red \reduce
+\newcommand \sub \reduceonesub
+\newcommand \spl \splitone
+\newcommand \col \colone
+
+%inference extension
+\newcommand {\infertypeswor}  [3] 
+		[NONAME]{
+			\renewcommand \ty \typeswor
+			\renewcommand \col \colwor
+			\infer %[\mathrm{#1}] 
+      {#2}{#3}}
+\newcommand {\inferreducewor} [3] 
+		[NONAME]{
+			\renewcommand \red \reducewor
+			\renewcommand \sub \reduceworsub
+			\infer [\mathrm{#1\Downarrow}] 
+      {#2}{#3}}
+\newcommand {\inferreducespc} [3] 
+		[NONAME]{
+			\renewcommand \red \specwor
+			\renewcommand \sub \specworsub
+			\infer [\mathrm{#1\downarrow}] {#2}{#3}}
+\newcommand {\inferdiaone} [3] 
+		[NONAME]{
+			\renewcommand \red \diaone
+			\renewcommand \sub \diaonesub
+			\infer %[\mathrm{#1\Downarrow_\bbone}] 
+      {#2}{#3}}
+\newcommand {\inferdiaspc} [3] 
+		[NONAME]{
+			\renewcommand \red \diatwo
+			\renewcommand \sub \diatwosub
+			\infer %[\mathrm{#1\Downarrow_\bbtwo}] 
+      {#2}{#3}}
+\newcommand {\infersplitone}  [3] 
+		[NONAME]{
+			\renewcommand \spl \splitone
+			\renewcommand \sub \splitonesub
+			\renewcommand \col \colone
+			\infer %[\mathrm{#1 \overset{\bbone}\rightsquigarrow}]
+      {#2}{#3}}
+\newcommand {\infersplittwo}  [3] 
+		[NONAME]{
+			\renewcommand \spl \splittwo
+			\renewcommand \sub \splittwosub
+			\renewcommand \col \coltwo
+			\infer %[\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}]
+      {#2}{#3}}

@@ -11,7 +11,7 @@
 \pagenumbering{gobble}
 
 \newcommand {\next}{asdlfkj}
-\input{../../paper/macros}
+\input{macros}
 
 \newcommand{\calp}{\mathcal{P}}
 \newcommand{\overn}[1][]{\overline {n_{#1}}}
@@ -166,6 +166,77 @@ e \stepsone e'~@~\bbtwo
 \infer{\pi_1e \pval~@~\bbtwo}{e \pval~@~\bbtwo} \and
 \infer{\pi_2e \pval~@~\bbtwo}{e \pval~@~\bbtwo} 
 \end{mathpar}
+%endbit
+
+\bit{Typing Form}
+%beginbit
+\begin{align*}
+&\typeswor {e} A\text{, where} \\
+&~e \text{ is a term} \\
+&~A \text{ is a type} \\
+&~w \text{ is a world (\bbone\ or \bbtwo)}
+\end{align*}
+%endbit
+
+\bit{Typing Versions}
+%beginbit
+\begin{mathpar}
+\typesone {e} A \and
+\typestwo {e} A
+\end{mathpar}
+%endbit
+
+\bit{Int Typing}
+%beginbit
+\begin{mathpar}
+\infer{\typeswor {\overn} \rmint}{\cdot} \and
+\infer{\typeswor {e_1 + e_2} \rmint}{\typeswor {e_1} \rmint & \typeswor {e_2} \rmint} \and
+\infer{\typestwo {\pause~e} \rmint}{\typesone e \rmint}
+\end{mathpar}
+%endbit
+
+\bit{Tuple Typing}
+%beginbit
+\begin{mathpar}
+\infer{\typeswor {(e_1, e_2)} {A \times B}}{\typeswor {e_1} A & \typeswor {e_2} B} \\
+\infer{\typeswor {\#1~e} A}{\typeswor e {A \times B}} \and
+\infer{\typeswor {\#2~e} B}{\typeswor e {A \times B}}
+\end{mathpar}
+%endbit
+
+\bit{Next/Prev Typing}
+%beginbit
+\begin{mathpar}
+\infer{\typesone {\next~e} {\fut A}}{\typestwo e A} \and
+\infer{\typestwo {\prev~e} A}{\typesone e {\fut A}}
+\end{mathpar}
+%endbit
+
+\bit{Function Typing}
+%beginbit
+\begin{mathpar}
+\infer{\typeswor {\lambda x:A. e} {A \to B}}{\typeswor [, \colwor x A] e B} \and
+\infer{\typeswor {e_1~e_2} B}{\typeswor {e_1} {A \to B} & \typeswor {e_2} A}
+\end{mathpar}
+%endbit
+
+\bit{Splitting Construction}
+%beginbit
+\begin{align*}
+&e \splittwosym \{p | l.r\} \text{, where} \\
+&\types [\cdot] p \tau \text{ is a monostage term} \\
+&\types [l:\tau] r A \text{ is a type}
+\end{align*}
+%endbit
+
+\bit{Simple Splitting}
+%beginbit
+\begin{align*}
+&\text{if } \typestwo e A \text{, then} \\
+&e \splittwosym \{p | l.r\} \text{, such that} \\
+&\types [\cdot] p \tau \text{ is a monostage term} \\
+&\types [l:\tau] r A \text{ is a type}
+\end{align*}
 %endbit
 
 %beginlit
