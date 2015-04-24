@@ -1,0 +1,30 @@
+%% TYPE WELL-FORMED
+ty-wf : ty -> type.
+ty-wf-unit	: ty-wf unit.
+ty-wf-prod	: ty-wf (prod A B)
+				<- ty-wf B
+				<- ty-wf A.
+ty-wf-arr	: ty-wf (arr A B)
+				<- ty-wf B
+				<- ty-wf A.
+%worlds () (ty-wf _).
+
+%% TYPING JUDGMENT
+of : term -> ty -> type. %name of Dof.
+of-ztup	: of ztup unit.
+of-tup	: of (tup E1 E2) (prod A B)
+			<- of E2 B
+			<- of E1 A.
+of-pi1	: of (pi1 E) A
+			<- of E (prod A B).
+of-pi2	: of (pi2 E) B
+			<- of E (prod A B).
+of-lam 	: of (lam A ([x] M x)) (arr A B)
+			<- ({x: term} of x A -> of (M x) B)
+			<- ty-wf A.
+of-app  : of (app E1 E2) B
+			<- of E2 A
+			<- of E1 (arr A B).
+%{of-let  : of (let E ([x] M x)) B wor2
+			<- of E A wor2
+			<- ({x:term} of x A wor2 -> of (M x) B wor2). }%

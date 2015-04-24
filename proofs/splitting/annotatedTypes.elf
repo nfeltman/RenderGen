@@ -1,0 +1,92 @@
+%% INTERMEDIATE TYPE SYSTEM
+
+%% TYPE WELL-FORMED
+ty+wf : ty -> wor -> type.
+%%mode ty+wf +T +W.
+ty+wf-unit	: ty+wf unit W.
+ty+wf-prod	: ty+wf (prod A B) W
+				<- ty+wf B W
+				<- ty+wf A W.
+ty+wf-arr+	: ty+wf (arr+ A B C) W
+				<- ty+wf C W
+				<- ty-wf B
+				<- ty+wf A W.
+ty+wf-fut	: ty+wf (fut A) wor1
+				<- ty+wf A wor2.
+%worlds () (ty+wf _ _).
+
+%% BOUNDARY TYPES
+bty : type.
+triv : bty.
+nt : ty -> bty.
+
+%% TYPING JUDGMENT
+of+ : term -> ty -> wor -> type. %name of+ Dof.
+of+ztup	: of+ ztup unit W.
+of+tup	: of+ (tup E1 E2) (prod A B) W
+			<- of+ E2 B W
+			<- of+ E1 A W.
+of+pi1	: of+ (pi1 E) A W
+			<- of+ E (prod A B) W.
+of+pi2	: of+ (pi2 E) B W
+			<- of+ E (prod A B) W.
+of+lam 	: of+ (lam A ([x] M x)) (arr A B) W
+			<- ({x: term} of+ x A W -> of+ (M x) B W)
+			<- ty+wf A W.
+of+app  : of+ (app E1 E2) B W
+			<- of+ E2 A W
+			<- of+ E1 (arr A B) W.
+%{of+let  : of+ (let E ([x] M x)) B wor2
+			<- of+ E A wor2
+			<- ({x:term} of+ x A wor2 -> of+ (M x) B wor2). }%
+of+next	: of+ (next E) (fut A) wor1
+			<- of+ E A wor2.
+%{of+letn : of+ (letn E M) B wor1
+			<- of+ E (fut A) wor1
+			<- ({x:term} of+ x A wor2 -> of+ (M x) B wor1).}% 
+of+prev	: of+ (prev E) A wor2
+			<- of+ E (fut A) wor1.
+%{of+mono : of+ (mono E) (curr T) wor1
+			<- of+ E T worM.
+of+letm : of+ (letm E M) T2 wor1
+			<- of+ E (curr T1) wor1
+			<- ({x:term} of+ x T1 worM -> of+ (M x) T2 wor1).}%
+
+%block var-of : some {A : ty} {W : wor} block {x:term} {_ : of+ x A W}.
+%worlds (var-of) (of+ _ _ _).
+
+%% OUTPUTS OF TYPING ARE WELL-FORMED
+of+wf : of+ E T W -> ty+wf T W -> type.
+%mode of+wf +D1 -D2. 
+- : of+wf of+ztup ty+wf-unit.
+- : of+wf (of+tup Dof1 Dof2) (ty+wf-prod DwfA DwfB)
+	<- of+wf Dof1 DwfA
+	<- of+wf Dof2 DwfB.
+- : of+wf (of+pi1 Dof) DwfA
+	<- of+wf Dof (ty+wf-prod DwfA DwfB).
+- : of+wf (of+pi2 Dof) DwfB
+	<- of+wf Dof (ty+wf-prod DwfA DwfB).
+- : of+wf (of+lam Dwf1 DofM) (ty+wf-arr Dwf1 Dwf2)
+	<- ({x:term} {Dof : of+ x A W} {_ : of+wf Dof Dwf1} of+wf (DofM x Dof) Dwf2).
+- : of+wf (of+app Dof1 Dof2) Dwf
+	<- of+wf Dof1 (ty+wf-arr _ Dwf). 
+%{- : of+wf (of+let DofM DofE) Dwf2
+	<- of+wf DofE Dwf1
+	<- ({x:term} {Dof : of+ x A wor2} {_ : of+wf Dof Dwf1} of+wf (DofM x Dof) Dwf2).}%
+- : of+wf (of+next Dof) (ty+wf-fut Dwf)
+	<- of+wf Dof Dwf.
+%{- : of+wf (of+letn DofM DofE) Dwf2
+	<- of+wf DofE (ty+wf-fut Dwf1)
+	<- ({x:term} {Dof : of+ x A wor2} {_ : of+wf Dof Dwf1} of+wf (DofM x Dof) Dwf2).}%
+- : of+wf (of+prev Dof) Dwf
+	<- of+wf Dof (ty+wf-fut Dwf).
+%{- : of+wf (of+mono Dof) (ty+wf-curr Dwf)
+	<- of+wf Dof Dwf.
+- : of+wf (of+letm DofM DofE) DwfM
+	<- of+wf DofE (ty+wf-curr DwfE)
+	<- ({x:term} {Dof : of+ x A worM} of+wf Dof DwfE -> of+wf (DofM x Dof) DwfM).}%
+%block var-of+wf : 
+	some {A : ty} {W : wor} {Dwf : ty+wf A W} 
+	block {x:term} {Dof : of+ x A W} {_ : of+wf Dof Dwf}.
+%worlds (var-of+wf) (of+wf _ _).
+%total D (of+wf D _).
