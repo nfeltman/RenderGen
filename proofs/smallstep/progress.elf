@@ -89,8 +89,7 @@ prog/prev : dos wor1 E -> of^ E (fut T) wor1 -> dos wor2 (prev E) -> type.
 %mode prog/prev +Ddos +Dof -Ddos'.
 - : prog/prev (dos-mstep Dstep) _ (dos-mstep (ms-prev-s Dstep)).
 - : prog/prev (dos-lstep Dstep) _ (dos-mstep (ms-prev-ls Dstep)).
-- : prog/prev (dos-done (val-next Dvar)) _ (dos-mstep (ms-prev-r Dres))
-	<- var_res Dvar Dres.
+- : prog/prev (dos-done Dval) _ (dos-mstep (ms-prev-r Dval)).
 %worlds (prog-block) (prog/prev _ _ _).
 %total (Ddos) (prog/prev Ddos _ _).
 

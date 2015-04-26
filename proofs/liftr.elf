@@ -51,6 +51,12 @@ eq-cong/app : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (app E1 E2) (app E1' E
 %worlds (just-var) (eq-cong/app _ _ _).
 %total {} (eq-cong/app _ _ _).
 
+eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 E2) (let E1' E2') -> type.
+%mode eq-cong/let +Deq +E -Deq'.
+- : eq-cong/let eq-term_ _ eq-term_.
+%worlds (just-var) (eq-cong/let _ _ _).
+%total {} (eq-cong/let _ _ _).
+
 eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
 %mode eq-cong/lett +Deq +E -Deq'.
 - : eq-cong/lett eq-term_ _ eq-term_.
@@ -62,6 +68,12 @@ eq-cong/tup : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (tup E1 E2) (tup E1' E
 - : eq-cong/tup eq-term_ eq-term_ eq-term_.
 %worlds (just-var) (eq-cong/tup _ _ _).
 %total {} (eq-cong/tup _ _ _).
+
+eq-cong : {F : term -> term} eq-term E E' -> eq-term (F E) (F E') -> type.
+%mode eq-cong +F +Deq -Deq'.
+- : eq-cong _ eq-term_ eq-term_.
+%worlds (just-var) (eq-cong _ _ _).
+%total {} (eq-cong _ _ _).
 
 eq-cong/pi1 : eq-term E E' -> eq-term (pi1 E) (pi1 E') -> type.
 %mode eq-cong/pi1 +Deq -Deq'.

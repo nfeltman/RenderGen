@@ -1,0 +1,141 @@
+%%  USEFUL BLOCKS
+%block det-block : some {A : ty} block {x:term} {dvar : variable x} {ddone : done wor2 x}.
+
+%% DONE THINGS DON'T TAKE STEPS
+false : type. %freeze false.
+nostep : done W E -> mstep W E E' -> false -> type.
+%mode nostep +Ddone +Dstep -Dfalse.
+
+- : nostep (done-tup Ddone _) (ms-tup-s1 Dstep) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (done-tup _ Ddone) (ms-tup-s2 Dstep _) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-pi1 Ddone) (ms-pi1-s Dstep) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-pi2 Ddone) (ms-pi2-s Dstep) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-app Ddone _) (ms-app-s1 Dstep) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-app _ Ddone) (ms-app-s2 Dstep _) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-let _ Ddone) (ms-let-s1 Dstep) Dfalse
+	<- nostep Ddone Dstep Dfalse.
+- : nostep (res-let Ddone _) (ms-let-s2 Dstep _) Dfalse
+	<- {x} {xvar : variable x} {xdone : done wor2 x}
+		nostep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
+- : nostep (res-lam Ddone) (ms-lam-s Dstep) Dfalse
+	<- {x} {xvar : variable x} {xdone : done wor2 x}
+		nostep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
+
+%worlds (det-block) (nostep _ _ _).
+%total {D1 D2} (nostep D1 D2 _).
+
+%% FALSE YIELDS EQUALITY
+false\eq : {E1 : term} {E2 : term} false -> eq-term E1 E2 -> type.
+%mode false\eq +E1 +E2 +Dfalse -Deq.
+%worlds (det-block) (false\eq _ _ _ _).
+%total {} (false\eq _ _ _ _).
+
+%% SMALL STEP IS DETERMINISTIC
+step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
+%mode step/unique +Dstep1 +Dstep2 -Deq.
+
+%% CATCHALL CASE (HITS ALL REDUCTION RULES)
+- : step/unique _ _ eq-term_.
+
+%% SUBSTEP RECURSIVE CASES
+- : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/tup Deq eq-term_ Deq'.
+- : step/unique (ms-tup-s2 Dstep1 _) (ms-tup-s2 Dstep2 _) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/tup eq-term_ Deq Deq'.
+- : step/unique (ms-pi1-s Dstep1) (ms-pi1-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong pi1 Deq Deq'.
+- : step/unique (ms-pi2-s Dstep1) (ms-pi2-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong pi2 Deq Deq'.
+- : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
+	<- ({x} {xvar : variable x} {xdone : done wor2 x}
+		step/unique (Dstep1 x xvar xdone) (Dstep2 x xvar xdone) (Deq x))
+	<- eq-cong/lam Deq _ Deq'.
+- : step/unique (ms-app-s1 Dstep1) (ms-app-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/app Deq eq-term_ Deq'.
+- : step/unique (ms-app-s2 Dstep1 _) (ms-app-s2 Dstep2 _) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/app eq-term_ Deq Deq'.
+- : step/unique (ms-let-s1 Dstep1) (ms-let-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/let Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-let-s2 Dstep1 _) (ms-let-s2 Dstep2 _) Deq'
+	<- ({x} {xvar : variable x} {xdone : done wor2 x}
+		step/unique (Dstep1 x xvar xdone) (Dstep2 x xvar xdone) (Deq x))
+	<- eq-cong/let eq-term_ Deq Deq'.
+- : step/unique (ms-lett-s1 Dstep1) (ms-lett-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+- : step/unique (ms-next-s Dstep1) (ms-next-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong next Deq Deq'.
+- : step/unique (ms-prev-s Dstep1) (ms-prev-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong prev Deq Deq'.
+
+%% CONTRADICTION CASES
+- : step/unique (ms-tup-s1 Dstep) (ms-tup-s2 _ Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-tup-s2 _ Ddone) (ms-tup-s1 Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-pi1-r Ddone) (ms-pi1-s Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-pi1-s Dstep) (ms-pi1-r Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-pi1-r Ddone) (ms-pi1-s Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-pi2-r Ddone) (ms-pi2-s Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-pi2-s Dstep) (ms-pi2-r Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-app-s1 Dstep) (ms-app-s2 _ Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-app-s2 _ Ddone) (ms-app-s1 Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-app-r Ddone) (ms-app-s2 Dstep _) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-app-s2 Dstep _) (ms-app-r Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-let-s1 Dstep) (ms-let-s2 _ Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-let-s1 Dstep) (ms-let-r Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-let-s2 _ Ddone) (ms-let-s1 Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-let-r Ddone) (ms-let-s1 Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-prev-r Ddone) (ms-prev-s Dstep) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-prev-s Dstep) (ms-prev-r Ddone) Deq
+	<- nostep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+
+
+%worlds (det-block) (step/unique _ _ _).
+%total D (step/unique D _ _).

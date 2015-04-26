@@ -1,5 +1,47 @@
 
-%% multisteps
+%% MULTISTEPS
 
+step* : wor -> term -> term -> type.
+step*-id : step* W E E.
+step*-step : mstep W E1 E2 -> step* W E2 E3 -> step* W E1 E3.
 
-%% confluence
+%% MULTISTEP CHAIN
+step*/compose : step* W E1 E2 -> step* W E2 E3 -> step* W E1 E3 -> type.
+%mode step*/compose +Dchain1 +Dchain2 -Dchain.
+- : step*/compose step*-id C C.
+- : step*/compose (step*-step S C1) C2 (step*-step S C')
+	<- step*/compose C1 C2 C'.
+%worlds () (step*/compose _ _ _).
+%total D (step*/compose D _ _).
+
+%% MULTISTEP RESPECTS EQUALITY
+step*/resp : step* W E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> step* W E1' E2' -> type.
+%mode step*/resp +Dchain +Deq1 +Deq2 -Dchain'.
+- : step*/resp D eq-term_ eq-term_ D.
+%worlds () (step*/resp _ _ _ _).
+%total {} (step*/resp _ _ _ _).
+
+%% CONFLUENCE
+conf : wor -> term -> term -> type.
+conf_ : step* W E1 E -> step* W E2 E -> conf W E1 E2.
+
+%% CONFLUENCE IS SYMMETRIC
+conf/sym : conf W E1 E2 -> conf W E2 E1 -> type.
+%mode conf/sym +Dconf1 -Dconf2.
+- : conf/sym (conf_ P1 P2) (conf_ P2 P1).
+%worlds () (conf/sym _ _).
+%total {} (conf/sym _ _).
+
+%% CONFLUENCE IS TRANSITIVE
+conf/trans : conf W E1 E2 -> conf W E2 E3 -> conf W E1 E3 -> type.
+%mode conf/trans +Dconf1 +Dconf2 -Dconf.
+- : conf/trans (conf_ P1 step*-id) (conf_ P3 P4) (conf_ P P4)
+	<- step*/compose P1 P3 P.
+- : conf/trans (conf_ P1 P2) (conf_ step*-id P4) (conf_ P1 P)
+	<- step*/compose P4 P2 P.
+- : conf/trans (conf_ P1 (step*-step S2 P2)) (conf_ (step*-step S3 P3) P4) P
+	<- step/unique S2 S3 Deq
+	<- step*/resp P2 Deq eq-term_ P2'
+	<- conf/trans (conf_ P1 P2') (conf_ P3 P4) P.
+%worlds () (conf/trans _ _ _).
+%total D (conf/trans D _ _).

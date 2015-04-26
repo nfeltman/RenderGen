@@ -94,6 +94,6 @@ ms-prev-s	: mstep wor2 (prev E) (prev E')
 ms-prev-ls	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
 			<- lstep E Q E'.
 ms-prev-r	: mstep wor2 (prev (next E)) E
-			<- done wor2 E. %% should be a stricter criterion
+			<- done wor1 (next E).
 			
 			
