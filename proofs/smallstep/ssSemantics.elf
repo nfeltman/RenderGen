@@ -6,7 +6,6 @@ variable : term -> type.
 
 %% VALUE
 done : wor -> term -> type. %name done Ddone.
-%%mode done +W +E.
 done-ztup	: done W ztup.
 done-tup	: done W (tup E1 E2)
 				<- done W E2
@@ -30,7 +29,6 @@ res-let		: done wor2 (let E M)
 
 %% M STEP - SUBSTEP RULES
 mstep : wor -> term -> term -> type.
-%%mode mstep +W +E -E'.
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
 			<- mstep W E1 E1'.
 ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
@@ -66,36 +64,35 @@ ms-let-r	: mstep wor1 (let E M) (M E)
 			<- done wor1 E.
 
 			
-%% SECOND-STAGE VARIABLE STEP
-mstep* : term -> term -> (term -> term) -> type.
-%%mode mstep* +E -Q -E'.
-ms*-tup-s1	: mstep* (tup E1 E2) Q ([x] tup (E1' x) E2)
-			<- mstep* E1 Q E1'.
-ms*-tup-s2	: mstep* (tup E1 E2) Q ([x] tup E1 (E2' x))
+%% SECOND-STAGE VARIABLE LIFT STEP
+lstep : term -> term -> (term -> term) -> type.
+ls-tup-s1	: lstep (tup E1 E2) Q ([x] tup (E1' x) E2)
+			<- lstep E1 Q E1'.
+ls-tup-s2	: lstep (tup E1 E2) Q ([x] tup E1 (E2' x))
 			<- done wor1 E1
-			<- mstep* E2 Q E2'.
-ms*-pi1-s	: mstep* (pi1 E) Q ([x] pi1 (E' x))
-			<- mstep* E Q E'.
-ms*-pi2-s	: mstep* (pi2 E) Q ([x] pi2 (E' x))
-			<- mstep* E Q E'.
-ms*-app-s1	: mstep* (app E1 E2) Q ([x] app (E1' x) E2)
-			<- mstep* E1 Q E1'.
-ms*-app-s2	: mstep* (app E1 E2) Q ([x] app E1 (E2' x))
+			<- lstep E2 Q E2'.
+ls-pi1-s	: lstep (pi1 E) Q ([x] pi1 (E' x))
+			<- lstep E Q E'.
+ls-pi2-s	: lstep (pi2 E) Q ([x] pi2 (E' x))
+			<- lstep E Q E'.
+ls-app-s1	: lstep (app E1 E2) Q ([x] app (E1' x) E2)
+			<- lstep E1 Q E1'.
+ls-app-s2	: lstep (app E1 E2) Q ([x] app E1 (E2' x))
 			<- done wor1 E1
-			<- mstep* E2 Q E2'.
-ms*-let-s1	: mstep* (let E M) Q ([x] let (E' x) M)
-			<- mstep* E Q E'.
+			<- lstep E2 Q E2'.
+ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
+			<- lstep E Q E'.
 
 			
 %% STAGING FEATURES
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
-ms*-next-r	: mstep* (next E) E ([x:term] next x)
+ls-next-r	: lstep (next E) E ([x:term] next x)
 			<- done wor2 E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
-ms-prev-s*	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
-			<- mstep* E Q E'.
+ms-prev-ls	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
+			<- lstep E Q E'.
 ms-prev-r	: mstep wor2 (prev (next E)) E
 			<- done wor2 E. %% should be a stricter criterion
 			

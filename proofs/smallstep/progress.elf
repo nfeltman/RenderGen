@@ -3,8 +3,8 @@
 %% DONE-OR-STEP JUDGEMENT
 dos : wor -> term -> type.
 dos-done	: done W E -> dos W E.
-dos-step	: mstep W E E' -> dos W E.
-dos-step*	: mstep* E Q E' -> dos wor1 E.
+dos-mstep	: mstep W E E' -> dos W E.
+dos-lstep	: lstep E Q E' -> dos wor1 E.
 
 
 var_res : variable E -> done wor2 E -> type.
@@ -18,78 +18,78 @@ var_res : variable E -> done wor2 E -> type.
 %% PROGRESS LEMMAS
 prog/tup : dos W E1 -> dos W E2 -> dos W (tup E1 E2) -> type.
 %mode prog/tup +Ddos1 +Ddos2 -Ddos.
-- : prog/tup (dos-step Dstep) _ (dos-step (ms-tup-s1 Dstep)).
-- : prog/tup (dos-step* Dstep) _ (dos-step* (ms*-tup-s1 Dstep)).
-- : prog/tup (dos-done Ddone) (dos-step Dstep) (dos-step (ms-tup-s2 Dstep Ddone)).
-- : prog/tup (dos-done Ddone) (dos-step* Dstep) (dos-step* (ms*-tup-s2 Dstep Ddone)).
+- : prog/tup (dos-mstep Dstep) _ (dos-mstep (ms-tup-s1 Dstep)).
+- : prog/tup (dos-lstep Dstep) _ (dos-lstep (ls-tup-s1 Dstep)).
+- : prog/tup (dos-done Ddone) (dos-mstep Dstep) (dos-mstep (ms-tup-s2 Dstep Ddone)).
+- : prog/tup (dos-done Ddone) (dos-lstep Dstep) (dos-lstep (ls-tup-s2 Dstep Ddone)).
 - : prog/tup (dos-done Ddone1) (dos-done Ddone2) (dos-done (done-tup Ddone1 Ddone2)).
 %worlds (spec-block) (prog/tup _ _ _).
 %total (Ddos) (prog/tup Ddos _ _).
 
 prog/pi1 : dos W E -> of^ E (prod T1 T2) W -> dos W (pi1 E) -> type.
 %mode prog/pi1 +Ddos +Dof -Ddos'.
-- : prog/pi1 (dos-step Dstep) _ (dos-step (ms-pi1-s Dstep)).
-- : prog/pi1 (dos-step* Dstep) _ (dos-step* (ms*-pi1-s Dstep)).
-- : prog/pi1 (dos-done Dval) _ (dos-step (ms-pi1-r Dval)).
+- : prog/pi1 (dos-mstep Dstep) _ (dos-mstep (ms-pi1-s Dstep)).
+- : prog/pi1 (dos-lstep Dstep) _ (dos-lstep (ls-pi1-s Dstep)).
+- : prog/pi1 (dos-done Dval) _ (dos-mstep (ms-pi1-r Dval)).
 - : prog/pi1 (dos-done Dres) _ (dos-done (res-pi1 Dres)).
 %worlds (spec-block) (prog/pi1 _ _ _).
 %total (Ddos) (prog/pi1 Ddos _ _).
 
 prog/pi2 : dos W E -> of^ E (prod T1 T2) W -> dos W (pi2 E) -> type.
 %mode prog/pi2 +Ddos +Dof -Ddos'.
-- : prog/pi2 (dos-step Dstep) _ (dos-step (ms-pi2-s Dstep)).
-- : prog/pi2 (dos-step* Dstep) _ (dos-step* (ms*-pi2-s Dstep)).
-- : prog/pi2 (dos-done Dval) _ (dos-step (ms-pi2-r Dval)).
+- : prog/pi2 (dos-mstep Dstep) _ (dos-mstep (ms-pi2-s Dstep)).
+- : prog/pi2 (dos-lstep Dstep) _ (dos-lstep (ls-pi2-s Dstep)).
+- : prog/pi2 (dos-done Dval) _ (dos-mstep (ms-pi2-r Dval)).
 - : prog/pi2 (dos-done Dres) _ (dos-done (res-pi2 Dres)).
 %worlds (spec-block) (prog/pi2 _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _).
 
 prog/lam : ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> {T: ty} dos wor2 (lam T M) -> type.
 %mode prog/lam +Ddos +Dof -Ddos'.
-- : prog/lam ([x] [dvar] [ddone] dos-step (Dstep x dvar ddone)) _ (dos-step (ms-lam-s Dstep)).
+- : prog/lam ([x] [dvar] [ddone] dos-mstep (Dstep x dvar ddone)) _ (dos-mstep (ms-lam-s Dstep)).
 - : prog/lam ([x] [dvar] [ddone] dos-done (Dres x dvar ddone)) _ (dos-done (res-lam Dres)).
 %worlds (spec-block) (prog/lam _ _ _).
 %total (Ddos) (prog/lam Ddos _ _).
 
 prog/app : dos W E1 -> dos W E2 -> of^ E1 (arr T1 T2) W -> dos W (app E1 E2) -> type.
 %mode prog/app +Ddos1 +Ddos2 +Dof -Ddos.
-- : prog/app (dos-step Dstep) _ _ (dos-step (ms-app-s1 Dstep)).
-- : prog/app (dos-step* Dstep) _ _ (dos-step* (ms*-app-s1 Dstep)).
-- : prog/app (dos-done Dval) (dos-step Dstep) _ (dos-step (ms-app-s2 Dstep Dval)).
-- : prog/app (dos-done Dval) (dos-step* Dstep) _ (dos-step* (ms*-app-s2 Dstep Dval)).
-- : prog/app (dos-done _) (dos-done Dval) _ (dos-step (ms-app-r Dval)).
+- : prog/app (dos-mstep Dstep) _ _ (dos-mstep (ms-app-s1 Dstep)).
+- : prog/app (dos-lstep Dstep) _ _ (dos-lstep (ls-app-s1 Dstep)).
+- : prog/app (dos-done Dval) (dos-mstep Dstep) _ (dos-mstep (ms-app-s2 Dstep Dval)).
+- : prog/app (dos-done Dval) (dos-lstep Dstep) _ (dos-lstep (ls-app-s2 Dstep Dval)).
+- : prog/app (dos-done _) (dos-done Dval) _ (dos-mstep (ms-app-r Dval)).
 - : prog/app (dos-done Dres1) (dos-done Dres2) _ (dos-done (res-app Dres1 Dres2)).
 %worlds (spec-block) (prog/app _ _ _ _).
 %total (Ddos) (prog/app Ddos _ _ _).
 
 prog/let1 : dos wor1 E -> of^ (let E M) T wor1 -> dos wor1 (let E M) -> type.
 %mode prog/let1 +Ddos +Dof -Ddos'.
-- : prog/let1 (dos-step Dstep) _ (dos-step (ms-let-s1 Dstep)).
-- : prog/let1 (dos-step* Dstep) _ (dos-step* (ms*-let-s1 Dstep)).
-- : prog/let1 (dos-done Dval) _ (dos-step (ms-let-r Dval)).
+- : prog/let1 (dos-mstep Dstep) _ (dos-mstep (ms-let-s1 Dstep)).
+- : prog/let1 (dos-lstep Dstep) _ (dos-lstep (ls-let-s1 Dstep)).
+- : prog/let1 (dos-done Dval) _ (dos-mstep (ms-let-r Dval)).
 %worlds (spec-block) (prog/let1 _ _ _).
 %total (Ddos) (prog/let1 Ddos _ _).
 
 prog/let2 : dos wor2 E -> ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
 %mode prog/let2 +Ddos1 +Ddos2 -Ddos'.
-- : prog/let2 (dos-step Dstep) _ (dos-step (ms-let-s1 Dstep)).
-- : prog/let2 (dos-done Dres) ([x] [dvar] [ddone] dos-step (Dstep x dvar ddone)) (dos-step (ms-let-s2 Dstep Dres)).
+- : prog/let2 (dos-mstep Dstep) _ (dos-mstep (ms-let-s1 Dstep)).
+- : prog/let2 (dos-done Dres) ([x] [dvar] [ddone] dos-mstep (Dstep x dvar ddone)) (dos-mstep (ms-let-s2 Dstep Dres)).
 - : prog/let2 (dos-done Dres1) ([x] [dvar] [ddone] dos-done (Dres2 x dvar ddone)) (dos-done (res-let Dres2 Dres1)).
 %worlds (spec-block) (prog/let2 _ _ _).
 %total (Ddos) (prog/let2 Ddos _ _).
 
 prog/next : dos wor2 E -> dos wor1 (next E) -> type.
 %mode prog/next +Ddos -Ddos'.
-- : prog/next (dos-step Dstep) (dos-step (ms-next-s Dstep)).
-- : prog/next (dos-done Dres) (dos-step* (ms*-next-r Dres)).
+- : prog/next (dos-mstep Dstep) (dos-mstep (ms-next-s Dstep)).
+- : prog/next (dos-done Dres) (dos-lstep (ls-next-r Dres)).
 %worlds (spec-block) (prog/next _ _).
 %total (Ddos) (prog/next Ddos _).
 
 prog/prev : dos wor1 E -> of^ E (fut T) wor1 -> dos wor2 (prev E) -> type.
 %mode prog/prev +Ddos +Dof -Ddos'.
-- : prog/prev (dos-step Dstep) _ (dos-step (ms-prev-s Dstep)).
-- : prog/prev (dos-step* Dstep) _ (dos-step (ms-prev-s* Dstep)).
-- : prog/prev (dos-done (val-next Dvar)) _ (dos-step (ms-prev-r Dres))
+- : prog/prev (dos-mstep Dstep) _ (dos-mstep (ms-prev-s Dstep)).
+- : prog/prev (dos-lstep Dstep) _ (dos-mstep (ms-prev-ls Dstep)).
+- : prog/prev (dos-done (val-next Dvar)) _ (dos-mstep (ms-prev-r Dres))
 	<- var_res Dvar Dres.
 %worlds (prog-block) (prog/prev _ _ _).
 %total (Ddos) (prog/prev Ddos _ _).
