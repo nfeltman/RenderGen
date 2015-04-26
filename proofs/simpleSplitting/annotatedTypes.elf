@@ -7,10 +7,13 @@ ty+wf-unit	: ty+wf unit W.
 ty+wf-prod	: ty+wf (prod A B) W
 				<- ty+wf B W
 				<- ty+wf A W.
-ty+wf-arr+	: ty+wf (arr+ A T B) W
-				<- ty+wf B W
+ty+wf-arr+	: ty+wf (arr+ A T B) wor1
+				<- ty+wf B wor1
 				<- ty-wf T
-				<- ty+wf A W.
+				<- ty+wf A wor1.
+ty+wf-arr	: ty+wf (arr A B) wor2
+				<- ty+wf B wor2
+				<- ty+wf A wor2.
 ty+wf-fut	: ty+wf (fut A) wor1
 				<- ty+wf A wor2.
 %worlds () (ty+wf _ _).
@@ -25,12 +28,18 @@ of+pi1	: of+ (pi1 E) T A W
 			<- of+ E T (prod A _) W.
 of+pi2	: of+ (pi2 E) T A W
 			<- of+ E T (prod _ A) W.
-of+lam 	: of+ (lam A ([x] M x)) unit (arr+ A T B) W
-			<- ({x: term} of+ x unit A W -> of+ (M x) T B W)
-			<- ty+wf A W.
-of+app  : of+ (app E1 E2) (prod (prod T1 T2) T3) B W
-			<- of+ E2 T2 A W
-			<- of+ E1 T1 (arr+ A T3 B) W.
+of+lam+	: of+ (lam A ([x] M x)) unit (arr+ A T B) wor1
+			<- ({x: term} of+ x unit A wor1 -> of+ (M x) T B wor1)
+			<- ty+wf A wor1.
+of+lam	: of+ (lam A ([x] M x)) T (arr A B) wor2
+			<- ({x: term} of+ x unit A wor2 -> of+ (M x) T B wor2)
+			<- ty+wf A wor2.
+of+app+ : of+ (app E1 E2) (prod (prod T1 T2) T3) B wor1
+			<- of+ E2 T2 A wor1
+			<- of+ E1 T1 (arr+ A T3 B) wor1.
+of+app  : of+ (app E1 E2) (prod T1 T2) B wor2
+			<- of+ E2 T2 A wor2
+			<- of+ E1 T1 (arr A B) wor2.
 %{of+let  : of+ (let E ([x] M x)) B wor2
 			<- of+ E A wor2
 			<- ({x:term} of+ x A wor2 -> of+ (M x) B wor2). }%
@@ -61,10 +70,15 @@ of+wf : of+ E T A W -> ty-wf T -> ty+wf A W -> type.
 	<- of+wf Dof DwfT (ty+wf-prod DwfA _).
 - : of+wf (of+pi2 Dof) DwfT DwfB
 	<- of+wf Dof DwfT (ty+wf-prod _ DwfB).
-- : of+wf (of+lam Dwf1 DofM) ty-wf-unit (ty+wf-arr+ Dwf1 DwfT Dwf2)
-	<- ({x:term} {Dof : of+ x unit A W} {_ : of+wf Dof ty-wf-unit Dwf1} of+wf (DofM x Dof) DwfT Dwf2).
-- : of+wf (of+app Dof1 Dof2) (ty-wf-prod (ty-wf-prod DwfT1 DwfT2) DwfT3) Dwf
+- : of+wf (of+lam+ Dwf1 DofM) ty-wf-unit (ty+wf-arr+ Dwf1 DwfT Dwf2)
+	<- ({x:term} {Dof : of+ x unit A wor1} of+wf Dof ty-wf-unit Dwf1 -> of+wf (DofM x Dof) DwfT Dwf2).
+- : of+wf (of+lam Dwf1 DofM) DwfT (ty+wf-arr Dwf1 Dwf2)
+	<- ({x:term} {Dof : of+ x unit A wor2} of+wf Dof ty-wf-unit Dwf1 -> of+wf (DofM x Dof) DwfT Dwf2).
+- : of+wf (of+app+ Dof1 Dof2) (ty-wf-prod (ty-wf-prod DwfT1 DwfT2) DwfT3) Dwf
 	<- of+wf Dof1 DwfT1 (ty+wf-arr+ _ DwfT3 Dwf)
+	<- of+wf Dof2 DwfT2 _.
+- : of+wf (of+app Dof1 Dof2) (ty-wf-prod DwfT1 DwfT2) Dwf
+	<- of+wf Dof1 DwfT1 (ty+wf-arr _ Dwf)
 	<- of+wf Dof2 DwfT2 _. 
 %{- : of+wf (of+let DofM DofE) Dwf2
 	<- of+wf DofE Dwf1
@@ -86,3 +100,17 @@ of+wf : of+ E T A W -> ty-wf T -> ty+wf A W -> type.
 	block {x:term} {Dof : of+ x T A W} {_ : of+wf Dof DwfT Dwf}.
 %worlds (var-of+wf) (of+wf _ _ _).
 %total D (of+wf D _ _).
+
+
+%% TYPES AT TWO ARE MONOTYPES
+wor2+mono : ty+wf A wor2 -> ty-wf A -> type.
+%mode wor2+mono +Dwf -Dwf'.
+- : wor2+mono ty+wf-unit ty-wf-unit.
+- : wor2+mono (ty+wf-prod Dwf1 Dwf2) (ty-wf-prod Dwf1' Dwf2')
+	<- wor2+mono Dwf1 Dwf1'
+	<- wor2+mono Dwf2 Dwf2'.
+- : wor2+mono (ty+wf-arr Dwf1 Dwf2) (ty-wf-arr Dwf1' Dwf2')
+	<- wor2+mono Dwf1 Dwf1'
+	<- wor2+mono Dwf2 Dwf2'.
+%worlds () (wor2+mono _ _).
+%total (D) (wor2+mono D _).

@@ -1,0 +1,41 @@
+%% TYPE SPLITTING
+
+tysplit : ty -> tyM -> type.
+
+spl-unit : tysplit unit (multi unit unit).
+spl-fut  : tysplit (fut A) (multi unit A).
+spl-prod : tysplit (prod A B) (multi (prod A1 B1) (prod A2 B2))
+	<- tysplit B (multi B1 B2)
+	<- tysplit A (multi A1 A2).
+spl-arr  : tysplit (arr+ A T B) (multi (arr A1 (prod B1 T)) (arr (prod A2 T) B2))
+	<- tysplit B (multi B1 B2)
+	<- tysplit A (multi A1 A2).
+
+tysplit-pres : tysplit A S -> ty+wf A wor1 -> tyM-wf S -> type.
+%mode tysplit-pres +Dspl +Dwf -Dwf'.
+- : tysplit-pres spl-unit ty+wf-unit (wf-multi ty-wf-unit ty-wf-unit).
+- : tysplit-pres (spl-prod DsplA DsplB) (ty+wf-prod DwfA DwfB) 
+		(wf-multi (ty-wf-prod DwfA1 DwfB1) (ty-wf-prod DwfA2 DwfB2))
+	<- tysplit-pres DsplA DwfA (wf-multi DwfA1 DwfA2)
+	<- tysplit-pres DsplB DwfB (wf-multi DwfB1 DwfB2).
+- : tysplit-pres spl-fut (ty+wf-fut Dwf) (wf-multi ty-wf-unit Dwf')
+	<- wor2+mono Dwf Dwf'.
+- : tysplit-pres (spl-arr DsplA DsplB) (ty+wf-arr+ DwfA DwfT DwfB) 
+		(wf-multi (ty-wf-arr DwfA1 (ty-wf-prod DwfB1 DwfT)) (ty-wf-arr (ty-wf-prod DwfA2 DwfT) DwfB2))
+	<- tysplit-pres DsplA DwfA (wf-multi DwfA1 DwfA2)
+	<- tysplit-pres DsplB DwfB (wf-multi DwfB1 DwfB2).
+%worlds () (tysplit-pres _ _ _).
+%total (D) (tysplit-pres D _ _).
+
+tysplit-tot : ty+wf A wor1 -> tysplit A _ -> type.
+%mode tysplit-tot +Dwf -Dspl.
+- : tysplit-tot ty+wf-unit spl-unit.
+- : tysplit-tot (ty+wf-prod DwfA DwfB) (spl-prod DsplA DsplB)
+	<- tysplit-tot DwfA DsplA
+	<- tysplit-tot DwfB DsplB.
+- : tysplit-tot (ty+wf-arr+ DwfA _ DwfB) (spl-arr DsplA DsplB)
+	<- tysplit-tot DwfA DsplA
+	<- tysplit-tot DwfB DsplB.
+- : tysplit-tot (ty+wf-fut _) spl-fut.
+%worlds () (tysplit-tot _ _).
+%total (D) (tysplit-tot D _).

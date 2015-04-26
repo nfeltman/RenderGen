@@ -100,5 +100,3 @@ ms-prev-r	: mstep wor2 (prev (next E)) E
 			<- done wor2 E. %% should be a stricter criterion
 			
 			
-%%  USEFUL BLOCKS
-%block spec-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of x A wor2} {ddone : done wor2 x}.

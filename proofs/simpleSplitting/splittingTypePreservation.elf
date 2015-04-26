@@ -1,0 +1,7 @@
+
+%% SPLITTING TYPE PRESERVATION
+splpres1 : of+ E T A wor1 -> split1 E S -> tysplit A B -> ofM S B -> type.
+%mode splpres1 +Dof +Dspl +Dtspl -Dof'.
+
+- : splpres1 of+ztup spl1-ztup spl-unit (ofM-pipe (of-tup of-ztup of-ztup) ([x] [dof] of-ztup)).
+- : splpres1 (of+pi1 Dof) (spl1-pi1 Dspl) Dspl (ofM-pipe (of-tup of-ztup of-ztup) ([x] [dof] of-ztup)).
