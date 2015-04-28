@@ -32,16 +32,24 @@ conf/sym : conf W E1 E2 -> conf W E2 E1 -> type.
 %worlds () (conf/sym _ _).
 %total {} (conf/sym _ _).
 
+%% CONFLUENCE IS TRANSITIVE HELPER (need helper because termination thing)
+conf/trans/help : step* W E1 E2 -> step* W E3 E2 -> step* W E3 E4 -> step* W E5 E4 -> conf W E1 E5 -> type.
+%mode conf/trans/help +Dpath1 +Dpath2 +Dpath3 +Dpath4 -Dconf.
+- : conf/trans/help P1 step*-id P3 P4 (conf_ P P4)
+	<- step*/compose P1 P3 P.
+- : conf/trans/help P1 P2 step*-id P4 (conf_ P1 P)
+	<- step*/compose P4 P2 P.
+- : conf/trans/help P1 (step*-step S2 P2) (step*-step S3 P3) P4 Dconf
+	<- step/unique S3 S2 Deq
+	<- step*/resp P3 Deq eq-term_ P3'
+	<- conf/trans/help P1 P2 P3' P4 Dconf.
+%worlds () (conf/trans/help _ _ _ _ _).
+%total D (conf/trans/help _ D _ _ _).
+
 %% CONFLUENCE IS TRANSITIVE
 conf/trans : conf W E1 E2 -> conf W E2 E3 -> conf W E1 E3 -> type.
 %mode conf/trans +Dconf1 +Dconf2 -Dconf.
-- : conf/trans (conf_ P1 step*-id) (conf_ P3 P4) (conf_ P P4)
-	<- step*/compose P1 P3 P.
-- : conf/trans (conf_ P1 P2) (conf_ step*-id P4) (conf_ P1 P)
-	<- step*/compose P4 P2 P.
-- : conf/trans (conf_ P1 (step*-step S2 P2)) (conf_ (step*-step S3 P3) P4) Dconf
-	<- step/unique S2 S3 Deq
-	<- step*/resp P2 Deq eq-term_ P2'
-	<- conf/trans (conf_ P1 P2') (conf_ P3 P4) Dconf.
+- : conf/trans (conf_ P1 P2) (conf_ P3 P4) Dconf
+	<- conf/trans/help P1 P2 P3 P4 Dconf.
 %worlds () (conf/trans _ _ _).
-%total D (conf/trans D _ _).
+%total {} (conf/trans _ _ _).
