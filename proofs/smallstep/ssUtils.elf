@@ -39,9 +39,9 @@ conf/trans : conf W E1 E2 -> conf W E2 E3 -> conf W E1 E3 -> type.
 	<- step*/compose P1 P3 P.
 - : conf/trans (conf_ P1 P2) (conf_ step*-id P4) (conf_ P1 P)
 	<- step*/compose P4 P2 P.
-- : conf/trans (conf_ P1 (step*-step S2 P2)) (conf_ (step*-step S3 P3) P4) P
+- : conf/trans (conf_ P1 (step*-step S2 P2)) (conf_ (step*-step S3 P3) P4) Dconf
 	<- step/unique S2 S3 Deq
 	<- step*/resp P2 Deq eq-term_ P2'
-	<- conf/trans (conf_ P1 P2') (conf_ P3 P4) P.
+	<- conf/trans (conf_ P1 P2') (conf_ P3 P4) Dconf.
 %worlds () (conf/trans _ _ _).
 %total D (conf/trans D _ _).

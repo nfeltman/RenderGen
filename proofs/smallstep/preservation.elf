@@ -1,5 +1,5 @@
 %%  USEFUL BLOCKS
-%block spec-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x}.
+%block pres-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x}.
 
 %% NORMAL STEP PRESERVATION (SUBSTEP RULES)
 pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
@@ -53,12 +53,12 @@ lpres : lstep E Q E' -> of^ E T wor1 -> of^ Q TQ wor2 -> ({x:term} of^ x TQ wor2
 %% STAGING FEATURE PRESERVATION
 - : pres (ms-next-s Dstep) (of^-next Dof) (of^-next Dof')
 	<- pres Dstep Dof Dof'.
-- : lpres (ls-next-r _) (of^-next Dof) Dof ([x] [dof] of^-next dof).
+- : lpres (ls-next-r _ _) (of^-next Dof) Dof ([x] [dof] of^-next dof).
 - : pres (ms-prev-s Dstep) (of^-prev Dof) (of^-prev Dof')
 	<- pres Dstep Dof Dof'.
 - : pres (ms-prev-ls Dstep) (of^-prev Dof) (of^-let ([x] [dof] of^-prev (Dof' x dof)) DofQ)
 	<- lpres Dstep Dof DofQ Dof'.
 - : pres (ms-prev-r _) (of^-prev (of^-next Dof)) Dof.
 
-%worlds (spec-block) (pres _ _ _) (lpres _ _ _ _).
+%worlds (pres-block) (pres _ _ _) (lpres _ _ _ _).
 %total (Dstep1 Dstep2) (pres Dstep1 _ _) (lpres Dstep2 _ _ _).

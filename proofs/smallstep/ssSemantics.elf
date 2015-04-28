@@ -1,8 +1,18 @@
 %{ monostage.elf }%
 
-%% TABLE ENTRY
+%% A TERM IS A VARIABLE (used for doneness of nexts)
 variable : term -> type.
-%mode variable +E.
+%%mode variable +E.
+
+%% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
+not-variable : term -> type.
+nv-ztup : not-variable ztup.
+nv-tup : not-variable (tup _ _).
+nv-pi1 : not-variable (pi1 _).
+nv-pi2 : not-variable (pi2 _).
+nv-lam : not-variable (lam _ _).
+nv-app : not-variable (app _ _).
+nv-let : not-variable (let _ _).
 
 %% VALUE
 done : wor -> term -> type. %name done Ddone.
@@ -28,7 +38,7 @@ res-let		: done wor2 (let E M)
 
 
 %% M STEP - SUBSTEP RULES
-mstep : wor -> term -> term -> type.
+mstep : wor -> term -> term -> type. %name mstep Dmstep.
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
 			<- mstep W E1 E1'.
 ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
@@ -65,7 +75,7 @@ ms-let-r	: mstep wor1 (let E M) (M E)
 
 			
 %% SECOND-STAGE VARIABLE LIFT STEP
-lstep : term -> term -> (term -> term) -> type.
+lstep : term -> term -> (term -> term) -> type. %name lstep Dlstep.
 ls-tup-s1	: lstep (tup E1 E2) Q ([x] tup (E1' x) E2)
 			<- lstep E1 Q E1'.
 ls-tup-s2	: lstep (tup E1 E2) Q ([x] tup E1 (E2' x))
@@ -88,12 +98,11 @@ ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
 ls-next-r	: lstep (next E) E ([x:term] next x)
-			<- done wor2 E.
+			<- done wor2 E
+			<- not-variable E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
 ms-prev-ls	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
 			<- lstep E Q E'.
 ms-prev-r	: mstep wor2 (prev (next E)) E
 			<- done wor1 (next E).
-			
-			

@@ -6,14 +6,25 @@ dos-done	: done W E -> dos W E.
 dos-mstep	: mstep W E E' -> dos W E.
 dos-lstep	: lstep E Q E' -> dos wor1 E.
 
+%% VAR-OR-NOT JUDGEMENT
+var-or-not : term -> type. %name var-or-not Dvon.
+von-var : variable E -> var-or-not E.
+von-not : not-variable E -> var-or-not E.
 
-var_res : variable E -> done wor2 E -> type.
-%mode var_res +Dvar -Ddone.
+res\von : done wor2 E -> var-or-not E -> type.
+%mode res\von +Dres -Dvon.
+- : res\von (done-ztup) (von-not nv-ztup).
+- : res\von (done-tup _ _) (von-not nv-tup).
+- : res\von (res-pi1 _) (von-not nv-pi1).
+- : res\von (res-pi2 _) (von-not nv-pi2).
+- : res\von (res-lam _) (von-not nv-lam).
+- : res\von (res-app _ _) (von-not nv-app).
+- : res\von (res-let _ _) (von-not nv-let).
+%worlds () (res\von _ _).
+%total (E) (res\von E _).
 
-%block prog-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x} {dvarres : var_res dvar ddone}.
-
-%worlds (prog-block) (var_res _ _).
-%total (Dvar) (var_res Dvar _).
+%% A HELPFUL BLOCK
+%block spec-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x} {dvon : var-or-not x} {_ : res\von ddone dvon}.
 
 %% PROGRESS LEMMAS
 prog/tup : dos W E1 -> dos W E2 -> dos W (tup E1 E2) -> type.
@@ -78,10 +89,19 @@ prog/let2 : dos wor2 E -> ({x:term} variable x -> done wor2 x -> dos wor2 (M x))
 %worlds (spec-block) (prog/let2 _ _ _).
 %total (Ddos) (prog/let2 Ddos _ _).
 
+von\dos : done wor2 E -> var-or-not E -> dos wor1 (next E) -> type.
+%mode von\dos +Dres +Dvon -Ddos.
+- : von\dos _ (von-var Dvar) (dos-done (val-next Dvar)).
+- : von\dos Dres (von-not Dnotvar) (dos-lstep (ls-next-r Dnotvar Dres)).
+%worlds (spec-block) (von\dos _ _ _).
+%total (D) (von\dos _ D _).
+
 prog/next : dos wor2 E -> dos wor1 (next E) -> type.
 %mode prog/next +Ddos -Ddos'.
 - : prog/next (dos-mstep Dstep) (dos-mstep (ms-next-s Dstep)).
-- : prog/next (dos-done Dres) (dos-lstep (ls-next-r Dres)).
+- : prog/next (dos-done Dres) Ddos
+	<- res\von Dres Dvon
+	<- von\dos Dres Dvon Ddos.
 %worlds (spec-block) (prog/next _ _).
 %total (Ddos) (prog/next Ddos _).
 
@@ -90,7 +110,7 @@ prog/prev : dos wor1 E -> of^ E (fut T) wor1 -> dos wor2 (prev E) -> type.
 - : prog/prev (dos-mstep Dstep) _ (dos-mstep (ms-prev-s Dstep)).
 - : prog/prev (dos-lstep Dstep) _ (dos-mstep (ms-prev-ls Dstep)).
 - : prog/prev (dos-done Dval) _ (dos-mstep (ms-prev-r Dval)).
-%worlds (prog-block) (prog/prev _ _ _).
+%worlds (spec-block) (prog/prev _ _ _).
 %total (Ddos) (prog/prev Ddos _ _).
 
 %% PROGRESS
@@ -110,7 +130,7 @@ prog : of^ E T W -> dos W E -> type.
 - : prog _ (dos-done val-lam).
 - : prog (of^-lam _ DofM) Ddos'
 	<- ({x:term} {dvar : variable x} {dof: of^ x T wor2} {ddone : done wor2 x} 
-		var_res dvar ddone -> prog dof (dos-done ddone) -> prog (DofM x dof) (Ddos x dvar ddone))
+		prog dof (dos-done ddone) -> prog (DofM x dof) (Ddos x dvar ddone))
 	<- prog/lam Ddos T Ddos'.
 - : prog (of^-app Dof1 Dof2) Ddos
 	<- prog Dof1 Ddos1
@@ -122,7 +142,7 @@ prog : of^ E T W -> dos W E -> type.
 - : prog (of^-let DofM DofE) Ddos'
 	<- prog DofE DdosE
 	<- ({x:term} {dvar : variable x} {dof: of^ x T wor2} {ddone : done wor2 x} 
-		var_res dvar ddone -> prog dof (dos-done ddone) -> prog (DofM x dof) (DdosM x dvar ddone))
+		prog dof (dos-done ddone) -> prog (DofM x dof) (DdosM x dvar ddone))
 	<- prog/let2 DdosE DdosM Ddos'.
 - : prog (of^-next Dof) Ddos'
 	<- prog Dof Ddos
@@ -130,6 +150,6 @@ prog : of^ E T W -> dos W E -> type.
 - : prog (of^-prev Dof) Ddos'
 	<- prog Dof Ddos
 	<- prog/prev Ddos Dof Ddos'.
-%block prog-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x} {dvarres : var_res dvar ddone} {_: prog dof (dos-done ddone)}.
+%block prog-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x} {_: prog dof (dos-done ddone)}.
 %worlds (prog-block) (prog _ _).
 %total (Ddos) (prog Ddos _).

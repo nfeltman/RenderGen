@@ -1,34 +1,92 @@
 %%  USEFUL BLOCKS
 %block det-block : some {A : ty} block {x:term} {dvar : variable x} {ddone : done wor2 x}.
 
-%% DONE THINGS DON'T TAKE STEPS
+%% DONE TERMS DON'T TAKE MSTEPS
 false : type. %freeze false.
-nostep : done W E -> mstep W E E' -> false -> type.
-%mode nostep +Ddone +Dstep -Dfalse.
-
-- : nostep (done-tup Ddone _) (ms-tup-s1 Dstep) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (done-tup _ Ddone) (ms-tup-s2 Dstep _) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-pi1 Ddone) (ms-pi1-s Dstep) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-pi2 Ddone) (ms-pi2-s Dstep) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-app Ddone _) (ms-app-s1 Dstep) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-app _ Ddone) (ms-app-s2 Dstep _) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-let _ Ddone) (ms-let-s1 Dstep) Dfalse
-	<- nostep Ddone Dstep Dfalse.
-- : nostep (res-let Ddone _) (ms-let-s2 Dstep _) Dfalse
+excl-done-mstep : done W E -> mstep W E E' -> false -> type.
+%mode excl-done-mstep +Ddone +Dstep -Dfalse.
+- : excl-done-mstep (done-tup Ddone _) (ms-tup-s1 Dstep) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (done-tup _ Ddone) (ms-tup-s2 Dstep _) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-pi1 Ddone) (ms-pi1-s Dstep) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-pi2 Ddone) (ms-pi2-s Dstep) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-app Ddone _) (ms-app-s1 Dstep) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-app _ Ddone) (ms-app-s2 Dstep _) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-let _ Ddone) (ms-let-s1 Dstep) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-done-mstep (res-let Ddone _) (ms-let-s2 Dstep _) Dfalse
 	<- {x} {xvar : variable x} {xdone : done wor2 x}
-		nostep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
-- : nostep (res-lam Ddone) (ms-lam-s Dstep) Dfalse
+		excl-done-mstep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
+- : excl-done-mstep (res-lam Ddone) (ms-lam-s Dstep) Dfalse
 	<- {x} {xvar : variable x} {xdone : done wor2 x}
-		nostep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
+		excl-done-mstep (Ddone x xvar xdone) (Dstep x xvar xdone) Dfalse.
+%worlds (det-block) (excl-done-mstep _ _ _).
+%total (D) (excl-done-mstep D _ _).
 
-%worlds (det-block) (nostep _ _ _).
-%total {D1 D2} (nostep D1 D2 _).
+%% DONE TERMS DON'T TAKE LSTEPS
+excl-done-lstep : done W E -> lstep E Q E' -> false -> type.
+%mode excl-done-lstep +Ddone +Dstep -Dfalse.
+- : excl-done-lstep (done-tup Ddone _) (ls-tup-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (done-tup _ Ddone) (ls-tup-s2 Dstep _) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (res-pi1 Ddone) (ls-pi1-s Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (res-pi2 Ddone) (ls-pi2-s Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (res-app Ddone _) (ls-app-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (res-app _ Ddone) (ls-app-s2 Dstep _) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-done-lstep (res-let _ Ddone) (ls-let-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+%worlds (det-block) (excl-done-lstep _ _ _).
+%total (D) (excl-done-lstep D _ _).
+
+%% MSTEPS AND LSTEPS ARE EXCLUSIVE
+excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
+%mode excl-mstep-lstep +Dstep +Dstep' -Dfalse.
+%% mstep/lstep cases
+- : excl-mstep-lstep (ms-tup-s1 Dstep) (ls-tup-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-tup-s2 Dstep _) (ls-tup-s2 Dstep' _) Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-pi1-s Dstep) (ls-pi1-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-pi2-s Dstep) (ls-pi2-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-app-s1 Dstep) (ls-app-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-app-s2 Dstep _) (ls-app-s2 Dstep' _) Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-let-s1 Dstep) (ls-let-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+%% done/step cases
+- : excl-mstep-lstep (ms-tup-s1 Dstep) (ls-tup-s2 _ Ddone) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-tup-s2 _ Ddone) (ls-tup-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-pi1-r Ddone) (ls-pi1-s Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-pi2-r Ddone) (ls-pi2-s Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-app-s1 Dstep) (ls-app-s2 _ Ddone) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-app-s2 _ Ddone) (ls-app-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-app-r Ddone) (ls-app-s2 Dstep _) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-let-r Ddone) (ls-let-s1 Dstep) Dfalse
+	<- excl-done-lstep Ddone Dstep Dfalse.
+- : excl-mstep-lstep (ms-next-s Dstep) (ls-next-r _ Ddone) Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse.
+%worlds (det-block) (excl-mstep-lstep _ _ _).
+%total (D) (excl-mstep-lstep _ D _).
 
 %% FALSE YIELDS EQUALITY
 false\eq : {E1 : term} {E2 : term} false -> eq-term E1 E2 -> type.
@@ -36,13 +94,65 @@ false\eq : {E1 : term} {E2 : term} false -> eq-term E1 E2 -> type.
 %worlds (det-block) (false\eq _ _ _ _).
 %total {} (false\eq _ _ _ _).
 
-%% SMALL STEP IS DETERMINISTIC
+
+%% FALSE YIELDS EQUALITY
+false\eq2 : {E1 : term -> term} {E2 : term -> term} false -> ({x} eq-term (E1 x) (E2 x)) -> type.
+%mode false\eq2 +E1 +E2 +Dfalse -Deq.
+%worlds (det-block) (false\eq2 _ _ _ _).
+%total {} (false\eq2 _ _ _ _).
+
+
+%% LSTEP IS DETERMINISTIC
+lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (E1 x) (E2 x)) -> type.
+%mode lstep/unique +Dlstep1 +Dlstep2 -DeqQ -DeqE.
+- : lstep/unique _ _ eq-term_ ([x] eq-term_).
+%% SUBSTEP RECURSIVE CASES
+- : lstep/unique (ls-tup-s1 Dstep) (ls-tup-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/tup (DeqE x) eq-term_ (DeqE' x).
+- : lstep/unique (ls-tup-s2 Dstep _) (ls-tup-s2 Dstep' _) DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/tup eq-term_ (DeqE x) (DeqE' x).
+- : lstep/unique (ls-pi1-s Dstep) (ls-pi1-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong pi1 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-pi2-s Dstep) (ls-pi2-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong pi2 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-app-s1 Dstep) (ls-app-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/app (DeqE x) eq-term_ (DeqE' x).
+- : lstep/unique (ls-app-s2 Dstep _) (ls-app-s2 Dstep' _) DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/app eq-term_ (DeqE x) (DeqE' x).
+- : lstep/unique (ls-let-s1 Dstep) (ls-let-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/let (DeqE x) ([x] eq-term_) (DeqE' x).
+%% CONTRADICTION CASES
+- : lstep/unique (ls-tup-s1 Dstep) (ls-tup-s2 _ Ddone) DeqQ DeqE
+	<- excl-done-lstep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse DeqQ
+	<- false\eq2 _ _ Dfalse DeqE.
+- : lstep/unique (ls-tup-s2 _ Ddone) (ls-tup-s1 Dstep) DeqQ DeqE
+	<- excl-done-lstep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse DeqQ
+	<- false\eq2 _ _ Dfalse DeqE.
+- : lstep/unique (ls-app-s1 Dstep) (ls-app-s2 _ Ddone) DeqQ DeqE
+	<- excl-done-lstep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse DeqQ
+	<- false\eq2 _ _ Dfalse DeqE.
+- : lstep/unique (ls-app-s2 _ Ddone) (ls-app-s1 Dstep) DeqQ DeqE
+	<- excl-done-lstep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse DeqQ
+	<- false\eq2 _ _ Dfalse DeqE.
+%worlds (det-block) (lstep/unique _ _ _ _).
+%total D (lstep/unique D _ _ _).
+
+%% MSTEP IS DETERMINISTIC
 step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 %mode step/unique +Dstep1 +Dstep2 -Deq.
-
 %% CATCHALL CASE (HITS ALL REDUCTION RULES)
 - : step/unique _ _ eq-term_.
-
 %% SUBSTEP RECURSIVE CASES
 - : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
@@ -82,58 +192,64 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-prev-s Dstep1) (ms-prev-s Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong prev Deq Deq'.
-
+- : step/unique (ms-prev-ls Dstep1) (ms-prev-ls Dstep2) Deq
+	<- lstep/unique Dstep1 Dstep2 DeqQ DeqE
+	<- ({x} eq-cong prev (DeqE x) (DeqE' x))
+	<- eq-cong/let DeqQ DeqE' Deq.
 %% CONTRADICTION CASES
 - : step/unique (ms-tup-s1 Dstep) (ms-tup-s2 _ Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-tup-s2 _ Ddone) (ms-tup-s1 Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-pi1-r Ddone) (ms-pi1-s Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-pi1-s Dstep) (ms-pi1-r Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
-	<- false\eq _ _ Dfalse Deq.
-- : step/unique (ms-pi1-r Ddone) (ms-pi1-s Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-pi2-r Ddone) (ms-pi2-s Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-pi2-s Dstep) (ms-pi2-r Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-app-s1 Dstep) (ms-app-s2 _ Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-app-s2 _ Ddone) (ms-app-s1 Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-app-r Ddone) (ms-app-s2 Dstep _) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-app-s2 Dstep _) (ms-app-r Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-let-s1 Dstep) (ms-let-s2 _ Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-let-s1 Dstep) (ms-let-r Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-let-s2 _ Ddone) (ms-let-s1 Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-let-r Ddone) (ms-let-s1 Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-prev-r Ddone) (ms-prev-s Dstep) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 - : step/unique (ms-prev-s Dstep) (ms-prev-r Ddone) Deq
-	<- nostep Ddone Dstep Dfalse
+	<- excl-done-mstep Ddone Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
+	<- excl-mstep-lstep Dstep' Dstep Dfalse
+	<- false\eq _ _ Dfalse Deq.
+- : step/unique (ms-prev-s Dstep') (ms-prev-ls Dstep) Deq
+	<- excl-mstep-lstep Dstep' Dstep Dfalse
 	<- false\eq _ _ Dfalse Deq.
 
 
