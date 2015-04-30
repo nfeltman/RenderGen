@@ -17,7 +17,6 @@ ty^wf-fut	: ty^wf (fut A) wor1
 
 %% TYPING JUDGMENT
 of^ : term -> ty -> wor -> type. %name of^ Dof.
-%mode of^ +E -T +W.
 of^-ztup	: of^ ztup unit W.
 of^-tup	: of^ (tup E1 E2) (prod A B) W
 			<- of^ E2 B W
@@ -26,13 +25,13 @@ of^-pi1	: of^ (pi1 E) A W
 			<- of^ E (prod A B) W.
 of^-pi2	: of^ (pi2 E) B W
 			<- of^ E (prod A B) W.
-of^-lam 	: of^ (lam A ([x] M x)) (arr A B) W
+of^-lam : of^ (lam ([x] M x)) (arr A B) W
 			<- ({x: term} of^ x A W -> of^ (M x) B W)
 			<- ty^wf A W.
-of^-app  : of^ (app E1 E2) B W
+of^-app : of^ (app E1 E2) B W
 			<- of^ E2 A W
 			<- of^ E1 (arr A B) W.
-of^-let  : of^ (let E ([x] M x)) B wor2
+of^-let : of^ (let E ([x] M x)) B wor2
 			<- of^ E A wor2
 			<- ({x:term} of^ x A wor2 -> of^ (M x) B wor2).
 of^-next	: of^ (next E) (fut A) wor1
@@ -108,12 +107,14 @@ of^-resp : of^ M A W -> idty A B -> of^ M B W -> type.
 %worlds (ofs-block) (of^-resp _ _ _).
 %total {} (of^-resp _ _ _).
 
-%% LAMBDA VALUE INVERSION LEMMA
-lam-inverts : of^ (lam A1 _) (arr A2 _) W -> idty A2 A1 -> type.
+%% LAMBDA VALUE INVERSION LEMMA 
+%{
+lam-inverts : of^ (lam _) (arr A2 _) W -> idty A2 A1 -> type.
 - : lam-inverts (of^-lam _ _) idty/refl.
 %mode lam-inverts +O -I.
 %worlds (ofs-block) (lam-inverts _ _).
 %total {} (lam-inverts _ _).
+
 
 %% LAMBDA ANNOTATION CONSISTENCY
 lam-annot : of^ (lam A1 M) (arr A2 B) W -> of^ V A2 W -> of^ (lam A1 M) (arr A1 B) W -> of^ V A1 W -> type. 
@@ -127,7 +128,7 @@ lam-annot : of^ (lam A1 M) (arr A2 B) W -> of^ V A2 W -> of^ (lam A1 M) (arr A1 
     <- of^-resp DofV' DidtyA (DofV : of^ V A1 W).											%% V : A1
 %mode lam-annot +O1 +O2 -O3 -O4.
 %worlds (ofs-block) (lam-annot _ _ _ _).
-%total {} (lam-annot _ _ _ _).
+%total {} (lam-annot _ _ _ _).}%
 
 %{
 %% UNIQUENESS OF TYPING

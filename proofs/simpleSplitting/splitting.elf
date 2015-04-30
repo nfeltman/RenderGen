@@ -19,7 +19,7 @@ spl1-pi1	: split1 (pi1 E) (pipeM (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l)
 			<- split1 E (pipeM C R).
 spl1-pi2	: split1 (pi2 E) (pipeM (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
 			<- split1 E (pipeM C R).
-spl1-lam	: split1 (lam _ M) (pipeM (tup (lam unit C) ztup) ([_] lam unit ([xl] lett xl R)))
+spl1-lam	: split1 (lam M) (pipeM (tup (lam C) ztup) ([_] lam ([xl] lett xl R)))
 			<- {x : term} split1 x (pipeM (tup x ztup) ([_] x)) -> split1 (M x) (pipeM (C x) ([l:term] R x l)). 
 spl1-app	: split1 (app E1 E2) 
 				(pipeM
@@ -44,7 +44,7 @@ spl2-pi1	: split2 (pi1 E) (pipeS P ([l] pi1 (R l)))
 			<- split2 E (pipeS P R).
 spl2-pi2	: split2 (pi2 E) (pipeS P ([l] pi2 (R l)))
 			<- split2 E (pipeS P R).
-spl2-lam	: split2 (lam _ M) (pipeS P ([l] lam unit ([x] R x l)))
+spl2-lam	: split2 (lam M) (pipeS P ([l] lam ([x] R x l)))
 			<- {x : term} split2 x (pipeS ztup ([_] x)) -> split2 (M x) (pipeS P ([l] R x l)).
 spl2-app	: split2 (app E1 E2) (pipeS (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2))))
 			<- split2 E2 (pipeS P2 R2)

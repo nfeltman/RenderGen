@@ -31,17 +31,17 @@ p-strengthen : ({x : term} split2 x (pipeS ztup ([_] x)) -> split2 (E x) (pipeS 
 - : p-strengthen ([x] [dspl] spl2-tup (Dspl1 x dspl) (Dspl2 x dspl)) Deq
 	<- p-strengthen Dspl1 Deq1
 	<- p-strengthen Dspl2 Deq2
-	<- {x} eq-cong/tup (Deq1 x) (Deq2 x) (Deq x).
+	<- {x} eq-cong2 tup (Deq1 x) (Deq2 x) (Deq x).
 
 %% LAM
 - : c-strengthen 
-		([x] [dspl] spl1-lam ([y] [dsply] DsplM y dsply x dspl) : split1 (lam A _) _) 
+		([x] [dspl] spl1-lam ([y] [dsply] DsplM y dsply x dspl) : split1 (lam _) _) 
 		Deq''
 	<- ({y} {dsply : split1 y (pipeM (tup y ztup) ([_] y ))}  
 		c-strengthen (DsplM y dsply) (Deq y))
-	<- ({x} eq-cong/lam ([y] Deq y x) unit (Deq' x))
-	<- {x} eq-cong/tup (Deq' x) eq-term_ (Deq'' x).
-- : p-strengthen ([x] [dsplx] spl2-lam ([y] [dsply] DsplM y dsply x dsplx) : split2 (lam A _) _) Deq
+	<- ({x} eq-cong/lam ([y] Deq y x) (Deq' x))
+	<- {x} eq-cong2 tup (Deq' x) eq-term_ (Deq'' x).
+- : p-strengthen ([x] [dsplx] spl2-lam ([y] [dsply] DsplM y dsply x dsplx) : split2 (lam _) _) Deq
 	<- ({y} {dsply} p-strengthen (DsplM y dsply) Deq).
 
 
@@ -54,17 +54,17 @@ p-strengthen : ({x : term} split2 x (pipeS ztup ([_] x)) -> split2 (E x) (pipeS 
 - : p-strengthen ([x] [dspl] spl2-app (Dspl1 x dspl) (Dspl2 x dspl)) Deq
 	<- p-strengthen Dspl1 Deq1
 	<- p-strengthen Dspl2 Deq2
-	<- {x} eq-cong/tup (Deq1 x) (Deq2 x) (Deq x).
+	<- {x} eq-cong2 tup (Deq1 x) (Deq2 x) (Deq x).
 
 %% NEXT
 - : c-strengthen ([x] [dspl] spl1-next (Dspl x dspl)) Deq'
 	<- p-strengthen Dspl Deq
-	<- {x} eq-cong/tup eq-term_ (Deq x) (Deq' x).
+	<- {x} eq-cong2 tup eq-term_ (Deq x) (Deq' x).
 
 %% PREV
 - : p-strengthen ([x] [dspl] spl2-prev (Dspl x dspl)) Deq'
 	<- c-strengthen Dspl Deq
-	<- {x} eq-cong/pi2 (Deq x) (Deq' x).
+	<- {x} eq-cong pi2 (Deq x) (Deq' x).
 
 %% STRENGTHENING
 %worlds (splitting-block) (c-strengthen _ _) (p-strengthen _ _).

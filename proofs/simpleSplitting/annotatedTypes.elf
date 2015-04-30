@@ -28,10 +28,10 @@ of+pi1	: of+ (pi1 E) T A W
 			<- of+ E T (prod A _) W.
 of+pi2	: of+ (pi2 E) T A W
 			<- of+ E T (prod _ A) W.
-of+lam+	: of+ (lam A ([x] M x)) unit (arr+ A T B) wor1
+of+lam+	: of+ (lam ([x] M x)) unit (arr+ A T B) wor1
 			<- ({x: term} of+ x unit A wor1 -> of+ (M x) T B wor1)
 			<- ty+wf A wor1.
-of+lam	: of+ (lam A ([x] M x)) T (arr A B) wor2
+of+lam	: of+ (lam ([x] M x)) T (arr A B) wor2
 			<- ({x: term} of+ x unit A wor2 -> of+ (M x) T B wor2)
 			<- ty+wf A wor2.
 of+app+ : of+ (app E1 E2) (prod (prod T1 T2) T3) B wor1

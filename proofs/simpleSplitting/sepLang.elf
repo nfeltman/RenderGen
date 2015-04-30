@@ -11,20 +11,21 @@ mval-ztup : mval ztup.
 mval-tup  : mval (tup E1 E2)
 			<- mval E2
 			<- mval E1.
-mval-lam  : mval (lam _ _).
+mval-lam  : mval (lam _).
 
 
 %% MULTI-OUTPUT PIPELINE TYPING
 tyM : type.
-multi : ty -> ty -> tyM.
+tyM_ : ty -> ty -> ty -> tyM.
 ofM : seperatedM -> tyM -> type.
-ofM-pipe : ofM (pipeM C R) (multi A B)
+ofM-pipe : ofM (pipeM C R) (tyM_ A T B)
 	<- ({x} of x T -> of (R x) B)
 	<- of C (prod A T).
 
 tyM-wf : tyM -> type.
-wf-multi : tyM-wf (multi A B)
+wf-tyM_ : tyM-wf (tyM_ A T B)
 	<- ty-wf B
+	<- ty-wf T
 	<- ty-wf A.
 
 %% SINGLE-OUTPUT PIPELINE TYPING

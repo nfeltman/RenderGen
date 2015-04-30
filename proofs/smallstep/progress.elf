@@ -56,7 +56,7 @@ prog/pi2 : dos W E -> of^ E (prod T1 T2) W -> dos W (pi2 E) -> type.
 %worlds (von-block) (prog/pi2 _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _).
 
-prog/lam : ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> {T: ty} dos wor2 (lam T M) -> type.
+prog/lam : ({x:term} variable x -> done wor2 x -> dos wor2 (M x)) -> {T: ty} dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos +Dof -Ddos'.
 - : prog/lam ([x] [dvar] [ddone] dos-mstep (Dstep x dvar ddone)) _ (dos-mstep (ms-lam-s Dstep)).
 - : prog/lam ([x] [dvar] [ddone] dos-done (Dres x dvar ddone)) _ (dos-done (res-lam Dres)).

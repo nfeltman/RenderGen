@@ -21,7 +21,7 @@ ztup  : term.
 tup : term -> term -> term.
 pi1 : term -> term.
 pi2 : term -> term.
-lam   : ty -> (term -> term) -> term.
+lam   : (term -> term) -> term.
 app   : term -> term -> term.
 let   : term -> (term -> term) -> term.
 lett  : term -> (term -> term -> term) -> term.
@@ -39,17 +39,11 @@ eq-term_ : eq-term E E.
 %block just-var : block {x : term}.
 
 %% TERM EQUALITY IS A CONGRUENCE
-eq-cong/lam : ({x} eq-term (M x) (M' x)) -> {A} eq-term (lam A M) (lam A M') -> type.
-%mode eq-cong/lam +Deq +E -Deq'.
-- : eq-cong/lam ([x] eq-term_) _ eq-term_.
-%worlds (just-var) (eq-cong/lam _ _ _).
-%total {} (eq-cong/lam _ _ _).
-
-eq-cong/app : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (app E1 E2) (app E1' E2') -> type.
-%mode eq-cong/app +Deq1 +Deq2 -Deq'.
-- : eq-cong/app eq-term_ eq-term_ eq-term_.
-%worlds (just-var) (eq-cong/app _ _ _).
-%total {} (eq-cong/app _ _ _).
+eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
+%mode eq-cong/lam +Deq -Deq'.
+- : eq-cong/lam ([x] eq-term_) eq-term_.
+%worlds (just-var) (eq-cong/lam _ _).
+%total {} (eq-cong/lam _ _).
 
 eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 E2) (let E1' E2') -> type.
 %mode eq-cong/let +Deq +E -Deq'.
@@ -63,29 +57,17 @@ eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term 
 %worlds (just-var) (eq-cong/lett _ _ _).
 %total {} (eq-cong/lett _ _ _).
 
-eq-cong/tup : eq-term E1 E1' -> eq-term E2 E2' -> eq-term (tup E1 E2) (tup E1' E2') -> type.
-%mode eq-cong/tup +Deq1 +Deq2 -Deq'.
-- : eq-cong/tup eq-term_ eq-term_ eq-term_.
-%worlds (just-var) (eq-cong/tup _ _ _).
-%total {} (eq-cong/tup _ _ _).
-
 eq-cong : {F : term -> term} eq-term E E' -> eq-term (F E) (F E') -> type.
 %mode eq-cong +F +Deq -Deq'.
 - : eq-cong _ eq-term_ eq-term_.
 %worlds (just-var) (eq-cong _ _ _).
 %total {} (eq-cong _ _ _).
 
-eq-cong/pi1 : eq-term E E' -> eq-term (pi1 E) (pi1 E') -> type.
-%mode eq-cong/pi1 +Deq -Deq'.
-- : eq-cong/pi1 eq-term_ eq-term_.
-%worlds (just-var) (eq-cong/pi1 _ _).
-%total {} (eq-cong/pi1 _ _).
-
-eq-cong/pi2 : eq-term E E' -> eq-term (pi2 E) (pi2 E') -> type.
-%mode eq-cong/pi2 +Deq -Deq'.
-- : eq-cong/pi2 eq-term_ eq-term_.
-%worlds (just-var) (eq-cong/pi2 _ _).
-%total {} (eq-cong/pi2 _ _).
+eq-cong2 : {F : term -> term -> term} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
+%mode eq-cong2 +F +Deq1 +De2 -Deq'.
+- : eq-cong2 _ eq-term_ eq-term_ eq-term_.
+%worlds (just-var) (eq-cong2 _ _ _ _).
+%total {} (eq-cong2 _ _ _ _).
 
 %% TYPE IDENTITY
 idty : ty -> ty -> type.

@@ -1,6 +1,6 @@
 %% TYPE SPLITTING
 
-tysplit : ty -> tyM -> type.
+tysplit : ty -> ty -> tyM -> type.
 
 spl-unit : tysplit unit (multi unit unit).
 spl-fut  : tysplit (fut A) (multi unit A).

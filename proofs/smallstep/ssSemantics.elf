@@ -10,7 +10,7 @@ nv-ztup : not-variable ztup.
 nv-tup : not-variable (tup _ _).
 nv-pi1 : not-variable (pi1 _).
 nv-pi2 : not-variable (pi2 _).
-nv-lam : not-variable (lam _ _).
+nv-lam : not-variable (lam _).
 nv-app : not-variable (app _ _).
 nv-let : not-variable (let _ _).
 
@@ -20,14 +20,14 @@ done-ztup	: done W ztup.
 done-tup	: done W (tup E1 E2)
 				<- done W E2
 				<- done W E1.
-val-lam		: done wor1 (lam _ _).
+val-lam		: done wor1 (lam _).
 val-next	: done wor1 (next E)
 				<- variable E.
 res-pi1		: done wor2 (pi1 E)
 				<- done wor2 E.
 res-pi2		: done wor2 (pi2 E)
 				<- done wor2 E.
-res-lam		: done wor2 (lam _ M)
+res-lam		: done wor2 (lam M)
 				<- {x : term} variable x -> done wor2 x -> done wor2 (M x).
 res-app		: done wor2 (app E1 E2)
 				<- done wor2 E2
@@ -57,7 +57,7 @@ ms-let-s1	: mstep W (let E M) (let E' M)
 			<- mstep W E E'.
 ms-lett-s1	: mstep W (lett E M) (lett E' M)
 			<- mstep W E E'.
-ms-lam-s	: mstep wor2 (lam T M) (lam T M')
+ms-lam-s	: mstep wor2 (lam M) (lam M')
 			<- {x:term} variable x -> done wor2 x -> mstep wor2 (M x) (M' x).
 ms-let-s2	: mstep wor2 (let E M) (let E M')
 			<- done wor2 E
@@ -68,7 +68,7 @@ ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
 			<- done wor1 (tup E1 E2).
 ms-pi2-r	: mstep wor1 (pi2 (tup E1 E2)) E2
 			<- done wor1 (tup E1 E2).
-ms-app-r	: mstep wor1 (app (lam _ M) E) (M E)
+ms-app-r	: mstep wor1 (app (lam M) E) (M E)
 			<- done wor1 E.
 ms-let-r	: mstep wor1 (let E M) (M E)
 			<- done wor1 E.

@@ -19,12 +19,15 @@ of-pi1	: of (pi1 E) A
 			<- of E (prod A B).
 of-pi2	: of (pi2 E) B
 			<- of E (prod A B).
-of-lam 	: of (lam A ([x] M x)) (arr A B)
+of-lam 	: of (lam ([x] M x)) (arr A B)
 			<- ({x: term} of x A -> of (M x) B)
 			<- ty-wf A.
 of-app  : of (app E1 E2) B
 			<- of E2 A
 			<- of E1 (arr A B).
-%{of-let  : of (let E ([x] M x)) B wor2
-			<- of E A wor2
-			<- ({x:term} of x A wor2 -> of (M x) B wor2). }%
+of-let  : of (let E M) B
+			<- of E A
+			<- ({x:term} of x A -> of (M x) B).
+of-lett : of (lett E M) B
+			<- ({x:term} of x A1 -> {y:term} of y A2 -> of (M x y) B)
+			<- of E (prod A1 A2).

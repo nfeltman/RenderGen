@@ -88,6 +88,7 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 %worlds (det-block) (excl-mstep-lstep _ _ _).
 %total (D) (excl-mstep-lstep _ D _).
 
+
 %% FALSE YIELDS EQUALITY
 false\eq : {E1 : term} {E2 : term} false -> eq-term E1 E2 -> type.
 %mode false\eq +E1 +E2 +Dfalse -Deq.
@@ -109,10 +110,10 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 %% SUBSTEP RECURSIVE CASES
 - : lstep/unique (ls-tup-s1 Dstep) (ls-tup-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/tup (DeqE x) eq-term_ (DeqE' x).
+	<- {x} eq-cong2 tup (DeqE x) eq-term_ (DeqE' x).
 - : lstep/unique (ls-tup-s2 Dstep _) (ls-tup-s2 Dstep' _) DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/tup eq-term_ (DeqE x) (DeqE' x).
+	<- {x} eq-cong2 tup eq-term_ (DeqE x) (DeqE' x).
 - : lstep/unique (ls-pi1-s Dstep) (ls-pi1-s Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong pi1 (DeqE x) (DeqE' x).
@@ -121,10 +122,10 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 	<- {x} eq-cong pi2 (DeqE x) (DeqE' x).
 - : lstep/unique (ls-app-s1 Dstep) (ls-app-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/app (DeqE x) eq-term_ (DeqE' x).
+	<- {x} eq-cong2 app (DeqE x) eq-term_ (DeqE' x).
 - : lstep/unique (ls-app-s2 Dstep _) (ls-app-s2 Dstep' _) DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/app eq-term_ (DeqE x) (DeqE' x).
+	<- {x} eq-cong2 app eq-term_ (DeqE x) (DeqE' x).
 - : lstep/unique (ls-let-s1 Dstep) (ls-let-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong/let (DeqE x) ([x] eq-term_) (DeqE' x).
@@ -156,10 +157,10 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 %% SUBSTEP RECURSIVE CASES
 - : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
-	<- eq-cong/tup Deq eq-term_ Deq'.
+	<- eq-cong2 tup Deq eq-term_ Deq'.
 - : step/unique (ms-tup-s2 Dstep1 _) (ms-tup-s2 Dstep2 _) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
-	<- eq-cong/tup eq-term_ Deq Deq'.
+	<- eq-cong2 tup eq-term_ Deq Deq'.
 - : step/unique (ms-pi1-s Dstep1) (ms-pi1-s Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong pi1 Deq Deq'.
@@ -169,13 +170,13 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
 	<- ({x} {xvar : variable x} {xdone : done wor2 x}
 		step/unique (Dstep1 x xvar xdone) (Dstep2 x xvar xdone) (Deq x))
-	<- eq-cong/lam Deq _ Deq'.
+	<- eq-cong/lam Deq Deq'.
 - : step/unique (ms-app-s1 Dstep1) (ms-app-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
-	<- eq-cong/app Deq eq-term_ Deq'.
+	<- eq-cong2 app Deq eq-term_ Deq'.
 - : step/unique (ms-app-s2 Dstep1 _) (ms-app-s2 Dstep2 _) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
-	<- eq-cong/app eq-term_ Deq Deq'.
+	<- eq-cong2 app eq-term_ Deq Deq'.
 - : step/unique (ms-let-s1 Dstep1) (ms-let-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong/let Deq ([x] eq-term_) Deq'.
