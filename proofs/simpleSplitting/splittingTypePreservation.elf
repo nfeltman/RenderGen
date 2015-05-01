@@ -3,8 +3,32 @@
 splpres1 : of+ E T A wor1 -> split1 E (pipeM C R) -> tysplit A A1 A2 -> of C (prod A1 T) -> type.
 %mode splpres1 +Dof +Dspl +Dtspl -Dof'.
 
-- : splpres1 of+ztup spl1-ztup spl-unit (of-tup of-ztup of-ztup).
-- : splpres1 (of+pi1 Dof) (spl1-pi1 Dspl) _ (of-lett Dof1 ([x][ofx][y][ofy] of-tup (of-pi1 ofx) ofy))
+%% WEAKER VERSION USED FOR RECURSION
+splpres1_ : of+ E T A wor1 -> split1 E (pipeM C R) -> tysplit A A1 A2 -> of C (prod A1 T) -> type.
+%mode splpres1_ +Dof -Dspl -Dtspl -Dof'.
+
+- : splpres1_ Dof Dspl Dtspl Dof'
+	<- spl1-total Dof Dspl
 	<- of+wf Dof _ Dwf
 	<- tysplit-tot Dwf Dtspl
-	<- splpres1 Dof Dspl Dtspl Dof1.
+	<- splpres1 Dof Dspl Dtspl Dof'.
+
+- : splpres1 of+ztup _ _ (of-tup of-ztup of-ztup).
+- : splpres1 (of+tup Dof1 Dof2) _ _ (of-lett Dof1' ([_][y1][_][z1] (of-lett Dof2' ([_][y2][_][z2] of-tup (of-tup y1 y2) (of-tup z1 z2)))))
+	<- splpres1_ Dof1 _ _ Dof1'
+	<- splpres1_ Dof2 _ _ Dof2'.
+- : splpres1 (of+pi1 Dof) _ _ (of-lett Dof' ([_][y][_][z] of-tup (of-pi1 y) z))
+	<- splpres1_ Dof _ _ Dof'.
+- : splpres1 (of+pi2 Dof) _ _ (of-lett Dof' ([_][y][_][z] of-tup (of-pi2 y) z))
+	<- splpres1_ Dof _ _ Dof'.
+- : splpres1 (of+app+ Dof1 Dof2) _ _ 
+	(of-lett Dof1' ([_][y1][_][z1] (of-lett Dof2' ([_][y2][_][z2] (of-lett (of-tup y1 y2) ([_][y3][_][z3] of-tup y3 (of-tup (of-tup z1 z2) z3)))))))
+	<- splpres1_ Dof1 _ _ Dof1'
+	<- splpres1_ Dof2 _ _ Dof2'.
+- : splpres1 (of+lam+ _ Dof) _ _ (of-tup (of-lam _ Dof') of-ztup)
+	<-	{x}
+		{ofx : of+ x unit A wor1}
+		{splx : split1 x (pipeM (tup x ztup) ([_] x))}
+		{tsplx : tysplit A A1 A2}
+		{ofx' : of x A1} 
+		splpres1 ofx splx tsplx (of-tup ofx' of-ztup) -> splpres1_ (Dof x ofx) _ _ (Dof' x ofx').
