@@ -2,16 +2,24 @@
 %% SPLITTING TYPE PRESERVATION
 splpres1 : of+ E T A wor1 -> split1 E (pipeM C R) -> tysplit A A1 A2 -> of C (prod A1 T) -> type.
 %mode splpres1 +Dof +Dspl +Dtspl -Dof'.
+splpres2 : of+ E T A wor2 -> split2 E (pipeS P R) -> of P T -> type.
+%mode splpres2 +Dof +Dspl -Dof'.
 
 %% WEAKER VERSION USED FOR RECURSION
 splpres1_ : of+ E T A wor1 -> split1 E (pipeM C R) -> tysplit A A1 A2 -> of C (prod A1 T) -> type.
 %mode splpres1_ +Dof -Dspl -Dtspl -Dof'.
+splpres2_ : of+ E T A wor2 -> split2 E (pipeS P R) -> of P T -> type.
+%mode splpres2_ +Dof -Dspl -Dof'.
 
 - : splpres1_ Dof Dspl Dtspl Dof'
 	<- spl1-total Dof Dspl
 	<- of+wf Dof _ Dwf
 	<- tysplit-tot Dwf Dtspl
 	<- splpres1 Dof Dspl Dtspl Dof'.
+- : splpres2_ Dof Dspl Dof'
+	<- spl2-total Dof Dspl
+	<- of+wf Dof _ Dwf
+	<- splpres2 Dof Dspl Dof'.
 
 - : splpres1 of+ztup _ _ (of-tup of-ztup of-ztup).
 - : splpres1 (of+tup Dof1 Dof2) _ _ (of-lett Dof1' ([_][y1][_][z1] (of-lett Dof2' ([_][y2][_][z2] of-tup (of-tup y1 y2) (of-tup z1 z2)))))
@@ -20,15 +28,73 @@ splpres1_ : of+ E T A wor1 -> split1 E (pipeM C R) -> tysplit A A1 A2 -> of C (p
 - : splpres1 (of+pi1 Dof) _ _ (of-lett Dof' ([_][y][_][z] of-tup (of-pi1 y) z))
 	<- splpres1_ Dof _ _ Dof'.
 - : splpres1 (of+pi2 Dof) _ _ (of-lett Dof' ([_][y][_][z] of-tup (of-pi2 y) z))
-	<- splpres1_ Dof _ _ Dof'.
+	<- splpres1_ Dof _ _ Dof'. 
 - : splpres1 (of+app+ Dof1 Dof2) _ _ 
 	(of-lett Dof1' ([_][y1][_][z1] (of-lett Dof2' ([_][y2][_][z2] (of-lett (of-tup y1 y2) ([_][y3][_][z3] of-tup y3 (of-tup (of-tup z1 z2) z3)))))))
 	<- splpres1_ Dof1 _ _ Dof1'
 	<- splpres1_ Dof2 _ _ Dof2'.
-- : splpres1 (of+lam+ _ Dof) _ _ (of-tup (of-lam _ Dof') of-ztup)
-	<-	{x}
+- : splpres1 
+		(of+lam+ Dwf Dof) 
+		(spl1-lam Dspl)
+		(spl-arr DtsplA DtsplB) 
+		(of-tup (of-lam Dwf' ([x][ofx] Dof' x (of-tup ofx of-ztup))) of-ztup)
+	<- tysplit-tot-pres Dwf _ Dwf' _
+	<-	{x : term}
 		{ofx : of+ x unit A wor1}
-		{splx : split1 x (pipeM (tup x ztup) ([_] x))}
-		{tsplx : tysplit A A1 A2}
-		{ofx' : of x A1} 
-		splpres1 ofx splx tsplx (of-tup ofx' of-ztup) -> splpres1_ (Dof x ofx) _ _ (Dof' x ofx').
+		of+wf ofx ty-wf-unit Dwf -> 
+		{splx : split1 x (pipeM (tup x ztup) ([l] x))}
+		{ofx' : of (tup x ztup) (prod A1 unit)} 
+		spl1-total ofx splx -> 
+		splpres1 ofx splx DtsplA ofx' -> 
+		splpres1 (Dof x ofx) (Dspl x splx) DtsplB (Dof' x ofx').
+- : splpres1 (of+next Dof) _ _ (of-tup of-ztup Dof')
+	<- splpres2_ Dof _ Dof'.
+
+
+- : splpres2 (of+ztup) _ (of-ztup).
+- : splpres2 (of+pi1 Dof) _ Dof'
+	<- splpres2_ Dof _ Dof'.
+- : splpres2 (of+pi2 Dof) _ Dof'
+	<- splpres2_ Dof _ Dof'.
+- : splpres2 (of+tup Dof1 Dof2) _ (of-tup Dof1' Dof2')
+	<- splpres2_ Dof1 _ Dof1'
+	<- splpres2_ Dof2 _ Dof2'.
+- : splpres2 (of+app Dof1 Dof2) _ (of-tup Dof1' Dof2')
+	<- splpres2_ Dof1 _ Dof1'
+	<- splpres2_ Dof2 _ Dof2'.
+- : splpres2 (of+lam Dwf DofM) (spl2-lam DsplM) Dof'
+	<-	{x}
+		{ofx} 
+		of+wf ofx ty-wf-unit Dwf -> 
+		{xspl} 
+		spl2-total ofx xspl -> 
+		splpres2 ofx xspl of-ztup ->
+		splpres2 (DofM x ofx) (DsplM x xspl) Dof'.
+- : splpres2 (of+prev Dof)  _ (of-pi2 Dof')
+	<- splpres1_ Dof _ _ Dof'.
+
+%block var1-block : 
+	some {A : ty} {dwfA : ty+wf A wor1} {A1 : ty} {A2 : ty} {dtsplA : tysplit A A1 A2}
+	block {x : term}
+		{ofx : of+ x unit A wor1}
+		{_ : of+wf ofx ty-wf-unit dwfA}
+		{splx : split1 x (pipeM (tup x ztup) ([l] x))}
+		{ofx' : of (tup x ztup) (prod A1 unit)} 
+		{_ : spl1-total ofx splx}
+		{_ : splpres1 ofx splx dtsplA ofx'}.
+
+%block var2-block : 
+	some {A : ty} {dwfA : ty+wf A wor2}
+	block {x : term}
+		{ofx : of+ x unit A wor2}
+		{_ : of+wf ofx ty-wf-unit dwfA}
+		{splx : split2 x (pipeS ztup ([l] x))}
+		{_ : spl2-total ofx splx}
+		{_ : splpres2 ofx splx of-ztup}.
+
+%worlds (var1-block | var2-block) (splpres1 _ _ _ _) (splpres1_ _ _ _ _) (splpres2 _ _ _) (splpres2_ _ _ _).
+%terminates (D1 D2 D3 D4) 
+	(splpres1 D1 _ _ _) 
+	(splpres1_ D2 _ _ _) 
+	(splpres2 D3 _ _) 
+	(splpres2_ D4 _ _).

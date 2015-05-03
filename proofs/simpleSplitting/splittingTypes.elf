@@ -39,3 +39,11 @@ tysplit-tot : ty+wf A wor1 -> tysplit A _ _ -> type.
 - : tysplit-tot (ty+wf-fut _) spl-fut.
 %worlds () (tysplit-tot _ _).
 %total (D) (tysplit-tot D _).
+
+tysplit-tot-pres : ty+wf A wor1 -> tysplit A A1 A2 -> ty-wf A1 -> ty-wf A2 -> type.
+%mode tysplit-tot-pres +Dwf -Dspl -Dwf1 -Dwf2.
+- : tysplit-tot-pres Dwf Dspl Dwf1 Dwf2
+	<- tysplit-tot Dwf Dspl
+	<- tysplit-pres Dspl Dwf Dwf1 Dwf2.
+%worlds () (tysplit-tot-pres _ _ _ _).
+%total {} (tysplit-tot-pres _ _ _ _).
