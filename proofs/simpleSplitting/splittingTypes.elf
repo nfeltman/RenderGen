@@ -7,7 +7,7 @@ spl-fut  : tysplit (fut A) unit A.
 spl-prod : tysplit (prod A B) (prod A1 B1) (prod A2 B2)
 	<- tysplit B B1 B2
 	<- tysplit A A1 A2.
-spl-arr  : tysplit (arr+ A T B) (arr A1 (prod B1 T)) (arr (prod A2 T) B2)
+spl-arr  : {T} tysplit (arr+ A T B) (arr A1 (prod B1 T)) (arr (prod A2 T) B2)
 	<- tysplit B B1 B2
 	<- tysplit A A1 A2.
 
@@ -20,20 +20,20 @@ tysplit-pres : tysplit A A1 A2 -> ty+wf A wor1 -> ty-wf A1 -> ty-wf A2 -> type.
 	<- tysplit-pres DsplB DwfB DwfB1 DwfB2.
 - : tysplit-pres spl-fut (ty+wf-fut Dwf) ty-wf-unit Dwf'
 	<- wor2+mono Dwf Dwf'.
-- : tysplit-pres (spl-arr DsplA DsplB) (ty+wf-arr+ DwfA DwfT DwfB) 
+- : tysplit-pres (spl-arr _ DsplA DsplB) (ty+wf-arr+ DwfA DwfT DwfB) 
 		(ty-wf-arr DwfA1 (ty-wf-prod DwfB1 DwfT)) (ty-wf-arr (ty-wf-prod DwfA2 DwfT) DwfB2)
 	<- tysplit-pres DsplA DwfA DwfA1 DwfA2
 	<- tysplit-pres DsplB DwfB DwfB1 DwfB2.
 %worlds () (tysplit-pres _ _ _ _).
 %total (D) (tysplit-pres D _ _ _).
 
-tysplit-tot : ty+wf A wor1 -> tysplit A _ _ -> type.
+tysplit-tot : ty+wf A wor1 -> tysplit A A1 A2 -> type.
 %mode tysplit-tot +Dwf -Dspl.
 - : tysplit-tot ty+wf-unit spl-unit.
 - : tysplit-tot (ty+wf-prod DwfA DwfB) (spl-prod DsplA DsplB)
 	<- tysplit-tot DwfA DsplA
 	<- tysplit-tot DwfB DsplB.
-- : tysplit-tot (ty+wf-arr+ DwfA _ DwfB) (spl-arr DsplA DsplB)
+- : tysplit-tot (ty+wf-arr+ DwfA (_ : ty-wf T) DwfB) (spl-arr T DsplA DsplB)
 	<- tysplit-tot DwfA DsplA
 	<- tysplit-tot DwfB DsplB.
 - : tysplit-tot (ty+wf-fut _) spl-fut.
@@ -47,3 +47,33 @@ tysplit-tot-pres : ty+wf A wor1 -> tysplit A A1 A2 -> ty-wf A1 -> ty-wf A2 -> ty
 	<- tysplit-pres Dspl Dwf Dwf1 Dwf2.
 %worlds () (tysplit-tot-pres _ _ _ _).
 %total {} (tysplit-tot-pres _ _ _ _).
+
+tysplit-unique : tysplit A A1 A2 -> tysplit A A1' A2' -> eq-ty A1 A1' -> eq-ty A2 A2' -> type.
+%mode tysplit-unique +Dspl +Dspl' -Deq1 -Deq2.
+- : tysplit-unique spl-unit spl-unit eq-ty_ eq-ty_.
+- : tysplit-unique spl-fut spl-fut eq-ty_ eq-ty_.
+- : tysplit-unique (spl-prod DtsplA DtsplB) (spl-prod DtsplA' DtsplB') Deq1 Deq2
+	<- tysplit-unique DtsplA DtsplA' DeqA1 DeqA2
+	<- tysplit-unique DtsplB DtsplB' DeqB1 DeqB2
+	<- eq-ty-cong prod DeqA1 DeqB1 Deq1
+	<- eq-ty-cong prod DeqA2 DeqB2 Deq2.
+- : tysplit-unique (spl-arr T DtsplA DtsplB) (spl-arr T DtsplA' DtsplB') Deq1 Deq2
+	<- tysplit-unique DtsplA DtsplA' DeqA1 DeqA2
+	<- tysplit-unique DtsplB DtsplB' DeqB1 DeqB2
+	<- eq-ty-cong ([a][b] arr a (prod b T)) DeqA1 DeqB1 Deq1
+	<- eq-ty-cong ([a][b] arr (prod a T) b) DeqA2 DeqB2 Deq2.
+%worlds () (tysplit-unique _ _ _ _).
+%total D (tysplit-unique D _ _ _).
+
+spl-arr-inverts : tysplit (arr+ A T B) (arr A1 (prod B1 T')) (arr (prod A2 T'') B2) -> eq-ty T T' -> eq-ty T T'' -> type.
+%mode spl-arr-inverts +Dtspl -Deq1 -Deq2.
+- : spl-arr-inverts (spl-arr T _ _) eq-ty_ eq-ty_.
+%worlds () (spl-arr-inverts _ _ _).
+%total D (spl-arr-inverts D _ _).
+
+
+tysplit-resp : tysplit A A1 A2 -> eq-ty A1 A1' -> eq-ty A2 A2' -> tysplit A A1' A2' -> type.
+%mode tysplit-resp +Dtspl +Deq1 +Deq2 -Dtspl'.
+- : tysplit-resp Dtspl eq-ty_ eq-ty_ Dtspl.
+%worlds () (tysplit-resp _ _ _ _).
+%total D (tysplit-resp D _ _ _).

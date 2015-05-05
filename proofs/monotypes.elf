@@ -26,8 +26,50 @@ of-app  : of (app E1 E2) B
 			<- of E2 A
 			<- of E1 (arr A B).
 of-let  : of (let E M) B
-			<- of E A
-			<- ({x:term} of x A -> of (M x) B).
+			<- ({x:term} of x A -> of (M x) B)
+			<- of E A.
 of-lett : of (lett E M) B
 			<- ({x:term} of x A1 -> {y:term} of y A2 -> of (M x y) B)
 			<- of E (prod A1 A2).
+
+%freeze of.
+
+%% RESPECTS BLOCK
+%block term+of-block : some {A : ty} block {x : term} {Dof : of x A}.
+%block term-block : block {x : term}.
+
+%% OF RESPECTS EQUALITY
+of-resp : of E T -> eq-ty T T' -> of E T' -> type.
+%mode of-resp +Dof +Deq -Dof'.
+- : of-resp Dof eq-ty_ Dof.
+%worlds (term+of-block | term-block) (of-resp _ _ _).
+%total {} (of-resp _ _ _).
+
+
+of-strengthen : (term -> of E A) -> of E A -> type.
+%mode of-strengthen +Dof -Dof'.
+- : of-strengthen ([x] Dof) Dof. %% covers ztup and variable cases
+- : of-strengthen ([x] of-tup (Dof1 x) (Dof2 x)) (of-tup Dof1' Dof2')
+	<- of-strengthen Dof1 Dof1'
+	<- of-strengthen Dof2 Dof2'.
+- : of-strengthen ([x] of-pi1 (Dof x)) (of-pi1 Dof')
+	<- of-strengthen Dof Dof'.
+- : of-strengthen ([x] of-pi2 (Dof x)) (of-pi2 Dof')
+	<- of-strengthen Dof Dof'.
+- : of-strengthen ([x] of-lam Dwf (Dof x)) (of-lam Dwf Dof')
+	<- {y : term} {ofy : of y A} 
+		of-strengthen ([x] Dof x y ofy) (Dof' y ofy).
+- : of-strengthen ([x] of-app (Dof1 x) (Dof2 x)) (of-app Dof1' Dof2')
+	<- of-strengthen Dof1 Dof1'
+	<- of-strengthen Dof2 Dof2'.
+- : of-strengthen ([x] of-let (Dof1 x) (Dof2 x)) (of-let Dof1' Dof2')
+	<- of-strengthen Dof1 Dof1'
+	<- {y : term} {ofy : of y A} 
+		of-strengthen ([x] Dof2 x y ofy) (Dof2' y ofy).
+- : of-strengthen ([x] of-lett (Dof1 x) (Dof2 x)) (of-lett Dof1' Dof2')
+	<- of-strengthen Dof1 Dof1'
+	<-	{y : term} {ofy : of y A} 
+		{z : term} {ofz : of z B} 
+		of-strengthen ([x] Dof2 x y ofy z ofz) (Dof2' y ofy z ofz).
+%worlds (term+of-block | term-block) (of-strengthen _ _).
+%total D (of-strengthen D _).

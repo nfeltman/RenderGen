@@ -14,6 +14,7 @@ arr		: ty -> ty -> ty.
 arr+	: ty -> ty -> ty -> ty.
 fut		: ty -> ty.
 curr	: ty -> ty.
+%freeze ty.
 
 %% TERMS
 term : type. %name term E.
@@ -30,7 +31,7 @@ letn  : term -> (term -> term) -> term.
 prev  : term -> term.
 mono  : term -> term.
 letm  : term -> (term -> term) -> term.
-
+%freeze term.
 
 %% TERM EQUALITY
 eq-term  : term -> term -> type.
@@ -69,30 +70,43 @@ eq-cong2 : {F : term -> term -> term} eq-term E1 E1' -> eq-term E2 E2' -> eq-ter
 %worlds (just-var) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
 
-%% TYPE IDENTITY
-idty : ty -> ty -> type.
-idty/refl : idty T T.
+%% TYPE IDENTITY 
+eq-ty : ty -> ty -> type.
+eq-ty_ : eq-ty T T.
 
-idty-sym : idty A B -> idty B A -> type.
-%mode idty-sym +D1 -D2.
-- : idty-sym idty/refl idty/refl.
-%worlds () (idty-sym _ _).
-%total {} (idty-sym _ _).
+eq-ty-sym : eq-ty A B -> eq-ty B A -> type.
+%mode eq-ty-sym +D1 -D2.
+- : eq-ty-sym eq-ty_ eq-ty_.
+%worlds () (eq-ty-sym _ _).
+%total {} (eq-ty-sym _ _).
 
-idty-cong-arr :
-  idty A1 A2 ->
-  idty B1 B2 ->
-  idty (arr A1 B1) (arr A2 B2) -> type.
-%mode idty-cong-arr +D1 +D2 -D3.
-- : idty-cong-arr idty/refl idty/refl idty/refl.
-%worlds () (idty-cong-arr _ _ _).
-%total {} (idty-cong-arr _ _ _).
+eq-ty-cong :
+  {F : ty -> ty -> ty}
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 ->
+  eq-ty (F A1 B1) (F A2 B2) -> type.
+%mode eq-ty-cong +D1 +D2 +F -D3.
+- : eq-ty-cong _ eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-cong _ _ _ _).
+%total {} (eq-ty-cong _ _ _ _).
 
-idty-inj-arr :
-  idty (arr A1 B1) (arr A2 B2) ->
-  idty A1 A2 ->
-  idty B1 B2 -> type.
-%mode idty-inj-arr +D1 -D2 -D3.
-- : idty-inj-arr idty/refl idty/refl idty/refl.
-%worlds () (idty-inj-arr _ _ _).
-%total {} (idty-inj-arr _ _ _).
+eq-ty-cong3 :
+  {F : ty -> ty -> ty -> ty}
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 ->
+  eq-ty C1 C2 ->
+  eq-ty (F A1 B1 C1) (F A2 B2 C2) -> type.
+%mode eq-ty-cong3 +D1 +D2 +D3 +F -D3.
+- : eq-ty-cong3 _ eq-ty_ eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-cong3 _ _ _ _ _).
+%total {} (eq-ty-cong3 _ _ _ _ _).
+
+
+eq-ty-inj-arr :
+  eq-ty (arr A1 B1) (arr A2 B2) ->
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 -> type.
+%mode eq-ty-inj-arr +D1 -D2 -D3.
+- : eq-ty-inj-arr eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-inj-arr _ _ _).
+%total {} (eq-ty-inj-arr _ _ _).

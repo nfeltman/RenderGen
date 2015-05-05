@@ -100,9 +100,9 @@ wor2^mono : ty^wf A wor2 -> ty-wf A -> type.
 %total (D) (wor2^mono D _).
 
 %% TYPING RESPECTS IDENTITY
-of^-resp : of^ M A W -> idty A B -> of^ M B W -> type.
+of^-resp : of^ M A W -> eq-ty A B -> of^ M B W -> type.
 %mode of^-resp +D1 +D2 -D3.
-- : of^-resp Dof idty/refl Dof.
+- : of^-resp Dof eq-ty_ Dof.
 %block ofs-block : some {A : ty} {W : wor} block {x : term} {_ : of^ x A W}.
 %worlds (ofs-block) (of^-resp _ _ _).
 %total {} (of^-resp _ _ _).
