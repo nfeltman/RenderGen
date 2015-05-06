@@ -35,7 +35,7 @@ of-lett : of (lett E M) B
 %freeze of.
 
 %% RESPECTS BLOCK
-%block term+of-block : some {A : ty} block {x : term} {Dof : of x A}.
+%block term+of-block : some {A : ty} {x : term} block {Dof : of x A}.
 %block term-block : block {x : term}.
 
 %% OF RESPECTS EQUALITY
