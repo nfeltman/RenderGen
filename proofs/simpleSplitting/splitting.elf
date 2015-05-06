@@ -20,7 +20,7 @@ spl1-pi1	: split1 (pi1 E) (pipeM (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l)
 spl1-pi2	: split1 (pi2 E) (pipeM (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
 			<- split1 E (pipeM C R).
 spl1-lam	: split1 (lam M) (pipeM (tup (lam C) ztup) ([_] lam ([xl] lett xl R)))
-			<- {x : term} split1 x (pipeM (tup x ztup) ([l] x)) -> split1 (M x) (pipeM (C x) ([l:term] R x l)). 
+			<- {x}{x1}{x2} split1 x (pipeM (tup x1 ztup) ([l] x2)) -> split1 (M x) (pipeM (C x1) ([l:term] R x2 l)). 
 spl1-app	: split1 (app E1 E2) 
 				(pipeM
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
@@ -64,6 +64,6 @@ spl2-prev 	: split2 (prev E) (pipeS (pi2 C) R)
 			<- split2 E (pipeS P1 R1).}%
 
 
-%block splitting-var1 : block {x:term} {dspl : split1 x (pipeM (tup x ztup) ([_] x))}.
+%block splitting-var1 : block {x:term}{x1:term}{x2:term} {dspl : split1 x (pipeM (tup x1 ztup) ([_] x2))}.
 %block splitting-var2 : block {x:term} {dspl : split2 x (pipeS ztup ([_] x))}.
 %block splitting-block = (splitting-var1 | splitting-var2).

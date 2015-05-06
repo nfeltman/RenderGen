@@ -35,10 +35,10 @@ p-strengthen : ({x : term} split2 x (pipeS ztup ([_] x)) -> split2 (E x) (pipeS 
 
 %% LAM
 - : c-strengthen 
-		([x] [dspl] spl1-lam ([y] [dsply] DsplM y dsply x dspl) : split1 (lam _) _) 
+		([x] [dspl] spl1-lam ([y][y1][y2][dsply] DsplM y y1 y2 dsply x dspl) : split1 (lam _) _) 
 		Deq''
-	<- ({y} {dsply : split1 y (pipeM (tup y ztup) ([_] y ))}  
-		c-strengthen (DsplM y dsply) (Deq y))
+	<- ({y}{y1}{y2} {dsply : split1 y (pipeM (tup y1 ztup) ([_] y2 ))}  
+		c-strengthen (DsplM y y1 y2 dsply) (Deq y))
 	<- ({x} eq-cong/lam ([y] Deq y x) (Deq' x))
 	<- {x} eq-cong2 tup (Deq' x) eq-term_ (Deq'' x).
 - : p-strengthen ([x] [dsplx] spl2-lam ([y] [dsply] DsplM y dsply x dsplx) : split2 (lam _) _) Deq
@@ -85,7 +85,7 @@ spl2-total : of+ E A T wor2 -> split2 E _ -> type.
 
 %% BLOCKS
 %block total-var1 : some {T : ty} {A : ty} block 
-	{x:term} {dof : of+ x T A wor1} {dspl : split1 x (pipeM (tup x ztup) ([_] x))} {dtot : spl1-total dof dspl}.
+	{x:term} {x1:term} {x2:term} {dof : of+ x T A wor1} {dspl : split1 x (pipeM (tup x1 ztup) ([_] x2))} {dtot : spl1-total dof dspl}.
 %block total-var2 : some {T : ty} {A : ty} block 
 	{x:term} {dof : of+ x T A wor2} {dspl : split2 x (pipeS ztup ([_] x))} {dtot : spl2-total dof dspl}.
 %block total-block = (total-var1 | total-var2).
