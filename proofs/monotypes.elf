@@ -48,28 +48,6 @@ of-resp : of E T -> eq-ty T T' -> of E T' -> type.
 
 of-strengthen : (term -> of E A) -> of E A -> type.
 %mode of-strengthen +Dof -Dof'.
-- : of-strengthen ([x] Dof) Dof. %% covers ztup and variable cases
-- : of-strengthen ([x] of-tup (Dof1 x) (Dof2 x)) (of-tup Dof1' Dof2')
-	<- of-strengthen Dof1 Dof1'
-	<- of-strengthen Dof2 Dof2'.
-- : of-strengthen ([x] of-pi1 (Dof x)) (of-pi1 Dof')
-	<- of-strengthen Dof Dof'.
-- : of-strengthen ([x] of-pi2 (Dof x)) (of-pi2 Dof')
-	<- of-strengthen Dof Dof'.
-- : of-strengthen ([x] of-lam Dwf (Dof x)) (of-lam Dwf Dof')
-	<- {y : term} {ofy : of y A} 
-		of-strengthen ([x] Dof x y ofy) (Dof' y ofy).
-- : of-strengthen ([x] of-app (Dof1 x) (Dof2 x)) (of-app Dof1' Dof2')
-	<- of-strengthen Dof1 Dof1'
-	<- of-strengthen Dof2 Dof2'.
-- : of-strengthen ([x] of-let (Dof1 x) (Dof2 x)) (of-let Dof1' Dof2')
-	<- of-strengthen Dof1 Dof1'
-	<- {y : term} {ofy : of y A} 
-		of-strengthen ([x] Dof2 x y ofy) (Dof2' y ofy).
-- : of-strengthen ([x] of-lett (Dof1 x) (Dof2 x)) (of-lett Dof1' Dof2')
-	<- of-strengthen Dof1 Dof1'
-	<-	{y : term} {ofy : of y A} 
-		{z : term} {ofz : of z B} 
-		of-strengthen ([x] Dof2 x y ofy z ofz) (Dof2' y ofy z ofz).
+- : of-strengthen DofFunc (DofFunc ztup).
 %worlds (term+of-block | term-block) (of-strengthen _ _).
 %total D (of-strengthen D _).
