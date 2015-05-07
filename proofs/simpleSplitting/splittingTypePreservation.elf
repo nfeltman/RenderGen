@@ -50,19 +50,23 @@ splpres2 : of+ E T A wor2 -> split2 E (pipeS P R) -> of P T -> ({x} of x T -> of
 		(of+lam+ DwfA Dof) 
 		(spl1-lam Dspl)
 		(spl-arr _ DtsplA DtsplB) 
-		(of-tup (of-lam DwfA1 ([x][ofx] Dof1 x ofx)) of-ztup)
-		([_][_] of-lam (ty-wf-prod DwfA2 DwfT) ([xl] [ofxl] of-lett ofxl Dof2))
+		(of-tup (of-lam DwfA1 Dof1') of-ztup)
+		([_][_] of-lam (ty-wf-prod DwfA2 DwfT) ([xl] [ofxl] of-lett ofxl Dof2'))
 	<- tysplit-tot-pres DwfA DtsplA DwfA1 DwfA2
 	<- ({x : term} {ofx : of+ x unit A wor1} of+wf ofx ty-wf-unit DwfA -> of+wf (Dof x ofx) DwfT DwfB)
 	<- tysplit-tot DwfB DtsplB
-	<-	{x : term}
+	<- ({x : term} {x1 : term} {x2 : term}
 		{ofx : of+ x unit A wor1}
 		of+wf ofx ty-wf-unit DwfA -> 
-		{splx : split1 x (pipeM (tup x ztup) ([l] x))}
-		{ofx1 : of x A1} 
-		{ofx2 : of x A2} 
+		{splx : split1 x (pipeM (tup x1 ztup) ([l] x2))}
+		{ofx1 : of x1 A1} 
+		{ofx2 : of x2 A2} 
 		splpres1- ofx splx DtsplA (of-tup ofx1 of-ztup) ([_][_] ofx2) -> 
-		splpres1+ (Dof x ofx) (Dspl x splx) DtsplB (Dof1 x ofx1) (Dof2 x ofx2).
+		splpres1+ (Dof x ofx) (Dspl x x1 x2 splx) DtsplB (Dof1 x x1 x2 ofx1 ofx2) (Dof2 x x1 x2 ofx1 ofx2))
+	<- ({x1}{ofx1:of x1 A1} 
+			of-strengthen/of ([x2][ofx2] Dof1 ztup x1 x2 ofx1 ofx2) (Dof1' x1 ofx1))
+	<- ({x2}{ofx2:of x2 A2}{l}{ofl} 
+			of-strengthen/of ([x1][ofx1] Dof2 ztup x1 x2 ofx1 ofx2 l ofl) (Dof2' x2 ofx2 l ofl)).
 - : splpres1- (of+next Dof) (spl1-next Dspl) spl-fut (of-tup of-ztup Dof1) Dof2
 	<- splpres2 Dof Dspl Dof1 Dof2.
 
@@ -85,19 +89,19 @@ splpres2 : of+ E T A wor2 -> split2 E (pipeS P R) -> of P T -> ({x} of x T -> of
 	<- wor2+mono Dwf Dwf'
 	<- ({x} {ofx} of+wf ofx ty-wf-unit Dwf -> 
 		{xspl} {ofx2} splpres2 ofx xspl of-ztup ([_][_] ofx2) ->
-		splpres2 (DofM x ofx) (DsplM x xspl) (Dof1 x) ([l] [ofl] Dof2 l ofl x ofx2))
-	<- of-strengthen Dof1 Dof1'.
+		splpres2 (DofM x ofx) (DsplM x xspl) (Dof1 x ofx2) ([l] [ofl] Dof2 l ofl x ofx2))
+	<- of-strengthen/of Dof1 Dof1'.
 - : splpres2 (of+prev Dof) (spl2-prev Dspl) (of-pi2 Dof1) Dof2
-	<- splpres1- Dof Dspl _ Dof1 Dof2.
+	<- splpres1+ Dof Dspl spl-fut Dof1 Dof2.
 
 %block var1-block : 
 	some {A : ty} {dwfA : ty+wf A wor1} {A1 : ty} {A2 : ty} {dtsplA : tysplit A A1 A2}
-	block {x : term}
+	block {x : term} {x1 : term} {x2 : term}
 		{ofx : of+ x unit A wor1}
 		{_ : of+wf ofx ty-wf-unit dwfA}
-		{splx : split1 x (pipeM (tup x ztup) ([l] x))}
-		{ofx1 : of x A1} 
-		{ofx2 : of x A2} 
+		{splx : split1 x (pipeM (tup x1 ztup) ([l] x2))}
+		{ofx1 : of x1 A1} 
+		{ofx2 : of x2 A2} 
 		{_ : splpres1- ofx splx dtsplA (of-tup ofx1 of-ztup) ([_][_] ofx2)}.
 
 %block var2-block : 

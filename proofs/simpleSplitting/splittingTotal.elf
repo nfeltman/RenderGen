@@ -68,7 +68,7 @@ p-strengthen : ({x : term} split2 x (pipeS ztup ([_] x)) -> split2 (E x) (pipeS 
 
 %% STRENGTHENING
 %worlds (splitting-block) (c-strengthen _ _) (p-strengthen _ _).
-%total (Dspl1 Dspl2) (c-strengthen Dspl1 _) (p-strengthen Dspl2 _).
+%%total (Dspl1 Dspl2) (c-strengthen Dspl1 _) (p-strengthen Dspl2 _).
 
 %% SPLITTING RESPECTS IDENTITY
 split2-resp : split2 E (pipeS P R) -> eq-term P P' -> split2 E (pipeS P' R) -> type.
@@ -108,9 +108,9 @@ spl2-total : of+ E A T wor2 -> split2 E _ -> type.
 - : spl2-total (of+pi2 Dof) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dspl.
 - : spl1-total (of+lam+ Dwf Dof) (spl1-lam Dspl)
-	<- ({x : term} {dof : of+ x unit A wor1} {dspl : split1 x (pipeM (tup x ztup) ([_] x))}
+	<- ({x : term} {x1}{x2} {dof : of+ x unit A wor1} {dspl : split1 x (pipeM (tup x1 ztup) ([_] x2))}
 		spl1-total dof dspl ->
-		spl1-total (Dof x dof) (Dspl x dspl)).
+		spl1-total (Dof x dof) (Dspl x x1 x2 dspl)).
 - : spl2-total (of+lam Dwf Dof) (spl2-lam Dspl')
 	<- ({x : term} {dof : of+ x unit A wor2} {dspl : split2 x (pipeS ztup ([_] x))} 
 		spl2-total dof dspl ->
@@ -128,4 +128,4 @@ spl2-total : of+ E A T wor2 -> split2 E _ -> type.
 - : spl2-total (of+prev Dof) (spl2-prev Dspl)
 	<- spl1-total Dof Dspl.
 %worlds (total-block) (spl1-total _ _) (spl2-total _ _).
-%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).
+%%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).

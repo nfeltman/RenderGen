@@ -96,9 +96,9 @@ of+wf : of+ E T A W -> ty-wf T -> ty+wf A W -> type.
 	<- of+wf DofE (ty+wf-curr DwfE)
 	<- ({x:term} {Dof : of+ x A worM} of+wf Dof DwfE -> of+wf (DofM x Dof) DwfM).}%
 %block var-of+wf : 
-	some {T : ty} {A : ty} {W : wor} {DwfT : ty-wf T} {Dwf : ty+wf A W}
-	block {x:term} {Dof : of+ x T A W} {_ : of+wf Dof DwfT Dwf}.
-%worlds (var-of+wf) (of+wf _ _ _).
+	some {T : ty} {A : ty} {W : wor} {DwfT : ty-wf T} {Dwf : ty+wf A W} {x:term} 
+	block {Dof : of+ x T A W} {_ : of+wf Dof DwfT Dwf}.
+%worlds (term-block | of-block | var-of+wf) (of+wf _ _ _).
 %total D (of+wf D _ _).
 
 

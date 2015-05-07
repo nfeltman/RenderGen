@@ -110,3 +110,6 @@ eq-ty-inj-arr :
 - : eq-ty-inj-arr eq-ty_ eq-ty_ eq-ty_.
 %worlds () (eq-ty-inj-arr _ _ _).
 %total {} (eq-ty-inj-arr _ _ _).
+
+%% USEFUL BLOCKS
+%block term-block : block {x : term}.

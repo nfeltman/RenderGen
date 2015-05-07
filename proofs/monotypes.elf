@@ -35,19 +35,46 @@ of-lett : of (lett E M) B
 %freeze of.
 
 %% RESPECTS BLOCK
-%block term+of-block : some {A : ty} {x : term} block {Dof : of x A}.
-%block term-block : block {x : term}.
+%block of-block : some {A : ty} {x : term} block {Dof : of x A}.
 
 %% OF RESPECTS EQUALITY
 of-resp : of E T -> eq-ty T T' -> of E T' -> type.
 %mode of-resp +Dof +Deq -Dof'.
 - : of-resp Dof eq-ty_ Dof.
-%worlds (term+of-block | term-block) (of-resp _ _ _).
+%worlds (of-block | term-block) (of-resp _ _ _).
 %total {} (of-resp _ _ _).
 
 
-of-strengthen : (term -> of E A) -> of E A -> type.
-%mode of-strengthen +Dof -Dof'.
-- : of-strengthen DofFunc (DofFunc ztup).
-%worlds (term+of-block | term-block) (of-strengthen _ _).
-%total D (of-strengthen D _).
+of-strengthen/term : (term -> of E A) -> of E A -> type.
+%mode of-strengthen/term +Dof -Dof'.
+- : of-strengthen/term DofFunc (DofFunc ztup).
+%worlds (of-block | term-block) (of-strengthen/term _ _).
+%total D (of-strengthen/term D _).
+
+of-strengthen/of : ({X} of X A -> of E B) -> of E B -> type.
+%mode of-strengthen/of +Dof -Dof'.
+- : of-strengthen/of ([x][ofx] Dof) Dof. %% covers ztup and variable cases
+- : of-strengthen/of ([x][ofx] of-tup (Dof1 x ofx) (Dof2 x ofx)) (of-tup Dof1' Dof2')
+	<- of-strengthen/of Dof1 Dof1'
+	<- of-strengthen/of Dof2 Dof2'.
+- : of-strengthen/of ([x][ofx] of-pi1 (Dof x ofx)) (of-pi1 Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-pi2 (Dof x ofx)) (of-pi2 Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-lam Dwf (Dof x ofx)) (of-lam Dwf Dof')
+	<- {y : term} {ofy : of y A} 
+		of-strengthen/of ([x][ofx] Dof x ofx y ofy) (Dof' y ofy).
+- : of-strengthen/of ([x][ofx] of-app (Dof1 x ofx) (Dof2 x ofx)) (of-app Dof1' Dof2')
+	<- of-strengthen/of Dof1 Dof1'
+	<- of-strengthen/of Dof2 Dof2'.
+- : of-strengthen/of ([x][ofx] of-let (Dof1 x ofx) (Dof2 x ofx)) (of-let Dof1' Dof2')
+	<- of-strengthen/of Dof1 Dof1'
+	<- {y : term} {ofy : of y A} 
+		of-strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : of-strengthen/of ([x][ofx] of-lett (Dof1 x ofx) (Dof2 x ofx)) (of-lett Dof1' Dof2')
+	<- of-strengthen/of Dof1 Dof1'
+	<-	{y : term} {ofy : of y A} 
+		{z : term} {ofz : of z B} 
+		of-strengthen/of ([x][ofx] Dof2 x ofx y ofy z ofz) (Dof2' y ofy z ofz).
+ %worlds (of-block | term-block) (of-strengthen/of _ _).
+ %total D (of-strengthen/of D _). 
