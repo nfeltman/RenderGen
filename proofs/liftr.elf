@@ -31,6 +31,9 @@ letn  : term -> (term -> term) -> term.
 prev  : term -> term.
 mono  : term -> term.
 letm  : term -> (term -> term) -> term.
+
+%block term-block : block {x : term}.
+%worlds (term-block) (term).
 %freeze term.
 
 %% TERM EQUALITY
@@ -45,6 +48,12 @@ eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 - : eq-cong/lam ([x] eq-term_) eq-term_.
 %worlds (just-var) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
+
+eq-cong/1 : {F : (term -> term) -> term} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
+%mode eq-cong/1 +F +Deq -Deq'.
+- : eq-cong/1 F ([x] eq-term_) eq-term_.
+%worlds (just-var) (eq-cong/1 _ _ _).
+%total {} (eq-cong/1 _ _ _).
 
 eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 E2) (let E1' E2') -> type.
 %mode eq-cong/let +Deq +E -Deq'.
@@ -69,6 +78,25 @@ eq-cong2 : {F : term -> term -> term} eq-term E1 E1' -> eq-term E2 E2' -> eq-ter
 - : eq-cong2 _ eq-term_ eq-term_ eq-term_.
 %worlds (just-var) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
+
+eq-cong/0/2 : {F : term -> (term -> term -> term) -> term} 
+  (eq-term E1 E1') -> 
+  ({x:term}{y:term} eq-term (E2 x y) (E2' x y)) -> 
+  (eq-term (F E1 E2) (F E1' E2')) -> type.
+%mode eq-cong/0/2 +F +Deq1 +De2 -Deq'.
+- : eq-cong/0/2 _ eq-term_ ([x][y] eq-term_) eq-term_.
+%worlds (just-var) (eq-cong/0/2 _ _ _ _).
+%total {} (eq-cong/0/2 _ _ _ _).
+
+eq-cong/1/1 : {F : (term -> term) -> (term -> term) -> term} 
+  ({x:term} eq-term (E1 x) (E1' x)) -> 
+  ({y:term} eq-term (E2 y) (E2' y)) -> 
+  (eq-term (F E1 E2) (F E1' E2')) -> type.
+%mode eq-cong/1/1 +F +Deq1 +De2 -Deq'.
+- : eq-cong/1/1 _ ([x] eq-term_) ([y] eq-term_) eq-term_.
+%worlds (just-var) (eq-cong/1/1 _ _ _ _).
+%total {} (eq-cong/1/1 _ _ _ _).
+
 
 %% TYPE IDENTITY 
 eq-ty : ty -> ty -> type.
@@ -110,6 +138,3 @@ eq-ty-inj-arr :
 - : eq-ty-inj-arr eq-ty_ eq-ty_ eq-ty_.
 %worlds () (eq-ty-inj-arr _ _ _).
 %total {} (eq-ty-inj-arr _ _ _).
-
-%% USEFUL BLOCKS
-%block term-block : block {x : term}.
