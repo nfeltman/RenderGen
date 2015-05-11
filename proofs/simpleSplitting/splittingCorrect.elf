@@ -1,0 +1,94 @@
+
+%% SPLITTING CORRECTNESS
+
+sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf wor1 C C' -> type.
+%mode sc +Dstep +Dspl -Dspl' -Dstep'.
+
+lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor1 (E' x) (pipe (C' x) _)) -> ({x} eq-term C (C' x)) -> type.
+%mode sc +Dstep +Dspl -Dspl' -Dstep'.
+
+%% STAGE ONE SUBSTEPS
+- : sc (ms-pi1-s Dstep) (spl1-pi1 Dspl) (spl1-pi1 Dspl') Dconf'
+	<- sc Dstep Dspl Dspl' Dconf
+	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+- : sc (ms-pi2-s Dstep) (spl1-pi2 Dspl) (spl1-pi2 Dspl') Dconf'
+	<- sc Dstep Dspl Dspl' Dconf
+	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+- : sc (ms-tup-s1 Dstep) (spl1-tup DsplA DsplB) (spl1-tup DsplA' DsplB) Dconf'
+	<- sc Dstep DsplA DsplA' Dconf
+	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+- : sc (ms-app-s1 Dstep) (spl1-app DsplA DsplB) (spl1-app DsplA' DsplB) Dconf'
+	<- sc Dstep DsplA DsplA' Dconf
+	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+- : sc (ms-next-s Dstep) (spl1-next Dspl) (spl1-next Dspl') Dconf'
+	<- sc Dstep Dspl Dspl' Dconf
+	<- conf/substep tup-hole-2 ([_][_][s] ms-tup-s2 s done-ztup) Dconf Dconf'.
+
+%% STAGE TWO SUBSTEPS
+- : sc (ms-pi1-s Dstep) (spl2-pi1 Dspl) (spl2-pi1 Dspl') Dstep'
+	<- sc Dstep Dspl Dspl' Dstep'.
+- : sc (ms-pi2-s Dstep) (spl2-pi2 Dspl) (spl2-pi2 Dspl') Dstep'
+	<- sc Dstep Dspl Dspl' Dstep'.
+- : sc (ms-tup-s1 Dstep) (spl2-tup DsplA DsplB) (spl2-tup DsplA' DsplB) Dconf'
+	<- sc Dstep DsplA DsplA' Dconf
+	<- conf/substep tup-hole-1 ([_][_] ms-tup-s1) Dconf Dconf'.
+- : sc (ms-app-s1 Dstep) (spl2-app DsplA DsplB) (spl2-app DsplA' DsplB) Dconf'
+	<- sc Dstep DsplA DsplA' Dconf
+	<- conf/substep tup-hole-1 ([_][_] ms-tup-s1) Dconf Dconf'.
+- : sc (ms-prev-s Dstep) (spl2-prev Dspl) (spl2-prev Dspl') Dconf'
+	<- sc Dstep Dspl Dspl' Dconf
+	<- conf/substep pi2 ([_][_] ms-pi2-s) Dconf Dconf'.
+
+%% LIFT RULES
+- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) ([x] spl1-pi1 (Dspl' x)) Deq'
+	<- lc Dstep Dspl Dspl' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) ([x] spl1-pi2 (Dspl' x)) Deq'
+	<- lc Dstep Dspl Dspl' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+
+
+	%{
+spl1-ztup	: split wor1 ztup (pipe (tup ztup ztup) ([_] ztup)).
+spl1-tup	: split wor1 (tup E1 E2) 
+				(pipe 
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
+					([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
+				)
+			<- split wor1 E2 (pipe C2 R2)
+			<- split wor1 E1 (pipe C1 R1).
+spl1-pi1	: split wor1 (pi1 E) (pipe (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l)))
+			<- split wor1 E (pipe C R).
+spl1-pi2	: split wor1 (pi2 E) (pipe (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
+			<- split wor1 E (pipe C R).
+spl1-lam	: split wor1 (lam M) (pipe (tup (lam C) ztup) ([_] lam ([xl] lett xl R)))
+			<- {x}{x1}{x2} split wor1 x (pipe (tup x1 ztup) ([l] x2)) -> split wor1 (M x) (pipe (C x1) ([l:term] R x2 l)). 
+spl1-app	: split wor1 (app E1 E2) 
+				(pipe
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
+					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
+				)
+			<- split wor1 E2 (pipe C2 R2)
+			<- split wor1 E1 (pipe C1 R1).
+spl1-next	: split wor1 (next E) (pipe (tup ztup P) R)
+			<- split wor2 E (pipe P R).
+
+spl2-ztup	: split wor2 ztup (pipe ztup ([_] ztup)). 
+spl2-tup	: split wor2 (tup E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2))))
+			<- split wor2 E2 (pipe P2 R2)
+			<- split wor2 E1 (pipe P1 R1).
+spl2-pi1	: split wor2 (pi1 E) (pipe P ([l] pi1 (R l)))
+			<- split wor2 E (pipe P R).
+spl2-pi2	: split wor2 (pi2 E) (pipe P ([l] pi2 (R l)))
+			<- split wor2 E (pipe P R).
+spl2-lam	: split wor2 (lam M) (pipe P ([l] lam ([x] R x l)))
+			<- {x : term} split wor2 x (pipe ztup ([_] x)) -> split wor2 (M x) (pipe P ([l] R x l)).
+spl2-app	: split wor2 (app E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2))))
+			<- split wor2 E2 (pipe P2 R2)
+			<- split wor2 E1 (pipe P1 R1).
+spl2-prev 	: split wor2 (prev E) (pipe (pi2 C) R)
+			<- split wor1 E (pipe C R).
+
+
+
+	}%
