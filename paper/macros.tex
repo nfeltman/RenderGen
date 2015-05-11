@@ -24,6 +24,7 @@
 \newcommand {\rmint} {{\rm int}}
 \newcommand {\rmunit} {{\rm unit}}
 \newcommand {\rmbool} {{\rm bool}}
+\newcommand {\exv}[1]{{#1}}
 
 % metatheory
 \newcommand{\wfsym}{\ensuremath{\mathsf{wf}}}
@@ -69,7 +70,7 @@
 
 
 \newcommand {\pause} {{\tt hold}}
-\renewcommand {\next} {{\tt next}}
+\newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
 
 \newenvironment{abstrsyn}
@@ -170,6 +171,16 @@
 \newcommand {\diaonesub} [1] [] {\diaone{e_{#1}}{\xi_{#1}}{v_{#1}}}
 \newcommand {\diatwosub} [1] [] {\diatwo{e_{#1}}{q_{#1}}}
 
+\newcommand{\stepsym}[1]{\overset{#1}\hookrightarrow}
+\newcommand{\stepmix}[2]{{#1}\stepsym \bbonem{#2}}
+\newcommand{\steppure}[2]{{#1}\stepsym \bbonep{#2}}
+\newcommand{\steptwo}[2]{{#1}\stepsym \bbtwo {#2}}
+\newcommand{\steptwosub}[1]{e_{#1}\stepsym \bbtwo e'_{#1}}
+\newcommand{\stepwor}[2]{{#1}\stepsym w {#2}}
+\newcommand{\stepworsub}[1]{e_{#1}\stepsym w e'_{#1}}
+\newcommand{\lift}[2]{{#1}\nearrow \llbracket q/y \rrbracket{#2}}
+\newcommand{\liftsub}[1]{e_{#1}\nearrow \llbracket q/y \rrbracket e'_{#1}}
+
 \newcommand {\masko} [1] {|#1|_{\bbone}}
 \newcommand {\maskt} [1] {|#1|_{\bbtwo}}
 
@@ -250,3 +261,27 @@
 			\renewcommand \col \coltwo
 			\infer %[\mathrm{#1 \overset{\bbtwo}\rightsquigarrow}]
       {#2}{#3}}
+\newcommand {\inferstepw} [2]
+		{
+			\renewcommand \red {\stepwor}
+			\renewcommand \sub {\stepworsub}
+			\infer {#1}{#2}
+		}
+\newcommand {\infersteptwo} [2]
+		{
+			\renewcommand \red {\steptwo}
+			\renewcommand \sub {\steptwosub}
+			\infer {#1}{#2}
+		}
+\newcommand {\inferstepone} [2]
+		{
+			\renewcommand \red {\stepwor}
+			\renewcommand \sub {\stepworsub}
+			\infer {#1}{#2 & w \in \{\bbonem,\bbonep\}}
+		}
+\newcommand {\inferlift} [2]
+		{
+			\renewcommand \red {\lift}
+			\renewcommand \sub {\liftsub}
+			\infer {#1}{#2}
+		}
