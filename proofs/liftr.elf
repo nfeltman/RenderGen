@@ -36,6 +36,11 @@ letm  : term -> (term -> term) -> term.
 %worlds (term-block) (term).
 %freeze term.
 
+%% HOLES
+lett-hole = ([x] lett x M).
+tup-hole-1 = ([x] tup x E).
+tup-hole-2 = ([x] tup E x).
+
 %% TERM EQUALITY
 eq-term  : term -> term -> type.
 eq-term_ : eq-term E E.
