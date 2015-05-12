@@ -71,3 +71,10 @@ conf/substep : {F : term -> term} ({e} {e'} mstep W e e' -> mstep W (F e) (F e')
 	<- step*/substep F R P2 P2'.
 %worlds () (conf/substep _ _ _ _).
 %total {D} (conf/substep _ _ D _).
+
+%% EQUAL THINGS ARE CONFLUENT
+conf\eq : eq-term A B -> conf wor1 A B -> type.
+%mode conf\eq +Deq -Dconf.
+- : conf\eq eq-term_ (conf_ step*-id step*-id).
+%worlds () (conf\eq _ _).
+%total {D} (conf\eq D _).
