@@ -1,35 +1,43 @@
 %{ sepLang.elf }%
 
 %% OUTPUT LANGUAGE
-seperated : type. %name seperated S.
-pipe : term -> (term -> term) -> seperated.
+seperatedM : type. %name seperatedM S.
+seperatedS : type. %name seperatedS S.
+pipeS : term -> (term -> term) -> seperatedS.
+trivS : term -> seperatedS.
+pipeM : term -> (term -> term) -> seperatedM.
+trivM : term -> term -> seperatedM.
 
 mval : term -> type.
 mval-ztup : mval ztup.
 mval-tup  : mval (tup E1 E2)
 			<- mval E2
 			<- mval E1.
-mval-lam  : mval (lam _).
+mval-lam  : mval (lam _ _).
 
 
 %% MULTI-OUTPUT PIPELINE TYPING
 tyM : type.
-tyM_ : ty -> ty -> ty -> tyM.
-ofM : seperated -> tyM -> type.
-ofM-pipe : ofM (pipe C R) (tyM_ A T B)
+multi : ty -> ty -> tyM.
+ofM : seperatedM -> tyM -> type.
+ofM-triv : ofM (trivM I Q) (multi A B)
+	<- of Q B
+	<- of I A.
+ofM-pipe : ofM (pipeM C R) (multi A B)
 	<- ({x} of x T -> of (R x) B)
 	<- of C (prod A T).
 
 tyM-wf : tyM -> type.
-wf-tyM_ : tyM-wf (tyM_ A T B)
+wf-multi : tyM-wf (multi A B)
 	<- ty-wf B
-	<- ty-wf T
 	<- ty-wf A.
 
 %% SINGLE-OUTPUT PIPELINE TYPING
 tyS : type.
-ofS : seperated -> ty -> type.
-ofS-pipe : ofS (pipe P R) A
+ofS : seperatedS -> ty -> type.
+ofS-triv : ofS (trivS Q) A
+	<- of Q A.
+ofS-pipe : ofS (pipeS P R) A
 	<- ({x} of x T -> of (R x) A)
 	<- of P T.
 
