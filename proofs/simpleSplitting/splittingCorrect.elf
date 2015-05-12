@@ -1,10 +1,37 @@
 
+%% LIFTING CORRECTNESS
+
+lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor1 (E' x) (pipe (C' x) _)) -> ({x} eq-term C (C' x)) -> type.
+%mode lc +Dstep +Dspl +Dspl' -Deq.
+%% LIFT RULES
+- : lc (ls-next-r _ _) (spl1-next _) ([x] spl1-next _) ([x] eq-term_).
+- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA DsplB) ([x] spl1-tup (DsplA' x) DsplB) Deq'
+	<- lc Dstep DsplA DsplA' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+- : lc (ls-tup-s2 Dstep _) (spl1-tup DsplA DsplB) ([x] spl1-tup DsplA (DsplB' x)) Deq''
+	<- lc Dstep DsplB DsplB' Deq
+	<- ({x}{y}{z} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x y z))
+	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).
+- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) ([x] spl1-pi1 (Dspl' x)) Deq'
+	<- lc Dstep Dspl Dspl' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) ([x] spl1-pi2 (Dspl' x)) Deq'
+	<- lc Dstep Dspl Dspl' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+- : lc (ls-app-s1 Dstep) (spl1-app DsplA DsplB) ([x] spl1-app (DsplA' x) DsplB) Deq'
+	<- lc Dstep DsplA DsplA' Deq
+	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
+- : lc (ls-app-s2 Dstep _) (spl1-app DsplA DsplB) ([x] spl1-app DsplA (DsplB' x)) Deq''
+	<- lc Dstep DsplB DsplB' Deq
+	<- ({x}{y}{z} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x y z))
+	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).
+%worlds () (lc _ _ _ _).
+%total (D) (lc D _ _ _).
+
+
 %% SPLITTING CORRECTNESS
 
 sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf wor1 C C' -> type.
-%mode sc +Dstep +Dspl -Dspl' -Dstep'.
-
-lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor1 (E' x) (pipe (C' x) _)) -> ({x} eq-term C (C' x)) -> type.
 %mode sc +Dstep +Dspl -Dspl' -Dstep'.
 
 %% STAGE ONE SUBSTEPS
@@ -39,13 +66,6 @@ lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor1 (E' x) (pipe (C
 	<- sc Dstep Dspl Dspl' Dconf
 	<- conf/substep pi2 ([_][_] ms-pi2-s) Dconf Dconf'.
 
-%% LIFT RULES
-- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) ([x] spl1-pi1 (Dspl' x)) Deq'
-	<- lc Dstep Dspl Dspl' Deq
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
-- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) ([x] spl1-pi2 (Dspl' x)) Deq'
-	<- lc Dstep Dspl Dspl' Deq
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
 
 
 	%{
