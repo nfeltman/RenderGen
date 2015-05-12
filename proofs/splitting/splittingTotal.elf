@@ -107,6 +107,9 @@ sep-1\1 : ({x : term}{x1 : term}{x2 : term}
 	<- ({x}{x1}{x2} eq-cong2 tup (DeqA1 x x1 x2) (DeqB1 x x1 x2) (Deq1 x x1 x2))
 	<- ({l1}{l2}{x}{x1}{x2} eq-cong2 app (DeqA2 l1 x x1 x2) (DeqB2 l2 x x1 x2) (Deq2 l1 l2 x x1 x2))
 	<- ({l}{x}{x1}{x2} eq-cong/lett eq-term_ ([l1][l2] Deq2 l1 l2 x x1 x2) (Deq2' l x x1 x2)).
+- : sep-1\1 ([x][x1][x2][dspl] spl2-lam (Dspl x x1 x2 dspl)) Deq1 Deq2'
+	<- ({y}{yspl} sep-1\1 ([x][x1][x2][dspl] Dspl x x1 x2 dspl y yspl) Deq1 ([l][x][x1][x2] Deq2 x x1 x2 l y))
+	<- ({l}{x}{x1}{x2} eq-cong/1 lam (Deq2 x x1 x2 l) (Deq2' l x x1 x2)).
 - : sep-1\1 ([x][x1][x2][dspl] spl2-prev (Dspl x x1 x2 dspl)) Deq1' Deq2
 	<- sep-1\1 Dspl Deq1 Deq2
 	<- ({x}{x1}{x2} eq-cong pi2 (Deq1 x x1 x2) (Deq1' x x1 x2)).
