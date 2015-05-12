@@ -1,12 +1,12 @@
 
 %% MULTISTEPS
 
-step* : wor -> term -> term -> type.
-step*-id : step* W E E.
-step*-step : mstep W E1 E2 -> step* W E2 E3 -> step* W E1 E3.
+step* : term -> term -> type.
+step*-id : step* E E.
+step*-step : step E1 E2 -> step* E2 E3 -> step* E1 E3.
 
 %% MULTISTEP CHAIN
-step*/compose : step* W E1 E2 -> step* W E2 E3 -> step* W E1 E3 -> type.
+step*/compose : step* E1 E2 -> step* E2 E3 -> step* E1 E3 -> type.
 %mode step*/compose +Dchain1 +Dchain2 -Dchain.
 - : step*/compose step*-id C C.
 - : step*/compose (step*-step S C1) C2 (step*-step S C')
@@ -15,34 +15,34 @@ step*/compose : step* W E1 E2 -> step* W E2 E3 -> step* W E1 E3 -> type.
 %total D (step*/compose D _ _).
 
 %% MULTISTEP RESPECTS EQUALITY
-step*/resp : step* W E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> step* W E1' E2' -> type.
+step*/resp : step* E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> step* E1' E2' -> type.
 %mode step*/resp +Dchain +Deq1 +Deq2 -Dchain'.
 - : step*/resp D eq-term_ eq-term_ D.
 %worlds () (step*/resp _ _ _ _).
 %total {} (step*/resp _ _ _ _).
 
 %% CHAIN IS A CONGRUENCE FOR SUBSTEP RULES
-step*/substep : {F : term -> term} ({e} {e'} mstep W e e' -> mstep W (F e) (F e')) -> step* W E E' -> step* W (F E) (F E') -> type.
+step*/substep : {F : term -> term} ({e} {e'} step e e' -> step (F e) (F e')) -> step* E E' -> step* (F E) (F E') -> type.
 %mode step*/substep +F +R +Dchain -Dchain'.
 - : step*/substep F R step*-id step*-id.
-- : step*/substep F R (step*-step (Dstep : mstep W E E') Dchain) (step*-step (R E E' Dstep) Dchain')
+- : step*/substep F R (step*-step (Dstep : step E E') Dchain) (step*-step (R E E' Dstep) Dchain')
 	<- step*/substep F R Dchain Dchain'.
 %worlds () (step*/substep _ _ _ _).
 %total {D} (step*/substep _ _ D _).
 
 %% CONFLUENCE
-conf : wor -> term -> term -> type.
-conf_ : step* W E1 E -> step* W E2 E -> conf W E1 E2.
+conf : term -> term -> type.
+conf_ : step* E1 E -> step* E2 E -> conf E1 E2.
 
 %% CONFLUENCE IS SYMMETRIC
-conf/sym : conf W E1 E2 -> conf W E2 E1 -> type.
+conf/sym : conf E1 E2 -> conf E2 E1 -> type.
 %mode conf/sym +Dconf1 -Dconf2.
 - : conf/sym (conf_ P1 P2) (conf_ P2 P1).
 %worlds () (conf/sym _ _).
 %total {} (conf/sym _ _).
 
 %% CONFLUENCE IS TRANSITIVE HELPER (need helper because termination thing)
-conf/trans/help : step* W E1 E2 -> step* W E3 E2 -> step* W E3 E4 -> step* W E5 E4 -> conf W E1 E5 -> type.
+%{conf/trans/help : step* E1 E2 -> step* E3 E2 -> step* E3 E4 -> step* E5 E4 -> conf E1 E5 -> type.
 %mode conf/trans/help +Dpath1 +Dpath2 +Dpath3 +Dpath4 -Dconf.
 - : conf/trans/help P1 step*-id P3 P4 (conf_ P P4)
 	<- step*/compose P1 P3 P.
@@ -55,16 +55,18 @@ conf/trans/help : step* W E1 E2 -> step* W E3 E2 -> step* W E3 E4 -> step* W E5 
 %worlds () (conf/trans/help _ _ _ _ _).
 %total D (conf/trans/help _ D _ _ _).
 
+
 %% CONFLUENCE IS TRANSITIVE
-conf/trans : conf W E1 E2 -> conf W E2 E3 -> conf W E1 E3 -> type.
+conf/trans : conf E1 E2 -> conf E2 E3 -> conf E1 E3 -> type.
 %mode conf/trans +Dconf1 +Dconf2 -Dconf.
 - : conf/trans (conf_ P1 P2) (conf_ P3 P4) Dconf
 	<- conf/trans/help P1 P2 P3 P4 Dconf.
 %worlds () (conf/trans _ _ _).
 %total {} (conf/trans _ _ _).
+}%
 
 %% CONFLUENCE IS A CONGRUENCE FOR SUBSTEP RULES
-conf/substep : {F : term -> term} ({e} {e'} mstep W e e' -> mstep W (F e) (F e')) -> conf W E E' -> conf W (F E) (F E') -> type.
+conf/substep : {F : term -> term} ({e} {e'} step e e' -> step (F e) (F e')) -> conf E E' -> conf (F E) (F E') -> type.
 %mode conf/substep +F +R +Dcong -Dcong'.
 - : conf/substep F R (conf_ P1 P2) (conf_ P1' P2')
 	<- step*/substep F R P1 P1'
@@ -73,7 +75,7 @@ conf/substep : {F : term -> term} ({e} {e'} mstep W e e' -> mstep W (F e) (F e')
 %total {D} (conf/substep _ _ D _).
 
 %% EQUAL THINGS ARE CONFLUENT
-conf\eq : eq-term A B -> conf wor1 A B -> type.
+conf\eq : eq-term A B -> conf A B -> type.
 %mode conf\eq +Deq -Dconf.
 - : conf\eq eq-term_ (conf_ step*-id step*-id).
 %worlds () (conf\eq _ _).

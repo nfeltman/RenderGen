@@ -31,25 +31,25 @@ lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor2 x (pipe ztup ([
 
 %% SPLITTING CORRECTNESS
 
-sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf wor1 C C' -> type.
+sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf C C' -> type.
 %mode sc +Dstep +Dspl -Dspl' -Dstep'.
 
 %% STAGE ONE SUBSTEPS
 - : sc (ms-pi1-s Dstep) (spl1-pi1 Dspl) (spl1-pi1 Dspl') Dconf'
 	<- sc Dstep Dspl Dspl' Dconf
-	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+	<- conf/substep lett-hole ([_][_] ss-lett-s) Dconf Dconf'.
 - : sc (ms-pi2-s Dstep) (spl1-pi2 Dspl) (spl1-pi2 Dspl') Dconf'
 	<- sc Dstep Dspl Dspl' Dconf
-	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+	<- conf/substep lett-hole ([_][_] ss-lett-s) Dconf Dconf'.
 - : sc (ms-tup-s1 Dstep) (spl1-tup DsplA DsplB) (spl1-tup DsplA' DsplB) Dconf'
 	<- sc Dstep DsplA DsplA' Dconf
-	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+	<- conf/substep lett-hole ([_][_] ss-lett-s) Dconf Dconf'.
 - : sc (ms-app-s1 Dstep) (spl1-app DsplA DsplB) (spl1-app DsplA' DsplB) Dconf'
 	<- sc Dstep DsplA DsplA' Dconf
-	<- conf/substep lett-hole ([_][_] ms-lett-s1) Dconf Dconf'.
+	<- conf/substep lett-hole ([_][_] ss-lett-s) Dconf Dconf'.
 - : sc (ms-next-s Dstep) (spl1-next Dspl) (spl1-next Dspl') Dconf'
 	<- sc Dstep Dspl Dspl' Dconf
-	<- conf/substep tup-hole-2 ([_][_][s] ms-tup-s2 s done-ztup) Dconf Dconf'.
+	<- conf/substep tup-hole-2 ([_][_][s] ss-tup-s2 s val-ztup) Dconf Dconf'.
 
 %% STAGE TWO SUBSTEPS
 - : sc (ms-pi1-s Dstep) (spl2-pi1 Dspl) (spl2-pi1 Dspl') Dstep'
@@ -58,13 +58,13 @@ sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf wor
 	<- sc Dstep Dspl Dspl' Dstep'.
 - : sc (ms-tup-s1 Dstep) (spl2-tup DsplA DsplB) (spl2-tup DsplA' DsplB) Dconf'
 	<- sc Dstep DsplA DsplA' Dconf
-	<- conf/substep tup-hole-1 ([_][_] ms-tup-s1) Dconf Dconf'.
+	<- conf/substep tup-hole-1 ([_][_] ss-tup-s1) Dconf Dconf'.
 - : sc (ms-app-s1 Dstep) (spl2-app DsplA DsplB) (spl2-app DsplA' DsplB) Dconf'
 	<- sc Dstep DsplA DsplA' Dconf
-	<- conf/substep tup-hole-1 ([_][_] ms-tup-s1) Dconf Dconf'.
+	<- conf/substep tup-hole-1 ([_][_] ss-tup-s1) Dconf Dconf'.
 - : sc (ms-prev-s Dstep) (spl2-prev Dspl) (spl2-prev Dspl') Dconf'
 	<- sc Dstep Dspl Dspl' Dconf
-	<- conf/substep pi2 ([_][_] ms-pi2-s) Dconf Dconf'.
+	<- conf/substep pi2 ([_][_] ss-pi2-s) Dconf Dconf'.
 - : sc (ms-prev-ls Dstep) (spl2-prev Dspl) (spl2-let ([x][s] spl2-prev (Dspl' x s))) Dconf
 	<- lc Dstep Dspl Dspl' Deq
 	<- ({x} eq-cong pi2 (Deq x) (Deq' x))

@@ -12,59 +12,59 @@ val-lam	: val (lam _).
 %% STEP
 step : term -> term -> type.
 
-ms-tup-s1	: step (tup E1 E2) (tup E1' E2)
+ss-tup-s1	: step (tup E1 E2) (tup E1' E2)
 			<- step E1 E1'.
-ms-tup-s2	: step (tup E1 E2) (tup E1 E2')
+ss-tup-s2	: step (tup E1 E2) (tup E1 E2')
 			<- val E1
 			<- step E2 E2'.
-ms-pi1-s	: step (pi1 E) (pi1 E')
+ss-pi1-s	: step (pi1 E) (pi1 E')
 			<- step E E'.
-ms-pi1-r	: step (pi1 (tup E1 E2)) E1
+ss-pi1-r	: step (pi1 (tup E1 E2)) E1
 			<- val (tup E1 E2).
-ms-pi2-s	: step (pi2 E) (pi2 E')
+ss-pi2-s	: step (pi2 E) (pi2 E')
 			<- step E E'.
-ms-pi2-r	: step (pi2 (tup E1 E2)) E2
+ss-pi2-r	: step (pi2 (tup E1 E2)) E2
 			<- val (tup E1 E2).
-ms-app-s1	: step (app E1 E2) (app E1' E2)
+ss-app-s1	: step (app E1 E2) (app E1' E2)
 			<- step E1 E1'.
-ms-app-s2	: step (app E1 E2) (app E1 E2')
+ss-app-s2	: step (app E1 E2) (app E1 E2')
 			<- val E1
 			<- step E2 E2'.
-ms-app-r	: step (app (lam M) E) (M E)
+ss-app-r	: step (app (lam M) E) (M E)
 			<- val E.
-ms-let-s	: step (let E M) (let E' M)
+ss-let-s	: step (let E M) (let E' M)
 			<- step E E'.
-ms-let-r	: step (let E M) (M E)
+ss-let-r	: step (let E M) (M E)
 			<- val E.
-ms-lett-s	: step (lett E M) (lett E' M)
+ss-lett-s	: step (lett E M) (lett E' M)
 			<- step E E'.
-ms-lett-r	: step (lett (tup E1 E2) M) (M E1 E2)
+ss-lett-r	: step (lett (tup E1 E2) M) (M E1 E2)
 			<- val (tup E1 E2).
 			
 %% PRESERVATION
 pres : step E E' -> of E T -> of E' T -> type.
 %mode pres +Dstep +Dof -Dof'.
-- : pres (ms-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
+- : pres (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
 	<- pres Dstep Dof1 Dof1'.
-- : pres (ms-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
+- : pres (ss-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
 	<- pres Dstep Dof2 Dof2'. 
-- : pres (ms-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
+- : pres (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
 	<- pres Dstep Dof Dof'.
-- : pres (ms-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
-- : pres (ms-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
+- : pres (ss-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
+- : pres (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
 	<- pres Dstep Dof Dof'.
-- : pres (ms-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
-- : pres (ms-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
+- : pres (ss-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
+- : pres (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
 	<- pres Dstep Dof1 Dof1'.
-- : pres (ms-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
+- : pres (ss-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
 	<- pres Dstep Dof2 Dof2'.
-- : pres (ms-app-r (_ : val E)) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
-- : pres (ms-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
+- : pres (ss-app-r (_ : val E)) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
+- : pres (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
 	<- pres Dstep DofE DofE'.
-- : pres (ms-let-r (_ : val E)) (of-let DofE DofM) (DofM E DofE).
-- : pres (ms-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
+- : pres (ss-let-r (_ : val E)) (of-let DofE DofM) (DofM E DofE).
+- : pres (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
 	<- pres Dstep DofE DofE'.
-- : pres (ms-lett-r (val-tup (_ : val E1) (_ : val E2))) (of-lett (of-tup DofE1 DofE2) DofM) (DofM E1 DofE1 E2 DofE2).
+- : pres (ss-lett-r (val-tup (_ : val E1) (_ : val E2))) (of-lett (of-tup DofE1 DofE2) DofM) (DofM E1 DofE1 E2 DofE2).
 %worlds () (pres _ _ _).
 %total (Dstep) (pres Dstep _ _).
 
@@ -76,45 +76,45 @@ vos-step : step E E' -> vos E.
 %% PROGRESS LEMMAS
 prog/tup : vos E1 -> vos E2 -> vos (tup E1 E2) -> type.
 %mode prog/tup +Dvos1 +Dvos2 -Dvos.
-- : prog/tup (vos-step Dstep) _ (vos-step (ms-tup-s1 Dstep)).
-- : prog/tup (vos-val Dval) (vos-step Dstep) (vos-step (ms-tup-s2 Dstep Dval)).
+- : prog/tup (vos-step Dstep) _ (vos-step (ss-tup-s1 Dstep)).
+- : prog/tup (vos-val Dval) (vos-step Dstep) (vos-step (ss-tup-s2 Dstep Dval)).
 - : prog/tup (vos-val Dval1) (vos-val Dval2) (vos-val (val-tup Dval1 Dval2)).
 %worlds () (prog/tup _ _ _).
 %total (Dvos) (prog/tup Dvos _ _).
 
 prog/pi1 : vos E -> of E (prod T1 T2) -> vos (pi1 E) -> type.
 %mode prog/pi1 +Dvos +Dof -Dvos'.
-- : prog/pi1 (vos-step Dstep) _ (vos-step (ms-pi1-s Dstep)).
-- : prog/pi1 (vos-val Dval) _ (vos-step (ms-pi1-r Dval)).
+- : prog/pi1 (vos-step Dstep) _ (vos-step (ss-pi1-s Dstep)).
+- : prog/pi1 (vos-val Dval) _ (vos-step (ss-pi1-r Dval)).
 %worlds () (prog/pi1 _ _ _).
 %total (Dvos) (prog/pi1 Dvos _ _).
 
 prog/pi2 : vos E -> of E (prod T1 T2) -> vos (pi2 E) -> type.
 %mode prog/pi2 +Dvos +Dof -Dvos'.
-- : prog/pi2 (vos-step Dstep) _ (vos-step (ms-pi2-s Dstep)).
-- : prog/pi2 (vos-val Dval) _ (vos-step (ms-pi2-r Dval)).
+- : prog/pi2 (vos-step Dstep) _ (vos-step (ss-pi2-s Dstep)).
+- : prog/pi2 (vos-val Dval) _ (vos-step (ss-pi2-r Dval)).
 %worlds () (prog/pi2 _ _ _).
 %total (Dvos) (prog/pi2 Dvos _ _).
 
 prog/app : vos E1 -> vos E2 -> of E1 (arr T1 T2) -> vos (app E1 E2) -> type.
 %mode prog/app +Dvos1 +Dvos2 +Dof -Dvos.
-- : prog/app (vos-step Dstep) _ _ (vos-step (ms-app-s1 Dstep)).
-- : prog/app (vos-val Dval) (vos-step Dstep) _ (vos-step (ms-app-s2 Dstep Dval)).
-- : prog/app (vos-val _) (vos-val Dval) _ (vos-step (ms-app-r Dval)).
+- : prog/app (vos-step Dstep) _ _ (vos-step (ss-app-s1 Dstep)).
+- : prog/app (vos-val Dval) (vos-step Dstep) _ (vos-step (ss-app-s2 Dstep Dval)).
+- : prog/app (vos-val _) (vos-val Dval) _ (vos-step (ss-app-r Dval)).
 %worlds () (prog/app _ _ _ _).
 %total (Dvos) (prog/app Dvos _ _ _).
 
 prog/let : vos E -> of (let E M) T -> vos (let E M) -> type.
 %mode prog/let +Dvos +Dof -Dvos'.
-- : prog/let (vos-step Dstep) _ (vos-step (ms-let-s Dstep)).
-- : prog/let (vos-val Dval) _ (vos-step (ms-let-r Dval)).
+- : prog/let (vos-step Dstep) _ (vos-step (ss-let-s Dstep)).
+- : prog/let (vos-val Dval) _ (vos-step (ss-let-r Dval)).
 %worlds () (prog/let _ _ _).
 %total (Dvos) (prog/let Dvos _ _).
 
 prog/lett : vos E -> of (lett E M) T -> vos (lett E M) -> type.
 %mode prog/lett +Dvos +Dof -Dvos'.
-- : prog/lett (vos-step Dstep) _ (vos-step (ms-lett-s Dstep)).
-- : prog/lett (vos-val Dval) (of-lett (of-tup _ _) _) (vos-step (ms-lett-r Dval)).
+- : prog/lett (vos-step Dstep) _ (vos-step (ss-lett-s Dstep)).
+- : prog/lett (vos-val Dval) (of-lett (of-tup _ _) _) (vos-step (ss-lett-r Dval)).
 %worlds () (prog/lett _ _ _).
 %total (Dvos) (prog/lett Dvos _ _).
 
