@@ -57,8 +57,9 @@ spl2-prev 	: split wor2 (prev E) (pipe (pi2 C) R)
 				)
 			<- ({x : term} split wor1 x (pipe x ([_] x)) -> split wor1 (M x) (pipe (C2 x) ([l] R2 x l)))
 			<- split wor1 E (pipe C1 R1).}%
-spl2-let	: split wor2 (let E M) (pipe P ([l] let l ([l] let E ([x] R x l))))
-			<- ({x : term} split wor2 x (pipe ztup ([_] x)) -> split wor2 (M x) (pipe P ([l] R x l))).
+spl2-let	: split wor2 (let E M) (pipe P ([l] let E' ([x] R x l)))
+			<- ({x : term} split wor2 x (pipe ztup ([_] x)) -> split wor2 (M x) (pipe P ([l] R x l)))
+			<- split wor2 E (pipe ztup ([_] E')).
 
 
 %block splitting-var1 : block {x:term}{x1:term}{x2:term} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}.

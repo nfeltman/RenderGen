@@ -36,16 +36,19 @@ letm  : term -> (term -> term) -> term.
 %worlds (term-block) (term).
 %freeze term.
 
+%block just-var : block {x : term}.
+
 %% HOLES
 lett-hole = ([x] lett x M).
 tup-hole-1 = ([x] tup x E).
 tup-hole-2 = ([x] tup E x).
 
 %% TERM EQUALITY
-eq-term  : term -> term -> type.
+eq-term  : term -> term -> type. %name eq-term Deq.
 eq-term_ : eq-term E E.
 
-%block just-var : block {x : term}.
+%abbrev `eq-term_ = ([x : term] eq-term_).
+%abbrev ``eq-term_ = ([x : term][y : term] eq-term_).
 
 %% TERM EQUALITY IS A CONGRUENCE
 eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
