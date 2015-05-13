@@ -137,7 +137,8 @@
 \inferstepone	{\red {\app {\exv{\lam xe}}{\exv v}} {[\exv v/x]e}} 					{v \val} \and
 \inferstepone	{\red {\caseof {\exv{\inl v}}{x_2.e_2}{x_3.e_3}} {[\exv v/x_2]e_2}} 	{v \val} \and
 \inferstepone	{\red {\caseof {\exv{\inr v}}{x_2.e_2}{x_3.e_3}} {[\exv v/x_3]e_3}} 	{v \val} \and
-\inferstepone	{\stepmix {\letp x {\pure v} e} {[v/x]e}} 								{v \val} \and
+\inferstepw		{\stepmix {\letp x {\pure v} e} {[v/x]e}} 								{v \val} \and
+\inferstepw		{\stepmix {\prev {\next y}} y} 											{\cdot} \and
 \end{mathpar}
 \hrule
 \begin{mathpar}
@@ -191,8 +192,8 @@
 \hrule
 \begin{mathpar}
 \fbox{Lifting Steps} \and
-\inferlift 		{\red {\next q} {\next y}} {q \res & q {\rm not variable}} \and
-\infersteptwo 	{\red {\prev e} {\letin q y e}} {\liftsub{}} \and
+\inferlift 		{\red {\next q} {\next y}} {q \res & q \text{ not variable}} \and
+\infersteptwo 	{\red {\prev e} {\letin q y {\prev e}}} {\liftsub{}} \and
 \inferlift		{\red 	{\pio e} 
 						{\pio {e'}}} 											
 				{\sub {}} \and
