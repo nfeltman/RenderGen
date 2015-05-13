@@ -2,7 +2,28 @@
 
 %% A TERM IS A VARIABLE (used for doneness of nexts)
 variable : term -> type.
-%%mode variable +E.
+
+%% DONE
+done : wor -> term -> type. %name done Ddone.
+done-ztup	: done W ztup.
+done-tup	: done W (tup E1 E2)
+				<- done W E2
+				<- done W E1.
+val-lam		: done wor1 (lam _).
+val-next	: done wor1 (next E)
+				<- variable E.
+res-pi1		: done wor2 (pi1 E)
+				<- done wor2 E.
+res-pi2		: done wor2 (pi2 E)
+				<- done wor2 E.
+res-lam		: done wor2 (lam M)
+				<- {x : term} variable x -> done wor2 x -> done wor2 (M x).
+res-app		: done wor2 (app E1 E2)
+				<- done wor2 E2
+				<- done wor2 E1.
+res-let		: done wor2 (let E M)
+				<- done wor2 E
+				<- {x:term} variable x -> done wor2 x -> done wor2 (M x).
 
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
 not-variable : term -> type.

@@ -165,6 +165,8 @@ spl1-total : of^ E A wor1 -> split wor1 E _ -> type.
 %mode spl1-total +Dof -Dspl.
 spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 %mode spl2-total +Dof -Dspl.
+splr-total : of^ E A wor2 -> splitres E _ -> type.
+%mode splr-total +Dof -Dspl.
 
 %% BLOCKS
 %block total-var1 : some {A : ty} block 
@@ -172,6 +174,9 @@ spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 %block total-var2 : some {A : ty} block 
 	{x:term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} {dtot : spl2-total dof dspl}.
 %block total-block = (total-var1 | total-var2).
+
+%% SPLITTING RESIDUALS
+%%- : splr-total of^ztup splr- .
 
 %% MAIN PROOF OF TOTALITY
 - : spl1-total of^-ztup spl1-ztup.
@@ -191,14 +196,14 @@ spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 - : spl2-total (of^-pi2 Dof) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dspl.
 - : spl1-total (of^-lam Dwf Dof) (spl1-lam Dspl')
-	<- ({x : term} {x1}{x2} {dof : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
-		spl1-total dof dspl ->
-		spl1-total (Dof x dof) (Dspl x x1 x2 dspl))
+	<- ({x : term} {x1}{x2} {dx : done wor2 x} {ofx : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
+		spl1-total ofx dspl ->
+		spl1-total (Dof x dx ofx) (Dspl x x1 x2 dspl))
 	<- separation Dspl Dspl'.
 - : spl2-total (of^-lam Dwf Dof) (spl2-lam Dspl')
-	<- ({x : term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
-		spl2-total dof dspl ->
-		spl2-total (Dof x dof) (Dspl x dspl))
+	<- ({x : term} {dx : done wor2 x} {ofx : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
+		spl2-total ofx dspl ->
+		spl2-total (Dof x dx ofx) (Dspl x dspl))
 	<- sep-1 Dspl Deq
 	<- {x} {spl} split-resp (Dspl x spl) (Deq x) ([_] eq-term_) (Dspl' x spl).
 - : spl1-total (of^-app Dof1 Dof2) (spl1-app Dspl1 Dspl2)
@@ -207,9 +212,16 @@ spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 - : spl2-total (of^-app Dof1 Dof2) (spl2-app Dspl1 Dspl2)
 	<- spl2-total Dof1 Dspl1
 	<- spl2-total Dof2 Dspl2.
+- : spl2-total (of^-let DofE DofM) (spl2-let (spl2-exv DsplrE) DsplM')
+	<- splr-total DofE DsplrE
+	<- ({x : term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
+		spl2-total dof dspl ->
+		spl2-total (DofM x dof) (DsplM x dspl))
+	<- sep-1 DsplM Deq
+	<- {x} {spl} split-resp (DsplM x spl) (Deq x) ([_] eq-term_) (DsplM' x spl).
 - : spl1-total (of^-next Dof) (spl1-next Dspl)
 	<- spl2-total Dof Dspl.
 - : spl2-total (of^-prev Dof) (spl2-prev Dspl)
 	<- spl1-total Dof Dspl.
-%worlds (total-block) (spl1-total _ _) (spl2-total _ _).
-%total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).
+%worlds (total-block) (spl1-total _ _) (spl2-total _ _) (splr-total _ _).
+%total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splr-total Dsplr _).

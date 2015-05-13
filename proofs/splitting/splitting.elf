@@ -29,7 +29,7 @@ splr-let : splitres (let E M) (let E' M')
 
 
 splv-ztup 	: splitval ztup ztup ztup.
-spl1-next	: splitval (next E) ztup E.
+splv-next	: splitval (next E) ztup E.
 splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E2 I2 Q2
 			<- splitval E1 I1 Q1.
@@ -67,7 +67,7 @@ spl1-next	: split wor1 (next E) (pipe (tup ztup P) R)
 			<- split wor1 E C1 R1
 			<- {x : term} split wor2 x ztup ([_] x) -> split wor1 (M x) C2 ([l] R2 x l).}%
 
-spl2-exv	: split wor1 (exv Q) (pipe ztup ([_] Q'))
+spl2-exv	: split wor2 (exv Q) (pipe ztup ([_] Q'))
 				<- splitres Q Q'.
 spl2-ztup	: split wor2 ztup (pipe ztup ([_] ztup)). 
 spl2-tup	: split wor2 (tup E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2))))
