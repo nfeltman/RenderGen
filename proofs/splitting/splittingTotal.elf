@@ -44,13 +44,42 @@ sep-1 : ({x : term} split W1 _ (pipe A _) -> split W2 _ (pipe (P x) _)) -> ({x} 
 - : sep-1 ([x][dspl] spl2-prev (Dspl x dspl)) Deq1'
 	<- sep-1 Dspl Deq1
 	<- ({x} eq-cong pi2 (Deq1 x) (Deq1' x)).
-- : sep-1 ([x][dspl] spl2-let _ ([y] [yspl] DsplM x dspl y yspl)) Deq1
+- : sep-1 ([x][dspl] spl2-let _ (DsplM x dspl)) Deq1
 	<- {y}{yspl} sep-1 ([x][dspl] DsplM x dspl y yspl) Deq1.
 %worlds (splitting-block | term-block) (sep-1 _ _).
 %total (D) (sep-1 D _).
 
+eq\splres : ({x:term} split W1 _ (pipe _ A) -> splitres _ (Q x)) -> ({x} eq-term (Q x) Q') -> type.
+%mode eq\splres +Dspl -Deq.
 sep-2 : ({x : term} split W1 _ (pipe _ A) -> split W2 _ (pipe _ ([l] R x l))) -> ({l:term}{x} eq-term (R x l) (R' l)) -> type.
 %mode sep-2 +Dspl -Deq.
+
+- : eq\splres ([x] E) `eq-term_.
+- : eq\splres ([x][s] splr-simple (Dspl x s)) (Deq ztup)
+	<- sep-2 Dspl Deq.
+- : eq\splres ([x][s] splr-pi1 (E x s)) Deq'
+	<- eq\splres E Deq
+	<- {x} eq-cong pi1 (Deq x) (Deq' x).
+- : eq\splres ([x][s] splr-pi2 (E x s)) Deq'
+	<- eq\splres E Deq
+	<- {x} eq-cong pi2 (Deq x) (Deq' x).
+- : eq\splres ([x][s] splr-tup (E1 x s) (E2 x s)) Deq'
+	<- eq\splres E1 Deq1
+	<- eq\splres E2 Deq2
+	<- ({x} eq-cong2 tup (Deq1 x) (Deq2 x) (Deq' x)).
+- : eq\splres ([x][xs] splr-lam ([y][ys] DsplrM y ys x xs)) Deq'
+	<- ({y}{s} eq\splres (DsplrM y s) ([x] Deq x y))
+	<- ({x:term} eq-cong/lam (Deq x) (Deq' x)).
+- : eq\splres ([x][s] splr-app (E1 x s) (E2 x s)) Deq'
+	<- eq\splres E1 Deq1
+	<- eq\splres E2 Deq2
+	<- ({x} eq-cong2 app (Deq1 x) (Deq2 x) (Deq' x)).
+- : eq\splres ([x][xs] splr-let (DsplrE x xs) ([y][ys] DsplrM y ys x xs)) Deq'
+	<- eq\splres DsplrE DeqE
+	<- ({y}{s} eq\splres (DsplrM y s) ([x] DeqM x y))
+	<- ({x:term} eq-cong/let (DeqE x) (DeqM x) (Deq' x)).
+
+
 - : sep-2 ([x][s : split _ _ (pipe _ A)] Dspl x s) ([x][l:term] eq-term_).
 - : sep-2 ([x][dspl] spl1-pi1 (Dspl x dspl)) Deq2'
 	<- sep-2 Dspl Deq2
@@ -100,8 +129,10 @@ sep-2 : ({x : term} split W1 _ (pipe _ A) -> split W2 _ (pipe _ ([l] R x l))) ->
 	<- sep-2 DsplE DeqE
 	<- ({y}{yspl} sep-2 ([x][dspl] DsplM x dspl y yspl) ([l][x] Deq2 l x y))
 	<- ({l}{x} eq-cong/let (DeqE l x) (Deq2 l x) (Deq2' l x)).
-%worlds (splitting-block | term-block) (sep-2 _ _).
-%total (D) (sep-2 D _).
+- : sep-2 ([x][s] spl2-exv (Dsplr x s)) ([l] Deq)
+	<- eq\splres Dsplr Deq.
+%worlds (splitting-block | term-block) (sep-2 _ _) (eq\splres _ _).
+%total (D1 D2) (sep-2 D1 _) (eq\splres D2 _).
 
 
 %% SPLITTING RESPECTS IDENTITY
@@ -130,55 +161,55 @@ separation : ({x : term}{x1 : term}{x2 : term}
 %total (D) (separation D _).
 
 %% SPLITTING IS TOTAL FOR WELL-TYPED TERMS
-spl1-total : of+ E T A wor1 -> split wor1 E _ -> type.
+spl1-total : of^ E A wor1 -> split wor1 E _ -> type.
 %mode spl1-total +Dof -Dspl.
-spl2-total : of+ E T A wor2 -> split wor2 E _ -> type.
+spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 %mode spl2-total +Dof -Dspl.
 
 %% BLOCKS
-%block total-var1 : some {T : ty} {A : ty} block 
-	{x:term} {x1:term} {x2:term} {dof : of+ x T A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))} {dtot : spl1-total dof dspl}.
-%block total-var2 : some {T : ty} {A : ty} block 
-	{x:term} {dof : of+ x T A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} {dtot : spl2-total dof dspl}.
+%block total-var1 : some {A : ty} block 
+	{x:term} {x1:term} {x2:term} {dof : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))} {dtot : spl1-total dof dspl}.
+%block total-var2 : some {A : ty} block 
+	{x:term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} {dtot : spl2-total dof dspl}.
 %block total-block = (total-var1 | total-var2).
 
 %% MAIN PROOF OF TOTALITY
-- : spl1-total of+ztup spl1-ztup.
-- : spl2-total of+ztup spl2-ztup.
-- : spl1-total (of+tup Dof1 Dof2) (spl1-tup Dspl1 Dspl2)
+- : spl1-total of^-ztup spl1-ztup.
+- : spl2-total of^-ztup spl2-ztup.
+- : spl1-total (of^-tup Dof1 Dof2) (spl1-tup Dspl1 Dspl2)
 	<- spl1-total Dof1 Dspl1
 	<- spl1-total Dof2 Dspl2.
-- : spl2-total (of+tup Dof1 Dof2) (spl2-tup Dspl1 Dspl2)
+- : spl2-total (of^-tup Dof1 Dof2) (spl2-tup Dspl1 Dspl2)
 	<- spl2-total Dof1 Dspl1
 	<- spl2-total Dof2 Dspl2.
-- : spl1-total (of+pi1 Dof) (spl1-pi1 Dspl)
+- : spl1-total (of^-pi1 Dof) (spl1-pi1 Dspl)
 	<- spl1-total Dof Dspl.
-- : spl2-total (of+pi1 Dof) (spl2-pi1 Dspl)
+- : spl2-total (of^-pi1 Dof) (spl2-pi1 Dspl)
 	<- spl2-total Dof Dspl.
-- : spl1-total (of+pi2 Dof) (spl1-pi2 Dspl)
+- : spl1-total (of^-pi2 Dof) (spl1-pi2 Dspl)
 	<- spl1-total Dof Dspl.
-- : spl2-total (of+pi2 Dof) (spl2-pi2 Dspl)
+- : spl2-total (of^-pi2 Dof) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dspl.
-- : spl1-total (of+lam+ Dwf Dof) (spl1-lam Dspl')
-	<- ({x : term} {x1}{x2} {dof : of+ x unit A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
+- : spl1-total (of^-lam Dwf Dof) (spl1-lam Dspl')
+	<- ({x : term} {x1}{x2} {dof : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
 		spl1-total dof dspl ->
 		spl1-total (Dof x dof) (Dspl x x1 x2 dspl))
 	<- separation Dspl Dspl'.
-- : spl2-total (of+lam Dwf Dof) (spl2-lam Dspl')
-	<- ({x : term} {dof : of+ x unit A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} 
+- : spl2-total (of^-lam Dwf Dof) (spl2-lam Dspl')
+	<- ({x : term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
 		spl2-total dof dspl ->
 		spl2-total (Dof x dof) (Dspl x dspl))
 	<- sep-1 Dspl Deq
 	<- {x} {spl} split-resp (Dspl x spl) (Deq x) ([_] eq-term_) (Dspl' x spl).
-- : spl1-total (of+app+ Dof1 Dof2) (spl1-app Dspl1 Dspl2)
+- : spl1-total (of^-app Dof1 Dof2) (spl1-app Dspl1 Dspl2)
 	<- spl1-total Dof1 Dspl1
 	<- spl1-total Dof2 Dspl2.
-- : spl2-total (of+app Dof1 Dof2) (spl2-app Dspl1 Dspl2)
+- : spl2-total (of^-app Dof1 Dof2) (spl2-app Dspl1 Dspl2)
 	<- spl2-total Dof1 Dspl1
 	<- spl2-total Dof2 Dspl2.
-- : spl1-total (of+next Dof) (spl1-next Dspl)
+- : spl1-total (of^-next Dof) (spl1-next Dspl)
 	<- spl2-total Dof Dspl.
-- : spl2-total (of+prev Dof) (spl2-prev Dspl)
+- : spl2-total (of^-prev Dof) (spl2-prev Dspl)
 	<- spl1-total Dof Dspl.
 %worlds (total-block) (spl1-total _ _) (spl2-total _ _).
 %total (Dspl1 Dspl2) (spl1-total Dspl1 _) (spl2-total Dspl2 _).
