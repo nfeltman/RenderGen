@@ -16,9 +16,9 @@ res-lam		: done wor2 (lam M)
 res-app		: done wor2 (app E1 E2)
 				<- done wor2 E2
 				<- done wor2 E1.
-res-let		: done wor2 (let E M)
+%{res-let		: done wor2 (let E M)
 				<- done wor2 E
-				<- {x:term} done wor2 x -> done wor2 (M x).
+				<- {x:term} done wor2 x -> done wor2 (M x).}%
 %block var-done : block {x:term} {_ : done wor2 x}.
 %worlds (var-done | just-var) (done _ _).
 

@@ -23,9 +23,9 @@ splr-lam : splitres (lam M) (lam M')
 splr-app : splitres (app E1 E2) (app E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
-splr-let : splitres (let E M) (let E' M')
+%{splr-let : splitres (let E M) (let E' M')
 			<- ({x} split wor2 x (pipe ztup ([_] x)) -> splitres (M x) (M' x))
-			<- splitres E E'.
+			<- splitres E E'.}%
 
 
 splv-ztup 	: splitval ztup ztup ztup.
