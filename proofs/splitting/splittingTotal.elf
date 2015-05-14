@@ -165,18 +165,34 @@ spl1-total : of^ E A wor1 -> split wor1 E _ -> type.
 %mode spl1-total +Dof -Dspl.
 spl2-total : of^ E A wor2 -> split wor2 E _ -> type.
 %mode spl2-total +Dof -Dspl.
-splr-total : of^ E A wor2 -> splitres E _ -> type.
-%mode splr-total +Dof -Dspl.
+splr-total : of^ E A wor2 -> done wor2 E -> splitres E _ -> type.
+%mode splr-total +Dof +Ddone -Dspl.
 
 %% BLOCKS
 %block total-var1 : some {A : ty} block 
 	{x:term} {x1:term} {x2:term} {dof : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))} {dtot : spl1-total dof dspl}.
 %block total-var2 : some {A : ty} block 
-	{x:term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} {dtot : spl2-total dof dspl}.
+	{x:term} {dx : done wor2 x} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))} {dtot : spl2-total dof dspl}.
 %block total-block = (total-var1 | total-var2).
 
 %% SPLITTING RESIDUALS
-%%- : splr-total of^ztup splr- .
+- : splr-total of^-ztup done-ztup (splr-simple spl2-ztup).
+- : splr-total (of^-tup Dof1 Dof2) (done-tup Ddone1 Ddone2) (splr-tup Dsplr1 Dsplr2)
+	<- splr-total Dof1 Ddone1 Dsplr1
+	<- splr-total Dof2 Ddone2 Dsplr2.
+- : splr-total (of^-pi1 Dof) (res-pi1 Ddone) (splr-pi1 Dsplr)
+	<- splr-total Dof Ddone Dsplr.
+- : splr-total (of^-pi2 Dof) (res-pi2 Ddone) (splr-pi2 Dsplr)
+	<- splr-total Dof Ddone Dsplr.
+- : splr-total (of^-lam2 _ Dof) (res-lam Ddone) (splr-lam Dsplr)
+	<- {x} {dx} {dof} {dspl} spl2-total dof dspl ->
+		splr-total (Dof x dx dof) (Ddone x dx) (Dsplr x dspl).
+- : splr-total (of^-app Dof1 Dof2) (res-app Ddone1 Ddone2) (splr-app Dsplr1 Dsplr2)
+	<- splr-total Dof1 Ddone1 Dsplr1
+	<- splr-total Dof2 Ddone2 Dsplr2.
+- : splr-total (of^-let DofE DofM) (res-let DdoneE DdoneM) (splr-let DsplrM)
+	<- {x} {dx} {dof} {dspl} spl2-total dof dspl ->
+		splr-total (DofM x dx dof) (DdoneM x dx) (DsplrM x dspl).
 
 %% MAIN PROOF OF TOTALITY
 - : spl1-total of^-ztup spl1-ztup.
@@ -195,12 +211,12 @@ splr-total : of^ E A wor2 -> splitres E _ -> type.
 	<- spl1-total Dof Dspl.
 - : spl2-total (of^-pi2 Dof) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dspl.
-- : spl1-total (of^-lam Dwf Dof) (spl1-lam Dspl')
-	<- ({x : term} {x1}{x2} {dx : done wor2 x} {ofx : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
+- : spl1-total (of^-lam1 Dwf Dof) (spl1-lam Dspl')
+	<- ({x : term} {x1}{x2} {ofx : of^ x A wor1} {dspl : split wor1 x (pipe (tup x1 ztup) ([_] x2))}
 		spl1-total ofx dspl ->
-		spl1-total (Dof x dx ofx) (Dspl x x1 x2 dspl))
+		spl1-total (Dof x ofx) (Dspl x x1 x2 dspl))
 	<- separation Dspl Dspl'.
-- : spl2-total (of^-lam Dwf Dof) (spl2-lam Dspl')
+- : spl2-total (of^-lam2 Dwf Dof) (spl2-lam Dspl')
 	<- ({x : term} {dx : done wor2 x} {ofx : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
 		spl2-total ofx dspl ->
 		spl2-total (Dof x dx ofx) (Dspl x dspl))
@@ -212,16 +228,18 @@ splr-total : of^ E A wor2 -> splitres E _ -> type.
 - : spl2-total (of^-app Dof1 Dof2) (spl2-app Dspl1 Dspl2)
 	<- spl2-total Dof1 Dspl1
 	<- spl2-total Dof2 Dspl2.
-- : spl2-total (of^-let DofE DofM) (spl2-let (spl2-exv DsplrE) DsplM')
-	<- splr-total DofE DsplrE
-	<- ({x : term} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
+- : spl2-total (of^-let (of^-exv DofE Ddone) DofM) (spl2-let (spl2-exv DsplrE) DsplM')
+	<- splr-total DofE Ddone DsplrE
+	<- ({x : term} {dx : done wor2 x} {dof : of^ x A wor2} {dspl : split wor2 x (pipe ztup ([_] x))}
 		spl2-total dof dspl ->
-		spl2-total (DofM x dof) (DsplM x dspl))
+		spl2-total (DofM x dx dof) (DsplM x dspl))
 	<- sep-1 DsplM Deq
 	<- {x} {spl} split-resp (DsplM x spl) (Deq x) ([_] eq-term_) (DsplM' x spl).
 - : spl1-total (of^-next Dof) (spl1-next Dspl)
 	<- spl2-total Dof Dspl.
 - : spl2-total (of^-prev Dof) (spl2-prev Dspl)
 	<- spl1-total Dof Dspl.
-%worlds (total-block) (spl1-total _ _) (spl2-total _ _) (splr-total _ _).
-%total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splr-total Dsplr _).
+- : spl2-total (of^-exv Dof Ddone) (spl2-exv Dsplr)
+	<- splr-total Dof Ddone Dsplr.
+%worlds (total-block) (spl1-total _ _) (spl2-total _ _) (splr-total _ _ _).
+%total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splr-total Dsplr _ _).

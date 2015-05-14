@@ -20,7 +20,7 @@ res-let		: done wor2 (let E M)
 				<- done wor2 E
 				<- {x:term} done wor2 x -> done wor2 (M x).
 %block var-done : block {x:term} {_ : done wor2 x}.
-%worlds (var-done) (done _ _).
+%worlds (var-done | just-var) (done _ _).
 
 %% TYPE WELL-FORMED
 ty^wf : ty -> wor -> type.
@@ -48,15 +48,18 @@ of^-pi1	: of^ (pi1 E) A W
 			<- of^ E (prod A B) W.
 of^-pi2	: of^ (pi2 E) B W
 			<- of^ E (prod A B) W.
-of^-lam : of^ (lam ([x] M x)) (arr A B) W
-			<- ({x: term} done wor2 x -> of^ x A W -> of^ (M x) B W)
-			<- ty^wf A W.
+of^-lam1 : of^ (lam ([x] M x)) (arr A B) wor1
+			<- ({x: term} of^ x A wor1 -> of^ (M x) B wor1)
+			<- ty^wf A wor1.
+of^-lam2 : of^ (lam ([x] M x)) (arr A B) wor2
+			<- ({x: term} done wor2 x -> of^ x A wor2 -> of^ (M x) B wor2)
+			<- ty^wf A wor2.
 of^-app : of^ (app E1 E2) B W
 			<- of^ E2 A W
 			<- of^ E1 (arr A B) W.
 of^-let : of^ (let (exv E) ([x] M x)) B wor2
 			<- ({x:term} done wor2 x -> of^ x A wor2 -> of^ (M x) B wor2)
-			<- of^ E A wor2.
+			<- of^ (exv E) A wor2.
 of^-exv : of^ (exv V) A wor2
 			<- done wor2 V
 			<- of^ V A wor2.
@@ -73,7 +76,9 @@ of^-letm : of^ (letm E M) T2 wor1
 			<- of^ E (curr T1) wor1
 			<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
 
-%block var-of : some {A : ty} {W : wor} block {x:term} {_ : done wor2 x} {_ : of^ x A W}.
+%block var-of1 : some {A : ty} block {x:term} {_ : of^ x A wor1}.
+%block var-of2 : some {A : ty} block {x:term} {_ : done wor2 x} {_ : of^ x A wor2}.
+%block var-of = (var-of1 | var-of2).
 %worlds (var-of) (of^ _ _ _).
 
 %% OUTPUTS OF TYPING ARE WELL-FORMED
@@ -87,8 +92,10 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
 - : of^-wf (of^-pi2 Dof) DwfB
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
-- : of^-wf (of^-lam Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
-	<- ({x:term} {dx : done wor2 x} {ofx : of^ x A W} {_ : of^-wf ofx Dwf1} of^-wf (DofM x dx ofx) Dwf2).
+- : of^-wf (of^-lam1 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
+	<- ({x:term} {ofx : of^ x A wor1} {_ : of^-wf ofx Dwf1} of^-wf (DofM x ofx) Dwf2).
+- : of^-wf (of^-lam2 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
+	<- ({x:term} {dx : done wor2 x} {ofx : of^ x A wor2} {_ : of^-wf ofx Dwf1} of^-wf (DofM x dx ofx) Dwf2).
 - : of^-wf (of^-app Dof1 Dof2) Dwf
 	<- of^-wf Dof1 (ty^wf-arr _ Dwf). 
 - : of^-wf (of^-let DofE DofM) Dwf2
@@ -108,9 +115,13 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 - : of^-wf (of^-letm DofM DofE) DwfM
 	<- of^-wf DofE (ty^wf-curr DwfE)
 	<- ({x:term} {Dof : of^ x A worM} of^-wf Dof DwfE -> of^-wf (DofM x Dof) DwfM).}%
-%block var-of^-wf : 
-	some {A : ty} {W : wor} {Dwf : ty^wf A W} 
-	block {x:term} {_: done wor2 x} {Dof : of^ x A W} {_ : of^-wf Dof Dwf}.
+%block var-of^-wf1 : 
+	some {A : ty} {Dwf : ty^wf A wor1} 
+	block {x:term} {Dof : of^ x A wor1} {_ : of^-wf Dof Dwf}.
+%block var-of^-wf2 : 
+	some {A : ty} {Dwf : ty^wf A wor2} 
+	block {x:term} {_: done wor2 x} {Dof : of^ x A wor2} {_ : of^-wf Dof Dwf}.
+%block var-of^-wf = (var-of^-wf1 | var-of^-wf2).
 %worlds (var-of^-wf) (of^-wf _ _).
 %total D (of^-wf D _).
 
