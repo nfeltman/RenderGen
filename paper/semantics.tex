@@ -77,8 +77,45 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 
 
 \subsection{(Small Step) Dynamics}
+We provide a small-step semantics which evaluates \lang\ terms in two passes,
+first reducing only redexes in the first stage portions of code,
+then reducing those in second stage portions of code.
+Because first- and second-stage code are
+interleaved in \lang\ terms, realizing this notion of staged
+evaluation requires some care.
 
-(This section will be drafted by May 15.  Only a figure for now.)
+The first pass of evaluation comprises three judgements: 
+steps $\stepwor e e'$, which asserts that a term $e$ performs some internal reduction to produce $e'$,
+where both terms are at world $w$;
+doneness $e \done$, which asserts that a term $e$ at world $w$ has no more first stage redeces;
+and the auxiliary hoisting $\lift e {e'}$, which will be covered later.
+
+One important feature of our semantics is that it reduces {\em all} first stage redexes
+in the first pass, even those that occur underneath second stage binders.
+This does not cause evaluation to ``get stuck'' however, 
+because first stage code cannot depend on the results of second stage code,
+as enforced by our type system.
+
+More formally, the type safety of our dynamics can be stated
+with the usual progress and preservation lemmas, annotated with a world:
+\\{\bf Progress.~} If $\typeswor e A$, then either $\stepwor e e'$ or $e \done$. 
+\\{\bf Preservation.~} If $\typeswor e A$ and $\stepwor e e'$, then $\typeswor e A$. 
+Here, $\Gamma$ may be any list of variable bindings at world \bbtwo,
+for those second stage variables under which we are evaluating.
+Also bear in mind that these lemmas will require minor amendments once hoisting is considered.
+
+\paragraph{Done.} The judgement $e \done$ indicates that a term $e$ contains no first stage redexes.
+In the $w = \bbtwo$ case, this means that $e$ contains no first stage code at all; it is a residual.
+In the $w = \bbonep$ case, this means a $e$ comprises only tuples, injections, and base value; that is, it is a value.
+
+
+
+This second pass is in fact identical to standard monostage lambda calculus evaluation, 
+so we will not cover it here. 
+
+We show that the type system of \lang\ (specifically, the opaque nature of $\fut$
+types) is sufficient to guarantee that our semantics can proceed.
+
 
 \subsection{(Big Step) Dynamics}
 \label{sec:stagedsemantics}
