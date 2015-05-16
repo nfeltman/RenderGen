@@ -2,136 +2,137 @@
 
 \begin{figure*}
 \begin{abstrsyn}
-% \begin{mathpar}
-% \fbox{Evaluation of \bbonem}	\and
-% \inferdiaone[\rmunit]
-% {\red {\tup{}}{\cdot}{\tup{}}}
-% {\cdot}
-% \and
-% \inferdiaone [\to I]
-% {\red {\lam{x}{e}} {\cdot}{\lam{x}{e}}}
-% {\cdot}
-% \and
-% \inferdiaone [fix]
-% {\red {\fix fxe} {\cdot}{\lam{x}{[\fix fxe / f]e}}}
-% {\cdot}
-% \and
-% \inferdiaone [\to E]
-% {\red {\app {e_1}{e_2}} {\gcomp 1 2, \xi'}{v'}}
-% {\red {e_1} {\xi_1}{\lam{x}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi'}{v'}}
-% \and
-% %
-% \inferdiaone [\times I]
-% {\red {\tup{e_1,e_2}}{\gcomp 1 2}{\tup{v_1,v_2}}}
-% {\sub [1] & \sub [2]}
-% \and
-% \inferdiaone [\times E_1]
-% {\red {\pio{e}}{\xi}{v_1}}
-% {\red{e}{\xi}{\tup{v_1,v_2}}}
-% \and
-% \inferdiaone [\times E_2]
-% {\red {\pit{e}}{\xi}{v_2}}
-% {\red{e}{\xi}{\tup{v_1,v_2}}}
-% \and
-% \inferdiaone [+ I_1]
-% {\red {\inl{e}} {\xi}{\inl{v}}}
-% {\sub}
-% \and
-% \inferdiaone [+ I_2]
-% {\red {\inr{e}} {\xi}{\inr{v}}}
-% {\sub}
-% \and
-% %
-% \inferdiaone [+ E_1]
-% {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}
-% {\red {e_1}{\xi_1}{\inl{v}} & \red
-%   [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2}{v_2}}
-% \and
-% \inferdiaone [+ E_2]
-% {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}
-% {\red {e_1}{\xi_1}{\inr{v}} & \red
-%   [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3}{v_3}}
-% \and
-% \inferdiaone[\mu I]
-% {\red {\roll{e}}{\xi}{\roll{v}}}
-% {\sub}
-% \and
-% \inferdiaone[\mu E]
-% {\red {\unroll{e}}{\xi}{ v}}
-% {\red {e}{\xi}{ \roll{v}}}
-% \end{mathpar}
-
-% \hrule
-% \begin{mathpar}
-% \fbox{Evaluation of \bbtwo}
-% \and
-% \inferdiaspc[\rmunit]
-% {\red {\tup{}}{\tup{}}}
-% {\cdot}
-% \and
-% %\inferdiaspc[int]
-% %{\red {i}{i}}
-% %{\cdot}
-% %\and
-% %% %\inferdiaspc [bool]{\red {b}{b}}
-% %% {\cdot}
-% %% \and
-% \inferdiaspc[hyp]
-% {\red {x}{x}}
-% {\cdot}
-% \and
-% \inferdiaspc[\to I]
-% {\red {\lam{x}{e}}{\lam{x}{q}}}
-% {\diatwo [\Gamma,x] e q} 
-% \and
-% \inferdiaspc[fix]
-% {\red {\fix fxe}{\fix fxq}}
-% {\diatwo [\Gamma,f,x] e q} 
-% \and
-% \inferdiaspc [\to E]
-% {\red {\app {e_1} {e_2}}{q_1~q_2}}
-% {\sub [1] & \sub [2]}
-% \and
-% \inferdiaspc [\times I]
-% {\red {\tup{e_1,e_2}}{\tup{q_1,q_2}}}
-% {\sub [1] & \sub [2]} 
-% \and
-% \inferdiaspc [C]
-% {\red {\scriptCapp e}{\scriptCapp q}}
-% {\sub & \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}}
-% %\inferdiaspc[+ I_2]
-% %{\red {\inr~e}{\inr~q}}
-% %{\sub}
-% \and
-% \inferdiaspc[+ E_1]
-% {\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
-% {\caseof{q_1}{x_2.q_2}{x_3.q_3}}}
-% {\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 
-% %\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
-% %	{\sub}										\and
-% %\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
-% %\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and
-% %
-% \end{mathpar}
-% \hrule
-% \begin{mathpar}
-% \fbox{Staging features} \and
-% \inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q}{\next{\hat y}}}			{\diatwo e q}														\and
-% \inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi}{ \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
-% %\inferdiaone [hold]	{\red {\pause e} {\xi, \hat y \mapsto i}{ \next {\hat y}}}	{\red e {\xi}{ \pure i}}												\and
-% \infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
-% \infer					{\reify {y \mapsto q_1, \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
-% \inferdiaone			{\red {\pure e} {\cdot}{ \pure v}}							{\reduce e v} 														\and
-% \inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2}{ v_2}}			{\red {e_1} {\xi_1}{\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2}{v_2}} 	\and
-% %\inferdiaone			{\red {\lifttag e} {\xi}{\inl{\pure v}}}						{\red e {\xi}{ \pure{\inl v}}}										\and
-% %\inferdiaone			{\red {\lifttag e} {\xi}{\inr{\pure v}}}						{\red e {\xi}{ \pure{\inr v}}}										
-% \inferdiaone [+ E_1]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}		{\red {e_1}{\xi_1}{\pure{\inl{v}}} 
-% 																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_2]e_2}{\xi_2}{v_2}}			\and
-% \inferdiaone [+ E_2]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}		{\red {e_1}{\xi_1}{\pure{\inr{v}}}
-% 																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3}{v_3}}		
-% \end{mathpar}
 \begin{mathpar}
-\fbox{Reduction Rules}	\and
+\fbox{(BS) Evaluation of \bbonem}	\and
+\inferdiaone[\rmunit]
+{\red {\tup{}}{\cdot}{\tup{}}}
+{\cdot}
+\and
+\inferdiaone [\to I]
+{\red {\lam{x}{e}} {\cdot}{\lam{x}{e}}}
+{\cdot}
+\and
+\inferdiaone [fix]
+{\red {\fix fxe} {\cdot}{\lam{x}{[\fix fxe / f]e}}}
+{\cdot}
+\and
+\inferdiaone [\to E]
+{\red {\app {e_1}{e_2}} {\gcomp 1 2, \xi'}{v'}}
+{\red {e_1} {\xi_1}{\lam{x}{e'}} & \sub [2] & \red  [\Gamma,\dom{\xi_1},\dom{\xi_2}] {[v_2/x]e'}{\xi'}{v'}}
+\and
+%
+\inferdiaone [\times I]
+{\red {\tup{e_1,e_2}}{\gcomp 1 2}{\tup{v_1,v_2}}}
+{\sub [1] & \sub [2]}
+\and
+\inferdiaone [\times E_1]
+{\red {\pio{e}}{\xi}{v_1}}
+{\red{e}{\xi}{\tup{v_1,v_2}}}
+\and
+\inferdiaone [\times E_2]
+{\red {\pit{e}}{\xi}{v_2}}
+{\red{e}{\xi}{\tup{v_1,v_2}}}
+\and
+\inferdiaone [+ I_1]
+{\red {\inl{e}} {\xi}{\inl{v}}}
+{\sub}
+\and
+\inferdiaone [+ I_2]
+{\red {\inr{e}} {\xi}{\inr{v}}}
+{\sub}
+\and
+%
+\inferdiaone [+ E_1]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}
+{\red {e_1}{\xi_1}{\inl{v}} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_2]e_2}{\xi_2}{v_2}}
+\and
+\inferdiaone [+ E_2]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}
+{\red {e_1}{\xi_1}{\inr{v}} & \red
+  [\Gamma,\dom{\xi_1}]{[v/x_3]e_3}{\xi_3}{v_3}}
+\and
+\inferdiaone[\mu I]
+{\red {\roll{e}}{\xi}{\roll{v}}}
+{\sub}
+\and
+\inferdiaone[\mu E]
+{\red {\unroll{e}}{\xi}{ v}}
+{\red {e}{\xi}{ \roll{v}}}
+\end{mathpar}
+
+\hrule
+\begin{mathpar}
+\fbox{(BS) Evaluation of \bbtwo}
+\and
+\inferdiaspc[\rmunit]
+{\red {\tup{}}{\tup{}}}
+{\cdot}
+\and
+%\inferdiaspc[int]
+%{\red {i}{i}}
+%{\cdot}
+%\and
+%% %\inferdiaspc [bool]{\red {b}{b}}
+%% {\cdot}
+%% \and
+\inferdiaspc[hyp]
+{\red {x}{x}}
+{\cdot}
+\and
+\inferdiaspc[\to I]
+{\red {\lam{x}{e}}{\lam{x}{q}}}
+{\diatwo [\Gamma,x] e q} 
+\and
+\inferdiaspc[fix]
+{\red {\fix fxe}{\fix fxq}}
+{\diatwo [\Gamma,f,x] e q} 
+\and
+\inferdiaspc [\to E]
+{\red {\app {e_1} {e_2}}{q_1~q_2}}
+{\sub [1] & \sub [2]}
+\and
+\inferdiaspc [\times I]
+{\red {\tup{e_1,e_2}}{\tup{q_1,q_2}}}
+{\sub [1] & \sub [2]} 
+\and
+\inferdiaspc [C]
+{\red {\scriptCapp e}{\scriptCapp q}}
+{\sub & \scriptC \in \{\mathtt{pi1},\mathtt{pi2},\mathtt{inl},\mathtt{inr},\mathtt{roll},\mathtt{unroll}\}}
+%\inferdiaspc[+ I_2]
+%{\red {\inr~e}{\inr~q}}
+%{\sub}
+\and
+\inferdiaspc[+ E_1]
+{\red {\caseof{e_1}{x_2.e_2}{x_3.e_3}}
+{\caseof{q_1}{x_2.q_2}{x_3.q_3}}}
+{\sub [1] & \diatwo [\Gamma,x_2] {e_2} {q_2} & \diatwo [\Gamma,x_3] {e_3} {q_3}} 
+%\inferdiaspc [\mu E]   		{\red {\unroll~e}{\unroll~v}}
+%	{\sub}										\and
+%\inferdiaspc [let]			{\red {\letin{x}{e_1}{e_2}}{\letin{x}{q_1}{q_2}}}			{\sub [1] & \diatwo [\Gamma,x] {e_2} {q_2}} 					\and
+%\inferdiaspc [if_T] 			{\red {\ifthen{e_1}{e_2}{e_3}}{\ifthen{q_1}{q_2}{q_3}}}	{\sub [1] & \sub [2] & \sub [3]} 		\and
+%
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\fbox{(BS) Staging features} \and
+\inferdiaone [\fut I]	{\red {\next{e}}{\hat y \mapsto q}{\next{\hat y}}}			{\diatwo e q}														\and
+\inferdiaspc [\fut E]	{\red {\prev{e}} q}											{\diaone e {\xi}{ \next{\hat y}} & \reify{\xi}{\hat y}q}				\and
+%\inferdiaone [hold]	{\red {\pause e} {\xi, \hat y \mapsto i}{ \next {\hat y}}}	{\red e {\xi}{ \pure i}}												\and
+\infer					{\reify {\cdot}{q}{q}}										{\cdot}																\and
+\infer					{\reify {y \mapsto q_1, \xi}{q_2}{\letin{y}{q_1}{q'}}}		{\reify{\xi}{q_2}{q'}}												\and
+\inferdiaone			{\red {\pure e} {\cdot}{ \pure v}}							{\reduce e v} 														\and
+\inferdiaone			{\red {\letp x {e_1} {e_2}} {\xi_1, \xi_2}{ v_2}}			{\red {e_1} {\xi_1}{\pure {v_1}} & \red {[v_1/x]e_2} {\xi_2}{v_2}} 	\and
+%\inferdiaone			{\red {\lifttag e} {\xi}{\inl{\pure v}}}						{\red e {\xi}{ \pure{\inl v}}}										\and
+%\inferdiaone			{\red {\lifttag e} {\xi}{\inr{\pure v}}}						{\red e {\xi}{ \pure{\inr v}}}										
+\inferdiaone [+ E_1]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 2}{v_2}}		{\red {e_1}{\xi_1}{\pure{\inl{v}}} 
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_2]e_2}{\xi_2}{v_2}}			\and
+\inferdiaone [+ E_2]	{\red {\caseP{e_1}{x_2.e_2}{x_3.e_3}}{\gcomp 1 3}{v_3}}		{\red {e_1}{\xi_1}{\pure{\inr{v}}}
+																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3}{v_3}}		
+\end{mathpar}
+\hrule
+\begin{mathpar}
+\fbox{(SS) Reduction Rules}	\and
 \inferstepone	{\red {\pio {\exv{\tup{v_1,v_2}}}} {\exv{v_1}}} 						{\tup{v_1,v_2} \val} \and
 \inferstepone	{\red {\pit {\exv{\tup{v_1,v_2}}}} {\exv{v_2}}} 						{\tup{v_1,v_2} \val} \and
 \inferstepone	{\red {\app {\exv{\lam xe}}{\exv v}} {[\exv v/x]e}} 					{v \val} \and
@@ -142,7 +143,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Compatibility Rules}	\and
+\fbox{(SS) Compatibility Rules}	\and
 \inferstepw		{\red 	{\pio e} 
 						{\pio {e'}}} 											
 				{\sub {}} \and
@@ -188,7 +189,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Hoisting Rules} \and
+\fbox{(SS) Hoisting Rules} \and
 \inferlift 		{\red {\next q} {\next y}} {q \res & q \text{ not variable}} \and
 \infersteptwo 	{\red {\prev e} {\letin q y {\prev e}}} {\liftsub{}} \and
 \inferlift		{\red 	{\pio e} 
