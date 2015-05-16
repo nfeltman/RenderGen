@@ -152,12 +152,9 @@
 \inferstepw		{\red 	{\tup {e_1,e_2}} 
 						{\tup {e'_1,e_2}}} 							
 				{\sub {1}} \and
-\inferstepone	{\red 	{\tup {\exv{v_1},e_2 }} 
+\inferstepw		{\red 	{\tup {\exv{v_1},e_2 }} 
 						{\tup {\exv{v_1},e'_2}}} 								
-				{\sub {2} & v_1 \val} \and
-\infersteptwo	{\red 	{\tup {\exv{v_1},e_2 }} 
-						{\tup {\exv{v_1},e'_2}}} 								
-				{\sub {2} & v_1 \res} \and
+				{\sub {2} & v_1 \done} \and
 \inferstepw		{\red 	{\inl e} 
 						{\inl {e'}}} 											
 				{\sub {}} \and
@@ -169,18 +166,18 @@
 				{\sub {1}} \and
 \infersteptwo	{\red	{\caseof {\exv{e_1}}{x_2.e_2 }{x_3.e_3}} 
 						{\caseof {\exv{e_1}}{x_2.e'_2}{x_3.e_3}}} 
-				{\sub {2} & e_1 \res} \and
+				{e_1 \done [\bbtwo] & \sub {2}} \and
 \infersteptwo	{\red	{\caseof {\exv{e_1}}{x_2.e_2}{x_3.e_3}} 
 						{\caseof {\exv{e_1}}{x_2.e_2}{x_3.e'_3}}} 
-				{\sub {3} & e_1 \res & e_2 \res} \and
+				{e_1 \done [\bbtwo] & e_1 \done [\bbtwo] & \sub {3}} \and
 \infersteptwo	{\red	{\lam xe} 
 						{\lam x{e'}}}
 				{\sub {}} \and
 \inferstepw		{\stepmix	{\pure {e}} 
 							{\pure {e'}}} 					
 				{\steppure e {e'}} \and
-\inferstepw		{\stepmix	{\letp x {e_1} {e_2}} 
-							{\letp x {e_1} {e_2}}} 					
+\inferstepw		{\stepmix	{\letp x {e_1} {e_2}}
+							{\letp x {e_1} {e_2}}}
 				{\stepmix {e_1} {e'_1}} \and
 \inferstepw		{\stepmix	{\next {e}} 
 							{\next {e'}}} 					

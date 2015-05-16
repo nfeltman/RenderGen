@@ -84,37 +84,50 @@ Because first- and second-stage code are
 interleaved in \lang\ terms, realizing this notion of staged
 evaluation requires some care.
 
+[Example without hoisting.]
+[Paragraph about why we want hoisting.]
+[Gist of hoisting solution.]
+
 The first pass of evaluation comprises three judgements: 
 steps $\stepwor e e'$, which asserts that a term $e$ performs some internal reduction to produce $e'$,
 where both terms are at world $w$;
-doneness $e \done$, which asserts that a term $e$ at world $w$ has no more first stage redeces;
-and the auxiliary hoisting $\lift e {e'}$, which will be covered later.
+doneness $e \done$, which asserts that a term $e$ at world $w$ has no more first stage redexes;
+and hoisting steps $\lift e {e'}$, which are available only at world \bbonem.
 
 One important feature of our semantics is that it reduces {\em all} first stage redexes
-in the first pass, even those that occur underneath second stage binders.
+in the first pass, even if they occur underneath second stage binders.
 This does not cause evaluation to ``get stuck'' however, 
 because first stage code cannot depend on the results of second stage code,
 as enforced by our type system.
 
 More formally, the type safety of our dynamics can be stated
 with the usual progress and preservation lemmas, annotated with a world:
-\\{\bf Progress.~} If $\typeswor e A$, then either $\stepwor e e'$ or $e \done$. 
-\\{\bf Preservation.~} If $\typeswor e A$ and $\stepwor e e'$, then $\typeswor e A$. 
-Here, $\Gamma$ may be any list of variable bindings at world \bbtwo,
-for those second stage variables under which we are evaluating.
-Also bear in mind that these lemmas will require minor amendments once hoisting is considered.
+\\{\bf Progress.~} If $\typeswor e A$, then either 
+$\stepwor e {e'}$ or $e \done$ or $\lift e {e'}$ (hoisting available only at $w = \bbonem$).
+\\{\bf Preservation.~} For normal steps, if $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$. 
+For hoisting steps, if $\typesone e A$ and $\lift e {e'}$, then $\typesone {e'} A$.
+
+In the typing rules above, $\Gamma$ may be any list of variable bindings at world \bbtwo,
+representing the second stage variables under which we are evaluating.
 
 \paragraph{Done.} The judgement $e \done$ indicates that a term $e$ contains no first stage redexes.
-In the $w = \bbtwo$ case, this means that $e$ contains no first stage code at all; it is a residual.
-In the $w = \bbonep$ case, this means a $e$ comprises only tuples, injections, and base value; that is, it is a value.
+In this way, it generalizes over the notions of values and residuals.
 
+\paragraph{Standard Steps.} The step rules are split into reduction rules
+which encode the elimination of redexes, 
+and substep rules which define where such a reduction can occur within a larger term.
+In our semantics, the reduction rules are restricted to worlds \bbonep\ and \bbonem,
+so that only first stage redexes are eliminated.
+Substep rules are provided for all worlds, as well as for $\next$ and $\prev$.
+Also note the extra substep rules at world \bbtwo, which allow steps under binders.
 
-
-This second pass is in fact identical to standard monostage lambda calculus evaluation, 
-so we will not cover it here. 
-
-We show that the type system of \lang\ (specifically, the opaque nature of $\fut$
-types) is sufficient to guarantee that our semantics can proceed.
+\paragraph{Hoisting Steps.} 
+Once the contents of a next block have been reduced to a residual,
+they are replaced by a fresh variable and then bound to that
+variable in a let term just above the innermost containing prev.
+This is acomplished by a hoisting step,
+most of whose rules are substep rules which ``bubble up'' the
+terms to be bound.
 
 
 \subsection{(Big Step) Dynamics}
