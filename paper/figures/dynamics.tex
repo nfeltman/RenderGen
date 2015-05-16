@@ -131,7 +131,7 @@
 % 																					&\red [\Gamma,\dom{\xi_1}]{[\pure v/x_3]e_3}{\xi_3}{v_3}}		
 % \end{mathpar}
 \begin{mathpar}
-\fbox{Reduction Steps}	\and
+\fbox{Reduction Rules}	\and
 \inferstepone	{\red {\pio {\exv{\tup{v_1,v_2}}}} {\exv{v_1}}} 						{\tup{v_1,v_2} \val} \and
 \inferstepone	{\red {\pit {\exv{\tup{v_1,v_2}}}} {\exv{v_2}}} 						{\tup{v_1,v_2} \val} \and
 \inferstepone	{\red {\app {\exv{\lam xe}}{\exv v}} {[\exv v/x]e}} 					{v \val} \and
@@ -142,7 +142,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{General Substeps}	\and
+\fbox{Compatibility Rules}	\and
 \inferstepw		{\red 	{\pio e} 
 						{\pio {e'}}} 											
 				{\sub {}} \and
@@ -188,7 +188,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Lifting Steps} \and
+\fbox{Hoisting Rules} \and
 \inferlift 		{\red {\next q} {\next y}} {q \res & q \text{ not variable}} \and
 \infersteptwo 	{\red {\prev e} {\letin q y {\prev e}}} {\liftsub{}} \and
 \inferlift		{\red 	{\pio e} 
