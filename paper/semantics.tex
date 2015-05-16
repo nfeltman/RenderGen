@@ -77,18 +77,69 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 
 
 \subsection{(Small Step) Dynamics}
-We provide a small-step semantics which evaluates \lang\ terms in two passes,
-first reducing only redexes in the first stage portions of code,
-then reducing those in second stage portions of code.
+We provide a small-step semantics which,
+given a \lang\ term $e$, evaluates its first stage subterms
+either until $e$ is a value (if $e$ is at world \bbonep\ or \bbonem)
+of until all of $e$'s first stage subterms have been evaluated away
+(when $e$ is at world \bbtwo).
 Because first- and second-stage code are
-interleaved in \lang\ terms, realizing this notion of staged
+interleaved in \lang\ terms, this first pass of
 evaluation requires some care.
 
-[Example without hoisting.]
-[Paragraph about why we want hoisting.]
-[Gist of hoisting solution.]
+Moreover, our staged semantics contains one innovation over those of 
+\cite{davies96} and \cite{taha-thesis-99}, which is the addition
+of hoisting steps.  
+To illustrate, consider the example
+\begin{lstlisting}
+prev{let x = next{2*3} in next{prev{x}+4}}
+\end{lstlisting}
+A non-staged semantics which ignores $\next$s and $\prev$s
+would proceed on this term by reducing \verb|2+3| to \verb|6| in place.
+A stage semantics does not, because it only reduces first stage redexes, and
+\verb|2+3| is at the second stage.  
+The staged semantics of \cite{davies96} and \cite{taha-thesis-99} instead proceed by
+substituting \verb|next{2+3}| in for \verb|x| to yield
+\begin{lstlisting}
+prev{next{prev{next{2*3}}+4}}
+\end{lstlisting}
+This takes one step to 
+\begin{lstlisting}
+prev{next{2*3+4}}
+\end{lstlisting}
+and then one more step to
+\begin{lstlisting}
+2*3+4
+\end{lstlisting}
+which is the final entirely-second-stage result, called a {\em residual}.
+Our semantics differs from this formulation in one way.
+Consider a slightly modified example where \verb|x| appears twice:
+\begin{lstlisting}
+prev{let x = next{2*3} in next{prev{x}+prev{x}}}
+\end{lstlisting}
+A standard stage semantics would, in four steps, evaluate this to 
+\begin{lstlisting}
+2*3+2*3
+\end{lstlisting}
+Note how the multiplication is duplicated in the residual.
+We find this behavior potentially undesirable for our applications,
+so our semantics instead {\em hoists} the contents of a next statement 
+to the outermost containing $\prev$, turning
+\begin{lstlisting}
+prev{let x = next{2*3} in next{prev{x}+prev{x}}}
+\end{lstlisting}
+into
+\begin{lstlisting}
+let y = 2*3 in
+prev{let x = next{y} in next{prev{x}+prev{x}}}
+\end{lstlisting}
+This then evaluates to 
+\begin{lstlisting}
+let y = 2*3 in y+y
+\end{lstlisting}
+in four steps.  
+This hoisting step occurs as the last step in the evaluation of a $\next$.
 
-The first pass of evaluation comprises three judgements: 
+Formally, the dynamic semantics comprises three judgements: 
 steps $\stepwor e e'$, which asserts that a term $e$ performs some internal reduction to produce $e'$,
 where both terms are at world $w$;
 doneness $e \done$, which asserts that a term $e$ at world $w$ has no more first stage redexes;
@@ -111,7 +162,7 @@ In the typing rules above, $\Gamma$ may be any list of variable bindings at worl
 representing the second stage variables under which we are evaluating.
 
 \paragraph{Done.} The judgement $e \done$ indicates that a term $e$ contains no first stage redexes.
-In this way, it generalizes over the notions of values and residuals.
+It generalizes over the notions of values and residuals.
 
 \paragraph{Standard Steps.} The step rules are split into reduction rules
 which encode the elimination of redexes, 
