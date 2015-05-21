@@ -80,3 +80,14 @@ conf\eq : eq-term A B -> conf A B -> type.
 - : conf\eq eq-term_ (conf_ step*-id step*-id).
 %worlds () (conf\eq _ _).
 %total {D} (conf\eq D _).
+
+
+
+%% LETT EVAL INVERSION
+lett-terminates :  step* (lett E M) V -> val V -> step* E (tup V1 V2) -> val (tup V1 V2) -> type.
+%mode lett-terminates +Dstep +Dval -Dstep' -Dval'.
+- : lett-terminates (step*-step (ss-lett-s Dstep) Dpath) Dval (step*-step Dstep Dpath') Dval'
+	<- lett-terminates Dpath Dval Dpath' Dval'.
+- : lett-terminates (step*-step (ss-lett-r Dval) _) _ step*-id Dval.
+%worlds () (lett-terminates _ _ _ _).
+%total (D) (lett-terminates D _ _ _).
