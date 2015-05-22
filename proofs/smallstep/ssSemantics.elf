@@ -1,29 +1,6 @@
 %{ monostage.elf }%
 
-%% A TERM IS A VARIABLE (used for doneness of nexts)
-variable : term -> type.
 
-%% DONE
-done : wor -> term -> type. %name done Ddone.
-done-ztup	: done W ztup.
-done-tup	: done W (tup E1 E2)
-				<- done W E2
-				<- done W E1.
-val-lam		: done wor1 (lam _).
-val-next	: done wor1 (next E)
-				<- variable E.
-res-pi1		: done wor2 (pi1 E)
-				<- done wor2 E.
-res-pi2		: done wor2 (pi2 E)
-				<- done wor2 E.
-res-lam		: done wor2 (lam M)
-				<- {x : term} variable x -> done wor2 x -> done wor2 (M x).
-res-app		: done wor2 (app E1 E2)
-				<- done wor2 E2
-				<- done wor2 E1.
-res-let		: done wor2 (let E M)
-				<- done wor2 E
-				<- {x:term} variable x -> done wor2 x -> done wor2 (M x).
 
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
 not-variable : term -> type.
@@ -35,35 +12,12 @@ nv-lam : not-variable (lam _).
 nv-app : not-variable (app _ _).
 nv-let : not-variable (let _ _).
 
-%% VALUE
-done : wor -> term -> type. %name done Ddone.
-done-ztup	: done W ztup.
-done-tup	: done W (tup E1 E2)
-				<- done W E2
-				<- done W E1.
-val-lam		: done wor1 (lam _).
-val-next	: done wor1 (next E)
-				<- variable E.
-res-pi1		: done wor2 (pi1 E)
-				<- done wor2 E.
-res-pi2		: done wor2 (pi2 E)
-				<- done wor2 E.
-res-lam		: done wor2 (lam M)
-				<- {x : term} variable x -> done wor2 x -> done wor2 (M x).
-res-app		: done wor2 (app E1 E2)
-				<- done wor2 E2
-				<- done wor2 E1.
-res-let		: done wor2 (let E M)
-				<- done wor2 E
-				<- {x:term} variable x -> done wor2 x -> done wor2 (M x).
-
 
 %% M STEP - SUBSTEP RULES
 mstep : wor -> term -> term -> type. %name mstep Dmstep.
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
 			<- mstep W E1 E1'.
-ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
-			<- done W E1
+ms-tup-s2	: mstep W (tup (exv E1) E2) (tup (exv E1) E2')
 			<- mstep W E2 E2'.
 ms-pi1-s	: mstep W (pi1 E) (pi1 E')
 			<- mstep W E E'.
@@ -71,36 +25,29 @@ ms-pi2-s	: mstep W (pi2 E) (pi2 E')
 			<- mstep W E E'.
 ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
 			<- mstep W E1 E1'.
-ms-app-s2	: mstep W (app E1 E2) (app E1 E2')
-			<- done W E1
+ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')
 			<- mstep W E2 E2'.
 ms-let-s1	: mstep W (let E M) (let E' M)
 			<- mstep W E E'.
 ms-lett-s1	: mstep W (lett E M) (lett E' M)
 			<- mstep W E E'.
 ms-lam-s	: mstep wor2 (lam M) (lam M')
-			<- {x:term} variable x -> done wor2 x -> mstep wor2 (M x) (M' x).
-ms-let-s2	: mstep wor2 (let E M) (let E M')
-			<- done wor2 E
-			<- {x:term} variable x -> done wor2 x -> mstep wor2 (M x) (M' x).
+			<- {x:term} variable x -> mstep wor2 (M x) (M' x).
+ms-let-s2	: mstep wor2 (let (exv E) M) (let (exv E) M')
+			<- {x:term} variable x -> mstep wor2 (M x) (M' x).
 
 %% M STEP - REDUCTION RULES
-ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
-			<- done wor1 (tup E1 E2).
-ms-pi2-r	: mstep wor1 (pi2 (tup E1 E2)) E2
-			<- done wor1 (tup E1 E2).
-ms-app-r	: mstep wor1 (app (lam M) E) (M E)
-			<- done wor1 E.
-ms-let-r	: mstep wor1 (let E M) (M E)
-			<- done wor1 E.
+ms-pi1-r	: mstep wor1 (pi1 (exv (tup E1 E2))) E1.
+ms-pi2-r	: mstep wor1 (pi2 (exv (tup E1 E2))) E2.
+ms-app-r	: mstep wor1 (app (exv (lam M)) (exv E)) (M E).
+ms-let-r	: mstep wor1 (let (exv E) M) (M E).
 
 			
 %% SECOND-STAGE VARIABLE LIFT STEP
 lstep : term -> term -> (term -> term) -> type. %name lstep Dlstep.
 ls-tup-s1	: lstep (tup E1 E2) Q ([x] tup (E1' x) E2)
 			<- lstep E1 Q E1'.
-ls-tup-s2	: lstep (tup E1 E2) Q ([x] tup E1 (E2' x))
-			<- done wor1 E1
+ls-tup-s2	: lstep (tup (exv E1) E2) Q ([x] tup (exv E1) (E2' x))
 			<- lstep E2 Q E2'.
 ls-pi1-s	: lstep (pi1 E) Q ([x] pi1 (E' x))
 			<- lstep E Q E'.
@@ -108,8 +55,7 @@ ls-pi2-s	: lstep (pi2 E) Q ([x] pi2 (E' x))
 			<- lstep E Q E'.
 ls-app-s1	: lstep (app E1 E2) Q ([x] app (E1' x) E2)
 			<- lstep E1 Q E1'.
-ls-app-s2	: lstep (app E1 E2) Q ([x] app E1 (E2' x))
-			<- done wor1 E1
+ls-app-s2	: lstep (app (exv E1) E2) Q ([x] app (exv E1) (E2' x))
 			<- lstep E2 Q E2'.
 ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
 			<- lstep E Q E'.
@@ -118,12 +64,10 @@ ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
 %% STAGING FEATURES
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
-ls-next-r	: lstep (next E) E ([x:term] next x)
-			<- done wor2 E
+ls-next-r	: lstep (next (exv E)) E ([x:term] exv (next x))
 			<- not-variable E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
 ms-prev-ls	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
 			<- lstep E Q E'.
-ms-prev-r	: mstep wor2 (prev (next E)) E
-			<- done wor1 (next E).
+ms-prev-r	: mstep wor2 (prev (exv (next E))) E.

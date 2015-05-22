@@ -1,27 +1,4 @@
 
-%% DONE
-done : wor -> term -> type. %name done Ddone.
-done-ztup	: done W ztup.
-done-tup	: done W (tup E1 E2)
-				<- done W E2
-				<- done W E1.
-val-lam		: done wor1 (lam _).
-val-next	: done wor1 (next E).
-res-pi1		: done wor2 (pi1 E)
-				<- done wor2 E.
-res-pi2		: done wor2 (pi2 E)
-				<- done wor2 E.
-res-lam		: done wor2 (lam M)
-				<- {x : term} done wor2 x -> done wor2 (M x).
-res-app		: done wor2 (app E1 E2)
-				<- done wor2 E2
-				<- done wor2 E1.
-%{res-let		: done wor2 (let E M)
-				<- done wor2 E
-				<- {x:term} done wor2 x -> done wor2 (M x).}%
-%block var-done : block {x:term} {_ : done wor2 x}.
-%worlds (var-done | just-var) (done _ _).
-
 %% TYPE WELL-FORMED
 ty^wf : ty -> wor -> type.
 %mode ty^wf +T +W.
@@ -38,90 +15,113 @@ ty^wf-fut	: ty^wf (fut A) wor1
 				<- ty^wf T worM.}%
 %worlds () (ty^wf _ _).
 
-%% TYPING JUDGMENT
-of^ : term -> ty -> wor -> type. %name of^ Dof.
-of^-ztup	: of^ ztup unit W.
-of^-tup	: of^ (tup E1 E2) (prod A B) W
-			<- of^ E2 B W
-			<- of^ E1 A W.
-of^-pi1	: of^ (pi1 E) A W
-			<- of^ E (prod A B) W.
-of^-pi2	: of^ (pi2 E) B W
-			<- of^ E (prod A B) W.
-of^-lam1 : of^ (lam ([x] M x)) (arr A B) wor1
-			<- ({x: term} of^ x A wor1 -> of^ (M x) B wor1)
-			<- ty^wf A wor1.
-of^-lam2 : of^ (lam ([x] M x)) (arr A B) wor2
-			<- ({x: term} done wor2 x -> of^ x A wor2 -> of^ (M x) B wor2)
-			<- ty^wf A wor2.
-of^-app : of^ (app E1 E2) B W
-			<- of^ E2 A W
-			<- of^ E1 (arr A B) W.
-of^-let : of^ (let (exv E) ([x] M x)) B wor2
-			<- ({x:term} done wor2 x -> of^ x A wor2 -> of^ (M x) B wor2)
-			<- of^ (exv E) A wor2.
-of^-exv : of^ (exv V) A wor2
-			<- done wor2 V
-			<- of^ V A wor2.
-of^-next	: of^ (next E) (fut A) wor1
-			<- of^ E A wor2.
-%{of^-letn : of^ (letn E M) B wor1
-			<- of^ E (fut A) wor1
-			<- ({x:term} of^ x A wor2 -> of^ (M x) B wor1).}% 
-of^-prev	: of^ (prev E) A wor2
-			<- of^ E (fut A) wor1.
-%{of^-mono : of^ (mono E) (curr T) wor1
-			<- of^ E T worM.
-of^-letm : of^ (letm E M) T2 wor1
-			<- of^ E (curr T1) wor1
-			<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
 
-%block var-of1 : some {A : ty} block {x:term} {_ : of^ x A wor1}.
-%block var-of2 : some {A : ty} block {x:term} {_ : done wor2 x} {_ : of^ x A wor2}.
-%block var-of = (var-of1 | var-of2).
-%worlds (var-of) (of^ _ _ _).
+
+%% A TERM IS A VARIABLE (used for doneness of nexts)
+variable : term -> type.
+%block vars-block : block {x : term} {_ : variable x}.
+%worlds (vars-block) (variable _).
+
+%% DONE OR SERIES EXPRESSION (TERM)
+dot : type.
+dot-d : dot.
+dot-t : dot.
+
+redux : wor -> dot -> type.
+redux-d2 : redux wor2 dot-d.
+redux-t1 : redux wor1 dot-t.
+redux-t2 : redux wor2 dot-t.
+%worlds () (redux _ _).
+
+
+%% TYPING JUDGMENT
+of^ : term -> ty -> wor -> dot -> type. %name of^ Dof.
+of^-ztup	: of^ ztup unit W dot-d.
+of^-tup		: of^ (tup E1 E2) (prod A B) W DT
+				<- of^ E2 B W DT
+				<- of^ E1 A W DT.
+of^-pi1		: of^ (pi1 E) A W DT
+				<- redux W DT
+				<- of^ E (prod A B) W DT.
+of^-pi2		: of^ (pi2 E) B W DT
+				<- redux W DT
+				<- of^ E (prod A B) W DT.
+of^-lam1 	: of^ (lam ([x] M x)) (arr A B) wor1 dot-d
+				<- ({x: term} variable x -> of^ x A wor1 dot-d -> of^ (M x) B wor1 dot-t) 
+				<- ty^wf A wor1.
+of^-lam2 	: of^ (lam ([x] M x)) (arr A B) wor2 DT
+				<- ({x: term} variable x -> of^ x A wor2 dot-d -> of^ (M x) B wor2 DT) 
+				<- ty^wf A wor2.
+of^-app 	: of^ (app E1 E2) B W DT
+				<- redux W DT
+				<- of^ E2 A W DT
+				<- of^ E1 (arr A B) W DT.
+of^-let 	: of^ (let E ([x] M x)) B wor2 DT
+				<- ({x:term} variable x -> of^ x A wor2 dot-d -> of^ (M x) B wor2 DT)
+				<- of^ E A wor2 DT.		
+%{of^-let : of^ (let (exv E) ([x] M x)) B wor2
+				<- ({x:term} done wor2 x -> of^ x A wor2 -> of^ (M x) B wor2)
+				<- of^ (exv E) A wor2.}%
+of^-exv 	: of^ (exv V) A W dot-t
+				<- of^ V A W dot-d.
+of^-next-t	: of^ (next E) (fut A) wor1 dot-t
+				<- of^ E A wor2 dot-t.
+of^-next-d	: of^ (next E) (fut A) wor1 dot-d
+				<- variable E
+				<- of^ E A wor2 dot-d.
+%{of^-letn : of^ (letn E M) B wor1
+				<- of^ E (fut A) wor1
+				<- ({x:term} of^ x A wor2 -> of^ (M x) B wor1).}% 
+of^-prev	: of^ (prev E) A wor2 dot-t
+				<- of^ E (fut A) wor1 dot-t.
+%{of^-mono : of^ (mono E) (curr T) wor1
+				<- of^ E T worM.
+of^-letm : of^ (letm E M) T2 wor1
+				<- of^ E (curr T1) wor1
+				<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
+
+%block var-of : some {A : ty} {W : wor} block {x:term} {_ : variable x} {_ : of^ x A W dot-d}.
+%worlds (var-of) (of^ _ _ _ _).
 
 %% OUTPUTS OF TYPING ARE WELL-FORMED
-of^-wf : of^ E T W -> ty^wf T W -> type.
+of^-wf : of^ E T W _ -> ty^wf T W -> type.
 %mode of^-wf +D1 -D2. 
 - : of^-wf of^-ztup ty^wf-unit.
 - : of^-wf (of^-tup Dof1 Dof2) (ty^wf-prod DwfA DwfB)
 	<- of^-wf Dof1 DwfA
 	<- of^-wf Dof2 DwfB.
-- : of^-wf (of^-pi1 Dof) DwfA
+- : of^-wf (of^-pi1 Dof _) DwfA
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
-- : of^-wf (of^-pi2 Dof) DwfB
+- : of^-wf (of^-pi2 Dof _) DwfB
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
 - : of^-wf (of^-lam1 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
-	<- ({x:term} {ofx : of^ x A wor1} {_ : of^-wf ofx Dwf1} of^-wf (DofM x ofx) Dwf2).
+	<- ({x:term} {varx : variable x} {ofx : of^ x A wor1 _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x varx ofx) Dwf2).
 - : of^-wf (of^-lam2 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
-	<- ({x:term} {dx : done wor2 x} {ofx : of^ x A wor2} {_ : of^-wf ofx Dwf1} of^-wf (DofM x dx ofx) Dwf2).
-- : of^-wf (of^-app Dof1 Dof2) Dwf
+	<- ({x:term} {varx : variable x} {ofx : of^ x A wor2 _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x varx ofx) Dwf2).
+- : of^-wf (of^-app Dof1 Dof2 _) Dwf
 	<- of^-wf Dof1 (ty^wf-arr _ Dwf). 
 - : of^-wf (of^-let DofE DofM) Dwf2
 	<- of^-wf DofE Dwf1
-	<- ({x:term} {dx : done wor2 x} {ofx : of^ x A wor2} {_ : of^-wf ofx Dwf1} of^-wf (DofM x dx ofx) Dwf2).
-- : of^-wf (of^-next Dof) (ty^wf-fut Dwf)
+	<- ({x:term} {varx : variable x} {ofx : of^ x A wor2 _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x varx ofx) Dwf2).
+- : of^-wf (of^-next-t Dof) (ty^wf-fut Dwf)
+	<- of^-wf Dof Dwf.
+- : of^-wf (of^-next-d Dof _) (ty^wf-fut Dwf)
 	<- of^-wf Dof Dwf.
 %{- : of^-wf (of^-letn DofM DofE) Dwf2
 	<- of^-wf DofE (ty^wf-fut Dwf1)
 	<- ({x:term} {Dof : of^ x A wor2} {_ : of^-wf Dof Dwf1} of^-wf (DofM x Dof) Dwf2).}%
 - : of^-wf (of^-prev Dof) Dwf
 	<- of^-wf Dof (ty^wf-fut Dwf).
-- : of^-wf (of^-exv Dof _) Dwf
+- : of^-wf (of^-exv Dof) Dwf
 	<- of^-wf Dof Dwf.
 %{- : of^-wf (of^-mono Dof) (ty^wf-curr Dwf)
 	<- of^-wf Dof Dwf.
 - : of^-wf (of^-letm DofM DofE) DwfM
 	<- of^-wf DofE (ty^wf-curr DwfE)
 	<- ({x:term} {Dof : of^ x A worM} of^-wf Dof DwfE -> of^-wf (DofM x Dof) DwfM).}%
-%block var-of^-wf1 : 
-	some {A : ty} {Dwf : ty^wf A wor1} 
-	block {x:term} {Dof : of^ x A wor1} {_ : of^-wf Dof Dwf}.
-%block var-of^-wf2 : 
-	some {A : ty} {Dwf : ty^wf A wor2} 
-	block {x:term} {_: done wor2 x} {Dof : of^ x A wor2} {_ : of^-wf Dof Dwf}.
-%block var-of^-wf = (var-of^-wf1 | var-of^-wf2).
+%block var-of^-wf : 
+	some {A : ty} {W : wor} {Dwf : ty^wf A W} {DT : dot}
+	block {x:term} {_ : variable x} {Dof : of^ x A W DT} {_ : of^-wf Dof Dwf}.
 %worlds (var-of^-wf) (of^-wf _ _).
 %total D (of^-wf D _).
 
@@ -139,10 +139,10 @@ wor2^mono : ty^wf A wor2 -> ty-wf A -> type.
 %total (D) (wor2^mono D _).
 
 %% TYPING RESPECTS IDENTITY
-of^-resp : of^ M A W -> eq-ty A B -> of^ M B W -> type.
+of^-resp : of^ M A W DT -> eq-ty A B -> of^ M B W DT -> type.
 %mode of^-resp +D1 +D2 -D3.
 - : of^-resp Dof eq-ty_ Dof.
-%block ofs-block : some {A : ty} {W : wor} block {x : term} {_ : of^ x A W}.
+%block ofs-block : some {A : ty} {W : wor} {DT : dot} block {x : term} {_ : of^ x A W DT}.
 %worlds (ofs-block) (of^-resp _ _ _).
 %total {} (of^-resp _ _ _).
 

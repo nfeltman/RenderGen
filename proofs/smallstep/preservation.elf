@@ -1,24 +1,24 @@
 %%  USEFUL BLOCKS
-%block pres-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2} {ddone : done wor2 x}.
+%block pres-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2 dot-d} {ddone : done wor2 x}.
 
 %% NORMAL STEP PRESERVATION (SUBSTEP RULES)
-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
+pres : mstep W E E' -> of^ E T W dot-t -> of^ E' T W dot-t -> type.
 %mode pres +Dstep +Dof -Dof'.
 - : pres (ms-tup-s1 Dstep) (of^-tup Dof1 Dof2) (of^-tup Dof1' Dof2)
 	<- pres Dstep Dof1 Dof1'.
 - : pres (ms-tup-s2 Dstep _) (of^-tup Dof1 Dof2) (of^-tup Dof1 Dof2')
 	<- pres Dstep Dof2 Dof2'. 
-- : pres (ms-pi1-s Dstep) (of^-pi1 Dof) (of^-pi1 Dof')
+- : pres (ms-pi1-s Dstep) (of^-pi1 Dof DT) (of^-pi1 Dof' DT)
 	<- pres Dstep Dof Dof'.
-- : pres (ms-pi2-s Dstep) (of^-pi2 Dof) (of^-pi2 Dof')
+- : pres (ms-pi2-s Dstep) (of^-pi2 Dof DT) (of^-pi2 Dof' DT)
 	<- pres Dstep Dof Dof'.
-- : pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1' Dof2)
+- : pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2 Drx) (of^-app Dof1' Dof2 Drx)
 	<- pres Dstep Dof1 Dof1'.
-- : pres (ms-app-s2 Dstep _) (of^-app Dof1 Dof2) (of^-app Dof1 Dof2')
+- : pres (ms-app-s2 Dstep _) (of^-app Dof1 Dof2 Drx) (of^-app Dof1 Dof2' Drx)
 	<- pres Dstep Dof2 Dof2'.
-- : pres (ms-let-s1 Dstep) (of^-let DofM DofE) (of^-let DofM DofE') 
+- : pres (ms-let-s1 Dstep) (of^-let DofE DofM) (of^-let DofE' DofM) 
 	<- pres Dstep DofE DofE'.
-- : pres (ms-lam-s Dstep) (of^-lam Dwf DofM) (of^-lam Dwf DofM') 
+- : pres (ms-lam-s Dstep) (of^-lam2 Dwf DofM) (of^-lam2 Dwf DofM') 
 	<- {x:term} {dvar : variable x} {dof : of^ x T wor2} {ddone : done wor2 x} 
 		pres (Dstep x dvar ddone) (DofM x dof) (DofM' x dof).
 - : pres (ms-let-s2 Dstep _) (of^-let DofM DofE) (of^-let DofM' DofE) 
