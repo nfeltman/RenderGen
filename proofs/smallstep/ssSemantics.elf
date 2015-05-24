@@ -12,9 +12,35 @@ nv-lam : not-variable (lam _).
 nv-app : not-variable (app _ _).
 nv-let : not-variable (let _ _).
 
+%% STANDARD COMPATABILITY CONTEXT
+compc : (term -> term) -> type.
+cc-tup1 : compc ([x] tup x E).
+cc-tup2 : compc ([x] tup (exv E) x).
+cc-pi1 : compc pi1.
+cc-pi2 : compc pi2.
+cc-app1 : compc ([x] app x E).
+cc-app2 : compc ([x] app (exv E) x).
+cc-let : compc ([x] let x M).
+%freeze compc.
+
+%% UNDER BINDER COMPATABILITY CONTEXT
+binder-compc : ((term -> term) -> term) -> type.
+bcc-lam : binder-compc lam.
+bcc-let : binder-compc (let E).
+
+%% MSTEPS
+mstep : wor -> term -> term -> type. %name mstep Dmstep.
+
+%% DONE MARKING RULES
+ms-tup-d : mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
+ms-pi1-d : mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
+ms-pi2-d : mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
+ms-lam-d : mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
+ms-app-d : mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
+ms-let-d : mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
+ms-next-d : mstep wor1 (next (exv E)) (exv (next E)) <- variable E.
 
 %% M STEP - SUBSTEP RULES
-mstep : wor -> term -> term -> type. %name mstep Dmstep.
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
 			<- mstep W E1 E1'.
 ms-tup-s2	: mstep W (tup (exv E1) E2) (tup (exv E1) E2')
@@ -36,9 +62,16 @@ ms-lam-s	: mstep wor2 (lam M) (lam M')
 ms-let-s2	: mstep wor2 (let (exv E) M) (let (exv E) M')
 			<- {x:term} variable x -> mstep wor2 (M x) (M' x).
 
+%{ms-compat	: mstep W (F E) (F E')
+			<- compc F
+			<- mstep W E E'.
+ms-bcompat	: mstep wor2 (F M) (F M')
+			<- binder-compc F
+			<- {x:term} variable x -> mstep wor2 (M x) (M' x).}%
+
 %% M STEP - REDUCTION RULES
-ms-pi1-r	: mstep wor1 (pi1 (exv (tup E1 E2))) E1.
-ms-pi2-r	: mstep wor1 (pi2 (exv (tup E1 E2))) E2.
+ms-pi1-r	: mstep wor1 (pi1 (exv (tup E1 E2))) (exv E1).
+ms-pi2-r	: mstep wor1 (pi2 (exv (tup E1 E2))) (exv E2).
 ms-app-r	: mstep wor1 (app (exv (lam M)) (exv E)) (M E).
 ms-let-r	: mstep wor1 (let (exv E) M) (M E).
 
@@ -59,6 +92,9 @@ ls-app-s2	: lstep (app (exv E1) E2) Q ([x] app (exv E1) (E2' x))
 			<- lstep E2 Q E2'.
 ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
 			<- lstep E Q E'.
+%{ls-compat	: lstep (F E) Q ([x] F (E' x))
+			<- compc F
+			<- lstep E Q E'.}%
 
 			
 %% STAGING FEATURES
@@ -68,6 +104,6 @@ ls-next-r	: lstep (next (exv E)) E ([x:term] exv (next x))
 			<- not-variable E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
-ms-prev-ls	: mstep wor2 (prev E) (let Q ([x] prev (E' x)))
+ms-prev-ls	: mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x)))
 			<- lstep E Q E'.
-ms-prev-r	: mstep wor2 (prev (exv (next E))) E.
+ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv E).
