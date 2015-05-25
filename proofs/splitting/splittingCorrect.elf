@@ -1,12 +1,15 @@
 
 %% LIFTING CORRECTNESS
 
-lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor2 x (pipe ztup ([_] x)) -> split wor1 (E' x) (pipe (C' x) _)) -> ({x} eq-term C (C' x)) -> type.
-%mode lc +Dstep +Dspl -Dspl' -Deq.
+lc :  lstep E Q E' -> split wor1 E (pipe C _) -> 
+	({x} splitres x x -> split wor1 (E' x) (pipe (C' x) _)) -> 
+	({x} step** (C' x) (tup I Q')) -> 
+	step** C (tup I Q) -> type.
+%mode lc +Dstep -Dspl +Dspl' +Dred' -Dred.
 %% LIFT RULES
 %% - : lc (ls-next-r _ _) (spl1-next _) ([x][s] spl1-next s) ([x] eq-term_).
-- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA DsplB) ([x][s] spl1-tup (DsplA' x s) DsplB) Deq'
-	<- lc Dstep DsplA DsplA' Deq
+%{- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA DsplB) ([x][s] spl1-tup (DsplA' x s) DsplB) Deq'
+	<- lc Dstep DsplA DsplA' Dred
 	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
 - : lc (ls-tup-s2 Dstep _) (spl1-tup DsplA DsplB) ([x][s] spl1-tup DsplA (DsplB' x s)) Deq''
 	<- lc Dstep DsplB DsplB' Deq
@@ -24,19 +27,22 @@ lc :  lstep E Q E' -> split wor1 E (pipe C _) -> ({x} split wor2 x (pipe ztup ([
 - : lc (ls-app-s2 Dstep _) (spl1-app DsplA DsplB) ([x][s] spl1-app DsplA (DsplB' x s)) Deq''
 	<- lc Dstep DsplB DsplB' Deq
 	<- ({x}{y}{z} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x y z))
-	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).
-%worlds () (lc _ _ _ _).
+	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).}%
+%worlds () (lc _ _ _ _ _).
 %%total (D) (lc D _ _ _).
 
 
 %% SPLITTING CORRECTNESS
 
-sc :  mstep W E E' -> split W E (pipe C _) -> split W E' (pipe C' _) -> conf C C' -> type.
-%mode sc +Dstep +Dspl -Dspl' -Dstep'.
+sc :  mstep W E E' -> split W E' (pipe C' _) -> step** C' (tup I _) -> split W E (pipe C _) -> step** C (tup I _) -> type.
+%mode sc +Dstep +Dspl' +Dred' -Dspl -Dred.
 
 %% STAGE ONE SUBSTEPS
-- : sc (ms-pi1-s Dstep) (spl1-pi1 Dspl) (spl1-pi1 Dspl') Dconf'
-	<- sc Dstep Dspl Dspl' Dconf
+- : sc (ms-pi1-s Dstep) (spl1-pi1 Dspl') Dred' (spl1-pi1 Dspl) Dred
+	<- lett-big-invert Dred' 
+		(DredE' : step** E' (tup (tup I1 I2) B)) 
+		(DredM' : step** (tup (pi1 (tup I1 I2)) B) (tup I _))
+	<- sc Dstep Dspl' DredE' Dspl DredE
 	<- conf/substep lett-hole ([_][_] ss-lett-s) Dconf Dconf'.
 - : sc (ms-pi2-s Dstep) (spl1-pi2 Dspl) (spl1-pi2 Dspl') Dconf'
 	<- sc Dstep Dspl Dspl' Dconf

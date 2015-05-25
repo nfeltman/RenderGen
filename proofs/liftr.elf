@@ -51,6 +51,12 @@ eq-term_ : eq-term E E.
 %abbrev `eq-term_ = ([x : term] eq-term_).
 %abbrev ``eq-term_ = ([x : term][y : term] eq-term_).
 
+%% FALSE YIELDS ANY EQUALITY
+false\eq-term : false -> {E} {E'} eq-term E E' -> type.
+%mode false\eq-term +E +E' +Dfalse -Deq.
+%worlds (just-var) (false\eq-term _ _ _ _).
+%total {} (false\eq-term _ _ _ _).
+
 %% TERM EQUALITY IS A CONGRUENCE
 eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 %mode eq-cong/lam +Deq -Deq'.

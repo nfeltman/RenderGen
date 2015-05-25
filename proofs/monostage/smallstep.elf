@@ -145,3 +145,89 @@ prog : of E T -> vos E -> type.
 	<- prog/lett Dvos (of-lett DofE DofM) Dvos'.
 %worlds () (prog _ _).
 %total (Dvos) (prog Dvos _).
+
+%% VAL AND STEP ARE EXCLUSIVE
+excl-val-step : step E _ -> val E -> false -> type.
+%mode excl-val-step +Dstep +Dval -Dfalse.
+- : excl-val-step (ss-tup-s1 Dstep) (val-tup Dval1 _) Dfalse
+	<- excl-val-step Dstep Dval1 Dfalse.
+- : excl-val-step (ss-tup-s2 Dstep _) (val-tup _ Dval2) Dfalse
+	<- excl-val-step Dstep Dval2 Dfalse.
+%worlds () (excl-val-step _ _ _).
+%total (Dstep) (excl-val-step Dstep _ _).
+
+%% DETERMINISM
+step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
+%mode step-unique +Dstep1 +Dstep2 -Deq.
+%% all reduction cases
+- : step-unique _ _ eq-term_.
+%% all substep cases
+- : step-unique (ss-tup-s1 Dstep) (ss-tup-s1 Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong2 tup Deq eq-term_ Deq'.
+- : step-unique (ss-tup-s2 Dstep _) (ss-tup-s2 Dstep' _) Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong2 tup eq-term_ Deq Deq'.
+- : step-unique (ss-pi1-s Dstep) (ss-pi1-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong pi1 Deq Deq'.
+- : step-unique (ss-pi2-s Dstep) (ss-pi2-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong pi2 Deq Deq'.
+- : step-unique (ss-app-s1 Dstep) (ss-app-s1 Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong2 app Deq eq-term_ Deq'.
+- : step-unique (ss-app-s2 Dstep _) (ss-app-s2 Dstep' _) Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong2 app eq-term_ Deq Deq'.
+- : step-unique (ss-let-s Dstep) (ss-let-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong/let Deq ([x] eq-term_) Deq'.
+- : step-unique (ss-lett-s Dstep) (ss-lett-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+%% all contradiction cases
+- : step-unique (ss-tup-s1 Dstep) (ss-tup-s2 _ Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-tup-s2 _ Dval) (ss-tup-s1 Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-pi1-s Dstep) (ss-pi1-r Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-pi1-r Dval) (ss-pi1-s Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-pi2-s Dstep) (ss-pi2-r Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-pi2-r Dval) (ss-pi2-s Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-app-s1 Dstep) (ss-app-s2 _ Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-app-s2 _ Dval) (ss-app-s1 Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-app-r Dval) (ss-app-s2 Dstep _) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-app-s2 Dstep _) (ss-app-r Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-let-s Dstep) (ss-let-r Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-let-r Dval) (ss-let-s Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-lett-s Dstep) (ss-lett-r Dval) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-unique (ss-lett-r Dval) (ss-lett-s Dstep) Deq
+	<- excl-val-step Dstep Dval Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+%worlds () (step-unique _ _ _).
+%total (Dstep) (step-unique Dstep _ _).
