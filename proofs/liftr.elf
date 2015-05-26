@@ -112,6 +112,20 @@ eq-cong/1/1 : {F : (term -> term) -> (term -> term) -> term}
 %worlds (just-var) (eq-cong/1/1 _ _ _ _).
 %total {} (eq-cong/1/1 _ _ _ _).
 
+%% TERM EQUALITY IS WHATEVER THE OPPOSITE OF A CONGRUENCE IS
+
+eq-gnoc/tup : eq-term (tup E1 E2) (tup E1' E2') -> eq-term E1 E1' -> eq-term E2 E2' ->  type.
+%mode eq-gnoc/tup +Deq1 -De2 -Deq'.
+- : eq-gnoc/tup eq-term_ eq-term_ eq-term_.
+%worlds (just-var) (eq-gnoc/tup _ _ _).
+%total {} (eq-gnoc/tup _ _ _).
+
+eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x} eq-term (M x) (M' x)) -> type.
+%mode eq-gnoc/lam +Deq1 -Deq'.
+- : eq-gnoc/lam eq-term_ ([x] eq-term_).
+%worlds (just-var) (eq-gnoc/lam _ _).
+%total {} (eq-gnoc/lam _ _).
+
 
 %% TYPE IDENTITY 
 eq-ty : ty -> ty -> type.

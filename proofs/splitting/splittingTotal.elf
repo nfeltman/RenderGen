@@ -163,10 +163,6 @@ separation : ({x : term}{x1 : term}{x2 : term}
 
 
 %% SPLITTING DEFINITIONS
-spl1-total : of^ E A wor1 dot-t -> split wor1 E _ -> type.
-%mode spl1-total +Dof -Dspl.
-spl2-total : of^ E A wor2 dot-t -> split wor2 E _ -> type.
-%mode spl2-total +Dof -Dspl.
 splv-total : of^ E A wor1 dot-d -> splitval E _ _ -> type.
 %mode splv-total +Dof -Dspl.
 splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
@@ -207,6 +203,11 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 
 %% SPLITTING VALUES IS TOTAL
 
+%% MAIN SPLITTING TOTALITY
+spl1-total : of^ E A wor1 dot-t -> split wor1 E _ -> type.
+%mode spl1-total +Dof -Dspl.
+spl2-total : of^ E A wor2 dot-t -> split wor2 E _ -> type.
+%mode spl2-total +Dof -Dspl.
 
 
 %% MAIN PROOF OF TOTALITY
@@ -263,4 +264,4 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 - : spl2-total (of^-exv Dof) (spl2-exv Dsplr)
 	<- splr-total Dof Dsplr.
 %worlds (total-block) (spl1-total _ _) (spl2-total _ _) (splv-total _ _).
-%total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splv-total Dsplr _).
+%%total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splv-total Dsplr _).

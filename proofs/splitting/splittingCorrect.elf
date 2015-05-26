@@ -1,38 +1,29 @@
 
+%%weaken-split : ({x:term} splitres x x -> split wor1 E (pipe C (R x))) -> split wor1 E (pipe C R)
+
+
+
+
 %% LIFTING CORRECTNESS
 
-lc :  lstep E Q E' -> 
-	({x} splitres x x -> split wor1 (E' x) (pipe C' _)) -> 
-	splitres Q Q ->
-	mred C' (tup I _) -> 
-	split wor1 E (pipe C _) -> 
-	mred C (tup I _) -> 
-	type.
-%mode lc +Dstep +Dspl' +Dsplr' +Dred' -Dspl -Dred.
+lc :  lstep E Q E' -> split wor1 E (pipe C R) -> splitres Q Q' -> ({x} splitres x x -> split wor1 (E' x) (pipe C (R' x))) -> type.
+%mode lc +Dstep +DsplE -DsplrQ -DsplE'.
 %% LIFT RULES
-%% - : lc (ls-next-r _ _) (spl1-next _) ([x][s] spl1-next s) ([x] eq-term_).
-%{- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA DsplB) ([x][s] spl1-tup (DsplA' x s) DsplB) Deq'
-	<- lc Dstep DsplA DsplA' Dred
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
-- : lc (ls-tup-s2 Dstep _) (spl1-tup DsplA DsplB) ([x][s] spl1-tup DsplA (DsplB' x s)) Deq''
-	<- lc Dstep DsplB DsplB' Deq
-	<- ({x}{y}{z} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x y z))
-	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).
-- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) ([x][s] spl1-pi1 (Dspl' x s)) Deq'
-	<- lc Dstep Dspl Dspl' Deq
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
-- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) ([x][s] spl1-pi2 (Dspl' x s)) Deq'
-	<- lc Dstep Dspl Dspl' Deq
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
-- : lc (ls-app-s1 Dstep) (spl1-app DsplA DsplB) ([x][s] spl1-app (DsplA' x s) DsplB) Deq'
-	<- lc Dstep DsplA DsplA' Deq
-	<- {x} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x).
-- : lc (ls-app-s2 Dstep _) (spl1-app DsplA DsplB) ([x][s] spl1-app DsplA (DsplB' x s)) Deq''
-	<- lc Dstep DsplB DsplB' Deq
-	<- ({x}{y}{z} eq-cong/lett (Deq x) ([_][_] eq-term_) (Deq' x y z))
-	<- {x} eq-cong/lett (eq-term_ : eq-term C1 C1) (Deq' x) (Deq'' x).}%
-%worlds () (lc _ _ _ _ _ _).
-%%total (D) (lc D _ _ _).
+- : lc (ls-next-r _) (spl1-next (spl2-exv Dsplr)) Dsplr ([x][s] spl1-exv splv-next).
+- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA (DsplB )) Dsplr ([x][s] spl1-tup (DsplA' x s) (DsplB ))
+	<- lc Dstep DsplA Dsplr DsplA'.
+- : lc (ls-tup-s2 Dstep) (spl1-tup DsplA DsplB) Dsplr ([x][s] spl1-tup DsplA (DsplB' x s))
+	<- lc Dstep DsplB Dsplr DsplB'.
+- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) Dsplr ([x][s] spl1-pi1 (Dspl' x s))
+	<- lc Dstep Dspl Dsplr Dspl'.
+- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) Dsplr ([x][s] spl1-pi2 (Dspl' x s))
+	<- lc Dstep Dspl Dsplr Dspl'.
+- : lc (ls-app-s1 Dstep) (spl1-app DsplA DsplB) Dsplr ([x][s] spl1-app (DsplA' x s) DsplB)
+	<- lc Dstep DsplA Dsplr DsplA'.
+- : lc (ls-app-s2 Dstep) (spl1-app DsplA DsplB) Dsplr ([x][s] spl1-app DsplA (DsplB' x s))
+	<- lc Dstep DsplB Dsplr DsplB'.
+%worlds () (lc _ _ _ _).
+%total (D) (lc D _ _ _).
 
 %% DECONSTRUCT REDUCTION TO TUPLE
 decon-red-tup : step** E (tup V1 V2) -> val (tup V1 V2) -> val V1 -> val V2 -> type.
@@ -80,7 +71,7 @@ sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E
 		)
 		(spl1-pi1 Dspl) (mred-lett (mred-tup (mred-pi1 DidemII2) DidemB) DredC)
 	<- idem DredC' (mred-tup (DidemI' : mred I' I') _)
-	<- mred/unique DidemI' DredI' (Deq : eq-term I' (tup I _))
+	<- mred-unique DidemI' DredI' (Deq : eq-term I' (tup I _))
 	<- eq-cong2 tup Deq eq-term_ (Deq' : eq-term (tup I' _) (tup (tup I _) _))
 	<- mred-resp DredC' eq-term_ Deq' (DredC2' : mred C' (tup (tup I _) _))
 	<- sc1 Dstep Dspl' DredC2' Dspl (DredC : mred C (tup (tup I _) B))
@@ -92,7 +83,7 @@ sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E
 		)
 		(spl1-pi2 Dspl) (mred-lett (mred-tup (mred-pi2 DidemII2) DidemB) DredC)
 	<- idem DredC' (mred-tup (DidemI' : mred I' I') _)
-	<- mred/unique DidemI' DredI' (Deq : eq-term I' (tup _ I))
+	<- mred-unique DidemI' DredI' (Deq : eq-term I' (tup _ I))
 	<- eq-cong2 tup Deq eq-term_ (Deq' : eq-term (tup I' _) (tup (tup _ I) _))
 	<- mred-resp DredC' eq-term_ Deq' (DredC2' : mred C' (tup (tup _ I) _))
 	<- sc1 Dstep Dspl' DredC2' Dspl (DredC : mred C (tup (tup _ I) B))

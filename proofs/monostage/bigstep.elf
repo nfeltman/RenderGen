@@ -88,6 +88,44 @@ mred-resp : mred E V -> eq-term E E' -> eq-term V V' -> mred E' V' -> type.
 %worlds () (mred-resp _ _ _ _).
 %total {} (mred-resp _ _ _ _).
 
+
 %% REDUCTION IS UNIQUE
-mred/unique : mred E V1 -> mred E V2 -> eq-term V1 V2 -> type.
-%mode mred/unique +Dred1 +Dred2 -Deq.
+mred-unique : mred E V1 -> mred E V2 -> eq-term V1 V2 -> type.
+%mode mred-unique +Dred1 +Dred2 -Deq.
+
+%% REDUCTION IS UNIQUE (LEMMAS)
+mred-unique/app : ({x} eq-term (M x) (M' x)) -> eq-term V V' -> mred (M V) U -> mred (M' V') U' -> eq-term U U' -> type.
+%mode mred-unique/app +Deq1 +Deq2 +Dred1 +Dred2 -Deq.
+- : mred-unique/app ([x] eq-term_) eq-term_ Dred Dred' Deq
+	<- mred-unique Dred Dred' Deq.
+
+mred-unique/lett : ({x}{y} eq-term (M x y) (M' x y)) -> eq-term (tup V1 V2) (tup V1' V2') -> mred (M V1 V2) U -> mred (M' V1' V2') U' -> eq-term U U' -> type.
+%mode mred-unique/lett +Deq1 +Deq2 +Dred1 +Dred2 -Deq.
+- : mred-unique/lett ([x][y] eq-term_) eq-term_ Dred Dred' Deq
+	<- mred-unique Dred Dred' Deq.
+
+- : mred-unique mred-ztup mred-ztup eq-term_.
+- : mred-unique (mred-tup Dred1 Dred2) (mred-tup Dred1' Dred2') Deq
+	<- mred-unique Dred1 Dred1' Deq1
+	<- mred-unique Dred2 Dred2' Deq2
+	<- eq-cong2 tup Deq1 Deq2 Deq.
+- : mred-unique (mred-pi1 Dred) (mred-pi1 Dred') Deq'
+	<- mred-unique Dred Dred' Deq
+	<- eq-gnoc/tup Deq Deq' _.
+- : mred-unique (mred-pi2 Dred) (mred-pi2 Dred') Deq'
+	<- mred-unique Dred Dred' Deq
+	<- eq-gnoc/tup Deq _ Deq'.
+- : mred-unique mred-lam mred-lam eq-term_.
+- : mred-unique (mred-app DredM Dred1 Dred2) (mred-app DredM' Dred1' Dred2') Deq
+	<- mred-unique Dred1 Dred1' Deq1
+	<- eq-gnoc/lam Deq1 Deq1'
+	<- mred-unique Dred2 Dred2' Deq2
+	<- mred-unique/app Deq1' Deq2 DredM DredM' Deq.
+- : mred-unique (mred-let DredM DredE : mred (let E M) U) (mred-let DredM' DredE' : mred (let E M) U') Deq
+	<- mred-unique DredE DredE' DeqE
+	<- mred-unique/app ([x] eq-term_ : eq-term (M x) (M x)) DeqE DredM DredM' Deq.
+- : mred-unique (mred-lett DredM DredE : mred (lett E M) U) (mred-lett DredM' DredE' : mred (lett E M) U') Deq
+	<- mred-unique DredE DredE' DeqE
+	<- mred-unique/lett ([x][y] eq-term_ : eq-term (M x y) (M x y)) DeqE DredM DredM' Deq.
+%worlds () (mred-unique _ _ _) (mred-unique/app _ _ _ _ _) (mred-unique/lett _ _ _ _ _).
+%total (D D1 D2) (mred-unique D _ _) (mred-unique/app _ _ D1 _ _) (mred-unique/lett _ _ D2 _ _).
