@@ -9,10 +9,10 @@ mred-pi1  : mred (pi1 E) V
 			<- mred E (tup V _).
 mred-pi2  : mred (pi2 E) V
 			<- mred E (tup _ V).
-mred-lam  : mred (lam A M) (lam A M).
+mred-lam  : mred (lam M) (lam M).
 mred-app  : mred (app E1 E2) V
 			<- mred E2 V2
-			<- mred E1 (lam A ([x] M x))
+			<- mred E1 (lam ([x] M x))
 			<- mred (M V2) V.
 mred-let  : mred (let E M) V2
 			<- mred E V1
@@ -21,16 +21,8 @@ mred-lett  : mred (lett E M) V3
 			<- mred E (tup V1 V2)
 			<- mred (M V1 V2) V3.
 
-%% VALUE JUDGMENT
-val : term -> type. %name val Dval.
-val-ztup	: val ztup.
-val-tup	: val (tup E1 E2)
-				<- val E2
-				<- val E1.
-val-lam	: val (lam _ _).
-
 %% PRESERVATION AND EVALUATION
-pres : mred E V -> of E A W -> val V -> of V A W -> type.
+pres : mred E V -> of E A -> val V -> of V A -> type.
 %mode pres +D1 +D2 -D3 -D4.
 - : pres mred-ztup of-ztup val-ztup of-ztup.
 - : pres (mred-tup Dred1 Dred2) (of-tup DofE1 DofE2) (val-tup Dval1 Dval2) (of-tup DofV1 DofV2)
@@ -43,25 +35,29 @@ pres : mred E V -> of E A W -> val V -> of V A W -> type.
 - : pres mred-lam (of-lam DofM Dwf) val-lam (of-lam DofM Dwf).        
 - : pres 
 			(mred-app 
-				(DredM : mred (M V2) V3) 
-				(DredE1 : mred E1 (lam A M)) 
+				(DredM  : mred (M V2) V3) 
+				(DredE1 : mred E1 (lam M)) 
 				(DredE2 : mred E2 V2)) 
 			(of-app 
-				(DofE1 : of E1 (arr A' B) W)
-				(DofE2 : of E2 A' W)) 
+				(DofE1 : of E1 (arr A B))
+				(DofE2 : of E2 A)) 
 			DvalV3 
 			DofV3
-        <- pres DredE1 DofE1 _ (DofLam' : of (lam A M) (arr A' B) W)						%% \A.M : A'->B
-        <- pres DredE2 DofE2 _ (DofV2' : of V2 A' W)										%% V2 : A'
-        <- lam-annot DofLam' DofV2' (of-lam _ ([x] [d] DofM x d : of (M x) B W)) DofV2		%% \A.M : A->B; V2 : A
+        <- pres DredE1 DofE1 _ (of-lam _ DofM : of (lam M) (arr A B))							%% \A.M : A->B
+        <- pres DredE2 DofE2 _ (DofV2 : of V2 A)											%% V2 : A
         <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
 - : pres 	(mred-let Dred2 Dred1) 
-			(of-let (DofE2 : {x:term} of x A W -> of (E2 x) B W) DofE1) 
+			(of-let DofE (DofM : {x:term} of x A -> of (E2 x) B)) 
 			Dval DofV2
-		<- pres Dred1 DofE1 _ DofV1
-		<- pres Dred2 (DofE2 V1 DofV1) Dval DofV2.
+		<- pres Dred1 DofE _ DofV1
+		<- pres Dred2 (DofM V1 DofV1) Dval DofV2.
+- : pres 	(mred-lett Dred2 Dred1) 
+			(of-lett DofE (DofM : {x} of x A -> {y} of y B -> of (M x y) C)) 
+			Dval DofV
+		<- pres Dred1 DofE _ (of-tup DofV1 DofV2)
+		<- pres Dred2 (DofM V1 DofV1 V2 DofV2) Dval DofV.
         
-%worlds (ofs-block) (pres _ _ _ _).
+%worlds () (pres _ _ _ _).
 %total Dred (pres Dred _ _ _).
 
 %% REDUCTION IS IDEMPOTENT
@@ -86,9 +82,12 @@ idem : mred E V -> mred V V -> type.
 %total Dred (idem Dred _).
 
 %% REDUCTION RESPECTS IDENTITY
-mred-resp : mred E V -> eidty V V' -> mred E V' -> type.
-%mode mred-resp +Dred +Didty -Dred'.
-- : mred-resp Dred eidty/refl Dred.
-%worlds () (mred-resp _ _ _).
-%total {} (mred-resp _ _ _).
+mred-resp : mred E V -> eq-term E E' -> eq-term V V' -> mred E' V' -> type.
+%mode mred-resp +Dred +DeqE +Didty -Dred'.
+- : mred-resp Dred eq-term_ eq-term_ Dred.
+%worlds () (mred-resp _ _ _ _).
+%total {} (mred-resp _ _ _ _).
 
+%% REDUCTION IS UNIQUE
+mred/unique : mred E V1 -> mred E V2 -> eq-term V1 V2 -> type.
+%mode mred/unique +Dred1 +Dred2 -Deq.

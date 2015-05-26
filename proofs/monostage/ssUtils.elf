@@ -85,6 +85,29 @@ conf\eq : eq-term A B -> conf A B -> type.
 step** : term -> term -> type.
 step**_ : step* E V -> val V -> step** E V.
 
+%% STEP EQUALITY
+dup-step** : {A : step** E V} {A : step** E V} type.
+%mode dup-step** +A -A'.
+- : dup-step** A A.
+%worlds () (dup-step** _ _).
+%total (D) (dup-step** D _).
+
+
+%% STEP RESPECTS EQUALITY
+step**-resp : step** E V -> eq-term E E' -> eq-term V V' -> step** E' V' -> type.
+%mode step**-resp +Dstep +DeqE +DeqV -Dstep'.
+- : step**-resp Dstep eq-term_ eq-term_ Dstep.
+%worlds () (step**-resp _ _ _ _).
+%total {} (step**-resp _ _ _ _).
+
+
+%% FALSE GIVES BIGSTEP
+false\step** : false -> {E} {V} step** E V -> type.
+%mode false\step** +Dfalse +E +V -Dstep.
+%worlds () (false\step** _ _ _ _).
+%total (D) (false\step** D _ _ _).
+
+
 %% BIGSTEP IS UNIQUE
 step**-unique_ : step* E V -> val V -> step* E V' -> val V' -> eq-term V V' -> type.
 %mode step**-unique_ +Dpath +Dval +Dpath' +Dval' -Deq.
@@ -104,19 +127,67 @@ step**-unique_ : step* E V -> val V -> step* E V' -> val V' -> eq-term V V' -> t
 
 step**-unique : step** E V -> step** E V' -> eq-term V V' -> type.
 %mode step**-unique +Dred +Dred' -Deq.
+- : step**-unique (step**_ Dpath Dval) (step**_ Dpath' Dval') Deq
+	<- step**-unique_ Dpath Dval Dpath' Dval' Deq.
+%worlds () (step**-unique _ _ _).
+%total {} (step**-unique _ _ _).
+
+%% BIGSTEP RESULTS EVAL TO THEMSELF ITSELF
+step**-term : step** E V -> step** V V -> type.
+%mode step**-term +Dred -Dred'.
+- : step**-term (step**_ Dpath Dval) (step**_ step*-id Dval).
+%worlds () (step**-term _ _).
+%total {} (step**-term _ _).
 
 %% LETT EVAL INVERSION
-lett-big-invert_ :  step* (lett E M) V -> val V -> step* E (tup V1 V2) -> val (tup V1 V2) -> step* (M V1 V2) V -> type.
-%mode lett-big-invert_ +Dstep +Dval -DstepE -DvalE -DstepM.
-- : lett-big-invert_ (step*-step (ss-lett-s Dstep) Dpath) Dval (step*-step Dstep Dpath') Dval' DpathM
-	<- lett-big-invert_ Dpath Dval Dpath' Dval' DpathM.
-- : lett-big-invert_ (step*-step (ss-lett-r Dval) Dpath) _ step*-id Dval Dpath.
-%worlds () (lett-big-invert_ _ _ _ _ _).
-%total (D) (lett-big-invert_ D _ _ _ _).
+step**-invert-lett_ :  step* (lett E M) V -> val V -> step* E (tup V1 V2) -> val (tup V1 V2) -> step* (M V1 V2) V -> type.
+%mode step**-invert-lett_ +Dstep +Dval -DstepE -DvalE -DstepM.
+- : step**-invert-lett_ (step*-step (ss-lett-s Dstep) Dpath) Dval (step*-step Dstep Dpath') Dval' DpathM
+	<- step**-invert-lett_ Dpath Dval Dpath' Dval' DpathM.
+- : step**-invert-lett_ (step*-step (ss-lett-r Dval) Dpath) _ step*-id Dval Dpath.
+%worlds () (step**-invert-lett_ _ _ _ _ _).
+%total (D) (step**-invert-lett_ D _ _ _ _).
 
-lett-big-invert :  step** (lett E M) V -> step** E (tup V1 V2) -> step** (M V1 V2) V -> type.
-%mode lett-big-invert +Dstep -DstepE -DstepM.
-- : lett-big-invert (step**_ Dpath Dval) (step**_ Dpath' Dval') (step**_ DpathM Dval)
-	<- lett-big-invert_ Dpath Dval Dpath' Dval' DpathM.
-%worlds () (lett-big-invert _ _ _).
-%total (D) (lett-big-invert D _ _).
+step**-invert-lett :  step** (lett E M) V -> step** E (tup V1 V2) -> step** (M V1 V2) V -> type.
+%mode step**-invert-lett +Dstep -DstepE -DstepM.
+- : step**-invert-lett (step**_ Dpath Dval) (step**_ Dpath' Dval') (step**_ DpathM Dval)
+	<- step**-invert-lett_ Dpath Dval Dpath' Dval' DpathM.
+%worlds () (step**-invert-lett _ _ _).
+%total (D) (step**-invert-lett D _ _).
+
+%% TUP EVAL INVERSION
+step**-invert-tup_ :  step* (tup E1 E2) (tup V1 V2) -> val (tup V1 V2) -> step** E1 V1 -> step** E2 V2 -> type.
+%mode step**-invert-tup_ +Dstep +Dval -Dred1 -Dred2.
+- : step**-invert-tup_ (step*-step (ss-tup-s1 Dstep) Dpath) Dval (step**_ (step*-step Dstep Dpath1) Dval1) Dred2
+	<- step**-invert-tup_ Dpath Dval (step**_ Dpath1 Dval1) Dred2.
+- : step**-invert-tup_ (step*-step (ss-tup-s2 Dstep Dval1) Dpath) Dval Dred1 (step**_ (step*-step Dstep Dpath2) Dval2)
+	<- step**-invert-tup_ Dpath Dval Dred1 (step**_ Dpath2 Dval2).
+- : step**-invert-tup_ step*-id (val-tup Dval1 Dval2) (step**_ step*-id Dval1) (step**_ step*-id Dval2).
+%worlds () (step**-invert-tup_ _ _ _ _).
+%total (D) (step**-invert-tup_ D _ _ _).
+
+step**-invert-tup :  step** (tup E1 E2) (tup V1 V2) -> step** E1 V1 -> step** E2 V2 -> type.
+%mode step**-invert-tup +Dstep -DstepE -DstepM.
+- : step**-invert-tup (step**_ Dpath Dval) Dred1 Dred2
+	<- step**-invert-tup_ Dpath Dval Dred1 Dred2.
+%worlds () (step**-invert-tup _ _ _).
+%total (D) (step**-invert-tup D _ _).
+
+%% LETT EVAL INVERSION
+step**-invert-pi1_ :  step* (pi1 E) V1 -> val V1 -> step* E (tup V1 V2) -> val (tup V1 V2) -> type.
+%mode step**-invert-pi1_ +Dstep +Dval -DstepE -DvalE.
+- : step**-invert-pi1_ (step*-step (ss-pi1-s Dstep) Dpath) Dval (step*-step Dstep Dpath') Dval'
+	<- step**-invert-pi1_ Dpath Dval Dpath' Dval'.
+- : step**-invert-pi1_ (step*-step (ss-pi1-r Dval) step*-id) _ step*-id Dval.
+- : step**-invert-pi1_ (step*-step (ss-pi1-r (val-tup Dval1 _)) (step*-step Dstep _)) _ Dpath Dval
+	<- excl-val-step Dstep Dval1 Dfalse
+	<- false\step** Dfalse _ (tup _ ztup) (step**_ Dpath Dval).
+%worlds () (step**-invert-pi1_ _ _ _ _).
+%total (D) (step**-invert-pi1_ D _ _ _).
+
+step**-invert-pi1 :  step** (pi1 E) V1 -> step** E (tup V1 V2) -> type.
+%mode step**-invert-pi1 +Dstep -DstepE.
+- : step**-invert-pi1 (step**_ Dpath Dval) (step**_ Dpath' Dval')
+	<- step**-invert-pi1_ Dpath Dval Dpath' Dval'.
+%worlds () (step**-invert-pi1 _ _).
+%total (D) (step**-invert-pi1 D _).
