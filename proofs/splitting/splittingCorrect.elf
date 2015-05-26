@@ -42,11 +42,35 @@ decon-red-tup : step** E (tup V1 V2) -> val (tup V1 V2) -> val V1 -> val V2 -> t
 %total {} (decon-red-tup _ _ _ _).
 
 %% SPLITTING CORRECTNESS
-
 sc1 :  mstep wor1 E E' -> split wor1 E' (pipe C' _) -> mred C' (tup I _) -> split wor1 E (pipe C _) -> mred C (tup I _) -> type.
 %mode sc1 +Dstep +Dspl' +Dred' -Dspl -Dred.
 sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E (pipe P _) -> mred P _ -> type.
 %mode sc1 +Dstep +Dspl' +Dred' -Dspl -Dred.
+
+%% STAGE ONE REDUCTION RULES
+
+%{- : sc1 ms-pi1-r 
+	(spl1-exv Dspl1) (mred-tup Dred1 mred-ztup)
+	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))}%
+
+%% STAGE ONE DONENESS MARKING
+- : sc1 ms-tup-d 
+		(spl1-exv (splv-tup Dsplv1 Dsplv2))	
+		(mred-tup (mred-tup Dred1 Dred2) mred-ztup)
+		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2)) 
+		(mred-lett 
+			(mred-lett 
+				(mred-tup (mred-tup Didem1 Didem2) (mred-tup mred-ztup mred-ztup))
+				(mred-tup Dred2 mred-ztup))
+			(mred-tup Dred1 mred-ztup))
+	<- idem Dred1 Didem1
+	<- idem Dred2 Didem2.
+%{- : sc1 (ms-next-d _)
+		(spl1-exv splv-next) 
+		(mred-tup mred-ztup mred-ztup)
+		(spl1-next (spl2-exv Dsplr)) 
+		(mred-tup mred-ztup mred-ztup).}%
+
 
 %% STAGE ONE SUBSTEPS
 - : sc1 (ms-pi1-s Dstep) (spl1-pi1 Dspl') 
@@ -74,6 +98,26 @@ sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E
 	<- sc1 Dstep Dspl' DredC2' Dspl (DredC : mred C (tup (tup _ I) B))
 	<- idem DredC (mred-tup DidemII2 DidemB).
 
+%% STAGE TWO DONENESS MARKING
+- : sc2 ms-tup-d 
+		(spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-ztup
+		(spl2-tup (spl2-exv Dsplr1) (spl2-exv Dsplr2)) (mred-tup mred-ztup mred-ztup).
+- : sc2 ms-pi1-d 
+		(spl2-exv (splr-pi1 Dsplr)) mred-ztup
+		(spl2-pi1 (spl2-exv Dsplr)) mred-ztup.
+- : sc2 ms-pi2-d 
+		(spl2-exv (splr-pi2 Dsplr)) mred-ztup
+		(spl2-pi2 (spl2-exv Dsplr)) mred-ztup.
+- : sc2 ms-lam-d 
+		(spl2-exv (splr-lam Dsplr)) mred-ztup
+		(spl2-lam ([x] [splx] spl2-exv (Dsplr x splx))) mred-ztup.
+- : sc2 ms-app-d 
+		(spl2-exv (splr-app Dsplr1 Dsplr2)) mred-ztup
+		(spl2-app (spl2-exv Dsplr1) (spl2-exv Dsplr2)) (mred-tup mred-ztup mred-ztup).
+- : sc2 ms-let-d 
+		(spl2-exv (splr-let DsplrE DsplrM)) mred-ztup
+		(spl2-let (spl2-exv DsplrE) ([x][splx] spl2-exv (Dsplr2 x splx))) (mred-tup mred-ztup mred-ztup).
+
 %% STAGE TWO SUBSTEPS
 - : sc2 (ms-pi1-s Dstep) (spl2-pi1 Dspl') Dred' (spl2-pi1 Dspl) Dred
 	<- sc2 Dstep Dspl' Dred' Dspl Dred.
@@ -93,8 +137,6 @@ sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E
 	(spl2-let (spl2-exv Dsplr) ([x][splx] spl2-prev (Dspl' x splx))) (mred-tup mred-ztup (mred-pi2 Dred')) 
 	(spl2-prev Dspl) (mred-pi2 Dred) 
 	<- lc Dstep Dspl' Dsplr Dred' Dspl Dred.
-
-
 
 	%{
 spl1-ztup	: split wor1 ztup (pipe (tup ztup ztup) ([_] ztup)).
