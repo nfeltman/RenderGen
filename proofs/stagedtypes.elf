@@ -56,7 +56,7 @@ of^-app 	: of^ (app E1 E2) B W DT
 				<- redux W DT
 				<- of^ E2 A W DT
 				<- of^ E1 (arr A B) W DT.
-of^-let 	: of^ (let E ([x] M x)) B wor2 DT
+of^-let 	: of^ (let E M) B wor2 DT
 				<- ({x} variable x -> of^ x A wor2 dot-d -> of^ (M x) B wor2 DT)
 				<- of^ E A wor2 DT.		
 %{of^-let : of^ (let (exv E) ([x] M x)) B wor2

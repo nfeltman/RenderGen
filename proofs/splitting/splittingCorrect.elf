@@ -6,7 +6,7 @@
 
 %% LIFTING CORRECTNESS
 
-lc :  lstep E Q E' -> split wor1 E (pipe C R) -> splitres Q Q' -> ({x} splitres x x -> split wor1 (E' x) (pipe C (R' x))) -> type.
+lc :  lstep E Q E' -> split wor1 E (pipe C R) -> splitres Q Q' -> ({x}{x2} splitres x x2 -> split wor1 (E' x) (pipe C (R' x2))) -> type.
 %mode lc +Dstep +DsplE -DsplrQ -DsplE'.
 %% LIFT RULES
 - : lc (ls-next-r _) (spl1-next (spl2-exv Dsplr)) Dsplr ([x][s] spl1-exv splv-next).

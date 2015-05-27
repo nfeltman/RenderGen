@@ -103,6 +103,8 @@ spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 
 
 
 %block any-splitres : some {E : term lang0} {Q : term lang2} block {dsplr : splitres E Q}.
+%block any-splitval : some {E : term lang0} {I : term lang1} {Q : term lang2} block {dsplr : splitval E I Q}.
+%block any-split = (any-splitres | any-splitval).
 
 %%block any-splitting : 	some {W : wor} {E : term} {P : term} {R : term -> term}	block {dspl : split W E (pipe P R)}.
 
@@ -111,12 +113,12 @@ spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 
 splitres-resp : splitres E Q -> eq-term E E' -> eq-term Q Q' -> splitres E' Q' -> type.
 %mode splitres-resp +Dspl +Deq1 +Deq2 -Dspl'.
 - : splitres-resp Dspl eq-term_ eq-term_ Dspl.
-%worlds (term-block | any-splitres) (splitres-resp _ _ _ _).
+%worlds (term-block | any-split) (splitres-resp _ _ _ _).
 %total (Deq) (splitres-resp _ Deq _ _).
 
 %% SPLITTING RESPECTS IDENTITY
 split-resp : split W E (pipe P R) -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E (pipe P' R') -> type.
 %mode split-resp +Dspl +Deq1 +Deq2 -Dspl'.
 - : split-resp Dspl eq-term_ ([l] eq-term_) Dspl.
-%worlds (term-block) (split-resp _ _ _ _).
+%worlds (term-block | any-split) (split-resp _ _ _ _).
 %total (Deq) (split-resp _ Deq _ _).
