@@ -1,8 +1,8 @@
 %%  USEFUL BLOCKS
-%block pres-block : some {A : ty} block {x:term} {dvar : variable x} {dof : of^ x A wor2 dot-d}.
+%block pres-block : some {A : ty} {L :lang} block {x:term L} {dvar : variable x} {dof : of^ x A wor2 dot-d}.
 
 %% LIFT STEP PRESERVATION
-lpres : lstep E Q E' -> of^ E T wor1 dot-t -> of^ Q TQ wor2 dot-d -> ({x:term} variable x -> of^ x TQ wor2 dot-d -> of^ (E' x) T wor1 dot-t) -> type.
+lpres : lstep E Q E' -> of^ E T wor1 dot-t -> of^ Q TQ wor2 dot-d -> ({x} variable x -> of^ x TQ wor2 dot-d -> of^ (E' x) T wor1 dot-t) -> type.
 %mode lpres +Dstep +Dof -DofQ -Dof'.
 - : lpres (ls-next-r _) (of^-next-t (of^-exv Dof)) Dof ([x][vx][dof] of^-exv (of^-next-d dof vx)).
 - : lpres (ls-tup-s1 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][vx][dof] of^-tup (Dof1' x vx dof) Dof2)
@@ -41,10 +41,10 @@ pres : mstep W E E' -> of^ E T W dot-t -> of^ E' T W dot-t -> type.
 - : pres (ms-let-s1 Dstep) (of^-let DofE DofM) (of^-let DofE' DofM) 
 	<- pres Dstep DofE DofE'.
 - : pres (ms-lam-s Dstep) (of^-lam2 Dwf DofM) (of^-lam2 Dwf DofM') 
-	<- {x:term} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
+	<- {x} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
 		pres (Dstep x dvar) (DofM x dvar dof) (DofM' x dvar dof).
 - : pres (ms-let-s2 Dstep) (of^-let DofE DofM) (of^-let DofE DofM') 
-	<- {x:term} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
+	<- {x} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
 		pres (Dstep x dvar) (DofM x dvar dof) (DofM' x dvar dof).
 
 

@@ -1,7 +1,5 @@
 %%  USEFUL BLOCKS
-%block det-block : some {A : ty} block {x:term} {dvar : variable x}.
-
-false : type. %freeze false.
+%block det-block : some {A : ty} {L :lang} block {x:term L} {dvar : variable x}.
 
 %% VARIABLE AND NOT VARIABLE ARE EXCLLUSIVE
 excl-var-notvar : variable E -> not-variable E -> false -> type.
@@ -34,14 +32,7 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 
 
 %% FALSE YIELDS EQUALITY
-false\eq : {E1 : term} {E2 : term} false -> eq-term E1 E2 -> type.
-%mode false\eq +E1 +E2 +Dfalse -Deq.
-%worlds (det-block) (false\eq _ _ _ _).
-%total {} (false\eq _ _ _ _).
-
-
-%% FALSE YIELDS EQUALITY
-false\eq2 : {E1 : term -> term} {E2 : term -> term} false -> ({x} eq-term (E1 x) (E2 x)) -> type.
+false\eq2 : {E1 : term L -> term L} {E2 : term L -> term L} false -> ({x} eq-term (E1 x) (E2 x)) -> type.
 %mode false\eq2 +E1 +E2 +Dfalse -Deq.
 %worlds (det-block) (false\eq2 _ _ _ _).
 %total {} (false\eq2 _ _ _ _).
@@ -139,10 +130,10 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 %% CONTRADICTION CASES
 - : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
 	<- excl-mstep-lstep Dstep' Dstep Dfalse
-	<- false\eq _ _ Dfalse Deq.
+	<- false\eq-term Dfalse _ _ Deq.
 - : step/unique (ms-prev-s Dstep') (ms-prev-ls Dstep) Deq
 	<- excl-mstep-lstep Dstep' Dstep Dfalse
-	<- false\eq _ _ Dfalse Deq.
+	<- false\eq-term Dfalse _ _ Deq.
 
 %worlds (det-block) (step/unique _ _ _).
 %total D (step/unique D _ _).

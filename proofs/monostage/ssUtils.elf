@@ -1,7 +1,7 @@
 
 %% MULTISTEPS
 
-step* : term -> term -> type.
+step* : term L -> term L -> type.
 step*-id : step* E E.
 step*-step : step E1 E2 -> step* E2 E3 -> step* E1 E3.
 
@@ -22,7 +22,7 @@ step*/resp : step* E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> step* E1' E2' ->
 %total {} (step*/resp _ _ _ _).
 
 %% CHAIN IS A CONGRUENCE FOR SUBSTEP RULES
-step*/substep : {F : term -> term} ({e} {e'} step e e' -> step (F e) (F e')) -> step* E E' -> step* (F E) (F E') -> type.
+step*/substep : {F : term L -> term L} ({e} {e'} step e e' -> step (F e) (F e')) -> step* E E' -> step* (F E) (F E') -> type.
 %mode step*/substep +F +R +Dchain -Dchain'.
 - : step*/substep F R step*-id step*-id.
 - : step*/substep F R (step*-step (Dstep : step E E') Dchain) (step*-step (R E E' Dstep) Dchain')
@@ -31,7 +31,7 @@ step*/substep : {F : term -> term} ({e} {e'} step e e' -> step (F e) (F e')) -> 
 %total {D} (step*/substep _ _ D _).
 
 %% CONFLUENCE
-conf : term -> term -> type.
+conf : term L -> term L -> type.
 conf_ : step* E1 E -> step* E2 E -> conf E1 E2.
 
 %% CONFLUENCE IS SYMMETRIC
@@ -66,7 +66,7 @@ conf/trans : conf E1 E2 -> conf E2 E3 -> conf E1 E3 -> type.
 }%
 
 %% CONFLUENCE IS A CONGRUENCE FOR SUBSTEP RULES
-conf/substep : {F : term -> term} ({e} {e'} step e e' -> step (F e) (F e')) -> conf E E' -> conf (F E) (F E') -> type.
+conf/substep : {F : term L -> term L} ({e} {e'} step e e' -> step (F e) (F e')) -> conf E E' -> conf (F E) (F E') -> type.
 %mode conf/substep +F +R +Dcong -Dcong'.
 - : conf/substep F R (conf_ P1 P2) (conf_ P1' P2')
 	<- step*/substep F R P1 P1'
@@ -82,7 +82,7 @@ conf\eq : eq-term A B -> conf A B -> type.
 %total {D} (conf\eq D _).
 
 %% BIGSTEP
-step** : term -> term -> type.
+step** : term L -> term L -> type.
 step**_ : step* E V -> val V -> step** E V.
 
 %% STEP EQUALITY

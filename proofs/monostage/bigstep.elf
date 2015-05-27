@@ -1,5 +1,5 @@
 %% REDUCTION JUDGMENT
-mred : term -> term -> type. %name mred Dred.
+mred : term L -> term L -> type. %name mred Dred.
 %mode mred +E -V.
 mred-ztup : mred ztup ztup.
 mred-tup  : mred (tup E1 E2) (tup V1 V2)
@@ -47,12 +47,12 @@ pres : mred E V -> of E A -> val V -> of V A -> type.
         <- pres DredE2 DofE2 _ (DofV2 : of V2 A)											%% V2 : A
         <- pres DredM (DofM V2 DofV2) DvalV3 DofV3.
 - : pres 	(mred-let Dred2 Dred1) 
-			(of-let DofE (DofM : {x:term} of x A -> of (E2 x) B)) 
+			(of-let DofE (DofM : {x:term L} of x A -> of (E2 x) B)) 
 			Dval DofV2
 		<- pres Dred1 DofE _ DofV1
 		<- pres Dred2 (DofM V1 DofV1) Dval DofV2.
 - : pres 	(mred-lett Dred2 Dred1) 
-			(of-lett DofE (DofM : {x} of x A -> {y} of y B -> of (M x y) C)) 
+			(of-lett DofE (DofM : {x:term L} of x A -> {y} of y B -> of (M x y) C)) 
 			Dval DofV
 		<- pres Dred1 DofE _ (of-tup DofV1 DofV2)
 		<- pres Dred2 (DofM V1 DofV1 V2 DofV2) Dval DofV.
@@ -94,12 +94,12 @@ mred-unique : mred E V1 -> mred E V2 -> eq-term V1 V2 -> type.
 %mode mred-unique +Dred1 +Dred2 -Deq.
 
 %% REDUCTION IS UNIQUE (LEMMAS)
-mred-unique/app : ({x} eq-term (M x) (M' x)) -> eq-term V V' -> mred (M V) U -> mred (M' V') U' -> eq-term U U' -> type.
+mred-unique/app : ({x:term L} eq-term (M x : term L) (M' x)) -> eq-term V V' -> mred (M V) U -> mred (M' V') U' -> eq-term U U' -> type.
 %mode mred-unique/app +Deq1 +Deq2 +Dred1 +Dred2 -Deq.
 - : mred-unique/app ([x] eq-term_) eq-term_ Dred Dred' Deq
 	<- mred-unique Dred Dred' Deq.
 
-mred-unique/lett : ({x}{y} eq-term (M x y) (M' x y)) -> eq-term (tup V1 V2) (tup V1' V2') -> mred (M V1 V2) U -> mred (M' V1' V2') U' -> eq-term U U' -> type.
+mred-unique/lett : ({x : term L}{y : term L} eq-term (M x y : term L) (M' x y)) -> eq-term (tup V1 V2) (tup V1' V2') -> mred (M V1 V2) U -> mred (M' V1' V2') U' -> eq-term U U' -> type.
 %mode mred-unique/lett +Deq1 +Deq2 +Dred1 +Dred2 -Deq.
 - : mred-unique/lett ([x][y] eq-term_) eq-term_ Dred Dred' Deq
 	<- mred-unique Dred Dred' Deq.

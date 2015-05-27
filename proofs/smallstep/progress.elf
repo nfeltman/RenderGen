@@ -1,13 +1,13 @@
 
 
 %% DONE-OR-STEP JUDGEMENT
-dos : wor -> term -> type.
+dos : wor -> term L -> type.
 dos-done	: dos W (exv E).
 dos-mstep	: mstep W E E' -> dos W E.
 dos-lstep	: lstep E Q E' -> dos wor1 E.
 
 %% VAR-OR-NOT JUDGEMENT
-var-or-not : term -> type. %name var-or-not Dvon.
+var-or-not : term L -> type. %name var-or-not Dvon.
 von-var : variable E -> var-or-not E.
 von-not : not-variable E -> var-or-not E.
 
@@ -22,8 +22,8 @@ res\von : of^ E A wor2 dot-d -> var-or-not E -> type.
 - : res\von (of^-app _ _ _) (von-not nv-app).
 - : res\von (of^-let _ _) (von-not nv-let).
 %block von-block : 
-	some {A : ty} 
-	block {x:term} {dvar : variable x} {dof : of^ x A wor2 dot-d} {_ : res\von dof (von-var dvar)}.
+	some {A : ty} {L :lang} 
+	block {x:term L} {dvar : variable x} {dof : of^ x A wor2 dot-d} {_ : res\von dof (von-var dvar)}.
 %worlds (von-block) (res\von _ _).
 %total (E) (res\von E _).
 
@@ -60,7 +60,7 @@ prog/pi2 : dos W E -> of^ E (prod T1 T2) W DT -> dos W (pi2 E) -> type.
 %worlds (von-block) (prog/pi2 _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _).
 
-prog/lam : ({x:term} variable x -> dos wor2 (M x)) -> dos wor2 (lam M) -> type.
+prog/lam : ({x} variable x -> dos wor2 (M x)) -> dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos -Ddos'.
 - : prog/lam ([x][dvar] dos-mstep (Dstep x dvar)) (dos-mstep (ms-lam-s Dstep)).
 - : prog/lam ([x][dvar] dos-done) (dos-mstep ms-lam-d).
@@ -88,7 +88,7 @@ prog/let1 : dos wor1 E -> of^ (let E M) T wor1 _ -> dos wor1 (let E M) -> type.
 %worlds (von-block) (prog/let1 _ _ _).
 %total (Ddos) (prog/let1 Ddos _ _).
 
-prog/let2 : dos wor2 E -> ({x:term} variable x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
+prog/let2 : dos wor2 E -> ({x} variable x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
 %mode prog/let2 +Ddos1 +Ddos2 -Ddos'.
 - : prog/let2 (dos-mstep Dstep) _ (dos-mstep (ms-let-s1 Dstep)).
 - : prog/let2 dos-done ([x] [dvar] dos-mstep (Dstep x dvar)) (dos-mstep (ms-let-s2 Dstep)).
@@ -136,7 +136,7 @@ prog : of^ E T W dot-t -> dos W E -> type.
 	<- prog Dof Ddos
 	<- prog/pi2 Ddos Dof Ddos'.
 - : prog (of^-lam2 _ DofM) Ddos'
-	<- ({x:term} {dvar : variable x} {dof: of^ x T wor2 dot-d} {_ : res\von dof (von-var dvar)}
+	<- ({x} {dvar : variable x} {dof: of^ x T wor2 dot-d} {_ : res\von dof (von-var dvar)}
 		prog (DofM x dvar dof) (Ddos x dvar))
 	<- prog/lam Ddos Ddos'.
 - : prog (of^-app Dof1 Dof2 _) Ddos
@@ -148,7 +148,7 @@ prog : of^ E T W dot-t -> dos W E -> type.
 	<- prog/let1 Ddos (of^-let DofM DofE) Ddos'.}%
 - : prog (of^-let DofE DofM) Ddos'
 	<- prog DofE DdosE
-	<- ({x:term} {dvar : variable x} {dof: of^ x T wor2 dot-d} {_ : res\von dof (von-var dvar)}
+	<- ({x} {dvar : variable x} {dof: of^ x T wor2 dot-d} {_ : res\von dof (von-var dvar)}
 		prog (DofM x dvar dof) (DdosM x dvar))
 	<- prog/let2 DdosE DdosM Ddos'.
 - : prog (of^-next-t Dof) Ddos'

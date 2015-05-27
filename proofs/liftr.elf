@@ -16,28 +16,35 @@ fut		: ty -> ty.
 curr	: ty -> ty.
 %freeze ty.
 
-%% TERMS
-term : type. %name term E.
-ztup  : term.
-tup   : term -> term -> term.
-pi1   : term -> term.
-pi2   : term -> term.
-lam   : (term -> term) -> term.
-app   : term -> term -> term.
-let   : term -> (term -> term) -> term.
-lett  : term -> (term -> term -> term) -> term.
-next  : term -> term.
-letn  : term -> (term -> term) -> term.
-prev  : term -> term.
-mono  : term -> term.
-letm  : term -> (term -> term) -> term.
-exv   : term -> term.
+%% LANG (little trick that makes translations a lot easier later)
+lang : type.
+lang0 : lang.
+lang1 : lang.
+lang2 : lang.
+%freeze lang.
 
-%block term-block : block {x : term}.
-%worlds (term-block) (term).
+%% TERMS
+term : lang -> type. %name term E.
+ztup  : term L.
+tup   : term L -> term L -> term L.
+pi1   : term L -> term L.
+pi2   : term L -> term L.
+lam   : (term L -> term L) -> term L.
+app   : term L -> term L -> term L.
+let   : term L -> (term L -> term L) -> term L.
+lett  : term L -> (term L -> term L -> term L) -> term L.
+next  : term L -> term L.
+%{letn  : term L -> (term L -> term L) -> term L.}%
+prev  : term L -> term L.
+%{mono  : term L -> term L.}%
+%{letm  : term L -> (term L -> term L) -> term L.}%
+exv   : term L -> term L.
+
+%block term-block : some {L : lang} block {x : term L}.
+%worlds (term-block) (term _).
 %freeze term.
 
-%block just-var : block {x : term}.
+%block just-var : some {L : lang} block {x : term L}.
 
 %% HOLES
 lett-hole = ([x] lett x M).
@@ -45,11 +52,11 @@ tup-hole-1 = ([x] tup x E).
 tup-hole-2 = ([x] tup E x).
 
 %% TERM EQUALITY
-eq-term  : term -> term -> type. %name eq-term Deq.
+eq-term  : term L -> term L -> type. %name eq-term Deq.
 eq-term_ : eq-term E E.
 
-%abbrev `eq-term_ = ([x : term] eq-term_).
-%abbrev ``eq-term_ = ([x : term][y : term] eq-term_).
+%abbrev `eq-term_ = ([x : term L] eq-term_ : eq-term E E).
+%abbrev ``eq-term_ = ([x : term L][y : term L] eq-term_ : eq-term E E).
 
 %% FALSE YIELDS ANY EQUALITY
 false\eq-term : false -> {E} {E'} eq-term E E' -> type.
@@ -64,7 +71,7 @@ eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 %worlds (just-var) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
 
-eq-cong/1 : {F : (term -> term) -> term} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
+eq-cong/1 : {F : (term L -> term L) -> term L} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
 %mode eq-cong/1 +F +Deq -Deq'.
 - : eq-cong/1 F ([x] eq-term_) eq-term_.
 %worlds (just-var) (eq-cong/1 _ _ _).
@@ -82,30 +89,30 @@ eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term 
 %worlds (just-var) (eq-cong/lett _ _ _).
 %total {} (eq-cong/lett _ _ _).
 
-eq-cong : {F : term -> term} eq-term E E' -> eq-term (F E) (F E') -> type.
+eq-cong : {F : term L -> term L} eq-term E E' -> eq-term (F E) (F E') -> type.
 %mode eq-cong +F +Deq -Deq'.
 - : eq-cong _ eq-term_ eq-term_.
 %worlds (just-var) (eq-cong _ _ _).
 %total {} (eq-cong _ _ _).
 
-eq-cong2 : {F : term -> term -> term} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
+eq-cong2 : {F : term L -> term L -> term L} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
 %mode eq-cong2 +F +Deq1 +De2 -Deq'.
 - : eq-cong2 _ eq-term_ eq-term_ eq-term_.
 %worlds (just-var) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
 
-eq-cong/0/2 : {F : term -> (term -> term -> term) -> term} 
+eq-cong/0/2 : {F : term L -> (term L -> term L -> term L) -> term L} 
   (eq-term E1 E1') -> 
-  ({x:term}{y:term} eq-term (E2 x y) (E2' x y)) -> 
+  ({x}{y} eq-term (E2 x y) (E2' x y)) -> 
   (eq-term (F E1 E2) (F E1' E2')) -> type.
 %mode eq-cong/0/2 +F +Deq1 +De2 -Deq'.
 - : eq-cong/0/2 _ eq-term_ ([x][y] eq-term_) eq-term_.
 %worlds (just-var) (eq-cong/0/2 _ _ _ _).
 %total {} (eq-cong/0/2 _ _ _ _).
 
-eq-cong/1/1 : {F : (term -> term) -> (term -> term) -> term} 
-  ({x:term} eq-term (E1 x) (E1' x)) -> 
-  ({y:term} eq-term (E2 y) (E2' y)) -> 
+eq-cong/1/1 : {F : (term L -> term L) -> (term L -> term L) -> term L} 
+  ({x} eq-term (E1 x) (E1' x)) -> 
+  ({y} eq-term (E2 y) (E2' y)) -> 
   (eq-term (F E1 E2) (F E1' E2')) -> type.
 %mode eq-cong/1/1 +F +Deq1 +De2 -Deq'.
 - : eq-cong/1/1 _ ([x] eq-term_) ([y] eq-term_) eq-term_.
@@ -167,3 +174,63 @@ eq-ty-inj-arr :
 - : eq-ty-inj-arr eq-ty_ eq-ty_ eq-ty_.
 %worlds () (eq-ty-inj-arr _ _ _).
 %total {} (eq-ty-inj-arr _ _ _).
+
+%% LANGUAGE EQUALITY
+eq-lang : lang -> lang -> type.
+eq-lang_ : eq-lang L L.
+neq-lang : lang -> lang -> type.
+neq-lang_01 : neq-lang lang0 lang1.
+neq-lang_02 : neq-lang lang0 lang2.
+neq-lang_10 : neq-lang lang1 lang0.
+neq-lang_12 : neq-lang lang1 lang2.
+neq-lang_20 : neq-lang lang2 lang0.
+neq-lang_21 : neq-lang lang2 lang1.
+
+%% THINGS CAN'T BE BOTH EQUAL AND NOT-EQUAL
+excl-eq-neq-lang : eq-lang L1 L2 -> neq-lang L1 L2 -> false -> type.
+%mode excl-eq-neq-lang +Deq +Dneq -Dfalse.
+%worlds () (excl-eq-neq-lang _ _ _).
+%total {} (excl-eq-neq-lang _ _ _).
+
+
+%% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
+lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (E x) E') -> type.
+%mode lang-indep +Dneq +E -Deq.
+- : lang-indep Dneq _ ([x] eq-term_).
+- : lang-indep Dneq ([x] tup (E1 x) (E2 x)) Deq
+  <- lang-indep Dneq E1 Deq1
+  <- lang-indep Dneq E2 Deq2
+  <- {x} eq-cong2 tup (Deq1 x) (Deq2 x) (Deq x).
+- : lang-indep Dneq ([x] pi1 (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong pi1 (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] pi2 (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong pi2 (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] lam ([y] E y x)) Deq'
+  <- ({y} lang-indep Dneq (E y) ([x] Deq x y))
+  <- {x} eq-cong/lam (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] app (E1 x) (E2 x)) Deq
+  <- lang-indep Dneq E1 Deq1
+  <- lang-indep Dneq E2 Deq2
+  <- {x} eq-cong2 app (Deq1 x) (Deq2 x) (Deq x).
+- : lang-indep Dneq ([x] let (E x) ([y] M y x)) Deq
+  <- lang-indep Dneq E DeqE
+  <- ({y} lang-indep Dneq (M y) ([x] DeqM x y))
+  <- {x} eq-cong/let (DeqE x) (DeqM x) (Deq x).
+- : lang-indep Dneq ([x] lett (E x) ([y][z] M y z x)) Deq
+  <- lang-indep Dneq E DeqE
+  <- ({y}{z} lang-indep Dneq (M y z) ([x] DeqM x y z))
+  <- {x} eq-cong/lett (DeqE x) (DeqM x) (Deq x).
+- : lang-indep Dneq ([x] next (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong next (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] prev (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong prev (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] exv (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong exv (Deq x) (Deq' x).
+
+%worlds (just-var) (lang-indep _ _ _).
+%total (D) (lang-indep _ D _).

@@ -2,14 +2,8 @@
 
 %% OUTPUT LANGUAGE
 seperated : type. %name seperated S.
-pipe : term -> (term -> term) -> seperated.
+pipe : term lang1 -> (term lang2 -> term lang2) -> seperated.
 
-mval : term -> type.
-mval-ztup : mval ztup.
-mval-tup  : mval (tup E1 E2)
-			<- mval E2
-			<- mval E1.
-mval-lam  : mval (lam _).
 
 
 %% MULTI-OUTPUT PIPELINE TYPING

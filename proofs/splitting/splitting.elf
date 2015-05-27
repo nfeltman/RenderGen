@@ -1,11 +1,11 @@
 %{ splitting.elf }%
 
 %% SPLITTING RESIDUALS, VALUES, AND TERMS
-splitres : term -> term -> type. %name splitres Dsplr.
+splitres : term lang0 -> term lang2 -> type. %name splitres Dsplr.
 %mode splitres +Q -Q'.
-splitval : term -> term -> term -> type.
+splitval : term lang0 -> term lang1 -> term lang2 -> type.
 %mode splitval +E -I -Q.
-split : wor -> term -> seperated -> type. %name split Dspl.
+split : wor -> term lang0 -> seperated -> type. %name split Dspl.
 %mode split +W +E -P.
 
 splr-ztup : splitres ztup ztup.
@@ -17,22 +17,23 @@ splr-tup : splitres (tup E1 E2) (tup E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
 splr-lam : splitres (lam M) (lam M')
-			<- {x} splitres x x -> splitres (M x) (M' x).
+			<- {x}{x2} splitres x x2 -> splitres (M x) (M' x2).
 splr-app : splitres (app E1 E2) (app E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
 splr-let : splitres (let E M) (let E' M')
-			<- ({x} splitres x x -> splitres (M x) (M' x))
+			<- ({x}{x2} splitres x x2 -> splitres (M x) (M' x2))
 			<- splitres E E'.
 
 
 splv-ztup 	: splitval ztup ztup ztup.
-splv-next	: splitval (next E) ztup E.
+splv-next	: splitval (next E) ztup E'
+			<- splitres E E'.
 splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E2 I2 Q2
 			<- splitval E1 I1 Q1.
 splv-lam	: splitval (lam M) (lam C) (lam ([xl] lett xl R))
-			<- {x}{x1}{x2} splitval x x1 x2 -> split wor1 (M x) (pipe (C x1) ([l:term] R x2 l)). 
+			<- {x}{x1}{x2} splitval x x1 x2 -> split wor1 (M x) (pipe (C x1) ([l] R x2 l)). 
 
 
 spl1-exv	: split wor1 (exv V) (pipe (tup I ztup) ([_] Q))
@@ -77,7 +78,7 @@ spl2-pi1	: split wor2 (pi1 E) (pipe P ([l] pi1 (R l)))
 spl2-pi2	: split wor2 (pi2 E) (pipe P ([l] pi2 (R l)))
 			<- split wor2 E (pipe P R).
 spl2-lam	: split wor2 (lam M) (pipe P ([l] lam ([x] R x l)))
-			<- {x : term} splitres x x -> split wor2 (M x) (pipe P ([l] R x l)).
+			<- {x}{x2} splitres x x2 -> split wor2 (M x) (pipe P ([l] R x2 l)).
 spl2-app	: split wor2 (app E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2))))
 			<- split wor2 E2 (pipe P2 R2)
 			<- split wor2 E1 (pipe P1 R1).
@@ -92,17 +93,30 @@ spl2-prev 	: split wor2 (prev E) (pipe (pi2 C) R)
 			<- ({x : term} split wor1 x (pipe x ([_] x)) -> split wor1 (M x) (pipe (C2 x) ([l] R2 x l)))
 			<- split wor1 E (pipe C1 R1).}%
 spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 l1) ([x] R2 x l2))))
-			<- ({x : term} splitres x x -> split wor2 (M x) (pipe P2 ([l] R2 x l)))
+			<- ({x}{x2} splitres x x2 -> split wor2 (M x) (pipe P2 ([l] R2 x2 l)))
 			<- split wor2 E (pipe P1 R1).
 
 
-%block splitting-var1 : block {x:term}{x1:term}{x2:term} {dspl : splitval x x1 x2}.
-%block splitting-var2 : block {x:term} {dspl : splitres x x}.
+%block splitting-var1 : block {x:term lang0}{x1:term lang1}{x2:term lang2} {dspl : splitval x x1 x2}.
+%block splitting-var2 : block {x:term lang0}{x2:term lang2} {dspl : splitres x x2}.
 %block splitting-block = (splitting-var1 | splitting-var2).
 
 
-%%block any-splitres : some {E : term} block {dsplr : splitres E}.
+%block any-splitres : some {E : term lang0} {Q : term lang2} block {dsplr : splitres E Q}.
 
-%block any-splitting : 
-	some {W : wor} {E : term} {P : term} {R : term -> term}
-	block {dspl : split W E (pipe P R)}.
+%%block any-splitting : 	some {W : wor} {E : term} {P : term} {R : term -> term}	block {dspl : split W E (pipe P R)}.
+
+
+%% SPLITRES RESPECTS IDENTITY
+splitres-resp : splitres E Q -> eq-term E E' -> eq-term Q Q' -> splitres E' Q' -> type.
+%mode splitres-resp +Dspl +Deq1 +Deq2 -Dspl'.
+- : splitres-resp Dspl eq-term_ eq-term_ Dspl.
+%worlds (term-block | any-splitres) (splitres-resp _ _ _ _).
+%total (Deq) (splitres-resp _ Deq _ _).
+
+%% SPLITTING RESPECTS IDENTITY
+split-resp : split W E (pipe P R) -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E (pipe P' R') -> type.
+%mode split-resp +Dspl +Deq1 +Deq2 -Dspl'.
+- : split-resp Dspl eq-term_ ([l] eq-term_) Dspl.
+%worlds (term-block) (split-resp _ _ _ _).
+%total (Deq) (split-resp _ Deq _ _).

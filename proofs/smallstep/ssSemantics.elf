@@ -3,7 +3,7 @@
 
 
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
-not-variable : term -> type.
+not-variable : term L -> type.
 nv-ztup : not-variable ztup.
 nv-tup : not-variable (tup _ _).
 nv-pi1 : not-variable (pi1 _).
@@ -13,7 +13,7 @@ nv-app : not-variable (app _ _).
 nv-let : not-variable (let _ _).
 
 %% STANDARD COMPATABILITY CONTEXT
-compc : (term -> term) -> type.
+compc : (term L -> term L) -> type.
 cc-tup1 : compc ([x] tup x E).
 cc-tup2 : compc ([x] tup (exv E) x).
 cc-pi1 : compc pi1.
@@ -24,12 +24,12 @@ cc-let : compc ([x] let x M).
 %freeze compc.
 
 %% UNDER BINDER COMPATABILITY CONTEXT
-binder-compc : ((term -> term) -> term) -> type.
+binder-compc : ((term L -> term L) -> term L) -> type.
 bcc-lam : binder-compc lam.
 bcc-let : binder-compc (let E).
 
 %% MSTEPS
-mstep : wor -> term -> term -> type. %name mstep Dmstep.
+mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 
 %% DONE MARKING RULES
 ms-tup-d : mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
@@ -58,9 +58,9 @@ ms-let-s1	: mstep W (let E M) (let E' M)
 ms-lett-s1	: mstep W (lett E M) (lett E' M)
 			<- mstep W E E'.
 ms-lam-s	: mstep wor2 (lam M) (lam M')
-			<- {x:term} variable x -> mstep wor2 (M x) (M' x).
+			<- {x} variable x -> mstep wor2 (M x) (M' x).
 ms-let-s2	: mstep wor2 (let (exv E) M) (let (exv E) M')
-			<- {x:term} variable x -> mstep wor2 (M x) (M' x).
+			<- {x} variable x -> mstep wor2 (M x) (M' x).
 
 %{ms-compat	: mstep W (F E) (F E')
 			<- compc F
@@ -77,7 +77,7 @@ ms-let-r	: mstep wor1 (let (exv E) M) (M E).
 
 			
 %% SECOND-STAGE VARIABLE LIFT STEP
-lstep : term -> term -> (term -> term) -> type. %name lstep Dlstep.
+lstep : term L -> term L -> (term L -> term L) -> type. %name lstep Dlstep.
 ls-tup-s1	: lstep (tup E1 E2) Q ([x] tup (E1' x) E2)
 			<- lstep E1 Q E1'.
 ls-tup-s2	: lstep (tup (exv E1) E2) Q ([x] tup (exv E1) (E2' x))
@@ -100,7 +100,7 @@ ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
 %% STAGING FEATURES
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
-ls-next-r	: lstep (next (exv E)) E ([x:term] exv (next x))
+ls-next-r	: lstep (next (exv E)) E ([x] exv (next x))
 			<- not-variable E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.

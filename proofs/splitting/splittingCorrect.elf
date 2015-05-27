@@ -124,10 +124,10 @@ sc2 :  mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred P' _ -> split wor2 E
 	<- sc2 Dstep DsplB' DredB' DsplB DredB.
 - : sc2 (ms-prev-s Dstep) (spl2-prev Dspl') (mred-pi2 Dred') (spl2-prev Dspl) (mred-pi2 Dred)
 	<- sc1 Dstep Dspl' Dred' Dspl Dred.
-- : sc2 (ms-prev-ls Dstep) 
+%{- : sc2 (ms-prev-ls Dstep) 
 	(spl2-let (spl2-exv Dsplr) ([x][splx] spl2-prev (Dspl' x splx))) (mred-tup mred-ztup (mred-pi2 Dred')) 
 	(spl2-prev Dspl) (mred-pi2 Dred) 
-	<- lc Dstep Dspl' Dsplr Dred' Dspl Dred.
+	<- lc Dstep Dspl' Dsplr Dred' Dspl Dred.}%
 
 	%{
 spl1-ztup	: split wor1 ztup (pipe (tup ztup ztup) ([_] ztup)).

@@ -135,14 +135,6 @@ sep-2 : ({x : term} split W1 _ (pipe _ A) -> split W2 _ (pipe _ ([l] R x l))) ->
 %total (D1 D2) (sep-2 D1 _) (eq\splres D2 _).
 
 
-%% SPLITTING RESPECTS IDENTITY
-split-resp : split W E (pipe P R) -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E (pipe P' R') -> type.
-%mode split-resp +Dspl +Deq1 +Deq2 -Dspl'.
-- : split-resp Dspl eq-term_ ([l] eq-term_) Dspl.
-%worlds (any-splitting | term-block) (split-resp _ _ _ _).
-%total (Deq) (split-resp _ Deq _ _).
-
-
 %% SOME SORT OF SEPERATION PROPERTY
 separation : ({x : term}{x1 : term}{x2 : term}
 				split W1 x (pipe (VC x1) (VR x2)) -> split W2 (E x) (pipe (C x x1 x2) ([l] R l x x1 x2))) 
@@ -161,6 +153,14 @@ separation : ({x : term}{x1 : term}{x2 : term}
 %total (D) (separation D _).
 }%
 
+strengthen-splitres : ({x : term lang0} splitres x Q0 -> splitres (E x) (Q x)) -> ({x : term lang0} splitres x Q0 -> splitres (E x) Q') -> type.
+%mode strengthen-splitres +Dspl -Dspl'.
+- : strengthen-splitres ([x][s] Dsplr x s : splitres (E x) (Q x)) Dsplr'
+	<- lang-indep neq-lang_02 ([x] Q x) ([x] Deq x)
+	<- ({x}{s} splitres-resp (Dsplr x s) eq-term_ (Deq x) (Dsplr' x s)).
+%worlds (term-block | splitting-block) (strengthen-splitres _ _).
+%total (D) (strengthen-splitres D _).
+
 
 %% SPLITTING DEFINITIONS
 splv-total : of^ E A wor1 dot-d -> splitval E _ _ -> type.
@@ -170,12 +170,14 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 
 %% BLOCKS
 %block total-var1 : some {A : ty} block 
-	{x:term} {x1:term} {x2:term} {dof : of^ x A wor1 dot-d} 
+	{x:term lang0} {x1:term lang1} 
+	{x2:term lang2} {dof : of^ x A wor1 dot-d} 
 	{dspl : splitval x x1 x2}
 	{dtotv : splv-total dof dspl}.
 %block total-var2 : some {A : ty} block 
-	{x:term} {_ : variable x} {dof : of^ x A wor2 dot-d} 
-	{dsplr : splitres x x}
+	{x:term lang0} {x2:term lang2} 
+	{_ : variable x} {dof : of^ x A wor2 dot-d} 
+	{dsplr : splitres x x2}
 	{dtotr : splr-total dof dsplr}.
 %block total-block = (total-var1 | total-var2).
 
@@ -188,16 +190,18 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 	<- splr-total Dof Dsplr.
 - : splr-total (of^-pi2 Dof _) (splr-pi2 Dsplr)
 	<- splr-total Dof Dsplr.
-- : splr-total (of^-lam2 _ Dof) (splr-lam Dsplr)
-	<- {x} {varx} {dof} {dspl} splr-total dof dspl ->
-		splr-total (Dof x varx dof) (Dsplr x dspl).
+- : splr-total (of^-lam2 _ Dof) (splr-lam Dsplr')
+	<- ({x}{x2} {varx} {dof} {dspl : splitres x x2} splr-total dof dspl ->
+		splr-total (Dof x varx dof) (Dsplr x x2 dspl))
+	<- ({x2} strengthen-splitres ([x][dspl] Dsplr x x2 dspl) ([x][dspl] Dsplr' x x2 dspl)).
 - : splr-total (of^-app Dof1 Dof2 _) (splr-app Dsplr1 Dsplr2)
 	<- splr-total Dof1 Dsplr1
 	<- splr-total Dof2 Dsplr2.
-- : splr-total (of^-let DofE DofM) (splr-let DsplrE DsplrM)
+- : splr-total (of^-let DofE DofM) (splr-let DsplrE DsplrM')
 	<- splr-total DofE DsplrE
-	<- {x} {varx} {dof} {dspl} splr-total dof dspl ->
-		splr-total (DofM x varx dof) (DsplrM x dspl).
+	<- ({x}{x2} {varx} {dof} {dspl} splr-total dof dspl ->
+		splr-total (DofM x varx dof) (DsplrM x x2 dspl))
+	<- ({x2} strengthen-splitres ([x][dspl] DsplrM x x2 dspl) ([x][dspl] DsplrM' x x2 dspl)).
 %worlds (total-block) (splr-total _ _).
 %total (Dsplr) (splr-total Dsplr _).
 

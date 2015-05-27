@@ -1,7 +1,7 @@
 %{ monostage.elf }%
 
 %% VALUE
-val : term -> type. %name val Dval.
+val : term L -> type. %name val Dval.
 val-ztup	: val ztup.
 val-tup	: val (tup E1 E2)
 				<- val E2
@@ -10,7 +10,7 @@ val-lam	: val (lam _).
 
 
 %% STEP
-step : term -> term -> type.
+step : term L -> term L -> type.
 
 ss-tup-s1	: step (tup E1 E2) (tup E1' E2)
 			<- step E1 E1'.
@@ -69,7 +69,7 @@ pres : step E E' -> of E T -> of E' T -> type.
 %total (Dstep) (pres Dstep _ _).
 
 %% VALUE-OR-STEP JUDGEMENT
-vos : term -> type.
+vos : term L -> type.
 vos-val : val E -> vos E.
 vos-step : step E E' -> vos E.
 
