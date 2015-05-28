@@ -73,7 +73,7 @@ ms-bcompat	: mstep wor2 (F M) (F M')
 ms-pi1-r	: mstep wor1 (pi1 (exv (tup E1 E2))) (exv E1).
 ms-pi2-r	: mstep wor1 (pi2 (exv (tup E1 E2))) (exv E2).
 ms-app-r	: mstep wor1 (app (exv (lam M)) (exv E)) (M E).
-ms-let-r	: mstep wor1 (let (exv E) M) (M E).
+%{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%
 
 			
 %% SECOND-STAGE VARIABLE LIFT STEP
@@ -107,3 +107,6 @@ ms-prev-s	: mstep wor2 (prev E) (prev E')
 ms-prev-ls	: mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x)))
 			<- lstep E Q E'.
 ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv E).
+
+%freeze mstep.
+%freeze lstep.

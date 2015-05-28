@@ -74,7 +74,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-pi1-r ms-pi1-r eq-term_.
 - : step/unique ms-pi2-r ms-pi2-r eq-term_.
 - : step/unique ms-app-r ms-app-r eq-term_.
-- : step/unique ms-let-r ms-let-r eq-term_.
+%{- : step/unique ms-let-r ms-let-r eq-term_.}%
 - : step/unique ms-prev-r ms-prev-r eq-term_.
 - : step/unique ms-tup-d ms-tup-d eq-term_.
 - : step/unique ms-pi1-d ms-pi1-d eq-term_.

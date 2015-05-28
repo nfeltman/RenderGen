@@ -1,0 +1,20 @@
+
+
+%% SPLITTING IS UNIQUE
+splitres-unique : splitres E Q -> splitres E Q' -> eq-term Q Q' -> type.
+%mode splitres-unique +Dspl +Dspl' -DeqQ.
+- : splitres-unique _ _ eq-term_. 
+%worlds (splitting-block) (splitres-unique _ _ _).
+%total (D) (splitres-unique D _ _).
+
+splitval-unique : splitval E I Q -> splitval E I' Q' -> eq-term I I' -> eq-term Q Q' -> type.
+%mode splitval-unique +Dspl +Dspl' -DeqI -DeqQ.
+- : splitval-unique _ _ eq-term_ eq-term_. 
+%worlds (splitting-block) (splitval-unique _ _ _ _).
+%total (D) (splitval-unique D _ _ _).
+
+split-unique : split W E (pipe P R) -> split W E (pipe P' R') -> eq-term P P' -> ({x} eq-term (R x) (R' x)) -> type.
+%mode split-unique +Dspl +Dspl' -DeqP -DeqR.
+- : split-unique _ _ eq-term_ ([x] eq-term_). 
+%worlds (splitting-block) (split-unique _ _ _ _).
+%total (D) (split-unique D _ _ _).

@@ -3,10 +3,6 @@
 %% SPLITTING RESIDUALS, VALUES, AND TERMS
 splitres : term lang0 -> term lang2 -> type. %name splitres Dsplr.
 %mode splitres +Q -Q'.
-splitval : term lang0 -> term lang1 -> term lang2 -> type.
-%mode splitval +E -I -Q.
-split : wor -> term lang0 -> seperated -> type. %name split Dspl.
-%mode split +W +E -P.
 
 splr-ztup : splitres ztup ztup.
 splr-pi1 : splitres (pi1 E) (pi1 E')
@@ -24,6 +20,13 @@ splr-app : splitres (app E1 E2) (app E1' E2')
 splr-let : splitres (let E M) (let E' M')
 			<- ({x}{x2} splitres x x2 -> splitres (M x) (M' x2))
 			<- splitres E E'.
+
+%% SPLITTING RESIDUALS, VALUES, AND TERMS
+splitval : term lang0 -> term lang1 -> term lang2 -> type.
+%mode splitval +E -I -Q.
+split : wor -> term lang0 -> seperated -> type. %name split Dspl.
+%mode split +W +E -P.
+
 
 
 splv-ztup 	: splitval ztup ztup ztup.
@@ -50,8 +53,6 @@ spl1-pi1	: split wor1 (pi1 E) (pipe (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R
 			<- split wor1 E (pipe C R).
 spl1-pi2	: split wor1 (pi2 E) (pipe (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
 			<- split wor1 E (pipe C R).
-%{spl1-lam	: split wor1 (lam M) (pipe (tup (lam C) ztup) ([_] lam ([xl] lett xl R)))
-			<- {x}{x1}{x2} split wor1 x (pipe (tup x1 ztup) ([l] x2)) -> split wor1 (M x) (pipe (C x1) ([l:term] R x2 l)).}%
 spl1-app	: split wor1 (app E1 E2) 
 				(pipe
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
@@ -61,11 +62,6 @@ spl1-app	: split wor1 (app E1 E2)
 			<- split wor1 E1 (pipe C1 R1).
 spl1-next	: split wor1 (next E) (pipe (tup ztup P) R)
 			<- split wor2 E (pipe P R).
-%{split wor1-letn : split wor1 (letn E M) 
-				(lett C1 ([_] [z1] lett C2 ([y] [z2] tup y (tup z1 z2)))) 
-				([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
-			<- split wor1 E C1 R1
-			<- {x : term} split wor2 x ztup ([_] x) -> split wor1 (M x) C2 ([l] R2 x l).}%
 
 spl2-exv	: split wor2 (exv Q) (pipe ztup ([_] Q'))
 				<- splitres Q Q'.
@@ -100,6 +96,12 @@ spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 
 %block splitting-var1 : block {x:term lang0}{x1:term lang1}{x2:term lang2} {dspl : splitval x x1 x2}.
 %block splitting-var2 : block {x:term lang0}{x2:term lang2} {dspl : splitres x x2}.
 %block splitting-block = (splitting-var1 | splitting-var2).
+
+%worlds (splitting-block) (splitres _ _).
+%unique splitres +E -1Q.
+%worlds (splitting-block) (splitval _ _ _) (split _ _ _).
+%unique (splitval +E -1I -1Q) (split +W +E -1P).
+
 
 
 %block any-splitres : some {E : term lang0} {Q : term lang2} block {dsplr : splitres E Q}.
