@@ -79,7 +79,7 @@ prog/app : dos W E1 -> dos W E2 -> of^ E1 (arr T1 T2) W DT -> dos W (app E1 E2) 
 - : prog/app dos-done dos-done (of^-exv (of^-pi1 _ _)) (dos-mstep ms-app-d).
 %worlds (von-block) (prog/app _ _ _ _).
 %total (Ddos) (prog/app Ddos _ _ _).
-
+%{
 prog/let1 : dos wor1 E -> of^ (let E M) T wor1 _ -> dos wor1 (let E M) -> type.
 %mode prog/let1 +Ddos +Dof -Ddos'.
 - : prog/let1 (dos-mstep Dstep) _ (dos-mstep (ms-let-s1 Dstep)).
@@ -87,7 +87,7 @@ prog/let1 : dos wor1 E -> of^ (let E M) T wor1 _ -> dos wor1 (let E M) -> type.
 - : prog/let1 dos-done _ (dos-mstep ms-let-r).
 %worlds (von-block) (prog/let1 _ _ _).
 %total (Ddos) (prog/let1 Ddos _ _).
-
+}%
 prog/let2 : dos wor2 E -> ({x} variable x -> dos wor2 (M x)) -> dos wor2 (let E M) -> type.
 %mode prog/let2 +Ddos1 +Ddos2 -Ddos'.
 - : prog/let2 (dos-mstep Dstep) _ (dos-mstep (ms-let-s1 Dstep)).

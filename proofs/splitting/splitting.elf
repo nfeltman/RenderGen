@@ -119,8 +119,8 @@ splitres-resp : splitres E Q -> eq-term E E' -> eq-term Q Q' -> splitres E' Q' -
 %total (Deq) (splitres-resp _ Deq _ _).
 
 %% SPLITTING RESPECTS IDENTITY
-split-resp : split W E (pipe P R) -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E (pipe P' R') -> type.
-%mode split-resp +Dspl +Deq1 +Deq2 -Dspl'.
-- : split-resp Dspl eq-term_ ([l] eq-term_) Dspl.
-%worlds (term-block | any-split) (split-resp _ _ _ _).
-%total (Deq) (split-resp _ Deq _ _).
+split-resp : split W E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E' (pipe P' R') -> type.
+%mode split-resp +Dspl +Deq1 +Deq2 +Deq3 -Dspl'.
+- : split-resp Dspl eq-term_ eq-term_ ([l] eq-term_) Dspl.
+%worlds (term-block | any-split) (split-resp _ _ _ _ _).
+%total (Deq) (split-resp _ Deq _ _ _).

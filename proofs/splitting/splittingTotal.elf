@@ -18,9 +18,9 @@ strengthen-split2 :
 - : strengthen-split2 ([x][x2][s] Dsplr x x2 s : split wor2 (E x) (pipe (P x x2) (Q x x2))) Dsplr''
 	<- ({x2} lang-indep neq-lang_01 ([x] P x x2) ([x] DeqP x x2))
 	<- ({l}{x2} lang-indep neq-lang_02 ([x] Q x x2 l) ([x] DeqQ x x2 l))
-	<- ({x}{x2}{s} split-resp (Dsplr x x2 s) (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split wor2 (E x) (pipe (P' x2) _)))
+	<- ({x}{x2}{s} split-resp (Dsplr x x2 s) eq-term_ (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split wor2 (E x) (pipe (P' x2) _)))
 	<- lang-indep neq-lang_21 P' DeqP'
-	<- ({x}{x2}{s} split-resp (Dsplr' x x2 s) (DeqP' x2) ([l] eq-term_) (Dsplr'' x x2 s)).
+	<- ({x}{x2}{s} split-resp (Dsplr' x x2 s) eq-term_ (DeqP' x2) ([l] eq-term_) (Dsplr'' x x2 s)).
 %worlds (term-block | splitting-block) (strengthen-split2 _ _).
 %total (D) (strengthen-split2 D _).
 
@@ -31,10 +31,10 @@ strengthen-split1 :
 - : strengthen-split1 ([x][x1][x2][s] Dspl x x1 x2 s : split wor1 (E x) (pipe (P x x1 x2) (Q x x1 x2))) Dspl''
 	<- ({x1}{x2} lang-indep neq-lang_01 ([x] P x x1 x2) ([x] DeqP x x1 x2))
 	<- ({l}{x1}{x2} lang-indep neq-lang_02 ([x] Q x x1 x2 l) ([x] DeqQ x x1 x2 l))
-	<- ({x}{x1}{x2}{s} split-resp (Dspl x x1 x2 s) (DeqP x x1 x2) (DeqQ x x1 x2) (Dspl' x x1 x2 s : split wor1 (E x) (pipe (P' x1 x2) (Q' x1 x2))))
+	<- ({x}{x1}{x2}{s} split-resp (Dspl x x1 x2 s) eq-term_ (DeqP x x1 x2) (DeqQ x x1 x2) (Dspl' x x1 x2 s : split wor1 (E x) (pipe (P' x1 x2) (Q' x1 x2))))
 	<- ({x1} lang-indep neq-lang_21 ([x2] P' x1 x2) ([x2] DeqP' x1 x2))
 	<- ({l}{x2} lang-indep neq-lang_12 ([x1] Q' x1 x2 l) ([x1] DeqQ' x1 x2 l))
-	<- ({x}{x1}{x2}{s} split-resp (Dspl' x x1 x2 s) (DeqP' x1 x2) ([l] DeqQ' x1 x2 l) (Dspl'' x x1 x2 s)).
+	<- ({x}{x1}{x2}{s} split-resp (Dspl' x x1 x2 s) eq-term_ (DeqP' x1 x2) ([l] DeqQ' x1 x2 l) (Dspl'' x x1 x2 s)).
 %worlds (term-block | splitting-block) (strengthen-split1 _ _).
 %total (D) (strengthen-split1 D _).
 

@@ -43,8 +43,33 @@ split-eval-resp : split W E (pipe C _) -> split W E (pipe C' _) -> mred C V -> m
 %total {} (split-eval-resp _ _ _ _).
 
 
-%% LEMMAS
-sc1/app-r : of^ E A wor1 dot-t -> mstep wor1 E E' -> split wor1 E' (pipe C' _) -> mred C' (tup I _) -> split wor1 E (pipe C _) -> mred C (tup I _) -> type.
+%% LEMMAS FOR SPLITTING CORRECTNESS
+sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 dot-t -> 
+		split wor1 (M E) (pipe C' _) -> 
+		mred C' (tup I _) -> 
+		split wor1 (app (exv (lam M)) (exv E)) (pipe C _) -> 
+		mred C (tup I _) -> type.
+%mode sc1/app-r +Dof +Dspl' +Dred' -Dspl -Dred.
+
+- : sc1/app-r Dof Dspl Dred
+	(spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
+	(mred-lett 
+		(mred-lett 
+			(mred-lett 
+				(mred-tup DautoI (mred-tup (mred-tup mred-ztup mred-ztup) DautoB))
+				(mred-app Dred'' mred-lam DautoV)
+				)
+			(mred-tup DautoV mred-ztup)
+			)
+		(mred-tup mred-lam mred-ztup)
+		)
+	<- spl1-total Dof (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv (DsplV : splitval V Vi Vq)))
+	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred''
+	<- idem Dred (mred-tup DautoI DautoB)
+	<- val-to-val DsplV DvalV
+	<- val-auto DvalV DautoV.
+%worlds () (sc1/app-r _ _ _ _ _).
+%total (D) (sc1/app-r D _ _ _ _).
 
 
 %% SPLITTING CORRECTNESS
@@ -75,25 +100,10 @@ sc2 : of^ E A wor2 dot-t -> mstep wor2 E E' -> split wor2 E' (pipe P' _) -> mred
 	<- splv-total Dof1 Dspl1
 	<- val-to-val Dspl1 Dval1
 	<- val-auto Dval1 Didem1.
-- : sc1 Dof ms-app-r
-	Dspl Dred
-	(spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
-	(mred-lett 
-		(mred-lett 
-			(mred-lett 
-				(mred-tup DautoI (mred-tup (mred-tup mred-ztup mred-ztup) DautoB))
-				(mred-app Dred'' mred-lam DautoV)
-				)
-			(mred-tup DautoV mred-ztup)
-			)
-		(mred-tup mred-lam mred-ztup)
-		)
-	<- spl1-total Dof (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv (DsplV : splitval V Vi Vq)))
-	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred''
-	<- idem Dred (mred-tup DautoI DautoB)
-	<- val-to-val DsplV DvalV
-	<- val-auto DvalV DautoV.
-
+- : sc1 Dof (Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) Dspl' Dred' Dspl Dred
+	<- step/unique Dstep ms-app-r (Deq : eq-term V (M E))
+	<- split-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
+	<- sc1/app-r Dof Dspl'' Dred' Dspl Dred.
 
 %% STAGE ONE DONENESS MARKING
 - : sc1 _ ms-tup-d 
