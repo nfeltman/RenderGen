@@ -44,8 +44,6 @@ exv   : term L -> term L.
 %worlds (term-block) (term _).
 %freeze term.
 
-%block just-var : some {L : lang} block {x : term L}.
-
 %% HOLES
 lett-hole = ([x] lett x M).
 tup-hole-1 = ([x] tup x E).
@@ -61,44 +59,44 @@ eq-term_ : eq-term E E.
 %% FALSE YIELDS ANY EQUALITY
 false\eq-term : false -> {E} {E'} eq-term E E' -> type.
 %mode false\eq-term +E +E' +Dfalse -Deq.
-%worlds (just-var) (false\eq-term _ _ _ _).
+%worlds (term-block) (false\eq-term _ _ _ _).
 %total {} (false\eq-term _ _ _ _).
 
 %% TERM EQUALITY IS A CONGRUENCE
 eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 %mode eq-cong/lam +Deq -Deq'.
 - : eq-cong/lam ([x] eq-term_) eq-term_.
-%worlds (just-var) (eq-cong/lam _ _).
+%worlds (term-block) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
 
 eq-cong/1 : {F : (term L -> term L) -> term L} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
 %mode eq-cong/1 +F +Deq -Deq'.
 - : eq-cong/1 F ([x] eq-term_) eq-term_.
-%worlds (just-var) (eq-cong/1 _ _ _).
+%worlds (term-block) (eq-cong/1 _ _ _).
 %total {} (eq-cong/1 _ _ _).
 
 eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 E2) (let E1' E2') -> type.
 %mode eq-cong/let +Deq +E -Deq'.
 - : eq-cong/let eq-term_ _ eq-term_.
-%worlds (just-var) (eq-cong/let _ _ _).
+%worlds (term-block) (eq-cong/let _ _ _).
 %total {} (eq-cong/let _ _ _).
 
 eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
 %mode eq-cong/lett +Deq +E -Deq'.
 - : eq-cong/lett eq-term_ _ eq-term_.
-%worlds (just-var) (eq-cong/lett _ _ _).
+%worlds (term-block) (eq-cong/lett _ _ _).
 %total {} (eq-cong/lett _ _ _).
 
 eq-cong : {F : term L -> term L} eq-term E E' -> eq-term (F E) (F E') -> type.
 %mode eq-cong +F +Deq -Deq'.
 - : eq-cong _ eq-term_ eq-term_.
-%worlds (just-var) (eq-cong _ _ _).
+%worlds (term-block) (eq-cong _ _ _).
 %total {} (eq-cong _ _ _).
 
 eq-cong2 : {F : term L -> term L -> term L} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
 %mode eq-cong2 +F +Deq1 +De2 -Deq'.
 - : eq-cong2 _ eq-term_ eq-term_ eq-term_.
-%worlds (just-var) (eq-cong2 _ _ _ _).
+%worlds (term-block) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
 
 eq-cong/0/2 : {F : term L -> (term L -> term L -> term L) -> term L} 
@@ -107,7 +105,7 @@ eq-cong/0/2 : {F : term L -> (term L -> term L -> term L) -> term L}
   (eq-term (F E1 E2) (F E1' E2')) -> type.
 %mode eq-cong/0/2 +F +Deq1 +De2 -Deq'.
 - : eq-cong/0/2 _ eq-term_ ([x][y] eq-term_) eq-term_.
-%worlds (just-var) (eq-cong/0/2 _ _ _ _).
+%worlds (term-block) (eq-cong/0/2 _ _ _ _).
 %total {} (eq-cong/0/2 _ _ _ _).
 
 eq-cong/1/1 : {F : (term L -> term L) -> (term L -> term L) -> term L} 
@@ -116,7 +114,7 @@ eq-cong/1/1 : {F : (term L -> term L) -> (term L -> term L) -> term L}
   (eq-term (F E1 E2) (F E1' E2')) -> type.
 %mode eq-cong/1/1 +F +Deq1 +De2 -Deq'.
 - : eq-cong/1/1 _ ([x] eq-term_) ([y] eq-term_) eq-term_.
-%worlds (just-var) (eq-cong/1/1 _ _ _ _).
+%worlds (term-block) (eq-cong/1/1 _ _ _ _).
 %total {} (eq-cong/1/1 _ _ _ _).
 
 %% TERM EQUALITY IS WHATEVER THE OPPOSITE OF A CONGRUENCE IS
@@ -124,13 +122,13 @@ eq-cong/1/1 : {F : (term L -> term L) -> (term L -> term L) -> term L}
 eq-gnoc/tup : eq-term (tup E1 E2) (tup E1' E2') -> eq-term E1 E1' -> eq-term E2 E2' ->  type.
 %mode eq-gnoc/tup +Deq1 -De2 -Deq'.
 - : eq-gnoc/tup eq-term_ eq-term_ eq-term_.
-%worlds (just-var) (eq-gnoc/tup _ _ _).
+%worlds (term-block) (eq-gnoc/tup _ _ _).
 %total {} (eq-gnoc/tup _ _ _).
 
 eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x} eq-term (M x) (M' x)) -> type.
 %mode eq-gnoc/lam +Deq1 -Deq'.
 - : eq-gnoc/lam eq-term_ ([x] eq-term_).
-%worlds (just-var) (eq-gnoc/lam _ _).
+%worlds (term-block) (eq-gnoc/lam _ _).
 %total {} (eq-gnoc/lam _ _).
 
 
@@ -232,5 +230,5 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
   <- lang-indep Dneq E Deq
   <- {x} eq-cong exv (Deq x) (Deq' x).
 
-%worlds (just-var) (lang-indep _ _ _).
+%worlds (term-block) (lang-indep _ _ _).
 %total (D) (lang-indep _ D _).

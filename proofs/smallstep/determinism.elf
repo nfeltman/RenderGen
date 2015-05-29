@@ -1,5 +1,5 @@
 %%  USEFUL BLOCKS
-%block det-block : some {A : ty} {L :lang} block {x:term L} {dvar : variable x}.
+%block det-block = (term-block | vars-block).
 
 %% VARIABLE AND NOT VARIABLE ARE EXCLLUSIVE
 excl-var-notvar : variable E -> not-variable E -> false -> type.

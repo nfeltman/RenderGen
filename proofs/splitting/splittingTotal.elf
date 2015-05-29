@@ -51,8 +51,8 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 	{dspl : splitval x x1 x2}
 	{dtotv : splv-total dof dspl}.
 %block total-var2 : some {A : ty} block 
-	{x:term lang0} {x2:term lang2} 
-	{_ : variable x} {dof : of^ x A wor2 dot-d} 
+	{x:term lang0} {_ : variable x} {x2:term lang2} 
+	{dof : of^ x A wor2 dot-d} 
 	{dsplr : splitres x x2}
 	{dtotr : splr-total dof dsplr}.
 %block total-block = (total-var1 | total-var2).
@@ -67,7 +67,7 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 - : splr-total (of^-pi2 Dof _) (splr-pi2 Dsplr)
 	<- splr-total Dof Dsplr.
 - : splr-total (of^-lam2 _ Dof) (splr-lam Dsplr')
-	<- ({x}{x2} {varx} {dof} {dspl : splitres x x2} splr-total dof dspl ->
+	<- ({x}{varx} {x2} {dof} {dspl : splitres x x2} splr-total dof dspl ->
 		splr-total (Dof x varx dof) (Dsplr x x2 dspl))
 	<- ({x2} strengthen-splitres ([x][dspl] Dsplr x x2 dspl) ([x][dspl] Dsplr' x x2 dspl)).
 - : splr-total (of^-app Dof1 Dof2 _) (splr-app Dsplr1 Dsplr2)
@@ -75,7 +75,7 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 	<- splr-total Dof2 Dsplr2.
 - : splr-total (of^-let DofE DofM) (splr-let DsplrE DsplrM')
 	<- splr-total DofE DsplrE
-	<- ({x}{x2} {varx} {dof} {dspl} splr-total dof dspl ->
+	<- ({x}{varx} {x2} {dof} {dspl} splr-total dof dspl ->
 		splr-total (DofM x varx dof) (DsplrM x x2 dspl))
 	<- ({x2} strengthen-splitres ([x][dspl] DsplrM x x2 dspl) ([x][dspl] DsplrM' x x2 dspl)).
 %worlds (total-block) (splr-total _ _).
@@ -118,7 +118,7 @@ spl2-total : of^ E A wor2 dot-t -> split wor2 E _ -> type.
 - : spl2-total (of^-pi2 Dof _) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dspl.
 - : spl2-total (of^-lam2 Dwf Dof) (spl2-lam Dspl')
-	<- ({x}{x2} {varx} {ofx} {dspl : splitres x x2}
+	<- ({x}{varx} {x2} {ofx} {dspl : splitres x x2}
 		splr-total ofx dspl -> spl2-total (Dof x varx ofx) (Dspl x x2 dspl))
 	<- strengthen-split2 Dspl Dspl'.
 - : spl1-total (of^-app Dof1 Dof2 _) (spl1-app Dspl1 Dspl2)
@@ -129,7 +129,7 @@ spl2-total : of^ E A wor2 dot-t -> split wor2 E _ -> type.
 	<- spl2-total Dof2 Dspl2.
 - : spl2-total (of^-let DofE DofM) (spl2-let DsplrE DsplM')
 	<- spl2-total DofE DsplrE
-	<- ({x}{x2} {varx} {ofx} {dspl : splitres x x2}
+	<- ({x}{varx} {x2} {ofx} {dspl : splitres x x2}
 		splr-total ofx dspl -> spl2-total (DofM x varx ofx) (DsplM x x2 dspl))
 	<- strengthen-split2 DsplM DsplM'.
 - : spl1-total (of^-next-t Dof) (spl1-next Dspl)

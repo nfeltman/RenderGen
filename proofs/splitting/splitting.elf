@@ -22,7 +22,7 @@ splr-let : splitres (let E M) (let E' M')
 			<- splitres E E'.
 
 %% SPLITTING RESIDUALS, VALUES, AND TERMS
-splitval : term lang0 -> term lang1 -> term lang2 -> type.
+splitval : term lang0 -> term lang1 -> term lang2 -> type. %name splitval Dsplv.
 %mode splitval +E -I -Q.
 split : wor -> term lang0 -> seperated -> type. %name split Dspl.
 %mode split +W +E -P.

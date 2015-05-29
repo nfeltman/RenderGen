@@ -19,8 +19,8 @@ ty^wf-fut	: ty^wf (fut A) wor1
 
 %% A TERM IS A VARIABLE (used for doneness of nexts)
 variable : term L -> type.
-%block vars-block2 : some {L : lang} block {x : term L} {_ : variable x}.
-%worlds (term-block | vars-block2) (variable _).
+%block vars-block : some {L : lang} block {x : term L} {_ : variable x}.
+%worlds (term-block | vars-block) (variable _).
 
 %% DONE OR SERIES EXPRESSION (TERM)
 dot : type.
