@@ -62,6 +62,18 @@ false\eq-term : false -> {E} {E'} eq-term E E' -> type.
 %worlds (term-block) (false\eq-term _ _ _ _).
 %total {} (false\eq-term _ _ _ _).
 
+eq-term-sym : eq-term A B -> eq-term B A -> type.
+%mode eq-term-sym +D1 -D2.
+- : eq-term-sym eq-term_ eq-term_.
+%worlds (term-block) (eq-term-sym _ _).
+%total {} (eq-term-sym _ _).
+
+eq-term-trans : eq-term A B -> eq-term B C -> eq-term A C -> type.
+%mode eq-term-trans +D1 +D2 -D3.
+- : eq-term-trans eq-term_ eq-term_ eq-term_.
+%worlds (term-block) (eq-term-trans _ _ _).
+%total {} (eq-term-trans _ _ _).
+
 %% TERM EQUALITY IS A CONGRUENCE
 eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 %mode eq-cong/lam +Deq -Deq'.
