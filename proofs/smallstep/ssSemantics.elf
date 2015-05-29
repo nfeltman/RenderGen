@@ -110,3 +110,9 @@ ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv E).
 
 %freeze mstep.
 %freeze lstep.
+
+%% PATHS
+
+mstep* : term L -> term L -> wor -> type.
+mstep*-id : mstep* E E W.
+mstep*-step : mstep W E1 E2 -> mstep* E2 E3 W -> mstep* E1 E3 W.

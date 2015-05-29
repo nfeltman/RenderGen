@@ -1,0 +1,32 @@
+
+
+end-to-end-correct-1 : 
+	of^ E A wor1 dot-t -> 
+	mstep* E (exv V) wor1 -> 
+	split wor1 E (pipe C _) -> 
+	mred C (tup I _) -> 
+	splitval V I _ -> type.
+%mode end-to-end-correct-1 +Dof +Dpath -Dspl -Dred' -Dsplv.
+
+- : end-to-end-correct-1 
+		(of^-exv Dof)
+		mstep*-id
+		(spl1-exv Dsplv)
+		(mred-tup Dauto mred-ztup)
+		Dsplv
+	<- splv-total Dof Dsplv
+	<- val-to-val Dsplv Dval
+	<- val-auto Dval Dauto.
+
+- : end-to-end-correct-1 
+		Dof
+		(mstep*-step Dstep Dpath)
+		Dspl
+		Dred
+		Dsplv
+	<- mstep-pres Dstep Dof Dof'
+	<- end-to-end-correct-1 Dof' Dpath Dspl' Dred' Dsplv
+	<- sc1 Dof Dspl' Dred' Dstep Dspl Dred.
+
+%worlds () (end-to-end-correct-1 _ _ _ _ _).
+%total (D) (end-to-end-correct-1 _ D _ _ _).
