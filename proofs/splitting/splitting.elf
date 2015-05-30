@@ -24,9 +24,10 @@ splr-let : splitres (let E M) (let E' M')
 %% SPLITTING RESIDUALS, VALUES, AND TERMS
 splitval : term lang0 -> term lang1 -> term lang2 -> type. %name splitval Dsplv.
 %mode splitval +E -I -Q.
-split : wor -> term lang0 -> seperated -> type. %name split Dspl.
-%mode split +W +E -P.
-
+split1 : term lang0 -> seperated -> type. %name split1 Dspl.
+%mode split1 +E -P.
+split2 : term lang0 -> seperated -> type. %name split2 Dspl.
+%mode split2 +E -P.
 
 
 splv-ztup 	: splitval ztup ztup ztup.
@@ -36,61 +37,61 @@ splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E2 I2 Q2
 			<- splitval E1 I1 Q1.
 splv-lam	: splitval (lam M) (lam C) (lam ([xl] lett xl R))
-			<- {x}{x1}{x2} splitval x x1 x2 -> split wor1 (M x) (pipe (C x1) ([l] R x2 l)). 
+			<- {x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (pipe (C x1) ([l] R x2 l)). 
 
 
-spl1-exv	: split wor1 (exv V) (pipe (tup I ztup) ([_] Q))
+spl1-exv	: split1 (exv V) (pipe (tup I ztup) ([_] Q))
 			<- splitval V I Q.
-%{spl1-ztup	: split wor1 ztup (pipe (tup ztup ztup) ([_] ztup)).}%
-spl1-tup	: split wor1 (tup E1 E2) 
+%{spl1-ztup	: split1 ztup (pipe (tup ztup ztup) ([_] ztup)).}%
+spl1-tup	: split1 (tup E1 E2) 
 				(pipe 
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
 					([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
 				)
-			<- split wor1 E2 (pipe C2 R2)
-			<- split wor1 E1 (pipe C1 R1).
-spl1-pi1	: split wor1 (pi1 E) (pipe (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l)))
-			<- split wor1 E (pipe C R).
-spl1-pi2	: split wor1 (pi2 E) (pipe (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
-			<- split wor1 E (pipe C R).
-spl1-app	: split wor1 (app E1 E2) 
+			<- split1 E2 (pipe C2 R2)
+			<- split1 E1 (pipe C1 R1).
+spl1-pi1	: split1 (pi1 E) (pipe (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l)))
+			<- split1 E (pipe C R).
+spl1-pi2	: split1 (pi2 E) (pipe (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l)))
+			<- split1 E (pipe C R).
+spl1-app	: split1 (app E1 E2) 
 				(pipe
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app y1 y2) ([y3] [z3] tup (y3) (tup (tup z1 z2) z3)))))
 					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
 				)
-			<- split wor1 E2 (pipe C2 R2)
-			<- split wor1 E1 (pipe C1 R1).
-spl1-next	: split wor1 (next E) (pipe (tup ztup P) R)
-			<- split wor2 E (pipe P R).
+			<- split1 E2 (pipe C2 R2)
+			<- split1 E1 (pipe C1 R1).
+spl1-next	: split1 (next E) (pipe (tup ztup P) R)
+			<- split2 E (pipe P R).
 
-spl2-exv	: split wor2 (exv Q) (pipe ztup ([_] Q'))
+spl2-exv	: split2 (exv Q) (pipe ztup ([_] Q'))
 				<- splitres Q Q'.
-spl2-ztup	: split wor2 ztup (pipe ztup ([_] ztup)). 
-spl2-tup	: split wor2 (tup E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2))))
-			<- split wor2 E2 (pipe P2 R2)
-			<- split wor2 E1 (pipe P1 R1).
-spl2-pi1	: split wor2 (pi1 E) (pipe P ([l] pi1 (R l)))
-			<- split wor2 E (pipe P R).
-spl2-pi2	: split wor2 (pi2 E) (pipe P ([l] pi2 (R l)))
-			<- split wor2 E (pipe P R).
-spl2-lam	: split wor2 (lam M) (pipe P ([l] lam ([x] R x l)))
-			<- {x}{x2} splitres x x2 -> split wor2 (M x) (pipe P ([l] R x2 l)).
-spl2-app	: split wor2 (app E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2))))
-			<- split wor2 E2 (pipe P2 R2)
-			<- split wor2 E1 (pipe P1 R1).
-spl2-prev 	: split wor2 (prev E) (pipe (pi2 C) R)
-			<- split wor1 E (pipe C R).
+spl2-ztup	: split2 ztup (pipe ztup ([_] ztup)). 
+spl2-tup	: split2 (tup E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2))))
+			<- split2 E2 (pipe P2 R2)
+			<- split2 E1 (pipe P1 R1).
+spl2-pi1	: split2 (pi1 E) (pipe P ([l] pi1 (R l)))
+			<- split2 E (pipe P R).
+spl2-pi2	: split2 (pi2 E) (pipe P ([l] pi2 (R l)))
+			<- split2 E (pipe P R).
+spl2-lam	: split2 (lam M) (pipe P ([l] lam ([x] R x l)))
+			<- {x}{x2} splitres x x2 -> split2 (M x) (pipe P ([l] R x2 l)).
+spl2-app	: split2 (app E1 E2) (pipe (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2))))
+			<- split2 E2 (pipe P2 R2)
+			<- split2 E1 (pipe P1 R1).
+spl2-prev 	: split2 (prev E) (pipe (pi2 C) R)
+			<- split1 E (pipe C R).
 
-%{spl1-let	: split wor1 (let E M) 
+%{spl1-let	: split1 (let E M) 
 				(pipe
 					(lett C1 ([x] [z1] lett (C2 x) ([y] [z2] tup y (tup z1 z2)))) 
 					([l] lett l ([l1] [l2] let (R1 l1) ([x] R2 x l2)))
 				)
-			<- ({x : term} split wor1 x (pipe x ([_] x)) -> split wor1 (M x) (pipe (C2 x) ([l] R2 x l)))
-			<- split wor1 E (pipe C1 R1).}%
-spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 l1) ([x] R2 x l2))))
-			<- ({x}{x2} splitres x x2 -> split wor2 (M x) (pipe P2 ([l] R2 x2 l)))
-			<- split wor2 E (pipe P1 R1).
+			<- ({x : term} split1 x (pipe x ([_] x)) -> split1 (M x) (pipe (C2 x) ([l] R2 x l)))
+			<- split1 E (pipe C1 R1).}%
+spl2-let	: split2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 l1) ([x] R2 x l2))))
+			<- ({x}{x2} splitres x x2 -> split2 (M x) (pipe P2 ([l] R2 x2 l)))
+			<- split2 E (pipe P1 R1).
 
 
 %block splitting-var1 : block {x:term lang0}{x1:term lang1}{x2:term lang2} {dspl : splitval x x1 x2}.
@@ -99,8 +100,8 @@ spl2-let	: split wor2 (let E M) (pipe (tup P1 P2) ([l] lett l ([l1][l2] let (R1 
 
 %worlds (splitting-block) (splitres _ _).
 %unique splitres +E -1Q.
-%worlds (splitting-block) (splitval _ _ _) (split _ _ _).
-%unique (splitval +E -1I -1Q) (split +W +E -1P).
+%worlds (splitting-block) (splitval _ _ _) (split1 _ _) (split2 _ _).
+%unique (splitval +E -1I -1Q) (split1 +E -1P) (split2 +E -1P).
 
 
 
@@ -119,8 +120,40 @@ splitres-resp : splitres E Q -> eq-term E E' -> eq-term Q Q' -> splitres E' Q' -
 %total (Deq) (splitres-resp _ Deq _ _).
 
 %% SPLITTING RESPECTS IDENTITY
-split-resp : split W E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split W E' (pipe P' R') -> type.
-%mode split-resp +Dspl +Deq1 +Deq2 +Deq3 -Dspl'.
-- : split-resp Dspl eq-term_ eq-term_ ([l] eq-term_) Dspl.
-%worlds (term-block | any-split) (split-resp _ _ _ _ _).
-%total (Deq) (split-resp _ Deq _ _ _).
+split1-resp : split1 E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split1 E' (pipe P' R') -> type.
+%mode split1-resp +Dspl +Deq1 +Deq2 +Deq3 -Dspl'.
+- : split1-resp Dspl eq-term_ eq-term_ ([l] eq-term_) Dspl.
+%worlds (term-block | any-split) (split1-resp _ _ _ _ _).
+%total (Deq) (split1-resp _ Deq _ _ _).
+
+split2-resp : split2 E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split2 E' (pipe P' R') -> type.
+%mode split2-resp +Dspl +Deq1 +Deq2 +Deq3 -Dspl'.
+- : split2-resp Dspl eq-term_ eq-term_ ([l] eq-term_) Dspl.
+%worlds (term-block | any-split) (split2-resp _ _ _ _ _).
+%total (Deq) (split2-resp _ Deq _ _ _).
+
+
+%% SPLITTING IS UNIQUE
+splitres-unique : splitres E Q -> splitres E Q' -> eq-term Q Q' -> type.
+%mode splitres-unique +Dspl +Dspl' -DeqQ.
+- : splitres-unique _ _ eq-term_. 
+%worlds (splitting-block) (splitres-unique _ _ _).
+%total (D) (splitres-unique D _ _).
+
+splitval-unique : splitval E I Q -> splitval E I' Q' -> eq-term I I' -> eq-term Q Q' -> type.
+%mode splitval-unique +Dspl +Dspl' -DeqI -DeqQ.
+- : splitval-unique _ _ eq-term_ eq-term_. 
+%worlds (splitting-block) (splitval-unique _ _ _ _).
+%total (D) (splitval-unique D _ _ _).
+
+split1-unique : split1 E (pipe P R) -> split1 E (pipe P' R') -> eq-term P P' -> ({x} eq-term (R x) (R' x)) -> type.
+%mode split1-unique +Dspl +Dspl' -DeqP -DeqR.
+- : split1-unique _ _ eq-term_ ([x] eq-term_). 
+%worlds (splitting-block) (split1-unique _ _ _ _).
+%total (D) (split1-unique D _ _ _).
+
+split2-unique : split2 E (pipe P R) -> split2 E (pipe P' R') -> eq-term P P' -> ({x} eq-term (R x) (R' x)) -> type.
+%mode split2-unique +Dspl +Dspl' -DeqP -DeqR.
+- : split2-unique _ _ eq-term_ ([x] eq-term_). 
+%worlds (splitting-block) (split2-unique _ _ _ _).
+%total (D) (split2-unique D _ _ _).
