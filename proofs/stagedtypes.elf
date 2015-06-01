@@ -1,4 +1,10 @@
 
+%% WORLDS
+wor : type. %name wor W.
+wor1 : wor.
+wor2 : wor.
+worG : wor.
+
 %% TYPE WELL-FORMED
 ty^wf : ty -> wor -> type.
 %mode ty^wf +T +W.

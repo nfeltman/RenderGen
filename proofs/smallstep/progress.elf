@@ -42,7 +42,8 @@ prog/pi1 : dos W E -> of^ E (prod T1 T2) W DT -> dos W (pi1 E) -> type.
 %mode prog/pi1 +Ddos +Dof -Ddos'.
 - : prog/pi1 (dos-mstep Dstep) _ (dos-mstep (ms-pi1-s Dstep)).
 - : prog/pi1 (dos-lstep Dstep) _ (dos-lstep (ls-pi1-s Dstep)).
-- : prog/pi1 dos-done (of^-exv _) (dos-mstep ms-pi1-r).
+- : prog/pi1 dos-done (of^-exv _) (dos-mstep (ms-pi1-r fsw-wor1)).
+- : prog/pi1 dos-done (of^-exv _) (dos-mstep (ms-pi1-r fsw-worG)).
 - : prog/pi1 dos-done (of^-exv _) (dos-mstep ms-pi1-d).
 %% following case can't fire, just here to get coverage checker to behave
 - : prog/pi1 dos-done (of^-exv (of^-pi1 _ _)) (dos-mstep ms-pi1-d).
@@ -53,7 +54,8 @@ prog/pi2 : dos W E -> of^ E (prod T1 T2) W DT -> dos W (pi2 E) -> type.
 %mode prog/pi2 +Ddos +Dof -Ddos'.
 - : prog/pi2 (dos-mstep Dstep) _ (dos-mstep (ms-pi2-s Dstep)).
 - : prog/pi2 (dos-lstep Dstep) _ (dos-lstep (ls-pi2-s Dstep)).
-- : prog/pi2 dos-done (of^-exv _) (dos-mstep ms-pi2-r).
+- : prog/pi2 dos-done (of^-exv _) (dos-mstep (ms-pi2-r fsw-wor1)).
+- : prog/pi2 dos-done (of^-exv _) (dos-mstep (ms-pi2-r fsw-worG)).
 - : prog/pi2 dos-done (of^-exv _) (dos-mstep ms-pi2-d).
 %% following case can't fire, just here to get coverage checker to behave
 - : prog/pi2 dos-done (of^-exv (of^-pi1 _ _)) (dos-mstep ms-pi2-d).
@@ -73,7 +75,8 @@ prog/app : dos W E1 -> dos W E2 -> of^ E1 (arr T1 T2) W DT -> dos W (app E1 E2) 
 - : prog/app (dos-lstep Dstep) _ _ (dos-lstep (ls-app-s1 Dstep)).
 - : prog/app dos-done (dos-mstep Dstep) _ (dos-mstep (ms-app-s2 Dstep)).
 - : prog/app dos-done (dos-lstep Dstep) _ (dos-lstep (ls-app-s2 Dstep)).
-- : prog/app dos-done dos-done _ (dos-mstep ms-app-r).
+- : prog/app dos-done dos-done _ (dos-mstep (ms-app-r fsw-wor1)).
+- : prog/app dos-done dos-done _ (dos-mstep (ms-app-r fsw-worG)).
 - : prog/app dos-done dos-done _ (dos-mstep ms-app-d).
 %% following case can't fire, just here to get coverage checker to behave
 - : prog/app dos-done dos-done (of^-exv (of^-pi1 _ _)) (dos-mstep ms-app-d).

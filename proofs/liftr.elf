@@ -1,11 +1,5 @@
 %{ liftr.elf }%
 
-%% WORLDS
-wor : type. %name wor W.
-wor1 : wor.
-wor2 : wor.
-%%worM : wor.
-
 %% TYPES
 ty : type. %name ty T.
 unit	: ty.

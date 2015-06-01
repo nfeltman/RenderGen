@@ -151,7 +151,7 @@ sc2 : of^ E A wor2 dot-t -> split2 E' (pipe P' _) -> mred P' _ -> mstep wor2 E E
 
 - : sc1 (of^-pi1 (of^-exv (of^-tup _ Dof2)) _) 
 	(spl1-exv Dspl1) (mred-tup Dred1 mred-ztup)
-	ms-pi1-r
+	(ms-pi1-r _)
 	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
 		(mred-tup (mred-pi1 (mred-tup Didem1 Didem2)) mred-ztup) 
@@ -162,7 +162,7 @@ sc2 : of^ E A wor2 dot-t -> split2 E' (pipe P' _) -> mred P' _ -> mstep wor2 E E
 	<- val-auto Dval2 Didem2.
 - : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _)) _)
 	(spl1-exv Dspl2) (mred-tup Dred2 mred-ztup)
-	ms-pi2-r
+	(ms-pi2-r _)
 	(spl1-pi2 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
 		(mred-tup (mred-pi2 (mred-tup Didem1 Didem2)) mred-ztup) 
@@ -172,7 +172,7 @@ sc2 : of^ E A wor2 dot-t -> split2 E' (pipe P' _) -> mred P' _ -> mstep wor2 E E
 	<- val-to-val Dspl1 Dval1
 	<- val-auto Dval1 Didem1.
 - : sc1 Dof Dspl' Dred' (Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) Dspl Dred
-	<- step/unique Dstep ms-app-r (Deq : eq-term V (M E))
+	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M E))
 	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
 	<- sc1/app-r Dof Dspl'' Dred' Dspl Dred.
 - : sc2 Dof 

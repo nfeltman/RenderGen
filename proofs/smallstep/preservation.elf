@@ -58,9 +58,9 @@ mstep-pres : mstep W E E' -> of^ E T W dot-t -> of^ E' T W dot-t -> type.
 - : mstep-pres (ms-next-d Dvar) (of^-next-t (of^-exv Dof)) (of^-exv (of^-next-d Dof Dvar)).
 
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
-- : mstep-pres ms-pi1-r (of^-pi1 (of^-exv (of^-tup Dof _)) _) (of^-exv Dof).
-- : mstep-pres ms-pi2-r (of^-pi2 (of^-exv (of^-tup _ Dof)) _) (of^-exv Dof).
-- : mstep-pres ms-app-r (of^-app (of^-exv (of^-lam1 _ DofM)) (of^-exv DofE) _) (DofM E DofE).
+- : mstep-pres (ms-pi1-r W) (of^-pi1 (of^-exv (of^-tup Dof _)) _) (of^-exv Dof).
+- : mstep-pres (ms-pi2-r W) (of^-pi2 (of^-exv (of^-tup _ Dof)) _) (of^-exv Dof).
+- : mstep-pres (ms-app-r W) (of^-app (of^-exv (of^-lam1 _ DofM)) (of^-exv DofE) _) (DofM E DofE).
 %%- : mstep-pres (ms-let-r _) (of^-let DofM DofE) (DofM E DofE).
 
 
