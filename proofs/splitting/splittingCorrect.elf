@@ -1,9 +1,21 @@
 
+%% GROUND VALUE SPLITTING PRODUCES VALUES
+gval-to-val : splitGv E I -> val I -> type.
+%mode gval-to-val +Dsplv -Dval.
+- : gval-to-val splgv-ztup val-ztup.
+- : gval-to-val (splgv-tup Dsplv1 Dsplv2) (val-tup Dval1 Dval2)
+	<- gval-to-val Dsplv1 Dval1
+	<- gval-to-val Dsplv2 Dval2.
+- : gval-to-val (splgv-lam _) val-lam.
+%worlds (term-block | any-splitres) (gval-to-val _ _).
+%total (D) (gval-to-val D _).
 
 %% VALUE SPLITTING PRODUCES VALUES
 val-to-val : splitval E I Q -> val I -> type.
 %mode val-to-val +Dsplv -Dval.
 - : val-to-val splv-ztup val-ztup.
+- : val-to-val (splv-grnd Dsplgv) Dval
+	<- gval-to-val Dsplgv Dval.
 - : val-to-val (splv-next _) val-ztup.
 - : val-to-val (splv-tup Dsplv1 Dsplv2) (val-tup Dval1 Dval2)
 	<- val-to-val Dsplv1 Dval1
@@ -16,6 +28,16 @@ val-to-val : splitval E I Q -> val I -> type.
 	some {A : ty}
 	block {x : term lang0} {vx : variable x} {x2:term lang2} 
 	{ofx : of^ x A wor2 dot-d} {splx:splitres x x2} {_ : splr-total ofx splx}.
+
+
+%% GROUND SPLITTING CORRECTNESS
+scG : of^ E A worG dot-t -> splitG E' I' -> mred I' V -> mstep wor1 E E' -> splitG E I -> mred I V -> type.
+%mode scG +Dof +Dstep +Dspl' +Dred' -Dspl -Dred.
+
+
+
+%worlds (correctness-block) (scG _ _ _ _ _ _).
+%total (D) (scG _ _ _ D _ _).
 
 %% LIFTING CORRECTNESS
 lc : split1 E (pipe C R) -> 

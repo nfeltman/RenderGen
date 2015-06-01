@@ -124,6 +124,13 @@ prog/prev : dos wor1 E -> of^ E (fut T) wor1 _ -> dos wor2 (prev E) -> type.
 %worlds (von-block) (prog/prev _ _ _).
 %total (Ddos) (prog/prev Ddos _ _).
 
+prog/grnd : dos worG E -> dos wor1 (grnd E) -> type.
+%mode prog/grnd +Ddos -Ddos'.
+- : prog/grnd (dos-mstep Dstep) (dos-mstep (ms-grnd-s Dstep)).
+- : prog/grnd dos-done (dos-mstep ms-grnd-d).
+%worlds (von-block) (prog/grnd _ _).
+%total {} (prog/grnd _ _).
+
 %% PROGRESS
 prog : of^ E T W dot-t -> dos W E -> type.
 %mode prog +Dof -Ddos.
@@ -160,5 +167,8 @@ prog : of^ E T W dot-t -> dos W E -> type.
 - : prog (of^-prev Dof) Ddos'
 	<- prog Dof Ddos
 	<- prog/prev Ddos Dof Ddos'.
+- : prog (of^-grnd Dof) Ddos'
+	<- prog Dof Ddos
+	<- prog/grnd Ddos Ddos'.
 %worlds (von-block) (prog _ _).
 %total (Ddos) (prog Ddos _).

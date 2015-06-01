@@ -73,6 +73,9 @@ mstep-pres : mstep W E E' -> of^ E T W dot-t -> of^ E' T W dot-t -> type.
 - : mstep-pres (ms-prev-ls Dstep) (of^-prev Dof) (of^-let (of^-exv DofQ) ([x][vx][dof] of^-prev (Dof' x vx dof)))
 	<- lpres Dstep Dof DofQ Dof'.
 - : mstep-pres ms-prev-r (of^-prev (of^-exv (of^-next-d Dof _))) (of^-exv Dof).
+- : mstep-pres (ms-grnd-s Dstep) (of^-grnd Dof) (of^-grnd Dof')
+	<- mstep-pres Dstep Dof Dof'.
+- : mstep-pres ms-grnd-d (of^-grnd (of^-exv Dof)) (of^-exv (of^-grnd Dof)).
 
 %worlds (pres-block) (mstep-pres _ _ _).
 %total (Dstep) (mstep-pres Dstep _ _).

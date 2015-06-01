@@ -83,6 +83,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-app-d ms-app-d eq-term_.
 - : step/unique ms-let-d ms-let-d eq-term_.
 - : step/unique (ms-next-d _) (ms-next-d _) eq-term_.
+- : step/unique ms-grnd-d ms-grnd-d eq-term_.
 %% SUBSTEP RECURSIVE CASES
 - : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
@@ -127,6 +128,9 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 	<- eq-cong exv DeqQ DeqQ'
 	<- ({x} eq-cong prev (DeqE x) (DeqE' x))
 	<- eq-cong/let DeqQ' DeqE' Deq.
+- : step/unique (ms-grnd-s Dstep1) (ms-grnd-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong grnd Deq Deq'.
 %% CONTRADICTION CASES
 - : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
 	<- excl-mstep-lstep Dstep' Dstep Dfalse

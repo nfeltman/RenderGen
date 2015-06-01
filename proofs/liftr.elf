@@ -30,7 +30,7 @@ lett  : term L -> (term L -> term L -> term L) -> term L.
 next  : term L -> term L.
 %{letn  : term L -> (term L -> term L) -> term L.}%
 prev  : term L -> term L.
-%{mono  : term L -> term L.}%
+grnd  : term L -> term L.
 %{letm  : term L -> (term L -> term L) -> term L.}%
 exv   : term L -> term L.
 
@@ -235,6 +235,9 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 - : lang-indep Dneq ([x] exv (E x)) Deq'
   <- lang-indep Dneq E Deq
   <- {x} eq-cong exv (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] grnd (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong grnd (Deq x) (Deq' x).
 
 %worlds (term-block) (lang-indep _ _ _).
 %total (D) (lang-indep _ D _).

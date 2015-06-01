@@ -17,8 +17,8 @@ ty^wf-arr	: ty^wf (arr A B) W
 				<- ty^wf A W.
 ty^wf-fut	: ty^wf (fut A) wor1
 				<- ty^wf A wor2.
-%{ty^wf-curr	: ty^wf (curr T) wor1
-				<- ty^wf T worM.}%
+ty^wf-curr	: ty^wf (curr T) wor1
+				<- ty^wf T worG.
 %worlds () (ty^wf _ _).
 
 
@@ -80,9 +80,9 @@ of^-next-d	: of^ (next E) (fut A) wor1 dot-d
 				<- ({x:term} of^ x A wor2 -> of^ (M x) B wor1).}% 
 of^-prev	: of^ (prev E) A wor2 dot-t
 				<- of^ E (fut A) wor1 dot-t.
-%{of^-mono : of^ (mono E) (curr T) wor1
-				<- of^ E T worM.
-of^-letm : of^ (letm E M) T2 wor1
+of^-grnd 	: of^ (grnd E) (curr T) wor1 DT
+				<- of^ E T worG DT.
+%{of^-letm 	: of^ (letm E M) T2 wor1
 				<- of^ E (curr T1) wor1
 				<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
 
@@ -122,9 +122,9 @@ of^-wf : of^ E T W _ -> ty^wf T W -> type.
 	<- of^-wf Dof (ty^wf-fut Dwf).
 - : of^-wf (of^-exv Dof) Dwf
 	<- of^-wf Dof Dwf.
-%{- : of^-wf (of^-mono Dof) (ty^wf-curr Dwf)
+- : of^-wf (of^-grnd Dof) (ty^wf-curr Dwf)
 	<- of^-wf Dof Dwf.
-- : of^-wf (of^-letm DofM DofE) DwfM
+%{- : of^-wf (of^-letm DofM DofE) DwfM
 	<- of^-wf DofE (ty^wf-curr DwfE)
 	<- ({x:term} {Dof : of^ x A worM} of^-wf Dof DwfE -> of^-wf (DofM x Dof) DwfM).}%
 %block var-of^-wf1 : 

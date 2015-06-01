@@ -38,7 +38,11 @@ strengthen-split1 :
 %worlds (term-block | splitting-block) (strengthen-split1 _ _).
 %total (D) (strengthen-split1 D _).
 
-%% SPLITTING VALUES AND RESIDUALS IS TOTAL (DEFINITIONS)
+%% SPLITTING GROUND TERMS, VALUES, AND RESIDUALS IS TOTAL (DEFINITIONS)
+splg-total : of^ E A worG dot-t -> splitG E _ -> type.
+%mode splg-total +Dof -Dspl.
+splgv-total : of^ E A worG dot-d -> splitGv E _ -> type.
+%mode splgv-total +Dof -Dspl.
 splv-total : of^ E A wor1 dot-d -> splitval E _ _ -> type.
 %mode splv-total +Dof -Dspl.
 splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
@@ -81,6 +85,33 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 %worlds (total-block) (splr-total _ _).
 %total (Dsplr) (splr-total Dsplr _).
 
+%% SPLITTING GROUND VALUES
+- : splgv-total of^-ztup splgv-ztup.
+- : splgv-total (of^-tup Dof1 Dof2) (splgv-tup Dsplg1 Dsplg2)
+	<- splgv-total Dof1 Dsplg1
+	<- splgv-total Dof2 Dsplg2.
+%{- : splg-total (of^-lam2 _ Dof) (splg-lam Dsplg')
+	<- ({x}{varx} {x1} {dof} {dspl : splitG x x1} splg-total dof dspl ->
+		splg-total (Dof x varx dof) (Dsplg x x1 dspl))
+	<- ({x1} strengthen-splitres ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).}%
+
+
+%% SPLITTING GROUND TERMS
+- : splg-total (of^-tup Dof1 Dof2) (splg-tup Dsplg1 Dsplg2)
+	<- splg-total Dof1 Dsplg1
+	<- splg-total Dof2 Dsplg2.
+- : splg-total (of^-pi1 Dof _) (splg-pi1 Dsplg)
+	<- splg-total Dof Dsplg.
+- : splg-total (of^-pi2 Dof _) (splg-pi2 Dsplg)
+	<- splg-total Dof Dsplg.
+- : splg-total (of^-app Dof1 Dof2 _) (splg-app Dsplg1 Dsplg2)
+	<- splg-total Dof1 Dsplg1
+	<- splg-total Dof2 Dsplg2.
+- : splg-total (of^-exv Dof) (splg-exv Dsplg)
+	<- splgv-total Dof Dsplg.
+%worlds (total-block) (splg-total _ _) (splgv-total _ _).
+%total (Dsplg Dsplgv) (splg-total Dsplg _) (splgv-total Dsplgv _).
+
 
 %% MAIN SPLITTING TOTALITY
 spl1-total : of^ E A wor1 dot-t -> split1 E _ -> type.
@@ -101,6 +132,8 @@ spl2-total : of^ E A wor2 dot-t -> split2 E _ -> type.
 		splv-total ofx dspl ->
 		spl1-total (Dof x ofx) (Dspl x x1 x2 dspl))
 	<- strengthen-split1 Dspl Dspl'.
+- : splv-total (of^-grnd Dof) (splv-grnd Dsplr)
+	<- splgv-total Dof Dsplr.
 
 %% MAIN PROOF OF TOTALITY
 - : spl1-total (of^-tup Dof1 Dof2) (spl1-tup Dspl1 Dspl2)
@@ -140,5 +173,7 @@ spl2-total : of^ E A wor2 dot-t -> split2 E _ -> type.
 	<- splv-total Dof Dsplv.
 - : spl2-total (of^-exv Dof) (spl2-exv Dsplr)
 	<- splr-total Dof Dsplr.
+- : spl1-total (of^-grnd Dof) (spl1-grnd Dspl)
+	<- splg-total Dof Dspl.
 %worlds (total-block) (spl1-total _ _) (spl2-total _ _) (splv-total _ _).
 %total (Dspl1 Dspl2 Dsplr) (spl1-total Dspl1 _) (spl2-total Dspl2 _) (splv-total Dsplr _).
