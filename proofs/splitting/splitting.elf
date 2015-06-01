@@ -167,6 +167,12 @@ split2-resp : split2 E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-ter
 
 
 %% SPLITTING IS UNIQUE
+splitG-unique : splitG E Q -> splitG E Q' -> eq-term Q Q' -> type.
+%mode splitG-unique +Dspl +Dspl' -DeqQ.
+- : splitG-unique _ _ eq-term_. 
+%worlds (splitting-block) (splitG-unique _ _ _).
+%total (D) (splitG-unique D _ _).
+
 splitres-unique : splitres E Q -> splitres E Q' -> eq-term Q Q' -> type.
 %mode splitres-unique +Dspl +Dspl' -DeqQ.
 - : splitres-unique _ _ eq-term_. 

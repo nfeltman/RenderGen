@@ -31,11 +31,58 @@ val-to-val : splitval E I Q -> val I -> type.
 
 
 %% GROUND SPLITTING CORRECTNESS
-scG : of^ E A worG dot-t -> splitG E' I' -> mred I' V -> mstep wor1 E E' -> splitG E I -> mred I V -> type.
+scG : of^ E A worG dot-t -> splitG E' I' -> mred I' V -> mstep worG E E' -> splitG E I -> mred I V -> type.
 %mode scG +Dof +Dstep +Dspl' +Dred' -Dspl -Dred.
-
-
-
+- : scG (of^-pi1 (of^-exv (of^-tup _ Dof2)) _)
+	(splg-exv Dsplg1)
+	Dred1
+	(ms-pi1-r _)
+	(splg-pi1 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
+	(mred-pi1 (mred-tup Dred1 Dred2))
+	<- splgv-total Dof2 Dsplg2
+	<- gval-to-val Dsplg2 Dval2
+	<- val-auto Dval2 Dred2.
+- : scG (of^-pi2 (of^-exv (of^-tup Dof1 _)) _)
+	(splg-exv Dsplg2)
+	Dred2
+	(ms-pi2-r _)
+	(splg-pi2 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
+	(mred-pi2 (mred-tup Dred1 Dred2))
+	<- splgv-total Dof1 Dsplg1
+	<- gval-to-val Dsplg1 Dval1
+	<- val-auto Dval1 Dred1.
+- : scG Dof
+	(Dsplg3 : splitG (M E) I')
+	(Dred3 : mred I' _)
+	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M E))
+	(splg-app (splg-exv (splgv-lam DsplM)) (splg-exv DsplE)) 
+	(mred-app Dred3' Dred1 Dred2)
+	<- splg-total Dof (splg-app 
+		(splg-exv (splgv-lam (DsplM : {x}{x1} splitGv x x1 -> splitG (M x) (N x1)))) 
+		(splg-exv (DsplE : splitGv E I)))
+	<- splitG-unique Dsplg3 (DsplM E I DsplE : splitG (M E) (N I)) (Deq : eq-term I' (N I : term lang1))
+	<- mred-resp Dred3 Deq eq-term_ Dred3'
+	<- gval-to-val (splgv-lam DsplM) Dval1
+	<- val-auto Dval1 Dred1
+	<- gval-to-val DsplE Dval2
+	<- val-auto Dval2 Dred2.
+- : scG _ (splg-exv (splgv-tup Dsplg1 Dsplg2)) Dred ms-tup-d (splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) Dred.
+- : scG (of^-tup Dof _) (splg-tup Dsplg' DsplgB) (mred-tup Dred' DredB) 
+		(ms-tup-s1 Dstep) (splg-tup Dsplg DsplgB) (mred-tup Dred DredB)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-tup _ Dof) (splg-tup DsplgB Dsplg') (mred-tup DredB Dred') 
+		(ms-tup-s2 Dstep) (splg-tup DsplgB Dsplg) (mred-tup DredB Dred)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-pi1 Dof _) (splg-pi1 Dsplg') (mred-pi1 Dred') (ms-pi1-s Dstep) (splg-pi1 Dsplg) (mred-pi1 Dred)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-pi2 Dof _) (splg-pi2 Dsplg') (mred-pi2 Dred') (ms-pi2-s Dstep) (splg-pi2 Dsplg) (mred-pi2 Dred)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-app Dof _ _) (splg-app Dsplg' DsplgB) (mred-app DredM Dred' DredB) 
+		(ms-app-s1 Dstep) (splg-app Dsplg DsplgB) (mred-app DredM Dred DredB)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-app _ Dof _) (splg-app DsplgB Dsplg') (mred-app DredM DredB Dred') 
+		(ms-app-s2 Dstep) (splg-app DsplgB Dsplg) (mred-app DredM DredB Dred)
+	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
 %worlds (correctness-block) (scG _ _ _ _ _ _).
 %total (D) (scG _ _ _ D _ _).
 
@@ -239,6 +286,15 @@ sc2 : of^ E A wor2 dot-t -> split2 E' (pipe P' _) -> mred P' _ -> mstep wor2 E E
 		<- splr-total Dof Dsplr
 		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred.
 
+- : sc1 (of^-grnd (of^-exv Dof))
+		(Dspl' : split1 (exv (grnd E)) (pipe C _)) 
+		(Dred' : mred C (tup I _))
+		(ms-grnd-d :  mstep wor1 (grnd (exv E)) (exv (grnd E)))
+		(spl1-grnd (splg-exv Dsplr)) Dred
+		<- splgv-total Dof Dsplr
+		<- split1-unique Dspl' (spl1-exv (splv-grnd Dsplr)) Deq _
+		<- mred-resp Dred' Deq eq-term_ Dred.
+
 
 %% STAGE ONE SUBSTEPS
 
@@ -347,6 +403,12 @@ sc2 : of^ E A wor2 dot-t -> split2 E' (pipe P' _) -> mred P' _ -> mstep wor2 E E
 		(ms-next-s Dstep)
 		(spl1-next Dspl) (mred-tup mred-ztup Dred)
 	<- sc2 Dof Dspl' Dred' Dstep Dspl Dred.
+
+- : sc1 (of^-grnd Dof) 
+		(spl1-grnd Dspl') (mred-tup Dred' mred-ztup)
+		(ms-grnd-s Dstep)
+		(spl1-grnd Dspl) (mred-tup Dred mred-ztup)
+	<- scG Dof Dspl' Dred' Dstep Dspl Dred.
 
 
 %% STAGE TWO DONENESS MARKING
