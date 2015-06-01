@@ -11,6 +11,16 @@ strengthen-splitres :
 %worlds (term-block | splitting-block) (strengthen-splitres _ _).
 %total (D) (strengthen-splitres D _).
 
+strengthen-splitGv : 
+	({x : term lang0} splitGv x Q0 -> splitG (E x) (Q x)) -> 
+	({x : term lang0} splitGv x Q0 -> splitG (E x) Q') -> type.
+%mode strengthen-splitGv +Dspl -Dspl'.
+- : strengthen-splitGv ([x][s] Dsplr x s : splitG (E x) (Q x)) Dsplr'
+	<- lang-indep neq-lang_01 Q Deq
+	<- ({x}{s} splitG-resp (Dsplr x s) eq-term_ (Deq x) (Dsplr' x s)).
+%worlds (term-block | splitting-block) (strengthen-splitGv _ _).
+%total (D) (strengthen-splitGv D _).
+
 strengthen-split2 : 
 	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (pipe (P x x2) (Q x x2))) -> 
 	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (pipe P' (Q' x2))) -> type.
@@ -49,6 +59,11 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 %mode splr-total +Dof -Dspl.
 
 %% BLOCKS
+%block total-varG : some {A : ty} block 
+	{x:term lang0} {x1:term lang1} 
+	{dof : of^ x A worG dot-d} 
+	{dspl : splitGv x x1}
+	{dtotv : splgv-total dof dspl}.
 %block total-var1 : some {A : ty} block 
 	{x:term lang0} {x1:term lang1} 
 	{x2:term lang2} {dof : of^ x A wor1 dot-d} 
@@ -59,7 +74,7 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 	{dof : of^ x A wor2 dot-d} 
 	{dsplr : splitres x x2}
 	{dtotr : splr-total dof dsplr}.
-%block total-block = (total-var1 | total-var2).
+%block total-block = (total-varG | total-var1 | total-var2).
 
 %% SPLITTING RESIDUALS IS TOTAL (PROOF)
 - : splr-total of^-ztup splr-ztup.
@@ -90,10 +105,10 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 - : splgv-total (of^-tup Dof1 Dof2) (splgv-tup Dsplg1 Dsplg2)
 	<- splgv-total Dof1 Dsplg1
 	<- splgv-total Dof2 Dsplg2.
-%{- : splg-total (of^-lam2 _ Dof) (splg-lam Dsplg')
-	<- ({x}{varx} {x1} {dof} {dspl : splitG x x1} splg-total dof dspl ->
-		splg-total (Dof x varx dof) (Dsplg x x1 dspl))
-	<- ({x1} strengthen-splitres ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).}%
+- : splgv-total (of^-lam1 _ Dof _) (splgv-lam Dsplg')
+	<- ({x}{x1} {dof} {dspl : splitGv x x1} splgv-total dof dspl ->
+		splg-total (Dof x dof) (Dsplg x x1 dspl))
+	<- ({x1} strengthen-splitGv ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).
 
 
 %% SPLITTING GROUND TERMS
@@ -127,7 +142,7 @@ spl2-total : of^ E A wor2 dot-t -> split2 E _ -> type.
 - : splv-total (of^-tup Dof1 Dof2) (splv-tup Dspl1 Dspl2)
 	<- splv-total Dof1 Dspl1
 	<- splv-total Dof2 Dspl2.
-- : splv-total (of^-lam1 Dwf Dof) (splv-lam Dspl')
+- : splv-total (of^-lam1 Dwf Dof _) (splv-lam Dspl')
 	<- ({x}{x1}{x2} {ofx} {dspl}
 		splv-total ofx dspl ->
 		spl1-total (Dof x ofx) (Dspl x x1 x2 dspl))

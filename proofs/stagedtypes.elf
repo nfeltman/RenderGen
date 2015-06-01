@@ -5,6 +5,11 @@ wor1 : wor.
 wor2 : wor.
 worG : wor.
 
+first-stage-wor : wor -> type.
+fsw-wor1 : first-stage-wor wor1.
+fsw-worG : first-stage-wor worG.
+%worlds () (first-stage-wor _).
+
 %% TYPE WELL-FORMED
 ty^wf : ty -> wor -> type.
 %mode ty^wf +T +W.
@@ -52,9 +57,10 @@ of^-pi1		: of^ (pi1 E) A W DT
 of^-pi2		: of^ (pi2 E) B W DT
 				<- redux W DT
 				<- of^ E (prod A B) W DT.
-of^-lam1 	: of^ (lam ([x] M x)) (arr A B) wor1 dot-d
-				<- ({x} of^ x A wor1 dot-d -> of^ (M x) B wor1 dot-t) 
-				<- ty^wf A wor1.
+of^-lam1 	: of^ (lam ([x] M x)) (arr A B) W dot-d
+				<- first-stage-wor W
+				<- ({x} of^ x A W dot-d -> of^ (M x) B W dot-t) 
+				<- ty^wf A W.
 of^-lam2 	: of^ (lam ([x] M x)) (arr A B) wor2 DT
 				<- ({x} variable x -> of^ x A wor2 dot-d -> of^ (M x) B wor2 DT) 
 				<- ty^wf A wor2.
@@ -86,7 +92,9 @@ of^-grnd 	: of^ (grnd E) (curr T) wor1 DT
 				<- of^ E (curr T1) wor1
 				<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
 
-%block var-of1 : some {A : ty} {L : lang} block {x:term L} {_ : of^ x A wor1 dot-d}.
+%block var-of1 : 
+	some {A : ty} {L : lang} {W : wor} {_ : first-stage-wor W} 
+	block {x:term L} {_ : of^ x A W dot-d}.
 %block var-of2 : some {A : ty} {L : lang} block {x:term L} {_ : variable x} {_ : of^ x A wor2 dot-d}.
 %block var-of = (var-of1 | var-of2).
 %worlds (var-of) (of^ _ _ _ _).
@@ -102,8 +110,8 @@ of^-wf : of^ E T W _ -> ty^wf T W -> type.
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
 - : of^-wf (of^-pi2 Dof _) DwfB
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
-- : of^-wf (of^-lam1 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
-	<- ({x} {ofx : of^ x A wor1 _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x ofx) Dwf2).
+- : of^-wf (of^-lam1 Dwf1 DofM _) (ty^wf-arr Dwf1 Dwf2)
+	<- ({x} {ofx : of^ x A W _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-lam2 Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
 	<- ({x} {varx : variable x} {ofx : of^ x A wor2 _} {_ : of^-wf ofx Dwf1} of^-wf (DofM x varx ofx) Dwf2).
 - : of^-wf (of^-app Dof1 Dof2 _) Dwf
@@ -128,8 +136,8 @@ of^-wf : of^ E T W _ -> ty^wf T W -> type.
 	<- of^-wf DofE (ty^wf-curr DwfE)
 	<- ({x:term} {Dof : of^ x A worM} of^-wf Dof DwfE -> of^-wf (DofM x Dof) DwfM).}%
 %block var-of^-wf1 : 
-	some {L : lang} {A : ty} {Dwf : ty^wf A wor1} {DT : dot}
-	block {x:term L} {Dof : of^ x A wor1 DT} {_ : of^-wf Dof Dwf}.
+	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W} {DT : dot}
+	block {x:term L} {Dof : of^ x A W DT} {_ : of^-wf Dof Dwf}.
 %block var-of^-wf2 : 
 	some {L : lang} {A : ty} {Dwf : ty^wf A wor2} {DT : dot}
 	block {x:term L} {_ : variable x} {Dof : of^ x A wor2 DT} {_ : of^-wf Dof Dwf}.

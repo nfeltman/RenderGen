@@ -152,6 +152,18 @@ splitres-resp : splitres E Q -> eq-term E E' -> eq-term Q Q' -> splitres E' Q' -
 %worlds (term-block | any-split) (splitres-resp _ _ _ _).
 %total (Deq) (splitres-resp _ Deq _ _).
 
+splitG-resp : splitG E Q -> eq-term E E' -> eq-term Q Q' -> splitG E' Q' -> type.
+%mode splitG-resp +Dspl +Deq1 +Deq2 -Dspl'.
+- : splitG-resp Dspl eq-term_ eq-term_ Dspl.
+%worlds (term-block | any-split) (splitG-resp _ _ _ _).
+%total (Deq) (splitG-resp _ Deq _ _).
+
+splitGv-resp : splitGv E Q -> eq-term E E' -> eq-term Q Q' -> splitGv E' Q' -> type.
+%mode splitGv-resp +Dspl +Deq1 +Deq2 -Dspl'.
+- : splitGv-resp Dspl eq-term_ eq-term_ Dspl.
+%worlds (term-block | any-split) (splitGv-resp _ _ _ _).
+%total (Deq) (splitGv-resp _ Deq _ _).
+
 %% SPLITTING RESPECTS IDENTITY
 split1-resp : split1 E (pipe P R) -> eq-term E E' -> eq-term P P' -> ({l} eq-term (R l) (R' l)) -> split1 E' (pipe P' R') -> type.
 %mode split1-resp +Dspl +Deq1 +Deq2 +Deq3 -Dspl'.
@@ -172,6 +184,12 @@ splitG-unique : splitG E Q -> splitG E Q' -> eq-term Q Q' -> type.
 - : splitG-unique _ _ eq-term_. 
 %worlds (splitting-block) (splitG-unique _ _ _).
 %total (D) (splitG-unique D _ _).
+
+splitGv-unique : splitGv E Q -> splitGv E Q' -> eq-term Q Q' -> type.
+%mode splitGv-unique +Dspl +Dspl' -DeqQ.
+- : splitGv-unique _ _ eq-term_. 
+%worlds (splitting-block) (splitGv-unique _ _ _).
+%total (D) (splitGv-unique D _ _).
 
 splitres-unique : splitres E Q -> splitres E Q' -> eq-term Q Q' -> type.
 %mode splitres-unique +Dspl +Dspl' -DeqQ.
