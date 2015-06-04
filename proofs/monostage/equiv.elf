@@ -1,0 +1,6 @@
+
+
+%% RESIDUAL EQUIVALENCE
+reqv : term L -> term L -> type. %name reqv Deqv.
+reqv-id : reqv E E.
+
