@@ -1,3 +1,12 @@
+
+%% VALUE
+val : term L -> type. %name val Dval.
+val-ztup	: val ztup.
+val-tup	: val (tup E1 E2)
+				<- val E2
+				<- val E1.
+val-lam	: val (lam _).
+
 %% TYPE WELL-FORMED
 ty-wf : ty -> type.
 ty-wf-unit	: ty-wf unit.

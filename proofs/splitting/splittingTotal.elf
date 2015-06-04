@@ -22,26 +22,26 @@ strengthen-splitGv :
 %total (D) (strengthen-splitGv D _).
 
 strengthen-split2 : 
-	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (pipe (P x x2) (Q x x2))) -> 
-	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (pipe P' (Q' x2))) -> type.
+	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (P x x2) (Q x x2)) -> 
+	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) P' (Q' x2)) -> type.
 %mode strengthen-split2 +Dspl -Dspl'.
-- : strengthen-split2 ([x][x2][s] Dsplr x x2 s : split2 (E x) (pipe (P x x2) (Q x x2))) Dsplr''
+- : strengthen-split2 ([x][x2][s] Dsplr x x2 s : split2 (E x) (P x x2) (Q x x2)) Dsplr''
 	<- ({x2} lang-indep neq-lang_01 ([x] P x x2) ([x] DeqP x x2))
 	<- ({l}{x2} lang-indep neq-lang_02 ([x] Q x x2 l) ([x] DeqQ x x2 l))
-	<- ({x}{x2}{s} split2-resp (Dsplr x x2 s) eq-term_ (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split2 (E x) (pipe (P' x2) _)))
+	<- ({x}{x2}{s} split2-resp (Dsplr x x2 s) eq-term_ (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split2 (E x) (P' x2) _))
 	<- lang-indep neq-lang_21 P' DeqP'
 	<- ({x}{x2}{s} split2-resp (Dsplr' x x2 s) eq-term_ (DeqP' x2) ([l] eq-term_) (Dsplr'' x x2 s)).
 %worlds (term-block | splitting-block) (strengthen-split2 _ _).
 %total (D) (strengthen-split2 D _).
 
 strengthen-split1 : 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (pipe (P x x1 x2) (Q x x1 x2))) -> 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (pipe (P' x1) (Q' x2))) -> type.
+	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P x x1 x2) (Q x x1 x2)) -> 
+	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P' x1) (Q' x2)) -> type.
 %mode strengthen-split1 +Dspl -Dspl'.
-- : strengthen-split1 ([x][x1][x2][s] Dspl x x1 x2 s : split1 (E x) (pipe (P x x1 x2) (Q x x1 x2))) Dspl''
+- : strengthen-split1 ([x][x1][x2][s] Dspl x x1 x2 s : split1 (E x) (P x x1 x2) (Q x x1 x2)) Dspl''
 	<- ({x1}{x2} lang-indep neq-lang_01 ([x] P x x1 x2) ([x] DeqP x x1 x2))
 	<- ({l}{x1}{x2} lang-indep neq-lang_02 ([x] Q x x1 x2 l) ([x] DeqQ x x1 x2 l))
-	<- ({x}{x1}{x2}{s} split1-resp (Dspl x x1 x2 s) eq-term_ (DeqP x x1 x2) (DeqQ x x1 x2) (Dspl' x x1 x2 s : split1 (E x) (pipe (P' x1 x2) (Q' x1 x2))))
+	<- ({x}{x1}{x2}{s} split1-resp (Dspl x x1 x2 s) eq-term_ (DeqP x x1 x2) (DeqQ x x1 x2) (Dspl' x x1 x2 s : split1 (E x) (P' x1 x2) (Q' x1 x2)))
 	<- ({x1} lang-indep neq-lang_21 ([x2] P' x1 x2) ([x2] DeqP' x1 x2))
 	<- ({l}{x2} lang-indep neq-lang_12 ([x1] Q' x1 x2 l) ([x1] DeqQ' x1 x2 l))
 	<- ({x}{x1}{x2}{s} split1-resp (Dspl' x x1 x2 s) eq-term_ (DeqP' x1 x2) ([l] DeqQ' x1 x2 l) (Dspl'' x x1 x2 s)).
@@ -129,9 +129,9 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 
 
 %% MAIN SPLITTING TOTALITY
-spl1-total : of^ E A wor1 dot-t -> split1 E _ -> type.
+spl1-total : of^ E A wor1 dot-t -> split1 E _ _ -> type.
 %mode spl1-total +Dof -Dspl.
-spl2-total : of^ E A wor2 dot-t -> split2 E _ -> type.
+spl2-total : of^ E A wor2 dot-t -> split2 E _ _ -> type.
 %mode spl2-total +Dof -Dspl.
 
 

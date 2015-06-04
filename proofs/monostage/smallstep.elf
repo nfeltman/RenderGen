@@ -1,13 +1,5 @@
 %{ monostage.elf }%
 
-%% VALUE
-val : term L -> type. %name val Dval.
-val-ztup	: val ztup.
-val-tup	: val (tup E1 E2)
-				<- val E2
-				<- val E1.
-val-lam	: val (lam _).
-
 
 %% STEP
 step : term L -> term L -> type.

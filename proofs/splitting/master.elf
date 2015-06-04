@@ -3,7 +3,7 @@
 end-to-end-correct-1 : 
 	of^ E A wor1 dot-t -> 
 	mstep* E (exv V) wor1 -> 
-	split1 E (pipe C _) -> 
+	split1 E C _ -> 
 	mred C (tup I _) -> 
 	splitval V I _ -> type.
 %mode end-to-end-correct-1 +Dof +Dpath -Dspl -Dred' -Dsplv.

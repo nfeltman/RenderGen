@@ -241,3 +241,22 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 
 %worlds (term-block) (lang-indep _ _ _).
 %total (D) (lang-indep _ D _).
+
+
+%% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
+lang-convert : term L1 -> {L2} term L2 -> type.
+%mode lang-convert +E +L -E'.
+conv-ztup : lang-convert ztup _ ztup.
+conv-tup : lang-convert (tup E1 E2) L (tup E1' E2')
+  <- lang-convert E2 L E2'
+  <- lang-convert E1 L E1'.
+%worlds (term-block) (lang-convert _ _ _).
+%unique lang-convert +E +L -1E'.
+%%total (D) (lang-convert D _ _).
+
+
+conv-resp : lang-convert E1 _ E2 -> eq-term E1 E1' -> lang-convert E1' _ E2 -> type.
+%mode conv-resp +D1 +D2 -D3.
+- : conv-resp Dof eq-term_ Dof.
+%worlds (term-block) (conv-resp _ _ _).
+%total {} (conv-resp _ _ _).
