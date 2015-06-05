@@ -1,12 +1,4 @@
 
-%% VALUE
-val : term L -> type. %name val Dval.
-val-ztup	: val ztup.
-val-tup	: val (tup E1 E2)
-				<- val E2
-				<- val E1.
-val-lam	: val (lam _).
-
 %% TYPE WELL-FORMED
 ty-wf : ty -> type.
 ty-wf-unit	: ty-wf unit.
@@ -20,6 +12,8 @@ ty-wf-arr	: ty-wf (arr A B)
 
 %% TYPING JUDGMENT
 of : term L -> ty -> type. %name of Dof.
+of-exv  : of (exv E) A
+			<- of E A.
 of-ztup	: of ztup unit.
 of-tup	: of (tup E1 E2) (prod A B)
 			<- of E2 B
@@ -63,6 +57,8 @@ of-strengthen/term : (term L -> of E A) -> of E A -> type.
 of-strengthen/of : ({X} of X A -> of E B) -> of E B -> type.
 %mode of-strengthen/of +Dof -Dof'.
 - : of-strengthen/of ([x][ofx] Dof) Dof. %% covers ztup and variable cases
+- : of-strengthen/of ([x][ofx] of-exv (Dof x ofx)) (of-exv Dof')
+	<- of-strengthen/of Dof Dof'.
 - : of-strengthen/of ([x][ofx] of-tup (Dof1 x ofx) (Dof2 x ofx)) (of-tup Dof1' Dof2')
 	<- of-strengthen/of Dof1 Dof1'
 	<- of-strengthen/of Dof2 Dof2'.
@@ -87,3 +83,32 @@ of-strengthen/of : ({X} of X A -> of E B) -> of E B -> type.
 		of-strengthen/of ([x][ofx] Dof2 x ofx y ofy z ofz) (Dof2' y ofy z ofz).
  %worlds (of-block | term-block) (of-strengthen/of _ _).
  %total D (of-strengthen/of D _). 
+
+
+%% NORMALITY JUDGMENT
+
+form : term L -> normality -> type. %name form Dform.
+form-ztup : form ztup norm.
+form-lam  : form (lam M) norm
+			<- {x} form x norm -> form (M x) comp.
+form-tup  : form (tup E1 E2) N
+			<- form E2 N
+			<- form E1 N.
+form-exv  : form (exv E) comp
+			<- form E norm.
+form-pi1  : form (pi1 E) comp
+			<- form E comp.
+form-pi2  : form (pi2 E) comp
+			<- form E comp.
+form-app  : form (app E1 E2) comp
+			<- form E2 comp
+			<- form E1 comp.
+form-let  : form (let E M) comp
+			<- ({x} form x norm -> form (M x) comp)
+			<- form E comp.
+form-lett : form (lett E M) comp
+			<- ({x} form x norm -> {y} form y norm -> form (M x y) comp)
+			<- form E comp.
+
+
+

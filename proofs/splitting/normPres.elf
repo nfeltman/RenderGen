@@ -1,0 +1,116 @@
+
+
+%% THREE FORMS OF VALUE PRESERVATION
+
+splGv-npres : splitGv E I -> form I norm -> type.
+%mode splGv-npres +Dspl -Dval.
+splr-npres : splitres E Q -> form Q comp -> type.
+%mode splr-npres +Dspl -Dcomp.
+splv-npres : splitval E I Q -> form I norm -> form R comp -> type.
+%mode splv-npres +Dspl -Dval1 -Dcomp2.
+
+%block splitting-npres-varG : block {x:term lang0}{x1:term lang1} {dsplg : splitGv x x1} {dval : form x1 norm} {_ : splGv-npres dsplg dval}.
+%block splitting-npres-var1 : block {x:term lang0}{x1:term lang1} {x2:term lang2} {dspl : splitval x x1 x2}.
+%block splitting-npres-var2 : block {x:term lang0}{x2:term lang2} {dspl : splitres x (exv x2)} {dcomp : form x2 norm} {_ : splr-npres dspl (form-exv dcomp)}.
+%block splitting-npres-block = (splitting-npres-var1 | splitting-npres-var2 | splitting-npres-varG).
+
+%% GROUND SPLITTING NORMALITY PRESERVATION
+
+splG-npres : splitG E I -> form I comp -> type.
+%mode splG-npres +Dspl -Dcomp1.
+
+- : splGv-npres splgv-ztup form-ztup.
+- : splGv-npres (splgv-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
+	<- splGv-npres Dsplv1 Dval1
+	<- splGv-npres Dsplv2 Dval2.
+- : splGv-npres (splgv-lam Dsplg) (form-lam (Dcomp ztup))
+	<- {x}{x1}{splx}{valx1} splGv-npres splx valx1 -> splG-npres (Dsplg x x1 splx) (Dcomp x x1 valx1).
+
+- : splG-npres (splg-exv Dspl) (form-exv Dval)
+	<- splGv-npres Dspl Dval.
+- : splG-npres (splg-pi1 Dspl) (form-pi1 Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-pi2 Dspl) (form-pi2 Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-tup Dspl1 Dspl2) (form-tup Dcomp1 Dcomp2)
+	<- splG-npres Dspl1 Dcomp1
+	<- splG-npres Dspl2 Dcomp2.
+- : splG-npres (splg-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
+	<- splG-npres Dspl1 Dcomp1
+	<- splG-npres Dspl2 Dcomp2.
+%worlds (splitting-npres-block) (splGv-npres _ _) (splG-npres _ _).
+%total (D1 D2) (splGv-npres D1 _) (splG-npres D2 _). 
+
+%% RESIDUAL SPLITTING NORMALITY PRESERVATION
+
+- : splr-npres splr-ztup (form-exv form-ztup).
+- : splr-npres (splr-pi1 Dspl) (form-pi1 Dcomp)
+	<- splr-npres Dspl Dcomp.
+- : splr-npres (splr-pi2 Dspl) (form-pi2 Dcomp)
+	<- splr-npres Dspl Dcomp.
+- : splr-npres (splr-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
+	<- splr-npres Dsplv1 Dval1
+	<- splr-npres Dsplv2 Dval2.
+- : splr-npres (splr-lam Dsplg) (form-exv (form-lam (Dcomp ztup)))
+	<- {x}{x2}{splx : splitres x (exv x2)}{compx2 : form x2 norm} 
+		splr-npres splx (form-exv compx2) -> splr-npres (Dsplg x x2 splx) (Dcomp x x2 compx2).
+- : splr-npres (splr-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
+	<- splr-npres Dspl1 Dcomp1
+	<- splr-npres Dspl2 Dcomp2.
+- : splr-npres (splr-let DsplgE DsplgM) (form-let DcompE (DcompM ztup))
+	<- splr-npres DsplgE DcompE
+	<- {x}{x2}{splx}{compx2} 
+		splr-npres splx (form-exv compx2) -> splr-npres (DsplgM x x2 splx) (DcompM x x2 compx2).
+%worlds (splitting-npres-block) (splr-npres _ _).
+%total (D1) (splr-npres D1 _). 
+
+
+spl1-npres : split1 E C R -> form C comp -> ({x} form x norm -> form (R x) comp) -> type.
+%mode spl1-npres +Dspl -Dcomp1 -Dcomp2.
+spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp) -> type.
+%mode spl2-npres +Dspl -Dcomp1 -Dcomp2.
+
+
+
+%worlds (splitting-npres-block) (spl1-npres _ _ _) (spl2-npres _ _ _).
+%total (D1 D2) (spl1-npres D1 _ _) (spl2-npres D2 _ _). 
+
+
+spl1-exv	: split1 (exv V) (exv (tup I ztup)) ([_] Q)
+			<- splitval V I Q.
+spl1-tup	: split1 (tup E1 E2) 
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] tup (tup y1 y2) (tup z1 z2)))) 
+					([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
+			<- split1 E2 C2 R2
+			<- split1 E1 C1 R1.
+spl1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 y) z)) ([l] pi1 (R l))
+			<- split1 E C R.
+spl1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 y) z)) ([l] pi2 (R l))
+			<- split1 E C R.
+spl1-app	: split1 (app E1 E2) 
+					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app (exv y1) (exv y2)) ([y3] [z3] tup (exv y3) (tup (tup (exv z1) (exv z2)) (exv z3))))))
+					([l] lett l ([l12] [l3] lett l12 ([l1] [l2] app (R1 l1) (tup (R2 l2) l3))))
+			<- split1 E2 C2 R2
+			<- split1 E1 C1 R1.
+spl1-next	: split1 (next E) (tup (exv ztup) P) R
+			<- split2 E P R.
+spl1-grnd	: split1 (grnd E) (tup E' ztup) ([_] ztup)
+			<- splitG E E'.
+
+spl2-exv	: split2 (exv Q) (exv ztup) ([_] Q')
+				<- splitres Q Q'.
+spl2-ztup	: split2 ztup (exv ztup) ([_] ztup).
+spl2-tup	: split2 (tup E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] tup (R1 l1) (R2 l2)))
+			<- split2 E2 P2 R2
+			<- split2 E1 P1 R1.
+spl2-pi1	: split2 (pi1 E) P ([l] pi1 (R l))
+			<- split2 E P R.
+spl2-pi2	: split2 (pi2 E) P ([l] pi2 (R l))
+			<- split2 E P R.
+spl2-lam	: split2 (lam M) P ([l] lam ([x] R x l))
+			<- {x}{x2} splitres x (exv x2) -> split2 (M x) P ([l] R x2 l).
+spl2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett l ([l1] [l2] app (R1 l1) (R2 l2)))
+			<- split2 E2 P2 R2
+			<- split2 E1 P1 R1.
+spl2-prev 	: split2 (prev E) (pi2 C) R
+			<- split1 E C R.

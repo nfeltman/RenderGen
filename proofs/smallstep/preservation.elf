@@ -4,7 +4,7 @@
 %% LIFT STEP PRESERVATION
 lpres : lstep E Q E' -> of^ E T wor1 dot-t -> of^ Q TQ wor2 dot-d -> ({x} variable x -> of^ x TQ wor2 dot-d -> of^ (E' x) T wor1 dot-t) -> type.
 %mode lpres +Dstep +Dof -DofQ -Dof'.
-- : lpres (ls-next-r _) (of^-next-t (of^-exv Dof)) Dof ([x][vx][dof] of^-exv (of^-next-d dof vx)).
+- : lpres (ls-next-r _) (of^-next-t (of^-exv Dof)) Dof ([x][vx][dof] of^-next-t (of^-exv dof)).
 - : lpres (ls-tup-s1 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][vx][dof] of^-tup (Dof1' x vx dof) Dof2)
 	<- lpres Dstep Dof1 DofQ Dof1'.
 - : lpres (ls-tup-s2 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][vx][dof] of^-tup Dof1 (Dof2' x vx dof))

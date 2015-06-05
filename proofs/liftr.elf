@@ -10,6 +10,11 @@ fut		: ty -> ty.
 curr	: ty -> ty.
 %freeze ty.
 
+%% NORMALITY LEVELS
+normality : type. %name normality N.
+norm : normality.
+comp : normality.
+
 %% LANG (little trick that makes translations a lot easier later)
 lang : type. %name lang L.
 lang0 : lang.
