@@ -26,7 +26,7 @@ end-to-end-correct-1 :
 		Dsplv
 	<- mstep-pres Dstep Dof Dof'
 	<- end-to-end-correct-1 Dof' Dpath Dspl' Dred' Dsplv
-	<- sc1 Dof Dspl' Dred' Dstep Dspl Dred.
+	<- sc1 Dof Dspl' Dred' _ Dstep Dspl Dred _.
 
 %worlds () (end-to-end-correct-1 _ _ _ _ _).
 %total (D) (end-to-end-correct-1 _ D _ _ _).
