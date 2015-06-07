@@ -35,8 +35,8 @@ strengthen-split2 :
 %total (D) (strengthen-split2 D _).
 
 strengthen-split1 : 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P x x1 x2) (Q x x1 x2)) -> 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P' x1) (Q' x2)) -> type.
+	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 (exv x2) -> split1 (E x) (P x x1 x2) (Q x x1 x2)) -> 
+	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 (exv x2) -> split1 (E x) (P' x1) (Q' x2)) -> type.
 %mode strengthen-split1 +Dspl -Dspl'.
 - : strengthen-split1 ([x][x1][x2][s] Dspl x x1 x2 s : split1 (E x) (P x x1 x2) (Q x x1 x2)) Dspl''
 	<- ({x1}{x2} lang-indep neq-lang_01 ([x] P x x1 x2) ([x] DeqP x x1 x2))
@@ -67,7 +67,7 @@ splr-total : of^ E A wor2 dot-d -> splitres E _ -> type.
 %block total-var1 : some {A : ty} block 
 	{x:term lang0} {x1:term lang1} 
 	{x2:term lang2} {dof : of^ x A wor1 dot-d} 
-	{dspl : splitval x x1 x2}
+	{dspl : splitval x x1 (exv x2)}
 	{dtotv : splv-total dof dspl}.
 %block total-var2 : some {A : ty} block 
 	{x:term lang0} {_ : variable x} {x2:term lang2} 
