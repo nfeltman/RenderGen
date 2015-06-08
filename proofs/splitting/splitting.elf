@@ -86,8 +86,10 @@ spl1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 (exv y)) (exv z))) ([l] pi1 
 spl1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 (exv y)) (exv z))) ([l] pi2 (R l))
 			<- split1 E C R.
 spl1-app	: split1 (app E1 E2) 
-					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] lett (app (exv y1) (exv y2)) ([y3] [z3] 
-						exv (tup y3 (tup (tup z1 z2) z3))
+					(lett C1 ([y1] [z1] 
+						lett C2 ([y2] [z2] 
+							lett (app (exv y1) (exv y2)) ([y3] [z3] 
+								exv (tup y3 (tup (tup z1 z2) z3))
 					))))
 					([l] lett (exv l) ([l12] [l3] lett (exv l12) ([l1] [l2] app (R1 l1) (tup (R2 l2) (exv l3)))))
 			<- split1 E2 C2 R2

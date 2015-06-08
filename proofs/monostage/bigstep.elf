@@ -112,3 +112,17 @@ mred-unique : mred E V1 -> mred E V2 -> eq-term V1 V2 -> type.
 - : mred-unique _ _ eq-term_.
 %worlds (term-block) (mred-unique _ _ _).
 %total (D) (mred-unique D _ _).
+
+%% REDUCTION OF TUPLES VALUES CAN BE INVERTED
+mred-invert/exv-tup : mred (exv (tup A B)) (tup C D) -> mred (exv A) C -> mred (exv B) D -> type.
+%mode mred-invert/exv-tup +Dred -Dred1 -Dred2.
+- : mred-invert/exv-tup mred-exv mred-exv mred-exv.
+%worlds (term-block) (mred-invert/exv-tup _ _ _).
+%total {} (mred-invert/exv-tup _ _ _).
+
+mred-invert/exv : mred (exv A) B -> eq-term A B -> type.
+%mode mred-invert/exv +Dred -Deq.
+- : mred-invert/exv mred-exv eq-term_.
+%worlds (term-block) (mred-invert/exv _ _).
+%total {} (mred-invert/exv _ _).
+
