@@ -1,8 +1,9 @@
 
 %block correctness-block : 
 	some {A : ty}
-	block {x : term lang0} {vx : variable x} {x2:term lang2} 
-	{ofx : of^ x A wor2 dot-d} {splx:splitres x x2} {_ : splr-total ofx splx}.
+	block {x : term lang0}  {x2:term lang2} 
+	{ofx : of^ x A wor2} {vx : form^ x vars2 wor2} 
+	{splx:splitvar2 x x2} {_ : splvar2-total ofx vx splx}.
 
 
 %% GROUND SPLITTING CORRECTNESS
@@ -55,7 +56,7 @@ scG : of^ E A worG dot-t -> splitG E' I' -> mred I' V -> mstep worG E E' -> spli
 
 %% LIFTING CORRECTNESS
 lc : split1 E C R -> 
-	({x}{x2} splitres x x2 -> split1 (E' x) C' (R' x2)) -> 
+	({x}{x2} splitres x (exv x2) -> split1 (E' x) C' (R' x2)) -> 
 	lstep E Q E' ->
 	eq-term C C' -> type.
 %mode lc +DsplE +DsplE' +Dstep -Deq.
@@ -161,14 +162,14 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 dot-t ->
 	(mred-lett 
 		(mred-lett 
 			(mred-lett 
-				(mred-tup mred-exv (mred-tup (mred-tup mred-exv mred-exv) mred-exv))
+				mred-exv
 				(mred-app Dred'' mred-exv mred-exv)
 				)
-			(mred-tup mred-exv mred-exv)
+			mred-exv
 			)
-		(mred-tup mred-lam mred-ztup)
+		mred-exv
 		)
-	<- spl1-total Dof (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv (DsplV : splitval V Vi Vq)))
+	<- spl1-total Dof (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
 	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred''.
 %worlds (correctness-block) (sc1/app-r _ _ _ _ _).
 %total (D) (sc1/app-r D _ _ _ _).

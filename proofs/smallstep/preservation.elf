@@ -1,21 +1,23 @@
 %%  USEFUL BLOCKS
-%block pres-block : some {A : ty} {L :lang} block {x:term L} {dvar : variable x} {dof : of^ x A wor2 dot-d}.
+%block pres-block : 
+	some {A : ty} {L :lang} 
+	block {x:term L} {dof : of^ x A wor2}. %{_ : form^ x vars2 wor2}.}%
 
 %% LIFT STEP PRESERVATION
-lpres : lstep E Q E' -> of^ E T wor1 dot-t -> of^ Q TQ wor2 dot-d -> ({x} variable x -> of^ x TQ wor2 dot-d -> of^ (E' x) T wor1 dot-t) -> type.
+lpres : lstep E Q E' -> of^ E T wor1 -> of^ Q TQ wor2 -> ({x} of^ x TQ wor2 -> of^ (E' x) T wor1) -> type.
 %mode lpres +Dstep +Dof -DofQ -Dof'.
-- : lpres (ls-next-r _) (of^-next-t (of^-exv Dof)) Dof ([x][vx][dof] of^-next-t (of^-exv dof)).
-- : lpres (ls-tup-s1 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][vx][dof] of^-tup (Dof1' x vx dof) Dof2)
+- : lpres (ls-next-r _) (of^-next (of^-exv Dof)) Dof ([x][dof] of^-next (of^-exv dof)).
+- : lpres (ls-tup-s1 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][dof] of^-tup (Dof1' x dof) Dof2)
 	<- lpres Dstep Dof1 DofQ Dof1'.
-- : lpres (ls-tup-s2 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][vx][dof] of^-tup Dof1 (Dof2' x vx dof))
+- : lpres (ls-tup-s2 Dstep) (of^-tup Dof1 Dof2) DofQ ([x][dof] of^-tup Dof1 (Dof2' x dof))
 	<- lpres Dstep Dof2 DofQ Dof2'.
-- : lpres (ls-pi1-s Dstep) (of^-pi1 Dof DT) DofQ ([x][vx][dof] of^-pi1 (Dof' x vx dof) DT)
+- : lpres (ls-pi1-s Dstep) (of^-pi1 Dof) DofQ ([x][dof] of^-pi1 (Dof' x dof))
 	<- lpres Dstep Dof DofQ Dof'.
-- : lpres (ls-pi2-s Dstep) (of^-pi2 Dof DT) DofQ ([x][vx][dof] of^-pi2 (Dof' x vx dof) DT)
+- : lpres (ls-pi2-s Dstep) (of^-pi2 Dof) DofQ ([x][dof] of^-pi2 (Dof' x dof))
 	<- lpres Dstep Dof DofQ Dof'.
-- : lpres (ls-app-s1 Dstep) (of^-app Dof1 Dof2 DT) DofQ ([x][vx][dof] of^-app (Dof1' x vx dof) Dof2 DT)
+- : lpres (ls-app-s1 Dstep) (of^-app Dof1 Dof2) DofQ ([x][dof] of^-app (Dof1' x dof) Dof2)
 	<- lpres Dstep Dof1 DofQ Dof1'.
-- : lpres (ls-app-s2 Dstep) (of^-app Dof1 Dof2 DT) DofQ ([x][vx][dof] of^-app Dof1 (Dof2' x vx dof) DT)
+- : lpres (ls-app-s2 Dstep) (of^-app Dof1 Dof2) DofQ ([x][dof] of^-app Dof1 (Dof2' x dof))
 	<- lpres Dstep Dof2 DofQ Dof2'.
 %{- : lpres (ms*-let-s1 Dstep) (of^-let DofM DofE) DofQ ([x] [dof] of^-let DofM (DofE' x dof))
 	<- lpres Dstep DofE DofQ DofE'.}%
@@ -24,55 +26,55 @@ lpres : lstep E Q E' -> of^ E T wor1 dot-t -> of^ Q TQ wor2 dot-d -> ({x} variab
 %total {Dstep Dof} (lpres Dstep Dof _ _).
 
 %% NORMAL STEP PRESERVATION (SUBSTEP RULES)
-mstep-pres : mstep W E E' -> of^ E T W dot-t -> of^ E' T W dot-t -> type.
+mstep-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 %mode mstep-pres +Dstep +Dof -Dof'.
 - : mstep-pres (ms-tup-s1 Dstep) (of^-tup Dof1 Dof2) (of^-tup Dof1' Dof2)
 	<- mstep-pres Dstep Dof1 Dof1'.
 - : mstep-pres (ms-tup-s2 Dstep) (of^-tup Dof1 Dof2) (of^-tup Dof1 Dof2')
 	<- mstep-pres Dstep Dof2 Dof2'. 
-- : mstep-pres (ms-pi1-s Dstep) (of^-pi1 Dof DT) (of^-pi1 Dof' DT)
+- : mstep-pres (ms-pi1-s Dstep) (of^-pi1 Dof) (of^-pi1 Dof')
 	<- mstep-pres Dstep Dof Dof'.
-- : mstep-pres (ms-pi2-s Dstep) (of^-pi2 Dof DT) (of^-pi2 Dof' DT)
+- : mstep-pres (ms-pi2-s Dstep) (of^-pi2 Dof) (of^-pi2 Dof')
 	<- mstep-pres Dstep Dof Dof'.
-- : mstep-pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2 Drx) (of^-app Dof1' Dof2 Drx)
+- : mstep-pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1' Dof2)
 	<- mstep-pres Dstep Dof1 Dof1'.
-- : mstep-pres (ms-app-s2 Dstep) (of^-app Dof1 Dof2 Drx) (of^-app Dof1 Dof2' Drx)
+- : mstep-pres (ms-app-s2 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1 Dof2')
 	<- mstep-pres Dstep Dof2 Dof2'.
 - : mstep-pres (ms-let-s1 Dstep) (of^-let DofE DofM) (of^-let DofE' DofM) 
 	<- mstep-pres Dstep DofE DofE'.
-- : mstep-pres (ms-lam-s Dstep) (of^-lam2 Dwf DofM) (of^-lam2 Dwf DofM') 
-	<- {x} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
-		mstep-pres (Dstep x dvar) (DofM x dvar dof) (DofM' x dvar dof).
+- : mstep-pres (ms-lam-s Dstep) (of^-lam Dwf DofM) (of^-lam Dwf DofM') 
+	<- {x} {dof : of^ x T wor2} 
+		mstep-pres (Dstep x) (DofM x dof) (DofM' x dof).
 - : mstep-pres (ms-let-s2 Dstep) (of^-let DofE DofM) (of^-let DofE DofM') 
-	<- {x} {dvar : variable x} {dof : of^ x T wor2 dot-d} 
-		mstep-pres (Dstep x dvar) (DofM x dvar dof) (DofM' x dvar dof).
+	<- {x} {dof : of^ x T wor2} 
+		mstep-pres (Dstep x) (DofM x dof) (DofM' x dof).
 
 
 %% NORMAL STEP PRESERVATION (VALUE MARKERS)
 - : mstep-pres ms-tup-d (of^-tup (of^-exv Dof1) (of^-exv Dof2)) (of^-exv (of^-tup Dof1 Dof2)).
-- : mstep-pres ms-pi1-d (of^-pi1 (of^-exv Dof) _) (of^-exv (of^-pi1 Dof redux-d2)).
-- : mstep-pres ms-pi2-d (of^-pi2 (of^-exv Dof) _) (of^-exv (of^-pi2 Dof redux-d2)).
-- : mstep-pres ms-lam-d (of^-lam2 Dwf ([x][vx][ofx] of^-exv (Dof x vx ofx))) (of^-exv (of^-lam2 Dwf Dof)).
-- : mstep-pres ms-app-d (of^-app (of^-exv Dof1) (of^-exv Dof2) _) (of^-exv (of^-app Dof1 Dof2 redux-d2)).
-- : mstep-pres ms-let-d (of^-let (of^-exv DofE) ([x][vx][ofx] of^-exv (DofM x vx ofx))) (of^-exv (of^-let DofE DofM)).
-- : mstep-pres (ms-next-d Dvar) (of^-next-t (of^-exv Dof)) (of^-exv (of^-next-d Dof Dvar)).
+- : mstep-pres ms-pi1-d (of^-pi1 (of^-exv Dof)) (of^-exv (of^-pi1 Dof)).
+- : mstep-pres ms-pi2-d (of^-pi2 (of^-exv Dof)) (of^-exv (of^-pi2 Dof)).
+- : mstep-pres ms-lam-d (of^-lam Dwf ([x][ofx] of^-exv (Dof x ofx))) (of^-exv (of^-lam Dwf Dof)).
+- : mstep-pres ms-app-d (of^-app (of^-exv Dof1) (of^-exv Dof2)) (of^-exv (of^-app Dof1 Dof2)).
+- : mstep-pres ms-let-d (of^-let (of^-exv DofE) ([x][ofx] of^-exv (DofM x ofx))) (of^-exv (of^-let DofE DofM)).
+- : mstep-pres ms-next-d (of^-next (of^-exv (of^-exv Dof))) (of^-exv (of^-next Dof)).
 
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
-- : mstep-pres (ms-pi1-r W) (of^-pi1 (of^-exv (of^-tup Dof _)) _) (of^-exv Dof).
-- : mstep-pres (ms-pi2-r W) (of^-pi2 (of^-exv (of^-tup _ Dof)) _) (of^-exv Dof).
-- : mstep-pres (ms-app-r W) (of^-app (of^-exv (of^-lam1 _ DofM _)) (of^-exv DofE) _) (DofM E DofE).
+- : mstep-pres (ms-pi1-r W) (of^-pi1 (of^-exv (of^-tup Dof _))) (of^-exv Dof).
+- : mstep-pres (ms-pi2-r W) (of^-pi2 (of^-exv (of^-tup _ Dof))) (of^-exv Dof).
+- : mstep-pres (ms-app-r W) (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (DofM E DofE).
 %%- : mstep-pres (ms-let-r _) (of^-let DofM DofE) (DofM E DofE).
 
 
 
 %% STAGING FEATURE PRESERVATION
-- : mstep-pres (ms-next-s Dstep) (of^-next-t Dof) (of^-next-t Dof')
+- : mstep-pres (ms-next-s Dstep) (of^-next Dof) (of^-next Dof')
 	<- mstep-pres Dstep Dof Dof'.
 - : mstep-pres (ms-prev-s Dstep) (of^-prev Dof) (of^-prev Dof')
 	<- mstep-pres Dstep Dof Dof'.
-- : mstep-pres (ms-prev-ls Dstep) (of^-prev Dof) (of^-let (of^-exv DofQ) ([x][vx][dof] of^-prev (Dof' x vx dof)))
+- : mstep-pres (ms-prev-ls Dstep) (of^-prev Dof) (of^-let (of^-exv DofQ) ([x][dof] of^-prev (Dof' x dof)))
 	<- lpres Dstep Dof DofQ Dof'.
-- : mstep-pres ms-prev-r (of^-prev (of^-exv (of^-next-d Dof _))) (of^-exv Dof).
+- : mstep-pres ms-prev-r (of^-prev (of^-exv (of^-next Dof))) (of^-exv Dof).
 - : mstep-pres (ms-grnd-s Dstep) (of^-grnd Dof) (of^-grnd Dof')
 	<- mstep-pres Dstep Dof Dof'.
 - : mstep-pres ms-grnd-d (of^-grnd (of^-exv Dof)) (of^-exv (of^-grnd Dof)).

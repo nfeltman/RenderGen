@@ -1,11 +1,11 @@
 %%  USEFUL BLOCKS
-%block det-block = (term-block | vars-block).
+%block det-block = (term-block | term-block).
 
 %% VARIABLE AND NOT VARIABLE ARE EXCLLUSIVE
-excl-var-notvar : variable E -> not-variable E -> false -> type.
-%mode excl-var-notvar +Dvar +Dnotvar -Dfalse.
-%worlds (det-block) (excl-var-notvar _ _ _).
-%total D (excl-var-notvar D _ _).
+excl-var-notvar : not-variable (exv E) -> false -> type.
+%mode excl-var-notvar +Dnotvar -Dfalse.
+%worlds (det-block) (excl-var-notvar _ _).
+%total D (excl-var-notvar D _).
 
 %% MSTEPS AND LSTEPS ARE EXCLUSIVE
 excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
@@ -23,10 +23,8 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s2 Dstep) (ls-app-s2 Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
-- : excl-mstep-lstep (ms-let-s1 Dstep) (ls-let-s1 Dstep') Dfalse
-	<- excl-mstep-lstep Dstep Dstep' Dfalse.
-- : excl-mstep-lstep (ms-next-d Dvar) (ls-next-r Dnotvar) Dfalse
-	<- excl-var-notvar Dvar Dnotvar Dfalse.
+- : excl-mstep-lstep ms-next-d (ls-next-r Dnotvar) Dfalse
+	<- excl-var-notvar Dnotvar Dfalse.
 %worlds (det-block) (excl-mstep-lstep _ _ _).
 %total (D) (excl-mstep-lstep _ D _).
 
@@ -61,9 +59,9 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 - : lstep/unique (ls-app-s2 Dstep) (ls-app-s2 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong2 app eq-term_ (DeqE x) (DeqE' x).
-- : lstep/unique (ls-let-s1 Dstep) (ls-let-s1 Dstep') DeqQ DeqE'
+%{- : lstep/unique (ls-let-s1 Dstep) (ls-let-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/let (DeqE x) ([x] eq-term_) (DeqE' x).
+	<- {x} eq-cong/let (DeqE x) ([x] eq-term_) (DeqE' x).}%
 %worlds (det-block) (lstep/unique _ _ _ _).
 %total D (lstep/unique D _ _ _).
 
@@ -82,7 +80,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-lam-d ms-lam-d eq-term_.
 - : step/unique ms-app-d ms-app-d eq-term_.
 - : step/unique ms-let-d ms-let-d eq-term_.
-- : step/unique (ms-next-d _) (ms-next-d _) eq-term_.
+- : step/unique ms-next-d ms-next-d eq-term_.
 - : step/unique ms-grnd-d ms-grnd-d eq-term_.
 %% SUBSTEP RECURSIVE CASES
 - : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
@@ -98,8 +96,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong pi2 Deq Deq'.
 - : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
-	<- ({x} {xvar : variable x}
-		step/unique (Dstep1 x xvar) (Dstep2 x xvar) (Deq x))
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
 	<- eq-cong/lam Deq Deq'.
 - : step/unique (ms-app-s1 Dstep1) (ms-app-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
@@ -111,8 +108,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong/let Deq ([x] eq-term_) Deq'.
 - : step/unique (ms-let-s2 Dstep1) (ms-let-s2 Dstep2) Deq'
-	<- ({x} {xvar : variable x}
-		step/unique (Dstep1 x xvar) (Dstep2 x xvar) (Deq x))
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
 	<- eq-cong/let eq-term_ Deq Deq'.
 - : step/unique (ms-lett-s1 Dstep1) (ms-lett-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq

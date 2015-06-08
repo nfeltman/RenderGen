@@ -26,10 +26,16 @@ splg-app : splitG (app E1 E2) (app E1' E2')
 splg-exv : splitG (exv E) (exv E')
 			<- splitGv E E'.
 
+%% SPLITTING SECOND STAGE VARIABLES
+splitvar2 : term lang0 -> term lang2 -> type. %name splitvar2 Dsplvar2.
+%mode splitvar2 +Q -Q'.
+
 %% SPLITTING RESIDUALS
 splitres : term lang0 -> term lang2 -> type. %name splitres Dsplr.
 %mode splitres +Q -Q'.
 
+splr-var : splitres (exv E) (exv Q)
+			<- splitvar2 E Q.
 splr-ztup : splitres ztup (exv ztup).
 splr-pi1 : splitres (pi1 E) (pi1 E')
 			<- splitres E E'.
@@ -39,12 +45,12 @@ splr-tup : splitres (tup E1 E2) (tup E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
 splr-lam : splitres (lam M) (exv (lam M'))
-			<- {x}{x2} splitres x (exv x2) -> splitres (M x) (M' x2).
+			<- {x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2).
 splr-app : splitres (app E1 E2) (app E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
 splr-let : splitres (let E M) (let E' M')
-			<- ({x}{x2} splitres x (exv x2) -> splitres (M x) (M' x2))
+			<- ({x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2))
 			<- splitres E E'.
 
 %% SPLITTING RESIDUALS, VALUES, AND TERMS
@@ -56,19 +62,19 @@ split2 : term lang0 -> term lang1 -> (term lang2 -> term lang2) -> type. %name s
 %mode split2 +E -P -R.
 
 
-splv-ztup 	: splitval ztup ztup (exv ztup).
-splv-grnd	: splitval (grnd E) E' (exv ztup)
+splv-ztup 	: splitval ztup ztup ztup.
+splv-grnd	: splitval (grnd E) E' ztup
 			<- splitGv E E'.
 splv-next	: splitval (next E) ztup E'
-			<- splitres E E'.
+			<- splitvar2 E E'.
 splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E2 I2 Q2
 			<- splitval E1 I1 Q1.
-splv-lam	: splitval (lam M) (lam C) (exv (lam ([xl] lett (exv xl) R)))
-			<- {x}{x1}{x2} splitval x x1 (exv x2) -> split1 (M x) (C x1) ([l] R x2 l). 
+splv-lam	: splitval (lam M) (lam C) (lam ([xl] lett (exv xl) R))
+			<- {x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (C x1) ([l] R x2 l). 
 
 
-spl1-exv	: split1 (exv V) (exv (tup I ztup)) ([_] Q)
+spl1-exv	: split1 (exv V) (exv (tup I ztup)) ([_] (exv Q))
 			<- splitval V I Q.
 spl1-tup	: split1 (tup E1 E2) 
 					(lett C1 ([y1] [z1] lett C2 ([y2] [z2] exv (tup (tup y1 y2) (tup z1 z2))))) 
@@ -102,7 +108,7 @@ spl2-pi1	: split2 (pi1 E) P ([l] pi1 (R l))
 spl2-pi2	: split2 (pi2 E) P ([l] pi2 (R l))
 			<- split2 E P R.
 spl2-lam	: split2 (lam M) P ([l] exv (lam ([x] R x l)))
-			<- {x}{x2} splitres x (exv x2) -> split2 (M x) P ([l] R x2 l).
+			<- {x}{x2} splitvar2 x x2 -> split2 (M x) P ([l] R x2 l).
 spl2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett (exv l) ([l1] [l2] app (R1 l1) (R2 l2)))
 			<- split2 E2 P2 R2
 			<- split2 E1 P1 R1.
@@ -117,17 +123,19 @@ spl2-prev 	: split2 (prev E) (pi2 C) R
 			<- ({x : term} split1 x (pipe x ([_] x)) -> split1 (M x) (pipe (C2 x) ([l] R2 x l)))
 			<- split1 E (pipe C1 R1).}%
 spl2-let	: split2 (let E M) (tup P1 P2) ([l] lett (exv l) ([l1][l2] let (R1 l1) ([x] R2 x l2)))
-			<- ({x}{x2} splitres x (exv x2) -> split2 (M x) P2 ([l] R2 x2 l))
+			<- ({x}{x2} splitvar2 x x2 -> split2 (M x) P2 ([l] R2 x2 l))
 			<- split2 E P1 R1.
 
 
 %block splitting-varG : block {x:term lang0}{x1:term lang1} {dsplg : splitGv x x1}.
-%block splitting-var1 : block {x:term lang0}{x1:term lang1}{x2:term lang2} {dspl : splitval x x1 (exv x2)}.
-%block splitting-var2 : block {x:term lang0}{x2:term lang2} {dspl : splitres x (exv x2)}.
+%block splitting-var1 : block {x:term lang0}{x1:term lang1} {x2:term lang2} {dspl : splitval x x1 x2}.
+%block splitting-var2 : block {x:term lang0}{x2:term lang2} {dspl : splitvar2 x x2}.
 %block splitting-block = (splitting-var1 | splitting-var2 | splitting-varG).
 
 %worlds (splitting-block) (splitG _ _) (splitGv _ _).
 %unique (splitG +E -1Q) (splitGv +E -1Q).
+%worlds (splitting-block) (splitvar2 _ _).
+%unique splitvar2 +E -1Q.
 %worlds (splitting-block) (splitres _ _).
 %unique splitres +E -1Q.
 %worlds (splitting-block) (splitval _ _ _) (split1 _ _ _) (split2 _ _ _).
@@ -135,7 +143,7 @@ spl2-let	: split2 (let E M) (tup P1 P2) ([l] lett (exv l) ([l1][l2] let (R1 l1) 
 
 
 %block any-splitG   : some {E : term lang0} {Q : term lang1} block {dsplg : splitGv E Q}.
-%block any-splitres : some {E : term lang0} {Q : term lang2} block {dsplr : splitres E Q}.
+%block any-splitres : some {E : term lang0} {Q : term lang2} block {dsplr : splitvar2 E Q}.
 %block any-splitval : some {E : term lang0} {I : term lang1} {Q : term lang2} block {dsplr : splitval E I Q}.
 %block any-split = (any-splitres | any-splitval | any-splitG).
 

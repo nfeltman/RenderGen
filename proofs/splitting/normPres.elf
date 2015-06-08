@@ -4,24 +4,23 @@
 
 splGv-npres : splitGv E I -> form I norm -> type.
 %mode splGv-npres +Dspl -Dval.
-splr-npres : splitres E Q -> form Q comp -> type.
-%mode splr-npres +Dspl -Dcomp.
-splv-npres : splitval E I Q -> form I norm -> form Q comp -> type.
-%mode splv-npres +Dspl -Dval1 -Dcomp2.
+splvar2-npres : splitvar2 E Q -> form Q norm -> type.
+%mode splvar2-npres +Dspl -Dcomp.
+splv-npres : splitval E I Q -> form I norm -> form Q norm -> type.
+%mode splv-npres +Dspl -Dval1 -Dval2.
 
 %block splitting-npres-varG : block 
 	{x:term lang0}{x1:term lang1} {dsplg : splitGv x x1} 
 	{dval : form x1 norm} {_ : splGv-npres dsplg dval}.
 %block splitting-npres-var1 : block 
-	{x:term lang0}{x1:term lang1} {x2:term lang2} {dspl : splitval x x1 (exv x2)} 
-	{dval1 : form x1 norm} {dval2 : form x2 norm} {_ : splv-npres dspl dval1 (form-exv dval2)}.
+	{x:term lang0}{x1:term lang1} {x2:term lang2} {dspl : splitval x x1 x2} 
+	{dval1 : form x1 norm} {dval2 : form x2 norm} {_ : splv-npres dspl dval1 dval2}.
 %block splitting-npres-var2 : block 
-	{x:term lang0}{x2:term lang2} {dspl : splitres x (exv x2)} 
-	{dcomp : form x2 norm} {_ : splr-npres dspl (form-exv dcomp)}.
+	{x:term lang0}{x2:term lang2} {dspl : splitvar2 x x2} 
+	{dcomp : form x2 norm} {_ : splvar2-npres dspl dcomp}.
 %block splitting-npres-block = (splitting-npres-var1 | splitting-npres-var2 | splitting-npres-varG).
 
 %% GROUND SPLITTING NORMALITY PRESERVATION
-
 splG-npres : splitG E I -> form I comp -> type.
 %mode splG-npres +Dspl -Dcomp1.
 
@@ -47,8 +46,17 @@ splG-npres : splitG E I -> form I comp -> type.
 %worlds (splitting-npres-block) (splGv-npres _ _) (splG-npres _ _).
 %total (D1 D2) (splGv-npres D1 _) (splG-npres D2 _). 
 
-%% RESIDUAL SPLITTING NORMALITY PRESERVATION
+%% SECOND STAGE VARIABLE NORMALITY PRESERVATION (TRIVIAL BECAUSE ALWAYS ASSUMED)
+%worlds (splitting-npres-block) (splvar2-npres _ _).
+%total (D1) (splvar2-npres D1 _). 
 
+
+%% RESIDUAL SPLITTING NORMALITY PRESERVATION
+splr-npres : splitres E Q -> form Q comp -> type.
+%mode splr-npres +Dspl -Dcomp.
+
+- : splr-npres (splr-var Dsplvar) (form-exv Dval)
+	<- splvar2-npres Dsplvar Dval.
 - : splr-npres splr-ztup (form-exv form-ztup).
 - : splr-npres (splr-pi1 Dspl) (form-pi1 Dcomp)
 	<- splr-npres Dspl Dcomp.
@@ -58,15 +66,15 @@ splG-npres : splitG E I -> form I comp -> type.
 	<- splr-npres Dsplv1 Dval1
 	<- splr-npres Dsplv2 Dval2.
 - : splr-npres (splr-lam Dsplg) (form-exv (form-lam (Dcomp ztup)))
-	<- {x}{x2}{splx : splitres x (exv x2)}{compx2 : form x2 norm} 
-		splr-npres splx (form-exv compx2) -> splr-npres (Dsplg x x2 splx) (Dcomp x x2 compx2).
+	<- {x}{x2}{splx}{compx2} splvar2-npres splx compx2 -> 
+		splr-npres (Dsplg x x2 splx) (Dcomp x x2 compx2).
 - : splr-npres (splr-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
 	<- splr-npres Dspl1 Dcomp1
 	<- splr-npres Dspl2 Dcomp2.
 - : splr-npres (splr-let DsplgE DsplgM) (form-let DcompE (DcompM ztup))
 	<- splr-npres DsplgE DcompE
-	<- {x}{x2}{splx}{compx2} 
-		splr-npres splx (form-exv compx2) -> splr-npres (DsplgM x x2 splx) (DcompM x x2 compx2).
+	<- {x}{x2}{splx}{compx2} splvar2-npres splx compx2 -> 
+		splr-npres (DsplgM x x2 splx) (DcompM x x2 compx2).
 %worlds (splitting-npres-block) (splr-npres _ _).
 %total (D1) (splr-npres D1 _). 
 
@@ -76,21 +84,21 @@ spl1-npres : split1 E C R -> form C comp -> ({x} form x norm -> form (R x) comp)
 spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp) -> type.
 %mode spl2-npres +Dspl -Dcomp1 -Dcomp2.
 
-- : splv-npres splv-ztup form-ztup (form-exv form-ztup).
-- : splv-npres (splv-grnd Dspl) Dval1 (form-exv form-ztup)
+- : splv-npres splv-ztup form-ztup form-ztup.
+- : splv-npres (splv-grnd Dspl) Dval1 form-ztup
 	<- splGv-npres Dspl Dval1.
-- : splv-npres (splv-next Dspl) form-ztup Dcomp
-	<- splr-npres Dspl Dcomp.
+- : splv-npres (splv-next Dspl) form-ztup Dval
+	<- splvar2-npres Dspl Dval.
 - : splv-npres (splv-tup Dspl1 Dspl2) (form-tup Dval1 Dval2) (form-tup Dcomp1 Dcomp2)
 	<- splv-npres Dspl1 Dval1 Dcomp1
 	<- splv-npres Dspl2 Dval2 Dcomp2.
 - : splv-npres (splv-lam Dspl) 
-	(form-lam (DcompC ztup ztup form-ztup)) 
-	(form-exv (form-lam ([xl][vxl] form-lett (form-exv vxl) (DcompR ztup ztup form-ztup))))
+	(form-lam (DcompC ztup ztup form-ztup))
+	(form-lam ([xl][vxl] form-lett (form-exv vxl) (DcompR ztup ztup form-ztup)))
 	<- {x}{x1}{x2}{s}{vx1}{vx2}
-		splv-npres s vx1 (form-exv vx2) -> spl1-npres (Dspl x x1 x2 s) (DcompC x x2 vx2 x1 vx1) (DcompR x x1 vx1 x2 vx2).
+		splv-npres s vx1 vx2 -> spl1-npres (Dspl x x1 x2 s) (DcompC x x2 vx2 x1 vx1) (DcompR x x1 vx1 x2 vx2).
 
-- : spl1-npres (spl1-exv Dspl) (form-exv (form-tup Dval1 form-ztup)) ([x][fx] Dcomp2)
+- : spl1-npres (spl1-exv Dspl) (form-exv (form-tup Dval1 form-ztup)) ([x][fx] form-exv Dcomp2)
 	<- splv-npres Dspl Dval1 Dcomp2.
 - : spl1-npres (spl1-tup DsplA DsplB) 
 		(form-lett DcompA1 ([_][y1][_][z1] (form-lett DcompB1 ([_][y2][_][z2] 
@@ -135,7 +143,7 @@ spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp)
 - : spl2-npres (spl2-lam Dspl) 
 		(Dcomp1 ztup ztup form-ztup) 
 		([l][vl] form-exv (form-lam ([x][vx] Dcomp2 ztup x vx l vl)))
-	<- {x}{x2}{s}{vx2} splr-npres s (form-exv vx2) -> 
+	<- {x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
 		spl2-npres (Dspl x x2 s) (Dcomp1 x x2 vx2) (Dcomp2 x x2 vx2).
 - : spl2-npres (spl2-app DsplA DsplB) (form-tup DcompA1 DcompB1) 
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-app (DcompA2 l1 vl1) (DcompB2 l2 vl2)))
@@ -145,7 +153,7 @@ spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp)
 		(form-tup DcompE1 (DcompM1 ztup ztup form-ztup))  
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-let (DcompE2 l1 vl1) ([x][vx] DcompM2 ztup x vx l2 vl2)))
 	<- spl2-npres DsplE DcompE1 DcompE2
-	<- ({x}{x2}{s}{vx2} splr-npres s (form-exv vx2) -> 
+	<- ({x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
 		spl2-npres (DsplM x x2 s) (DcompM1 x x2 vx2) (DcompM2 x x2 vx2)).
 - : spl2-npres (spl2-prev Dspl) (form-pi2 Dcomp1) Dcomp2
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
