@@ -7,52 +7,69 @@
 
 
 %% GROUND SPLITTING CORRECTNESS
-scG : of^ E A worG dot-t -> splitG E' I' -> mred I' V -> mstep worG E E' -> splitG E I -> mred I V -> type.
-%mode scG +Dof +Dstep +Dspl' +Dred' -Dspl -Dred.
-- : scG (of^-pi1 (of^-exv (of^-tup _ Dof2)) _)
+scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep worG E E' -> splitG E I -> mred I V -> type.
+%mode scG +Dof +Dcomp +Dstep +Dspl' +Dred' -Dspl -Dred.
+- : scG (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dval2)))
 	(splg-exv Dsplg1)
 	Dred1
 	(ms-pi1-r _)
 	(splg-pi1 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi1 mred-exv)
-	<- splgv-total Dof2 Dsplg2.
-- : scG (of^-pi2 (of^-exv (of^-tup Dof1 _)) _)
+	<- splgv-total Dof2 Dval2 Dsplg2.
+- : scG (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dval1 _)))
 	(splg-exv Dsplg2)
 	Dred2
 	(ms-pi2-r _)
 	(splg-pi2 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi2 mred-exv)
-	<- splgv-total Dof1 Dsplg1.
-- : scG Dof
+	<- splgv-total Dof1 Dval1 Dsplg1.
+- : scG Dof Dcomp
 	(Dsplg3 : splitG (M E) I')
 	(Dred3 : mred I' _)
 	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M E))
 	(splg-app (splg-exv (splgv-lam DsplM)) (splg-exv DsplE)) 
 	(mred-app Dred3' mred-exv mred-exv)
-	<- splg-total Dof (splg-app 
+	<- splg-total Dof Dcomp (splg-app 
 		(splg-exv (splgv-lam (DsplM : {x}{x1} splitGv x x1 -> splitG (M x) (N x1)))) 
 		(splg-exv (DsplE : splitGv E I)))
 	<- splitG-unique Dsplg3 (DsplM E I DsplE : splitG (M E) (N I)) (Deq : eq-term I' (N I : term lang1))
 	<- mred-resp Dred3 Deq eq-term_ Dred3'.
-- : scG _ (splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv ms-tup-d (splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) (mred-tup mred-exv mred-exv).
-- : scG (of^-tup Dof _) (splg-tup Dsplg' DsplgB) (mred-tup Dred' DredB) 
-		(ms-tup-s1 Dstep) (splg-tup Dsplg DsplgB) (mred-tup Dred DredB)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-tup _ Dof) (splg-tup DsplgB Dsplg') (mred-tup DredB Dred') 
-		(ms-tup-s2 Dstep) (splg-tup DsplgB Dsplg) (mred-tup DredB Dred)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-pi1 Dof _) (splg-pi1 Dsplg') (mred-pi1 Dred') (ms-pi1-s Dstep) (splg-pi1 Dsplg) (mred-pi1 Dred)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-pi2 Dof _) (splg-pi2 Dsplg') (mred-pi2 Dred') (ms-pi2-s Dstep) (splg-pi2 Dsplg) (mred-pi2 Dred)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-app Dof _ _) (splg-app Dsplg' DsplgB) (mred-app DredM Dred' DredB) 
-		(ms-app-s1 Dstep) (splg-app Dsplg DsplgB) (mred-app DredM Dred DredB)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-app _ Dof _) (splg-app DsplgB Dsplg') (mred-app DredM DredB Dred')
-		(ms-app-s2 Dstep) (splg-app DsplgB Dsplg) (mred-app DredM DredB Dred)
-	<- scG Dof Dsplg' Dred' Dstep Dsplg Dred.
-%worlds (correctness-block) (scG _ _ _ _ _ _).
-%total (D) (scG _ _ _ D _ _).
+- : scG _ _
+	(splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv 
+	ms-tup-d 
+	(splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) (mred-tup mred-exv mred-exv).
+- : scG (of^-tup Dof _) (form^tup-c Dcomp _)
+		(splg-tup Dsplg' DsplgB) (mred-tup Dred' DredB) 
+		(ms-tup-s1 Dstep) 
+		(splg-tup Dsplg DsplgB) (mred-tup Dred DredB)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-tup _ Dof) (form^tup-c _ Dcomp)
+		(splg-tup DsplgB Dsplg') (mred-tup DredB Dred') 
+		(ms-tup-s2 Dstep) 
+		(splg-tup DsplgB Dsplg) (mred-tup DredB Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-pi1 Dof) (form^pi1-c Dcomp) 
+		(splg-pi1 Dsplg') (mred-pi1 Dred') 
+		(ms-pi1-s Dstep) 
+		(splg-pi1 Dsplg) (mred-pi1 Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-pi2 Dof) (form^pi2-c Dcomp) 
+		(splg-pi2 Dsplg') (mred-pi2 Dred') 
+		(ms-pi2-s Dstep) 
+		(splg-pi2 Dsplg) (mred-pi2 Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-app Dof _) (form^app-c Dcomp _) 
+		(splg-app Dsplg' DsplgB) (mred-app DredM Dred' DredB) 
+		(ms-app-s1 Dstep) 
+		(splg-app Dsplg DsplgB) (mred-app DredM Dred DredB)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-app _ Dof) (form^app-c _ Dcomp) 
+		(splg-app DsplgB Dsplg') (mred-app DredM DredB Dred')
+		(ms-app-s2 Dstep) 
+		(splg-app DsplgB Dsplg) (mred-app DredM DredB Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+%worlds (correctness-block) (scG _ _ _ _ _ _ _).
+%total (D) (scG _ _ _ _ D _ _).
 
 %% LIFTING CORRECTNESS
 lc : split1 E C R -> 
@@ -127,9 +144,9 @@ split-eval-eq : split1 E C _ -> mred C V -> split1 E C' _  -> mred C' V' -> eq-t
 %total {} (split-eval-eq _ _ _ _ _).
 
 strengthen-split-eval : 
-	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) (P x x2) (Q x x2)) -> 
+	({x : term lang0}{x2 : term lang2} splitvar2 x x2 -> split2 (E x) (P x x2) (Q x x2)) -> 
 	({x : term lang0}{x2 : term lang2} mred (P x x2) (V x x2)) ->
-	({x : term lang0}{x2 : term lang2} splitres x x2 -> split2 (E x) P' (Q' x2)) ->
+	({x : term lang0}{x2 : term lang2} splitvar2 x x2 -> split2 (E x) P' (Q' x2)) ->
 	mred P' V' -> type.
 %mode strengthen-split-eval +Dspl +Dred -Dspl' -Dred.
 - : strengthen-split-eval 
@@ -150,14 +167,15 @@ strengthen-split-eval :
 %total (D) (strengthen-split-eval D _ _ _).
 
 %% LEMMAS FOR SPLITTING CORRECTNESS
-sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 dot-t -> 
+sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 -> 
+		form^ (app (exv (lam M)) (exv E)) comp1 wor1 ->
 		split1 (M E) C' _ -> 
 		mred C' (tup I _) -> 
 		split1 (app (exv (lam M)) (exv E)) C _ -> 
 		mred C (tup I _) -> type.
-%mode sc1/app-r +Dof +Dspl' +Dred' -Dspl -Dred.
+%mode sc1/app-r +Dof +Dcomp +Dspl' +Dred' -Dspl -Dred.
 
-- : sc1/app-r Dof Dspl Dred
+- : sc1/app-r Dof Dcomp Dspl Dred
 	(spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
 	(mred-lett 
 		(mred-lett 
@@ -169,82 +187,67 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 dot-t ->
 			)
 		mred-exv
 		)
-	<- spl1-total Dof (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
+	<- spl1-total Dof Dcomp (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
 	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred''.
-%worlds (correctness-block) (sc1/app-r _ _ _ _ _).
-%total (D) (sc1/app-r D _ _ _ _).
+%worlds (correctness-block) (sc1/app-r _ _ _ _ _ _).
+%total (D) (sc1/app-r D _ _ _ _ _).
 
 
-%% VALUE SPLITTING PRODUCES VALUES
-val-to-val : splitval E I Q -> val I -> type.
-%mode val-to-val +Dsplv -Dval.
-- : val-to-val splv-ztup val-ztup.
-- : val-to-val (splv-grnd Dsplgv) Dval
-	<- gval-to-val Dsplgv Dval.
-- : val-to-val (splv-next _) val-ztup.
-- : val-to-val (splv-tup Dsplv1 Dsplv2) (val-tup Dval1 Dval2)
-	<- val-to-val Dsplv1 Dval1
-	<- val-to-val Dsplv2 Dval2.
-- : val-to-val (splv-lam _) val-lam.
-%worlds (term-block | any-splitres) (val-to-val _ _).
-%total (D) (val-to-val D _).
 
 %% SPLITTING CORRECTNESS
-sc1 : of^ E A wor1 dot-t -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> %{reqv (R B2) (R' B2') ->}% type.
-%mode sc1 +Dof +Dstep +Dspl' +Dred' -Dspl -Dred -Dconv -Dconv'.
-sc2 : of^ E A wor2 dot-t -> split2 E' P' R' -> mred P' B' -> mstep wor2 E E' -> split2 E P R -> mred P B -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> type.
-%mode sc2 +Dof +Dstep +Dspl' +Dred' -Dspl -Dred -Dconv -Dconv'.
-
-sc1+ : of^ E A wor1 dot-t -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> %{reqv (R B2) (R' B2') ->}% type.
+sc1 : of^ E A wor1 -> form^ E comp1 wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> %{reqv (R B2) (R' B2') ->}% type.
+%mode sc1 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv'.
+sc2 : of^ E A wor2 -> form^ E comp1 wor2 -> split2 E' P' R' -> mred P' B' -> mstep wor2 E E' -> split2 E P R -> mred P B -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> type.
+%mode sc2 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv'.
+%{
+sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> reqv (R B2) (R' B2') -> type.
 %mode sc1+ +Dof +Dstep +Dspl' +Dred' -Dspl -Dred -Dconv +Dconv'.
 
 %% POLARITY CONVERSION
 - : sc1+ Dof Dspl' DredC' Dstep Dspl DredC Dconv Dconv'
-	<- sc1 Dof Dspl' DredC' Dstep Dspl DredC Dconv _.
+	<- sc1 Dof Dspl' DredC' Dstep Dspl DredC Dconv _.}%
 
 
 %% STAGE ONE REDUCTION RULES
 
-- : sc1 (of^-pi1 (of^-exv (of^-tup _ Dof2)) _) 
-	(spl1-exv Dspl1) (mred-tup Dred1 mred-ztup)
+- : sc1 (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dcomp2)))
+	(spl1-exv Dspl1) (mred-exv)
 	(ms-pi1-r _)
 	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
-		(mred-tup (mred-pi1 (mred-tup Didem1 Didem2)) mred-ztup) 
-		(mred-tup (mred-tup Dred1 Didem2) mred-ztup))
+		(mred-tup (mred-pi1 mred-exv) mred-exv) 
+		mred-exv)
 	conv-ztup
 	conv-ztup
-	<- idem Dred1 Didem1
-	<- splv-total Dof2 Dspl2
-	<- val-to-val Dspl2 Dval2
-	<- val-auto Dval2 Didem2.
-- : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _)) _)
-	(spl1-exv Dspl2) (mred-tup Dred2 mred-ztup)
+	<- splv-total Dof2 Dcomp2 Dspl2.
+
+- : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dcomp1 _)))
+	(spl1-exv Dspl2) (mred-exv)
 	(ms-pi2-r _)
 	(spl1-pi2 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
-		(mred-tup (mred-pi2 (mred-tup Didem1 Didem2)) mred-ztup) 
-		(mred-tup (mred-tup Didem1 Dred2) mred-ztup))
+		(mred-tup (mred-pi2 mred-exv) mred-exv) 
+		mred-exv)
 	conv-ztup
 	conv-ztup
-	<- idem Dred2 Didem2
-	<- splv-total Dof1 Dspl1
-	<- val-to-val Dspl1 Dval1
-	<- val-auto Dval1 Didem1.
-- : sc1 Dof Dspl' Dred'
+	<- splv-total Dof1 Dcomp1 Dspl1.
+
+- : sc1 Dof Dcomp Dspl' Dred'
 	(Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) 
 	Dspl Dred Dconv Dconv'
 	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M E))
 	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
-	<- sc1/app-r Dof Dspl'' Dred' Dspl Dred
+	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred
 	<- lang-convert_12-total _ Dconv'
 	<- lang-convert_12-total _ Dconv.
-- : sc2 Dof 
-		(spl2-exv Dsplr : split2 (exv E) ztup _) mred-ztup
-		(Dstep : mstep wor2 (prev (exv (next E))) (exv E)) 
-		(spl2-prev (spl1-exv (splv-next Dsplr))) (mred-pi2 (mred-tup mred-ztup mred-ztup)) conv-ztup conv-ztup.
+- : sc2 Dof Dcomp
+		(spl2-exv (splr-var Dsplr)) mred-exv
+		(ms-prev-r : mstep wor2 (prev (exv (next E))) (exv (exv E))) 
+		(spl2-prev (spl1-exv (splv-next Dsplr))) (mred-pi2 mred-exv) 
+		conv-ztup conv-ztup.
 
 %% STAGE ONE DONENESS MARKING
+%{
 - : sc1 (of^-tup (of^-exv Dof1) (of^-exv Dof2))
 		(Dspl : split1 (exv (tup E1 E2)) C _)
 		(Dred : mred C (tup I B))
@@ -272,13 +275,13 @@ sc1+ : of^ E A wor1 dot-t -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1
 				(mred-tup Dauto2 mred-ztup))
 			(mred-tup Dauto1 mred-ztup))
 		eq-term_ Deq'' Dred'
-	<- lang-convert_12-total B Dconv.
+	<- lang-convert_12-total B Dconv.}%
 
-- : sc1 (of^-next-t (of^-exv Dof))
+- : sc1 (of^-next (of^-exv Dof)) (form^next-c (form^exv Dres))
 		(Dspl' : split1 (exv (next E)) C _) (Dred' : mred C (tup I _))
 		(ms-next-d _ :  mstep wor1 (next (exv E)) (exv (next E)))
 		(spl1-next (spl2-exv Dsplr)) Dred Dconv Dconv
-		<- splr-total Dof Dsplr
+		<- splr-total Dof Dres Dsplr
 		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred
 		<- lang-convert_12-total _ Dconv.
 

@@ -109,7 +109,7 @@ ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
 ms-prev-ls	: mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x)))
 			<- lstep E Q E'.
-ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv E).
+ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv (exv E)).
 ms-grnd-s	: mstep wor1 (grnd E) (grnd E')
 			<- mstep worG E E'.
 ms-grnd-d 	: mstep wor1 (grnd (exv E)) (exv (grnd E)).
