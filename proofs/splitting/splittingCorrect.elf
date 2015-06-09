@@ -288,18 +288,22 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 		(spl1-exv (splv-tup Dsplv1 Dsplv2))
 		(Dred)
 		(ms-tup-d : mstep wor1 (tup (exv V1) (exv V2)) (exv (tup V1 V2)))
-		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2)) 
+		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2))
 		(mred-lett (mred-lett mred-exv mred-exv) mred-exv)
-		conv-tupzz Dconv
-		<- lang-convert_12-total B Dconv.
+		conv-tupzz conv-ztup 
+		(reqv-trans reqv-lett reqv-tup-d : reqv 
+			(lett (exv (tup ztup ztup)) ([l1] [l2] tup (exv ztup) (exv ztup))) 
+			(exv (tup ztup ztup))
+		).
 
 - : sc1 (of^-next (of^-exv (of^-exv Dof))) (form^next-c (form^exv (form^var2 Dres)))
 		(Dspl' : split1 (exv (next E)) C _) (Dred' : mred C (tup I _))
 		(ms-next-d :  mstep wor1 (next (exv (exv E))) (exv (next E)))
 		(spl1-next (spl2-exv (splr-var Dsplr))) (mred-tup Dred1 Dred2) 
 		Dconv Dconv
+		_
 		<- splvar2-total Dof Dres Dsplr
-		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred
+		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred _
 		<- mred-invert/exv-tup Dred Dred1 Dred2
 		<- lang-convert_12-total _ Dconv.
 
