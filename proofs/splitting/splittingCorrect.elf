@@ -142,11 +142,11 @@ lc :  lstep E Q E' -> split1 E C R -> splitres Q Q' -> ({x}{x2} splitres x x2 ->
 %total (D) (lc D _ _ _).}%
 
 %% USES UNIQUENESS OF SPLITTING TO SHOW REDUCTION RESPECTS IT
-split-eval-resp : split1 E C _ -> split1 E C' _ -> mred C (tup I B) -> mred C' (tup I B) -> type.
-%mode split-eval-resp +Dspl +Dspl' +Dred -Dred'.
-- : split-eval-resp _ _ Dred Dred.
-%worlds (correctness-block) (split-eval-resp _ _ _ _).
-%total {} (split-eval-resp _ _ _ _).
+split-eval-resp : split1 E C R -> split1 E C' R' -> mred C (tup I B) -> mred C' (tup I B) -> ({x} eq-term (R x) (R' x)) -> type.
+%mode split-eval-resp +Dspl +Dspl' +Dred -Dred' -Deq.
+- : split-eval-resp _ _ Dred Dred ([x] eq-term_).
+%worlds (correctness-block) (split-eval-resp _ _ _ _ _).
+%total {} (split-eval-resp _ _ _ _ _).
 
 split-eval-eq : split1 E C _ -> mred C V -> split1 E C' _  -> mred C' V' -> eq-term V V' -> type.
 %mode split-eval-eq +Dspl +Dspl' +Dred +Dred' -Deq.
@@ -181,13 +181,16 @@ strengthen-split-eval :
 %% LEMMAS FOR SPLITTING CORRECTNESS
 sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 -> 
 		form^ (app (exv (lam M)) (exv E)) comp1 wor1 ->
-		split1 (M E) C' _ -> 
-		mred C' (tup I B) -> 
-		split1 (app (exv (lam M)) (exv E)) C _ -> 
-		mred C (tup I (tup (tup ztup ztup) B)) -> type.
-%mode sc1/app-r +Dof +Dcomp +Dspl' +Dred' -Dspl -Dred.
+		split1 (M E) C' R' -> 
+		mred C' (tup I B0) -> 
+		split1 (app (exv (lam M)) (exv E)) C R -> 
+		mred C (tup I (tup (tup ztup ztup) B0)) -> 
+		lang-convert B0 B ->
+		reqv (R (tup (tup ztup ztup) B)) (R' B) ->
+		type.
+%mode sc1/app-r +Dof +Dcomp +Dspl' +Dred' -Dspl -Dred -Dconv -Dreqv.
 
-- : sc1/app-r Dof Dcomp Dspl Dred
+- : sc1/app-r Dof Dcomp Dspl (Dred : mred C' (tup I B0))
 	(spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
 	(mred-lett 
 		(mred-lett 
@@ -199,12 +202,27 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 			)
 		mred-exv
 		)
-	<- spl1-total Dof Dcomp (spl1-app (spl1-exv (splv-lam DsplM)) (spl1-exv DsplV))
-	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred''.
-%worlds (correctness-block) (sc1/app-r _ _ _ _ _ _).
-%total (D) (sc1/app-r D _ _ _ _ _).
-
-
+	Dconv Deqv
+	<- spl1-total Dof Dcomp (spl1-app 
+		(spl1-exv (splv-lam ([x][x1][x2][s] DsplM x x1 x2 s : split1 (M x) (C x1) (R x2) )))
+		(spl1-exv (DsplV : splitval V Vi Vq)))
+	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred'' ([l] Deq l : eq-term (R' l) (R Vq l))
+	<- lang-convert_12-total B0 (Dconv : lang-convert B0 B)
+	<- eq-term-sym (Deq B) (Deq' : eq-term (R Vq B) (R' B))
+	<- reqv-resp 
+		((reqv-trans5
+			reqv-lett
+			reqv-lett
+			(reqv-app-s2 reqv-tup-d) 
+			reqv-app  								
+			reqv-lett
+			)
+		: reqv 
+			(lett (exv (tup (tup ztup ztup) B)) ([l12] [l3] lett (exv l12) ([l1] [l2] app (exv (lam ([xl] lett (exv xl) R))) (tup (exv Vq) (exv l3)))))
+			(R Vq B))
+		eq-term_ Deq' Deqv.
+%worlds (correctness-block) (sc1/app-r _ _ _ _ _ _ _ _).
+%total (D) (sc1/app-r D _ _ _ _ _ _ _).
 
 %% SPLITTING CORRECTNESS
 sc1 : of^ E A wor1 -> form^ E comp1 wor1 -> 
@@ -234,8 +252,7 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 	(mred-lett 
 		(mred-tup (mred-pi1 mred-exv) mred-exv) 
 		mred-exv)
-	conv-ztup
-	conv-ztup
+	conv-ztup conv-ztup
 	reqv-pi1
 	<- splv-total Dof2 Dcomp2 Dspl2.
 
@@ -246,20 +263,18 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 	(mred-lett 
 		(mred-tup (mred-pi2 mred-exv) mred-exv) 
 		mred-exv)
-	conv-ztup
-	conv-ztup
+	conv-ztup conv-ztup
 	reqv-pi2
 	<- splv-total Dof1 Dcomp1 Dspl1.
 
 - : sc1 Dof Dcomp Dspl' Dred'
 	(Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) 
 	Dspl Dred 
-	Dconv Dconv' _
+	(conv-tup conv-tupzz Dconv) Dconv
+	Deqv
 	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M E))
 	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
-	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred
-	<- lang-convert_12-total _ Dconv'
-	<- lang-convert_12-total _ Dconv.
+	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
 
 - : sc2 Dof Dcomp
 		(spl2-exv (splr-var Dsplr)) mred-exv

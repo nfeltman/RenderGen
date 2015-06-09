@@ -2,6 +2,30 @@
 
 %% RESIDUAL EQUIVALENCE
 reqv : term L -> term L -> type. %name reqv Deqv.
+reqv-trans : reqv E1 E2 -> reqv E2 E3 -> reqv E1 E3.
+reqv-trans3 : reqv E1 E2 -> reqv E2 E3 -> reqv E3 E4 -> reqv E1 E4.
+reqv-trans4 : reqv E1 E2 -> reqv E2 E3 -> reqv E3 E4 -> reqv E4 E5 -> reqv E1 E5.
+reqv-trans5 : reqv E1 E2 -> reqv E2 E3 -> reqv E3 E4 -> reqv E4 E5 -> reqv E5 E6 -> reqv E1 E6.
 reqv-id : reqv E E.
 reqv-pi1 : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
 reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q1).
+reqv-lett : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
+reqv-app : reqv (app (exv (lam M)) (exv V)) (M V).
+reqv-app-s2 : reqv E2 E2' -> reqv (app E1 E2) (app E1 E2').
+reqv-tup-d : reqv (tup (exv Q1) (exv Q2)) (exv (tup Q1 Q2)).
+
+
+have-reqv : reqv E V -> reqv E V -> type.
+%mode have-reqv +Dred -Dred'.
+- : have-reqv Dred Dred.
+%worlds (term-block) (have-reqv _ _).
+%total {} (have-reqv _ _).
+
+
+%% RESIDUAL EQUIVALENCE RESPECTS TERM EQUALITY
+reqv-resp : reqv E V -> eq-term E E' -> eq-term V V' -> reqv E' V' -> type.
+%mode reqv-resp +Dred +DeqE +Didty -Dred'.
+- : reqv-resp Dred eq-term_ eq-term_ Dred.
+%worlds (term-block) (reqv-resp _ _ _ _).
+%total {} (reqv-resp _ _ _ _).
+
