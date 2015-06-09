@@ -3,4 +3,5 @@
 %% RESIDUAL EQUIVALENCE
 reqv : term L -> term L -> type. %name reqv Deqv.
 reqv-id : reqv E E.
-
+reqv-pi1 : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
+reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q1).
