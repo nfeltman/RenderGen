@@ -1,7 +1,7 @@
 
 
 end-to-end-correct-1 : 
-	of^ E A wor1 dot-t -> 
+	of^ E A wor1 -> 
 	mstep* E (exv V) wor1 -> 
 	split1 E C _ -> 
 	mred C (tup I _) -> 
