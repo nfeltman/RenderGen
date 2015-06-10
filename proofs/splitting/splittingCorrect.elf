@@ -297,28 +297,29 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 		).
 
 - : sc1 (of^-next (of^-exv (of^-exv Dof))) (form^next-c (form^exv (form^var2 Dres)))
-		(Dspl' : split1 (exv (next E)) C _) (Dred' : mred C (tup I _))
+		(Dspl' : split1 (exv (next E)) C' R') (Dred' : mred C' (tup I B0))
 		(ms-next-d :  mstep wor1 (next (exv (exv E))) (exv (next E)))
 		(spl1-next (spl2-exv (splr-var Dsplr))) (mred-tup Dred1 Dred2) 
 		Dconv Dconv
-		_
-		<- splvar2-total Dof Dres Dsplr
-		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred _
+		Deqv
+		<- splvar2-total Dof Dres (Dsplr : splitvar2 E Q)
+		<- split-eval-resp Dspl' (spl1-exv (splv-next Dsplr)) Dred' Dred ([x] Deq x : eq-term (R' x) (exv Q))
 		<- mred-invert/exv-tup Dred Dred1 Dred2
-		<- lang-convert_12-total _ Dconv.
+		<- lang-convert_12-total B0 (Dconv : lang-convert B0 B)
+		<- reqv-resp (reqv-id : reqv (R' B) (R' B)) (Deq B) eq-term_  (Deqv : reqv (exv Q) (R' B)).
 
 - : sc1 (of^-grnd (of^-exv Dof)) (form^grnd (form^exv Dval))
-		(Dspl' : split1 (exv (grnd E)) C _) (Dred' : mred C (tup I _))
+		(Dspl' : split1 (exv (grnd E)) C' R') (Dred' : mred C' (tup I B0))
 		(ms-grnd-d :  mstep wor1 (grnd (exv E)) (exv (grnd E)))
 		(spl1-grnd (splg-exv Dsplr)) (mred-tup Dred1 Dred2) 
-		Dconv Dconv'
+		Dconv Dconv
+		Deqv
 		<- splgv-total Dof Dval Dsplr
-		<- split1-unique Dspl' (spl1-exv (splv-grnd Dsplr)) Deq _
+		<- split1-unique Dspl' (spl1-exv (splv-grnd Dsplr)) Deq ([x] DeqR x : eq-term (R' x) (exv ztup))
 		<- mred-resp Dred' Deq eq-term_ Dred
 		<- mred-invert/exv-tup Dred Dred1 Dred2
-		<- lang-convert_12-total _ Dconv'
-		<- lang-convert_12-total _ Dconv.
-
+		<- lang-convert_12-total B0 (Dconv : lang-convert B0 B)
+		<- reqv-resp (reqv-id : reqv (R' B) (R' B)) (DeqR B) eq-term_  (Deqv : reqv (exv ztup) (R' B)).
 
 %% STAGE ONE SUBSTEPS
 
