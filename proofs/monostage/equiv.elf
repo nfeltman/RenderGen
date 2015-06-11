@@ -8,7 +8,7 @@ reqv-trans4 : reqv E1 E2 -> reqv E2 E3 -> reqv E3 E4 -> reqv E4 E5 -> reqv E1 E5
 reqv-trans5 : reqv E1 E2 -> reqv E2 E3 -> reqv E3 E4 -> reqv E4 E5 -> reqv E5 E6 -> reqv E1 E6.
 reqv-id : reqv E E.
 reqv-pi1 : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
-reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q1).
+reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q2).
 reqv-lett : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
 reqv-app : reqv (app (exv (lam M)) (exv V)) (M V).
 reqv-app-s : reqv E1 E1' -> reqv E2 E2' -> reqv (app E1 E2) (app E1' E2').

@@ -232,8 +232,13 @@ sc1 : of^ E A wor1 -> form^ E comp1 wor1 ->
 	lang-convert B B2 -> lang-convert B' B2' -> 
 	reqv (R B2) (R' B2') -> type.
 %mode sc1 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv' -Deqv.
-sc2 : of^ E A wor2 -> form^ E comp1 wor2 -> split2 E' P' R' -> mred P' B' -> mstep wor2 E E' -> split2 E P R -> mred P B -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> type.
-%mode sc2 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv'.
+sc2 : of^ E A wor2 -> form^ E comp1 wor2 -> 
+	split2 E' P' R' -> mred P' B' -> 
+	mstep wor2 E E' -> 
+	split2 E P R -> mred P B -> 
+	lang-convert B B2 -> lang-convert B' B2' -> 
+	reqv (R B2) (R' B2') -> type.
+%mode sc2 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv' -Deqv.
 %{
 sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B (B2 : term lang2) -> lang-convert B' (B2' : term lang2) -> reqv (R B2) (R' B2') -> type.
 %mode sc1+ +Dof +Dstep +Dspl' +Dred' -Dspl -Dred -Dconv +Dconv'.
@@ -280,22 +285,28 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 		(spl2-exv (splr-var Dsplr)) mred-exv
 		(ms-prev-r : mstep wor2 (prev (exv (next E))) (exv (exv E))) 
 		(spl2-prev (spl1-exv (splv-next Dsplr))) (mred-pi2 mred-exv) 
-		conv-ztup conv-ztup.
+		conv-ztup conv-ztup reqv-id.
 
 %% STAGE ONE DONENESS MARKING
 
 - : sc1 (of^-tup (of^-exv Dof1) (of^-exv Dof2)) (form^tup-c (form^exv Dcomp1) (form^exv Dcomp2))
 		(spl1-exv (splv-tup (Dsplv1 : splitval V1 I1 Q1) (Dsplv2 : splitval V2 I2 Q2)))
-		(Dred : mred (exv (tup (tup I1 I2) ztup)) (tup I B'))
+		(Dred' : mred (exv (tup (tup I1 I2) ztup)) (tup I B'))
 		(ms-tup-d : mstep wor1 (tup (exv V1) (exv V2)) (exv (tup V1 V2)))
 		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2))
-		(mred-lett (mred-lett mred-exv mred-exv) mred-exv)
-		conv-tupzz conv-ztup
+		(mred-lett (mred-lett DredM mred-exv) mred-exv : mred _ (tup I (tup ztup ztup)))
+		conv-tupzz Dconv'
 		(reqv-trans reqv-lett reqv-tup-d : reqv 
 			(lett (exv (tup ztup ztup)) ([l1] [l2] tup (exv Q1) (exv Q2))) 
 			(exv (tup Q1 Q2))
 		)
-		<- lang-convert_12-total B Dconv'.
+		<- mred-invert/exv-tup Dred' (DredI : mred (exv (tup I1 I2)) I) _
+		<- mred-invert/exv DredI (Deq : eq-term (tup I1 I2) I)
+		<- eq-cong2 tup Deq (eq-term_ : eq-term (tup ztup ztup) _) Deq'
+		<- mred-resp mred-exv eq-term_ Deq' DredM
+		<- lang-convert_12-total B' Dconv'.
+
+
 
 - : sc1 (of^-next (of^-exv (of^-exv Dof))) (form^next-c (form^exv (form^var2 Dres)))
 		(Dspl' : split1 (exv (next E)) C' R') (Dred' : mred C' (tup I B0))
@@ -460,12 +471,12 @@ invert/exv--resp/tup :
 	<- lang-convert_12-total B1 (Dconv1 : lang-convert B1 BB1)
 	<- lang-convert_12-total B3 (Dconv3 : lang-convert B3 BB3).
 
-%{
+
 - : sc1 (of^-next Dof) (form^next-c Dcomp)
 		(spl1-next Dspl') (mred-tup mred-exv Dred')
 		(ms-next-s Dstep)
-		(spl1-next Dspl) (mred-tup mred-exv Dred) Dconv Dconv'
-	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv'.}%
+		(spl1-next Dspl) (mred-tup mred-exv Dred) Dconv Dconv' Dreqv
+	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Dreqv.
 
 - : sc1 (of^-grnd Dof) (form^grnd Dcomp)
 		(spl1-grnd Dspl') (mred-tup Dred' mred-exv)
@@ -474,7 +485,7 @@ invert/exv--resp/tup :
 		conv-ztup conv-ztup reqv-id
 	<- scG Dof Dcomp Dspl' Dred' Dstep Dspl Dred.
 
-
+%{
 %% STAGE TWO DONENESS MARKING
 - : sc2 _ _ (spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-exv
 		ms-tup-d
@@ -544,7 +555,7 @@ invert/exv--resp/tup :
 	<- eq-cong ([x] tup (exv ztup) (pi2 x)) Deq' Deq''
 	<- mred-resp Dred Deq'' eq-term_ (mred-tup _ Dred')
 	<- lang-convert_12-total _ Dconv'
-	<- lang-convert_12-total _ Dconv.
+	<- lang-convert_12-total _ Dconv.}%
 
-%worlds (correctness-block) (sc1 _ _ _ _ _ _ _ _ _ _) (sc2 _ _ _ _ _ _ _ _ _).
-%total (D1 E) (sc1 _ _ _ _ D1 _ _ _ _ _) (sc2 _ _ _ _ E _ _ _ _).
+%worlds (correctness-block) (sc1 _ _ _ _ _ _ _ _ _ _) (sc2 _ _ _ _ _ _ _ _ _ _).
+%total (D1 E) (sc1 _ _ _ _ D1 _ _ _ _ _) (sc2 _ _ _ _ E _ _ _ _ _).
