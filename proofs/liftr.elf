@@ -393,9 +393,9 @@ lang-convert_12-total : {E : term lang1} lang-convert E (E2 : term lang2) -> typ
 %worlds (convert-total-block | convert-total-ignore-block) (lang-convert_12-total _ _).
 %total (D) (lang-convert_12-total D _).
 
-%{
-conv-resp : lang-convert E1 _ E2 -> eq-term E1 E1' -> lang-convert E1' _ E2 -> type.
-%mode conv-resp +D1 +D2 -D3.
-- : conv-resp Dof eq-term_ Dof.
-%worlds (term-block) (conv-resp _ _ _).
-%total {} (conv-resp _ _ _).}%
+
+conv-resp : lang-convert E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> lang-convert E1' E2' -> type.
+%mode conv-resp +D1 +D2 +D3 -D3.
+- : conv-resp Dof eq-term_ eq-term_ Dof.
+%worlds (term-block) (conv-resp _ _ _ _).
+%total {} (conv-resp _ _ _ _).
