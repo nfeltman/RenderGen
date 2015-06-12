@@ -32,13 +32,15 @@ bcc-let : binder-compc (let E).
 mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 
 %% DONE MARKING RULES
-ms-tup-d : mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
-ms-pi1-d : mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
-ms-pi2-d : mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
-ms-lam-d : mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
-ms-app-d : mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
-ms-let-d : mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
-ms-next-d : mstep wor1 (next (exv (exv E))) (exv (next E)).
+ms-tup-d 	: mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
+ms-inj1-d 	: mstep worG (inj1 (exv E)) (exv (inj1 E)).
+ms-inj2-d 	: mstep worG (inj2 (exv E)) (exv (inj2 E)).
+ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
+ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
+ms-lam-d 	: mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
+ms-app-d 	: mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
+ms-let-d 	: mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
+ms-next-d 	: mstep wor1 (next (exv (exv E))) (exv (next E)).
 
 %% M STEP - SUBSTEP RULES
 ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
@@ -49,6 +51,10 @@ ms-pi1-s	: mstep W (pi1 E) (pi1 E')
 			<- mstep W E E'.
 ms-pi2-s	: mstep W (pi2 E) (pi2 E')
 			<- mstep W E E'.
+ms-inj1-s	: mstep worG (inj1 E) (inj1 E')
+			<- mstep worG E E'.
+ms-inj2-s	: mstep worG (inj2 E) (inj2 E')
+			<- mstep worG E E'.
 ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
 			<- mstep W E1 E1'.
 ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')

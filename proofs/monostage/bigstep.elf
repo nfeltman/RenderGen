@@ -17,6 +17,10 @@ mred-pi1  : mred (pi1 E) V
 			<- mred E (tup V _).
 mred-pi2  : mred (pi2 E) V
 			<- mred E (tup _ V).
+mred-inj1  : mred (inj1 E) (inj1 V)
+			<- mred E V.
+mred-inj2  : mred (inj2 E) (inj2 V)
+			<- mred E V.
 mred-case : mred (case E M N) V2
 			<- mred E V
 			<- mred/case V M N V2.
@@ -54,6 +58,10 @@ mred/case-pres :
 	<- mred-pres Dred DofE Dcomp (of-tup DofV _) (form-tup Dval _).
 - : mred-pres (mred-pi2 Dred) (of-pi2 DofE) (form-pi2 Dcomp) DofV Dval
 	<- mred-pres Dred DofE Dcomp (of-tup _ DofV) (form-tup _ Dval).
+- : mred-pres (mred-inj1 Dred) (of-inj1 Dwf DofE) (form-inj1 Dcomp) (of-inj1 Dwf DofV) (form-inj1 Dval)
+	<- mred-pres Dred DofE Dcomp DofV Dval.
+- : mred-pres (mred-inj2 Dred) (of-inj2 Dwf DofE) (form-inj2 Dcomp) (of-inj2 Dwf DofV) (form-inj2 Dval)
+	<- mred-pres Dred DofE Dcomp DofV Dval.
 - : mred-pres (mred-case DredMN DredE) 
 		(of-case DofE DofM DofN) 
 		(form-case DcompE DcompM DcompN)

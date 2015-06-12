@@ -115,6 +115,10 @@ splg-total : of^ E A worG -> form^ E comp1 worG -> splitG E _ -> type.
 - : splgv-total (of^-tup Dof1 Dof2) (form^tup-n Dval1 Dval2) (splgv-tup Dsplg1 Dsplg2)
 	<- splgv-total Dof1 Dval1 Dsplg1
 	<- splgv-total Dof2 Dval2 Dsplg2.
+- : splgv-total (of^-inj1 _ Dof) (form^inj1-n Dcomp) (splgv-inj1 Dsplg)
+	<- splgv-total Dof Dcomp Dsplg.
+- : splgv-total (of^-inj2 _ Dof) (form^inj2-n Dcomp) (splgv-inj2 Dsplg)
+	<- splgv-total Dof Dcomp Dsplg.
 - : splgv-total (of^-lam _ Dof) (form^lamG Dcomp) (splgv-lam Dsplg')
 	<- ({x}{x1} {dof} {vx} {dspl : splitGv x x1} splgv-total dof vx dspl ->
 		splg-total (Dof x dof) (Dcomp x vx) (Dsplg x x1 dspl))
@@ -126,6 +130,10 @@ splg-total : of^ E A worG -> form^ E comp1 worG -> splitG E _ -> type.
 - : splg-total (of^-pi1 Dof) (form^pi1-c Dcomp) (splg-pi1 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-pi2 Dof) (form^pi2-c Dcomp) (splg-pi2 Dsplg)
+	<- splg-total Dof Dcomp Dsplg.
+- : splg-total (of^-inj1 _ Dof) (form^inj1-c Dcomp) (splg-inj1 Dsplg)
+	<- splg-total Dof Dcomp Dsplg.
+- : splg-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (splg-inj2 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-app Dof1 Dof2) (form^app-c Dcomp1 Dcomp2) (splg-app Dsplg1 Dsplg2)
 	<- splg-total Dof1 Dcomp1 Dsplg1

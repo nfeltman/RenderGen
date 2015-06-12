@@ -52,22 +52,29 @@ prog/pi1 : dos W E -> of^ E (prod T1 T2) W -> form^ E comp1 W -> dos W (pi1 E) -
 %worlds (von-block) (prog/pi1 _ _ _ _).
 %total (Ddos) (prog/pi1 Ddos _ _ _).
 
-prog/pi2/help : of^ E (prod T1 T2) W -> form^ E norm1 W -> dos W (pi2 (exv E)) -> type.
-%mode prog/pi2/help +Dof +Dform -Ddos'.
-- : prog/pi2/help _ _ (dos-mstep (ms-pi2-r fsw-wor1)).
-- : prog/pi2/help _ _ (dos-mstep (ms-pi2-r fsw-worG)).
-- : prog/pi2/help _ _ (dos-mstep ms-pi2-d).
-%worlds (von-block) (prog/pi2/help _ _ _).
-%total (Ddos) (prog/pi2/help Ddos _ _).
-
 prog/pi2 : dos W E -> of^ E (prod T1 T2) W -> form^ E comp1 W -> dos W (pi2 E) -> type.
 %mode prog/pi2 +Ddos +Dof +Dform -Ddos'.
 - : prog/pi2 (dos-mstep Dstep) _ _ (dos-mstep (ms-pi2-s Dstep)).
 - : prog/pi2 (dos-lstep Dstep) _ _ (dos-lstep (ls-pi2-s Dstep)).
-- : prog/pi2 dos-done (of^-exv Dof) (form^exv Dval) Ddos
-	<- prog/pi2/help Dof Dval Ddos.
+- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi2-r fsw-wor1)).
+- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi2-r fsw-worG)).
+- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep ms-pi2-d).
 %worlds (von-block) (prog/pi2 _ _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _ _).
+
+prog/inj1 : dos worG E -> dos worG (inj1 E) -> type.
+%mode prog/inj1 +Ddos -Ddos'.
+- : prog/inj1 (dos-mstep Dstep) (dos-mstep (ms-inj1-s Dstep)).
+- : prog/inj1 dos-done (dos-mstep ms-inj1-d).
+%worlds (von-block) (prog/inj1 _ _).
+%total (Ddos) (prog/inj1 Ddos _ ).
+
+prog/inj2 : dos worG E -> dos worG (inj2 E) -> type.
+%mode prog/inj2 +Ddos -Ddos'.
+- : prog/inj2 (dos-mstep Dstep) (dos-mstep (ms-inj2-s Dstep)).
+- : prog/inj2 dos-done (dos-mstep ms-inj2-d).
+%worlds (von-block) (prog/inj2 _ _).
+%total (Ddos) (prog/inj2 Ddos _ ).
 
 prog/lam : ({x} dos wor2 (M x)) -> dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos -Ddos'.
@@ -158,6 +165,12 @@ prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 - : prog (of^-pi2 Dof) (form^pi2-c Dcomp) Ddos'
 	<- prog Dof Dcomp Ddos
 	<- prog/pi2 Ddos Dof Dcomp Ddos'.
+- : prog (of^-inj1 _ Dof) (form^inj1-c Dcomp) Ddos'
+	<- prog Dof Dcomp Ddos
+	<- prog/inj1 Ddos Ddos'.
+- : prog (of^-inj2 _ Dof) (form^inj2-c Dcomp) Ddos'
+	<- prog Dof Dcomp Ddos
+	<- prog/inj2 Ddos Ddos'.
 - : prog (of^-lam _ DofM) (form^lam2c Dcomp) Ddos'
 	<- ({x} {dof: of^ x T wor2} {dvar : form^ x vars2 wor2}
 		prog (DofM x dof) (Dcomp x dvar) (Ddos x))

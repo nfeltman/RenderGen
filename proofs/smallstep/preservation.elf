@@ -36,6 +36,10 @@ mstep-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 	<- mstep-pres Dstep Dof Dof'.
 - : mstep-pres (ms-pi2-s Dstep) (of^-pi2 Dof) (of^-pi2 Dof')
 	<- mstep-pres Dstep Dof Dof'.
+- : mstep-pres (ms-inj1-s Dstep) (of^-inj1 Dwf Dof) (of^-inj1 Dwf Dof')
+	<- mstep-pres Dstep Dof Dof'.
+- : mstep-pres (ms-inj2-s Dstep) (of^-inj2 Dwf Dof) (of^-inj2 Dwf Dof')
+	<- mstep-pres Dstep Dof Dof'.
 - : mstep-pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1' Dof2)
 	<- mstep-pres Dstep Dof1 Dof1'.
 - : mstep-pres (ms-app-s2 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1 Dof2')
@@ -52,6 +56,8 @@ mstep-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 
 %% NORMAL STEP PRESERVATION (VALUE MARKERS)
 - : mstep-pres ms-tup-d (of^-tup (of^-exv Dof1) (of^-exv Dof2)) (of^-exv (of^-tup Dof1 Dof2)).
+- : mstep-pres ms-inj1-d (of^-inj1 Dwf (of^-exv Dof)) (of^-exv (of^-inj1 Dwf Dof)).
+- : mstep-pres ms-inj2-d (of^-inj2 Dwf (of^-exv Dof)) (of^-exv (of^-inj2 Dwf Dof)).
 - : mstep-pres ms-pi1-d (of^-pi1 (of^-exv Dof)) (of^-exv (of^-pi1 Dof)).
 - : mstep-pres ms-pi2-d (of^-pi2 (of^-exv Dof)) (of^-exv (of^-pi2 Dof)).
 - : mstep-pres ms-lam-d (of^-lam Dwf ([x][ofx] of^-exv (Dof x ofx))) (of^-exv (of^-lam Dwf Dof)).

@@ -38,6 +38,8 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv 
 	ms-tup-d 
 	(splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) (mred-tup mred-exv mred-exv).
+- : scG _ _ (splg-exv (splgv-inj1 Dsplg)) mred-exv ms-inj1-d (splg-inj1 (splg-exv Dsplg)) (mred-inj1 mred-exv).
+- : scG _ _ (splg-exv (splgv-inj2 Dsplg)) mred-exv ms-inj2-d (splg-inj2 (splg-exv Dsplg)) (mred-inj2 mred-exv).
 - : scG (of^-tup Dof _) (form^tup-c Dcomp _)
 		(splg-tup Dsplg' DsplgB) (mred-tup Dred' DredB) 
 		(ms-tup-s1 Dstep) 
@@ -57,6 +59,16 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 		(splg-pi2 Dsplg') (mred-pi2 Dred') 
 		(ms-pi2-s Dstep) 
 		(splg-pi2 Dsplg) (mred-pi2 Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-inj1 Dwf Dof) (form^inj1-c Dcomp) 
+		(splg-inj1 Dsplg') (mred-inj1 Dred') 
+		(ms-inj1-s Dstep) 
+		(splg-inj1 Dsplg) (mred-inj1 Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-inj2 Dwf Dof) (form^inj2-c Dcomp) 
+		(splg-inj2 Dsplg') (mred-inj2 Dred') 
+		(ms-inj2-s Dstep) 
+		(splg-inj2 Dsplg) (mred-inj2 Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
 - : scG (of^-app Dof _) (form^app-c Dcomp _) 
 		(splg-app Dsplg' DsplgB) (mred-app DredM Dred' DredB) 
@@ -171,6 +183,7 @@ strengthen-split-eval :
 		Dsplr'
 		(Dred' ztup ztup)
 		Dconv'
+		_
 	<- ({x2} lang-indep neq-lang_01 ([x] P x x2) ([x] DeqP0 x x2 : eq-term (P x x2) (P' x2)))
 	<- lang-indep neq-lang_21 P' ([x2] DeqP2 x2 : eq-term (P' x2) P'')
 	<- ({x}{x2} eq-term-trans (DeqP0 x x2) (DeqP2 x2) (DeqP x x2 : eq-term (P x x2) P''))

@@ -7,15 +7,23 @@ splitGv : term lang0 -> term lang1 -> type. %name splitGv Dsplgv.
 splitG : term lang0 -> term lang1 -> type. %name splitG Dsplg.
 %mode splitG +E -E'.
 splgv-ztup : splitGv ztup ztup.
-splgv-tup : splitGv (tup E1 E2) (tup E1' E2')
+splgv-tup  : splitGv (tup E1 E2) (tup E1' E2')
 			<- splitGv E2 E2'
 			<- splitGv E1 E1'.
-splgv-lam : splitGv (lam M) (lam M')
+splgv-inj1 : splitGv (inj1 E) (inj1 E')
+			<- splitGv E E'.
+splgv-inj2 : splitGv (inj2 E) (inj2 E')
+			<- splitGv E E'.
+splgv-lam  : splitGv (lam M) (lam M')
 			<- {x}{x1} splitGv x x1 -> splitG (M x) (M' x1).
 
 splg-pi1 : splitG (pi1 E) (pi1 E')
 			<- splitG E E'.
 splg-pi2 : splitG (pi2 E) (pi2 E')
+			<- splitG E E'.
+splg-inj1 : splitG (inj1 E) (inj1 E')
+			<- splitG E E'.
+splg-inj2 : splitG (inj2 E) (inj2 E')
 			<- splitG E E'.
 splg-tup : splitG (tup E1 E2) (tup E1' E2')
 			<- splitG E2 E2'

@@ -28,6 +28,10 @@ splG-npres : splitG E I -> form I comp -> type.
 - : splGv-npres (splgv-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
 	<- splGv-npres Dsplv1 Dval1
 	<- splGv-npres Dsplv2 Dval2.
+- : splGv-npres (splgv-inj1 Dsplv) (form-inj1 Dval)
+	<- splGv-npres Dsplv Dval.
+- : splGv-npres (splgv-inj2 Dsplv) (form-inj2 Dval)
+	<- splGv-npres Dsplv Dval.
 - : splGv-npres (splgv-lam Dsplg) (form-lam (Dcomp ztup))
 	<- {x}{x1}{splx}{valx1} splGv-npres splx valx1 -> splG-npres (Dsplg x x1 splx) (Dcomp x x1 valx1).
 
@@ -36,6 +40,10 @@ splG-npres : splitG E I -> form I comp -> type.
 - : splG-npres (splg-pi1 Dspl) (form-pi1 Dcomp)
 	<- splG-npres Dspl Dcomp.
 - : splG-npres (splg-pi2 Dspl) (form-pi2 Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-inj1 Dspl) (form-inj1 Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-inj2 Dspl) (form-inj2 Dcomp)
 	<- splG-npres Dspl Dcomp.
 - : splG-npres (splg-tup Dspl1 Dspl2) (form-tup Dcomp1 Dcomp2)
 	<- splG-npres Dspl1 Dcomp1
