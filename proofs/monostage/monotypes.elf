@@ -22,6 +22,14 @@ of-pi1	: of (pi1 E) A
 			<- of E (prod A B).
 of-pi2	: of (pi2 E) B
 			<- of E (prod A B).
+of-inj1	: {B} of (inj1 E) (sum A B)
+			<- of E A.
+of-inj2	: {A} of (inj2 E) (sum A B)
+			<- of E B.
+of-case : of (case E M N) C
+			<- ({x} of x B -> of (N x) C)
+			<- ({x} of x A -> of (M x) C)
+			<- of E (sum A B).
 of-lam 	: of (lam ([x] M x)) (arr A B)
 			<- ({x} of x A -> of (M x) B)
 			<- ty-wf A.
@@ -54,7 +62,7 @@ of-strengthen/term : (term L -> of E A) -> of E A -> type.
 %worlds (of-block | term-block) (of-strengthen/term _ _).
 %total D (of-strengthen/term D _).
 
-of-strengthen/of : ({X} of X A -> of E B) -> of E B -> type.
+of-strengthen/of : ({x} of x A -> of E B) -> of E B -> type.
 %mode of-strengthen/of +Dof -Dof'.
 - : of-strengthen/of ([x][ofx] Dof) Dof. %% covers ztup and variable cases
 - : of-strengthen/of ([x][ofx] of-exv (Dof x ofx)) (of-exv Dof')
@@ -66,6 +74,16 @@ of-strengthen/of : ({X} of X A -> of E B) -> of E B -> type.
 	<- of-strengthen/of Dof Dof'.
 - : of-strengthen/of ([x][ofx] of-pi2 (Dof x ofx)) (of-pi2 Dof')
 	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-inj1 T (Dof x ofx)) (of-inj1 T Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-inj2 T (Dof x ofx)) (of-inj2 T Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-case (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (of-case Dof1' Dof2' Dof3')
+	<- of-strengthen/of Dof1 Dof1'
+	<- ({y} {ofy : of y A} 
+		of-strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<- {y} {ofy : of y B} 
+		of-strengthen/of ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
 - : of-strengthen/of ([x][ofx] of-lam Dwf (Dof x ofx)) (of-lam Dwf Dof')
 	<- {y} {ofy : of y A} 
 		of-strengthen/of ([x][ofx] Dof x ofx y ofy) (Dof' y ofy).
@@ -91,14 +109,24 @@ form : term L -> normality -> type. %name form Dform.
 form-ztup : form ztup norm.
 form-lam  : form (lam M) norm
 			<- {x} form x norm -> form (M x) comp.
+
 form-tup  : form (tup E1 E2) N
 			<- form E2 N
 			<- form E1 N.
+form-inj1 : form (inj1 E) N 
+			<- form E N.
+form-inj2 : form (inj2 E) N 
+			<- form E N.
+
 form-exv  : form (exv E) comp
 			<- form E norm.
 form-pi1  : form (pi1 E) comp
 			<- form E comp.
 form-pi2  : form (pi2 E) comp
+			<- form E comp.
+form-case : form (case E M N) comp
+			<- ({x} form x norm -> form (N x) comp)
+			<- ({x} form x norm -> form (M x) comp)
 			<- form E comp.
 form-app  : form (app E1 E2) comp
 			<- form E2 comp

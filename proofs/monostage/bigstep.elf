@@ -1,6 +1,13 @@
 %% REDUCTION JUDGMENT
 mred : term L -> term L -> type. %name mred Dred.
 %mode mred +E -V.
+mred/case : term L -> (term L -> term L) -> (term L -> term L) -> term L -> type.
+%mode mred/case +E +M +N -V. 
+mred/case-inj1 : mred/case (inj1 V) M N U
+				<- mred (M V) U.
+mred/case-inj2 : mred/case (inj2 V) M N U
+				<- mred (N V) U.
+
 mred-exv  : mred (exv V) V.
 mred-ztup : mred ztup ztup.
 mred-tup  : mred (tup E1 E2) (tup V1 V2)
@@ -10,6 +17,9 @@ mred-pi1  : mred (pi1 E) V
 			<- mred E (tup V _).
 mred-pi2  : mred (pi2 E) V
 			<- mred E (tup _ V).
+mred-case : mred (case E M N) V2
+			<- mred E V
+			<- mred/case V M N V2.
 mred-lam  : mred (lam M) (lam M).
 mred-app  : mred (app E1 E2) V
 			<- mred E2 V2
@@ -21,12 +31,21 @@ mred-let  : mred (let E M) V2
 mred-lett  : mred (lett E M) V3
 			<- mred E (tup V1 V2)
 			<- mred (M V1 V2) V3.
-%worlds (term-block) (mred _ _).
-%unique mred +E -1V.
+%worlds (term-block) (mred _ _) (mred/case _ _ _ _).
+%unique (mred +E -1V) (mred/case +E +N +M -1V).
 
 %% PRESERVATION AND EVALUATION
-mred-pres : mred E V -> of E A -> form E comp -> of V A -> form V norm -> type.
+mred-pres : mred E V -> 
+			of E A -> form E comp -> 
+			of V A -> form V norm -> type.
 %mode mred-pres +D1 +D2 +D3 -D4 -D5.
+mred/case-pres : 
+			mred/case E M N V -> 
+			of E (sum A B) -> form E norm -> 
+			({x} of x A -> of (M x) C) -> ({x} form x norm -> form (M x) comp) -> 
+			({x} of x B -> of (N x) C) -> ({x} form x norm -> form (N x) comp) -> 
+			of V C -> form V norm -> type.
+%mode mred/case-pres +D1 +D2 +D3 +D6 +D7 +D8 +D9 -D4 -D5.
 - : mred-pres mred-exv (of-exv Dof) (form-exv Dval) Dof Dval.
 - : mred-pres (mred-tup Dred1 Dred2) (of-tup DofE1 DofE2) (form-tup Dcomp1 Dcomp2) (of-tup DofV1 DofV2) (form-tup Dval1 Dval2)
 	<- mred-pres Dred1 DofE1 Dcomp1 DofV1 Dval1
@@ -35,6 +54,21 @@ mred-pres : mred E V -> of E A -> form E comp -> of V A -> form V norm -> type.
 	<- mred-pres Dred DofE Dcomp (of-tup DofV _) (form-tup Dval _).
 - : mred-pres (mred-pi2 Dred) (of-pi2 DofE) (form-pi2 Dcomp) DofV Dval
 	<- mred-pres Dred DofE Dcomp (of-tup _ DofV) (form-tup _ Dval).
+- : mred-pres (mred-case DredMN DredE) 
+		(of-case DofE DofM DofN) 
+		(form-case DcompE DcompM DcompN)
+		DofV2 DvalV2
+	<- mred-pres DredE DofE DcompE DofV1 DvalV1
+	<- mred/case-pres DredMN DofV1 DvalV1 DofM DcompM DofN DcompN DofV2 DvalV2.
+- : mred/case-pres (mred/case-inj1 (Dred : mred (M V1) V2)) 
+		(of-inj1 T DofV1) (form-inj1 DvalV1) 
+		([x : term L][ofx : of x A] DofM x ofx : of (M x : term L) C) DcompM _ _ 
+		DofV2 DvalV2
+	<- mred-pres Dred (DofM V1 DofV1) (DcompM V1 DvalV1) DofV2 DvalV2.
+- : mred/case-pres (mred/case-inj2 Dred) 
+		(of-inj2 T DofV1) (form-inj2 DvalV1) 
+		_ _ ([x : term L][ofx : of x B] DofN x ofx : of (N x : term L) C) DcompN DofV2 DvalV2
+	<- mred-pres Dred (DofN V1 DofV1) (DcompN V1 DvalV1) DofV2 DvalV2.
 - : mred-pres 
 		(mred-app 
 			(DredM  : mred (M V2) V3) 
@@ -62,8 +96,8 @@ mred-pres : mred E V -> of E A -> form E comp -> of V A -> form V norm -> type.
 	<- mred-pres DredE DofE DcompE (of-tup DofV1 DofV2) (form-tup DvalV1 DvalV2)
 	<- mred-pres DredM (DofM V1 DofV1 V2 DofV2) (DcompM V1 DvalV1 V2 DvalV2) DofV Dval.
         
-%worlds () (mred-pres _ _ _ _ _).
-%total Dred (mred-pres Dred _ _ _ _).
+%worlds () (mred-pres _ _ _ _ _) (mred/case-pres _ _ _ _ _ _ _ _ _).
+%total (Dred Dred2) (mred-pres Dred _ _ _ _) (mred/case-pres Dred2 _ _ _ _ _ _ _ _).
 
 %% REDUCTION IS IDEMPOTENT
 %{

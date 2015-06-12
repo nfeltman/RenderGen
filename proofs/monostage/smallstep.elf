@@ -4,149 +4,187 @@
 %% STEP
 step : term L -> term L -> type.
 
+ss-pi1-r	: step (pi1 (exv (tup E1 E2))) (exv E1).
+ss-pi2-r	: step (pi2 (exv (tup E1 E2))) (exv E2).
+ss-case-r1  : step (case (exv (inj1 E)) M N) (M E).
+ss-case-r2  : step (case (exv (inj2 E)) M N) (N E).
+ss-app-r	: step (app (exv (lam M)) (exv E)) (M E).
+ss-let-r	: step (let (exv E) M) (M E).
+ss-lett-r	: step (lett (exv (tup E1 E2)) M) (M E1 E2).
+
+ss-tup-d	: step (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
+ss-inj1-d	: step (inj1 (exv E)) (exv (inj1 E)).
+ss-inj2-d	: step (inj2 (exv E)) (exv (inj2 E)).
+
 ss-tup-s1	: step (tup E1 E2) (tup E1' E2)
 			<- step E1 E1'.
-ss-tup-s2	: step (tup E1 E2) (tup E1 E2')
-			<- val E1
+ss-tup-s2	: step (tup (exv E1) E2) (tup (exv E1) E2')
 			<- step E2 E2'.
 ss-pi1-s	: step (pi1 E) (pi1 E')
 			<- step E E'.
-ss-pi1-r	: step (pi1 (tup E1 E2)) E1
-			<- val (tup E1 E2).
 ss-pi2-s	: step (pi2 E) (pi2 E')
 			<- step E E'.
-ss-pi2-r	: step (pi2 (tup E1 E2)) E2
-			<- val (tup E1 E2).
+ss-inj1-s	: step (inj1 E) (inj1 E')
+			<- step E E'.
+ss-inj2-s	: step (inj2 E) (inj2 E')
+			<- step E E'.
+ss-case-s	: step (case E M N) (case E' M N)
+			<- step E E'.
 ss-app-s1	: step (app E1 E2) (app E1' E2)
 			<- step E1 E1'.
-ss-app-s2	: step (app E1 E2) (app E1 E2')
-			<- val E1
+ss-app-s2	: step (app (exv E1) E2) (app (exv E1) E2')
 			<- step E2 E2'.
-ss-app-r	: step (app (lam M) E) (M E)
-			<- val E.
 ss-let-s	: step (let E M) (let E' M)
 			<- step E E'.
-ss-let-r	: step (let E M) (M E)
-			<- val E.
 ss-lett-s	: step (lett E M) (lett E' M)
 			<- step E E'.
-ss-lett-r	: step (lett (tup E1 E2) M) (M E1 E2)
-			<- val (tup E1 E2).
 			
 %% PRESERVATION
 pres : step E E' -> of E T -> of E' T -> type.
 %mode pres +Dstep +Dof -Dof'.
+- : pres ss-pi1-r (of-pi1 (of-exv (of-tup Dof _))) (of-exv Dof).
+- : pres ss-pi2-r (of-pi2 (of-exv (of-tup _ Dof))) (of-exv Dof).
+- : pres ss-case-r1 (of-case (of-exv (of-inj1 _ DofV)) DofM _) (DofM V DofV).
+- : pres ss-case-r2 (of-case (of-exv (of-inj2 _ DofV)) _ DofN) (DofN V DofV).
+- : pres ss-app-r (of-app (of-exv (of-lam _ DofM)) (of-exv DofE)) (DofM E DofE).
+- : pres ss-let-r (of-let (of-exv DofE) DofM) (DofM E DofE).
+- : pres ss-lett-r (of-lett (of-exv (of-tup DofE1 DofE2)) DofM) (DofM E1 DofE1 E2 DofE2).
+- : pres ss-tup-d (of-tup (of-exv Dof1) (of-exv Dof2)) (of-exv (of-tup Dof1 Dof2)).
+- : pres ss-inj1-d (of-inj1 T (of-exv Dof)) (of-exv (of-inj1 T Dof)).
+- : pres ss-inj2-d (of-inj2 T (of-exv Dof)) (of-exv (of-inj2 T Dof)).
 - : pres (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
 	<- pres Dstep Dof1 Dof1'.
-- : pres (ss-tup-s2 Dstep _) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
+- : pres (ss-tup-s2 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
 	<- pres Dstep Dof2 Dof2'. 
 - : pres (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
 	<- pres Dstep Dof Dof'.
-- : pres (ss-pi1-r _) (of-pi1 (of-tup Dof _)) Dof.
 - : pres (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
 	<- pres Dstep Dof Dof'.
-- : pres (ss-pi2-r _) (of-pi2 (of-tup _ Dof)) Dof.
+- : pres (ss-inj1-s Dstep) (of-inj1 T Dof) (of-inj1 T Dof')
+	<- pres Dstep Dof Dof'.
+- : pres (ss-inj2-s Dstep) (of-inj2 T Dof) (of-inj2 T Dof')
+	<- pres Dstep Dof Dof'.
+- : pres (ss-case-s Dstep) (of-case DofE DofM DofN) (of-case DofE' DofM DofN) 
+	<- pres Dstep DofE DofE'.
 - : pres (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
 	<- pres Dstep Dof1 Dof1'.
-- : pres (ss-app-s2 Dstep _) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
+- : pres (ss-app-s2 Dstep) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
 	<- pres Dstep Dof2 Dof2'.
-- : pres (ss-app-r (_ : val E)) (of-app (of-lam _ DofM) DofE) (DofM E DofE).
 - : pres (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
 	<- pres Dstep DofE DofE'.
-- : pres (ss-let-r (_ : val E)) (of-let DofE DofM) (DofM E DofE).
 - : pres (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
 	<- pres Dstep DofE DofE'.
-- : pres (ss-lett-r (val-tup (_ : val E1) (_ : val E2))) (of-lett (of-tup DofE1 DofE2) DofM) (DofM E1 DofE1 E2 DofE2).
 %worlds () (pres _ _ _).
 %total (Dstep) (pres Dstep _ _).
 
 %% VALUE-OR-STEP JUDGEMENT
 vos : term L -> type.
-vos-val : val E -> vos E.
+vos-val : vos (exv E).
 vos-step : step E E' -> vos E.
 
 %% PROGRESS LEMMAS
-prog/tup : vos E1 -> vos E2 -> vos (tup E1 E2) -> type.
+prog/tup : vos E1 -> vos E2 -> step (tup E1 E2) _ -> type.
 %mode prog/tup +Dvos1 +Dvos2 -Dvos.
-- : prog/tup (vos-step Dstep) _ (vos-step (ss-tup-s1 Dstep)).
-- : prog/tup (vos-val Dval) (vos-step Dstep) (vos-step (ss-tup-s2 Dstep Dval)).
-- : prog/tup (vos-val Dval1) (vos-val Dval2) (vos-val (val-tup Dval1 Dval2)).
+- : prog/tup (vos-step Dstep) _ (ss-tup-s1 Dstep).
+- : prog/tup vos-val (vos-step Dstep) (ss-tup-s2 Dstep).
+- : prog/tup vos-val vos-val ss-tup-d.
 %worlds () (prog/tup _ _ _).
 %total (Dvos) (prog/tup Dvos _ _).
 
-prog/pi1 : vos E -> of E (prod T1 T2) -> vos (pi1 E) -> type.
-%mode prog/pi1 +Dvos +Dof -Dvos'.
-- : prog/pi1 (vos-step Dstep) _ (vos-step (ss-pi1-s Dstep)).
-- : prog/pi1 (vos-val Dval) _ (vos-step (ss-pi1-r Dval)).
-%worlds () (prog/pi1 _ _ _).
-%total (Dvos) (prog/pi1 Dvos _ _).
+prog/pi1 : vos E -> of E (prod T1 T2) -> form E comp -> step (pi1 E) _ -> type.
+%mode prog/pi1 +Dvos +Dof +Dform -Dvos'.
+- : prog/pi1 (vos-step Dstep) _ _ (ss-pi1-s Dstep).
+- : prog/pi1 vos-val (of-exv _) (form-exv _) ss-pi1-r.
+%worlds () (prog/pi1 _ _ _ _).
+%total (Dvos) (prog/pi1 Dvos _ _ _).
 
-prog/pi2 : vos E -> of E (prod T1 T2) -> vos (pi2 E) -> type.
-%mode prog/pi2 +Dvos +Dof -Dvos'.
-- : prog/pi2 (vos-step Dstep) _ (vos-step (ss-pi2-s Dstep)).
-- : prog/pi2 (vos-val Dval) _ (vos-step (ss-pi2-r Dval)).
-%worlds () (prog/pi2 _ _ _).
-%total (Dvos) (prog/pi2 Dvos _ _).
+prog/pi2 : vos E -> of E (prod T1 T2) -> form E comp -> step (pi2 E) _ -> type.
+%mode prog/pi2 +Dvos +Dof +Dform -Dvos'.
+- : prog/pi2 (vos-step Dstep) _ _ (ss-pi2-s Dstep).
+- : prog/pi2 vos-val (of-exv _) (form-exv _) ss-pi2-r.
+%worlds () (prog/pi2 _ _ _ _).
+%total (Dvos) (prog/pi2 Dvos _ _ _).
 
-prog/app : vos E1 -> vos E2 -> of E1 (arr T1 T2) -> vos (app E1 E2) -> type.
-%mode prog/app +Dvos1 +Dvos2 +Dof -Dvos.
-- : prog/app (vos-step Dstep) _ _ (vos-step (ss-app-s1 Dstep)).
-- : prog/app (vos-val Dval) (vos-step Dstep) _ (vos-step (ss-app-s2 Dstep Dval)).
-- : prog/app (vos-val _) (vos-val Dval) _ (vos-step (ss-app-r Dval)).
-%worlds () (prog/app _ _ _ _).
-%total (Dvos) (prog/app Dvos _ _ _).
+prog/inj1 : vos E -> step (inj1 E) _ -> type.
+%mode prog/inj1 +Dvos -Dvos'.
+- : prog/inj1 (vos-step Dstep) (ss-inj1-s Dstep).
+- : prog/inj1 vos-val ss-inj1-d.
+%worlds () (prog/inj1 _ _).
+%total (Dvos) (prog/inj1 Dvos _).
 
-prog/let : vos E -> of (let E M) T -> vos (let E M) -> type.
+prog/inj2 : vos E -> step (inj2 E) _ -> type.
+%mode prog/inj2 +Dvos -Dvos'.
+- : prog/inj2 (vos-step Dstep) (ss-inj2-s Dstep).
+- : prog/inj2 vos-val ss-inj2-d.
+%worlds () (prog/inj2 _ _).
+%total (Dvos) (prog/inj2 Dvos _).
+
+prog/app : vos E1 -> vos E2 -> of E1 (arr T1 T2) -> form E1 comp -> step (app E1 E2) _ -> type.
+%mode prog/app +Dvos1 +Dvos2 +Dof +Dform -Dvos.
+- : prog/app (vos-step Dstep) _ _ _ (ss-app-s1 Dstep).
+- : prog/app vos-val (vos-step Dstep) _ _ (ss-app-s2 Dstep).
+- : prog/app vos-val vos-val (of-exv _) (form-exv _) ss-app-r.
+%worlds () (prog/app _ _ _ _ _).
+%total (Dvos) (prog/app Dvos _ _ _ _).
+
+prog/let : vos E -> ({x} of x A -> of (M x) T) -> step (let E M) _ -> type.
 %mode prog/let +Dvos +Dof -Dvos'.
-- : prog/let (vos-step Dstep) _ (vos-step (ss-let-s Dstep)).
-- : prog/let (vos-val Dval) _ (vos-step (ss-let-r Dval)).
+- : prog/let (vos-step Dstep) _ (ss-let-s Dstep).
+- : prog/let vos-val _ ss-let-r.
 %worlds () (prog/let _ _ _).
 %total (Dvos) (prog/let Dvos _ _).
 
-prog/lett : vos E -> of (lett E M) T -> vos (lett E M) -> type.
-%mode prog/lett +Dvos +Dof -Dvos'.
-- : prog/lett (vos-step Dstep) _ (vos-step (ss-lett-s Dstep)).
-- : prog/lett (vos-val Dval) (of-lett (of-tup _ _) _) (vos-step (ss-lett-r Dval)).
-%worlds () (prog/lett _ _ _).
-%total (Dvos) (prog/lett Dvos _ _).
+prog/case : vos E -> of (case E M N) _ -> form E comp -> step (case E M N) _ -> type.
+%mode prog/case +Dvos +Dof +Dform -Dvos'.
+- : prog/case (vos-step Dstep) _ _ (ss-case-s Dstep).
+- : prog/case (vos-val) (of-case (of-exv (of-inj1 _ _)) _ _) (form-exv _) ss-case-r1.
+- : prog/case (vos-val) (of-case (of-exv (of-inj2 _ _)) _ _) (form-exv _) ss-case-r2.
+%worlds () (prog/case _ _ _ _).
+%total (Dvos) (prog/case Dvos _ _ _).
+
+prog/lett : vos E -> of (lett E M) T -> form E comp -> step (lett E M) _ -> type.
+%mode prog/lett +Dvos +Dof +Dform -Dvos'.
+- : prog/lett (vos-step Dstep) _ _ (ss-lett-s Dstep).
+- : prog/lett vos-val (of-lett (of-exv _) _) (form-exv _) ss-lett-r.
+%worlds () (prog/lett _ _ _ _).
+%total (Dvos) (prog/lett Dvos _ _ _).
 
 %% PROGRESS
-prog : of E T -> vos E -> type.
-%mode prog +Dof -Dvos.
-- : prog _ (vos-val val-ztup).
-- : prog (of-tup Dof1 Dof2) Dvos
-	<- prog Dof1 Dvos1
-	<- prog Dof2 Dvos2
+prog : of E T -> form E comp -> vos E -> type.
+%mode prog +Dof +Dform -Dvos.
+- : prog _ _ vos-val.
+- : prog (of-tup Dof1 Dof2) (form-tup Dcomp1 Dcomp2) (vos-step Dvos)
+	<- prog Dof1 Dcomp1 Dvos1
+	<- prog Dof2 Dcomp2 Dvos2
 	<- prog/tup Dvos1 Dvos2 Dvos.
-- : prog (of-pi1 Dof) Dvos'
-	<- prog Dof Dvos
-	<- prog/pi1 Dvos Dof Dvos'.
-- : prog (of-pi2 Dof) Dvos'
-	<- prog Dof Dvos
-	<- prog/pi2 Dvos Dof Dvos'.
-- : prog _ (vos-val val-lam).
-- : prog (of-app Dof1 Dof2) Dvos
-	<- prog Dof1 Dvos1
-	<- prog Dof2 Dvos2
-	<- prog/app Dvos1 Dvos2 Dof1 Dvos.
-- : prog (of-let DofE DofM) Dvos'
-	<- prog DofE Dvos
-	<- prog/let Dvos (of-let DofE DofM) Dvos'.
-- : prog (of-lett DofE DofM) Dvos'
-	<- prog DofE Dvos
-	<- prog/lett Dvos (of-lett DofE DofM) Dvos'.
-%worlds () (prog _ _).
-%total (Dvos) (prog Dvos _).
+- : prog (of-pi1 Dof) (form-pi1 Dcomp) (vos-step Dvos')
+	<- prog Dof Dcomp Dvos
+	<- prog/pi1 Dvos Dof Dcomp Dvos'.
+- : prog (of-pi2 Dof) (form-pi2 Dcomp) (vos-step Dvos')
+	<- prog Dof Dcomp Dvos
+	<- prog/pi2 Dvos Dof Dcomp Dvos'.
+- : prog (of-inj1 _ Dof) (form-inj1 Dcomp) (vos-step Dvos')
+	<- prog Dof Dcomp Dvos
+	<- prog/inj1 Dvos Dvos'.
+- : prog (of-inj2 _ Dof) (form-inj2 Dcomp) (vos-step Dvos')
+	<- prog Dof Dcomp Dvos
+	<- prog/inj2 Dvos Dvos'.
+- : prog (of-case DofE DofM DofN) (form-case DcompE DcompM DcompN) (vos-step Dvos')
+	<- prog DofE DcompE Dvos
+	<- prog/case Dvos (of-case DofE DofM DofN) DcompE Dvos'.
+- : prog (of-app Dof1 Dof2) (form-app Dcomp1 Dcomp2) (vos-step Dvos)
+	<- prog Dof1 Dcomp1 Dvos1
+	<- prog Dof2 Dcomp2 Dvos2
+	<- prog/app Dvos1 Dvos2 Dof1 Dcomp1 Dvos.
+- : prog (of-let DofE DofM) (form-let DcompE DcompM) (vos-step Dvos')
+	<- prog DofE DcompE Dvos
+	<- prog/let Dvos DofM Dvos'.
+- : prog (of-lett DofE DofM) (form-lett DcompE DcompM) (vos-step Dvos')
+	<- prog DofE DcompE Dvos
+	<- prog/lett Dvos (of-lett DofE DofM) DcompE Dvos'.
+%worlds () (prog _ _ _).
+%total (Dvos) (prog Dvos _ _).
 
-%% VAL AND STEP ARE EXCLUSIVE
-excl-val-step : step E _ -> val E -> false -> type.
-%mode excl-val-step +Dstep +Dval -Dfalse.
-- : excl-val-step (ss-tup-s1 Dstep) (val-tup Dval1 _) Dfalse
-	<- excl-val-step Dstep Dval1 Dfalse.
-- : excl-val-step (ss-tup-s2 Dstep _) (val-tup _ Dval2) Dfalse
-	<- excl-val-step Dstep Dval2 Dfalse.
-%worlds () (excl-val-step _ _ _).
-%total (Dstep) (excl-val-step Dstep _ _).
 
 %% DETERMINISM
 step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
@@ -154,10 +192,20 @@ step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 %% all reduction cases
 - : step-unique _ _ eq-term_.
 %% all substep cases
+- : step-unique ss-pi1-r ss-pi1-r eq-term_.
+- : step-unique ss-pi2-r ss-pi2-r eq-term_.
+- : step-unique ss-case-r1 ss-case-r1 eq-term_.
+- : step-unique ss-case-r2 ss-case-r2 eq-term_.
+- : step-unique ss-app-r ss-app-r eq-term_.
+- : step-unique ss-let-r ss-let-r eq-term_.
+- : step-unique ss-lett-r ss-lett-r eq-term_.
+- : step-unique ss-tup-d ss-tup-d eq-term_.
+- : step-unique ss-inj1-d ss-inj1-d eq-term_.
+- : step-unique ss-inj2-d ss-inj2-d eq-term_.
 - : step-unique (ss-tup-s1 Dstep) (ss-tup-s1 Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong2 tup Deq eq-term_ Deq'.
-- : step-unique (ss-tup-s2 Dstep _) (ss-tup-s2 Dstep' _) Deq'
+- : step-unique (ss-tup-s2 Dstep) (ss-tup-s2 Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong2 tup eq-term_ Deq Deq'.
 - : step-unique (ss-pi1-s Dstep) (ss-pi1-s Dstep') Deq'
@@ -166,10 +214,19 @@ step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 - : step-unique (ss-pi2-s Dstep) (ss-pi2-s Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong pi2 Deq Deq'.
+- : step-unique (ss-inj1-s Dstep) (ss-inj1-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong inj1 Deq Deq'.
+- : step-unique (ss-inj2-s Dstep) (ss-inj2-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong inj2 Deq Deq'.
 - : step-unique (ss-app-s1 Dstep) (ss-app-s1 Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong2 app Deq eq-term_ Deq'.
-- : step-unique (ss-app-s2 Dstep _) (ss-app-s2 Dstep' _) Deq'
+- : step-unique (ss-case-s Dstep) (ss-case-s Dstep') Deq'
+	<- step-unique Dstep Dstep' Deq
+	<- eq-cong/case Deq ([x] eq-term_) ([x] eq-term_) Deq'.
+- : step-unique (ss-app-s2 Dstep) (ss-app-s2 Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong2 app eq-term_ Deq Deq'.
 - : step-unique (ss-let-s Dstep) (ss-let-s Dstep') Deq'
@@ -178,48 +235,5 @@ step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 - : step-unique (ss-lett-s Dstep) (ss-lett-s Dstep') Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
-%% all contradiction cases
-- : step-unique (ss-tup-s1 Dstep) (ss-tup-s2 _ Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-tup-s2 _ Dval) (ss-tup-s1 Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-pi1-s Dstep) (ss-pi1-r Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-pi1-r Dval) (ss-pi1-s Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-pi2-s Dstep) (ss-pi2-r Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-pi2-r Dval) (ss-pi2-s Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-app-s1 Dstep) (ss-app-s2 _ Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-app-s2 _ Dval) (ss-app-s1 Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-app-r Dval) (ss-app-s2 Dstep _) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-app-s2 Dstep _) (ss-app-r Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-let-s Dstep) (ss-let-r Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-let-r Dval) (ss-let-s Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-lett-s Dstep) (ss-lett-r Dval) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-lett-r Dval) (ss-lett-s Dstep) Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
 %worlds () (step-unique _ _ _).
 %total (Dstep) (step-unique Dstep _ _).

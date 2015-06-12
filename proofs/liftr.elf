@@ -3,7 +3,8 @@
 %% TYPES
 ty : type. %name ty T.
 unit	: ty.
-prod	: ty -> ty -> ty.
+prod  : ty -> ty -> ty.
+sum	  : ty -> ty -> ty.
 arr		: ty -> ty -> ty.
 arr+	: ty -> ty -> ty -> ty.
 fut		: ty -> ty.
@@ -29,6 +30,9 @@ ztup  : term L.
 tup   : term L -> term L -> term L.
 pi1   : term L -> term L.
 pi2   : term L -> term L.
+inj1  : term L -> term L.
+inj2  : term L -> term L.
+case  : term L -> (term L -> term L) -> (term L -> term L) -> term L.
 lam   : (term L -> term L) -> term L.
 app   : term L -> term L -> term L.
 let   : term L -> (term L -> term L) -> term L.
@@ -83,6 +87,15 @@ eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
 - : eq-cong/lam ([x] eq-term_) eq-term_.
 %worlds (term-block) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
+
+eq-cong/case : eq-term E E' -> 
+        ({x} eq-term (M x) (M' x)) -> 
+        ({x} eq-term (N x) (N' x)) -> 
+        eq-term (case E M N) (case E' M' N') -> type.
+%mode eq-cong/case +Deq +Deq1 +Deq2 -Deq'.
+- : eq-cong/case eq-term_ ([x] eq-term_) ([x] eq-term_) eq-term_.
+%worlds (term-block) (eq-cong/case _ _ _ _).
+%total {} (eq-cong/case _ _ _ _).
 
 eq-cong/1 : {F : (term L -> term L) -> term L} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
 %mode eq-cong/1 +F +Deq -Deq'.
@@ -220,6 +233,17 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 - : lang-indep Dneq ([x] pi2 (E x)) Deq'
   <- lang-indep Dneq E Deq
   <- {x} eq-cong pi2 (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] inj1 (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong inj1 (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] inj2 (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong inj2 (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] case (E x) ([y] M1 y x) ([y] M2 y x)) Deq
+  <- lang-indep Dneq E DeqE
+  <- ({y} lang-indep Dneq (M1 y) ([x] DeqM1 x y))
+  <- ({y} lang-indep Dneq (M2 y) ([x] DeqM2 x y))
+  <- {x} eq-cong/case (DeqE x) (DeqM1 x) (DeqM2 x) (Deq x).
 - : lang-indep Dneq ([x] lam ([y] E y x)) Deq'
   <- ({y} lang-indep Dneq (E y) ([x] Deq x y))
   <- {x} eq-cong/lam (Deq x) (Deq' x).
@@ -316,6 +340,10 @@ lang-convert_12-total : {E : term lang1} {F : {L} term L} eq-term E (F lang1) ->
 lang-convert : term L1 -> term L2 -> type. %name lang-convert Dconv.
 conv-lam : lang-convert (lam M) (lam (M' (ztup : term L1)))
     <- {x:term L1}{x': term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2).
+conv-case : lang-convert (case E M N) (case E' (M' (ztup : term L1)) (N' (ztup : term L1)))
+    <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (N x) (N' x x' : term L2))
+    <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2))
+    <- lang-convert E E'.
 conv-let : lang-convert (let E M) (let E' (M' (ztup : term L1)))
     <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2))
     <- lang-convert E E'.
@@ -364,6 +392,16 @@ lang-convert_12-total : {E : term lang1} lang-convert E (E2 : term lang2) -> typ
 - : lang-convert_12-total (pi1 E) (conv-gen1 ([l] pi1) Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (pi2 E) (conv-gen1 ([l] pi2) Dconv')
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (inj1 E) (conv-gen1 ([l] inj1) Dconv')
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (inj2 E) (conv-gen1 ([l] inj2) Dconv')
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (case E M N) (conv-case Dconv' DconvM DconvN)
+    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+        lang-convert_12-total (M x) (DconvM x x2 convx))
+    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+        lang-convert_12-total (N x) (DconvN x x2 convx))
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (lam M) (conv-lam DconvM)
     <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
