@@ -13,6 +13,7 @@ reqv-lett : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
 reqv-app : reqv (app (exv (lam M)) (exv V)) (M V).
 reqv-app-s : reqv E1 E1' -> reqv E2 E2' -> reqv (app E1 E2) (app E1' E2').
 reqv-app-s2 : reqv E2 E2' -> reqv (app E1 E2) (app E1 E2').
+reqv-let-s1 : reqv E1 E1' -> reqv (let E1 M) (let E1' M).
 reqv-tup-d : reqv (tup (exv Q1) (exv Q2)) (exv (tup Q1 Q2)).
 reqv-tup-s :  reqv E1 E1' -> reqv E2 E2' -> reqv (tup E1 E2) (tup E1' E2').
 reqv-pi1-s : reqv E E' -> reqv (pi1 E) (pi1 E').
