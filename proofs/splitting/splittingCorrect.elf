@@ -6,36 +6,66 @@
 	{splx:splitvar2 x x2} {_ : splvar2-total ofx vx splx}.
 
 
+splitG-eval-resp : splitG E C -> splitG E C' -> mred C V -> mred C' V -> type.
+%mode splitG-eval-resp +Dspl +Dspl' +Dred -Dred'.
+- : splitG-eval-resp _ _ Dred Dred.
+%worlds (correctness-block) (splitG-eval-resp _ _ _ _).
+%total {} (splitG-eval-resp _ _ _ _).
+
 %% GROUND SPLITTING CORRECTNESS
 scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep worG E E' -> splitG E I -> mred I V -> type.
 %mode scG +Dof +Dcomp +Dstep +Dspl' +Dred' -Dspl -Dred.
+
+%{
+scG/branch : 
+	({x} of^ x A worG -> of^ (M x) B worG) -> ({x} form^ x norm1 worG -> form^ (M x) comp1 worG) -> 
+	of^ E A worG ->	form^ E norm1 worG -> 
+	splitG (M E) I' -> mred I' V -> 
+	mred (NI) V -> type.
+%mode scG/branch +Dof +Dcomp +Dstep +Dspl' +Dred' -Dspl -Dred.
+}%
+
 - : scG (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dval2)))
-	(splg-exv Dsplg1)
-	Dred1
+	(splg-exv Dsplg1) _
 	(ms-pi1-r _)
 	(splg-pi1 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi1 mred-exv)
 	<- splgv-total Dof2 Dval2 Dsplg2.
 - : scG (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dval1 _)))
-	(splg-exv Dsplg2)
-	Dred2
+	(splg-exv Dsplg2) _
 	(ms-pi2-r _)
 	(splg-pi2 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi2 mred-exv)
 	<- splgv-total Dof1 Dval1 Dsplg1.
-- : scG Dof Dcomp
+- : scG (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (form^app-c (form^exv (form^lamG DcompM)) (form^exv DvalE))
 	(Dsplg3 : splitG (M E) I')
 	(Dred3 : mred I' _)
 	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M E))
 	(splg-app (splg-exv (splgv-lam DsplM)) (splg-exv DsplE)) 
 	(mred-app Dred3' mred-exv mred-exv)
-	<- splg-total Dof Dcomp (splg-app 
-		(splg-exv (splgv-lam (DsplM : {x}{x1} splitGv x x1 -> splitG (M x) (N x1)))) 
-		(splg-exv (DsplE : splitGv E I)))
-	<- splitG-unique Dsplg3 (DsplM E I DsplE : splitG (M E) (N I)) (Deq : eq-term I' (N I : term lang1))
-	<- mred-resp Dred3 Deq eq-term_ Dred3'.
-- : scG _ _
-	(splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv 
+	<- splgv-total DofE DvalE (DsplE : splitGv E I)
+	<- splg-total/branch DofM DcompM (DsplM : {x}{x1} splitGv x x1 -> splitG (M x) (N x1))
+	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE : splitG (M E) (N I)) Dred3 Dred3'.
+
+- : scG (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj1-n DvalE)) DcompM DcompN)
+	Dsplg3 Dred3 ms-case-r1
+	(splg-case (splg-exv (splgv-inj1 DsplE)) DsplM DsplN) 
+	(mred-case (mred/case-inj1 Dred3') mred-exv)
+	<- splgv-total DofE DvalE DsplE
+	<- splg-total/branch DofM DcompM DsplM
+	<- splg-total/branch DofN DcompN DsplN
+	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE) Dred3 Dred3'.
+
+- : scG (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj2-n DvalE)) DcompM DcompN)
+	Dsplg3 Dred3 ms-case-r2
+	(splg-case (splg-exv (splgv-inj2 DsplE)) DsplM DsplN) 
+	(mred-case (mred/case-inj2 Dred3') mred-exv)
+	<- splgv-total DofE DvalE DsplE
+	<- splg-total/branch DofM DcompM DsplM
+	<- splg-total/branch DofN DcompN DsplN
+	<- splitG-eval-resp Dsplg3 (DsplN E I DsplE) Dred3 Dred3'.
+
+- : scG _ _	(splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv 
 	ms-tup-d 
 	(splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) (mred-tup mred-exv mred-exv).
 - : scG _ _ (splg-exv (splgv-inj1 Dsplg)) mred-exv ms-inj1-d (splg-inj1 (splg-exv Dsplg)) (mred-inj1 mred-exv).
@@ -69,6 +99,11 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 		(splg-inj2 Dsplg') (mred-inj2 Dred') 
 		(ms-inj2-s Dstep) 
 		(splg-inj2 Dsplg) (mred-inj2 Dred)
+	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
+- : scG (of^-case Dof _ _) (form^case-c Dcomp _ _) 
+		(splg-case Dsplg' DsplgM DsplgN) (mred-case DredMN Dred') 
+		(ms-case-s Dstep) 
+		(splg-case Dsplg DsplgM DsplgN) (mred-case DredMN Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
 - : scG (of^-app Dof _) (form^app-c Dcomp _) 
 		(splg-app Dsplg' DsplgB) (mred-app DredM Dred' DredB) 

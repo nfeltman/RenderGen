@@ -40,6 +40,8 @@ mstep-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 	<- mstep-pres Dstep Dof Dof'.
 - : mstep-pres (ms-inj2-s Dstep) (of^-inj2 Dwf Dof) (of^-inj2 Dwf Dof')
 	<- mstep-pres Dstep Dof Dof'.
+- : mstep-pres (ms-case-s Dstep) (of^-case DofE DofM DofN) (of^-case DofE' DofM DofN) 
+	<- mstep-pres Dstep DofE DofE'.
 - : mstep-pres (ms-app-s1 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1' Dof2)
 	<- mstep-pres Dstep Dof1 Dof1'.
 - : mstep-pres (ms-app-s2 Dstep) (of^-app Dof1 Dof2) (of^-app Dof1 Dof2')
@@ -69,6 +71,8 @@ mstep-pres : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 - : mstep-pres (ms-pi1-r W) (of^-pi1 (of^-exv (of^-tup Dof _))) (of^-exv Dof).
 - : mstep-pres (ms-pi2-r W) (of^-pi2 (of^-exv (of^-tup _ Dof))) (of^-exv Dof).
 - : mstep-pres (ms-app-r W) (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (DofM E DofE).
+- : mstep-pres (ms-case-r1) (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN) (DofM E DofE).
+- : mstep-pres (ms-case-r2) (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN) (DofN E DofE).
 %%- : mstep-pres (ms-let-r _) (of^-let DofM DofE) (DofM E DofE).
 
 

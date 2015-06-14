@@ -25,6 +25,10 @@ splg-inj1 : splitG (inj1 E) (inj1 E')
 			<- splitG E E'.
 splg-inj2 : splitG (inj2 E) (inj2 E')
 			<- splitG E E'.
+splg-case : splitG (case E M N) (case E' M' N')
+			<- ({x}{x1} splitGv x x1 -> splitG (N x) (N' x1))
+			<- ({x}{x1} splitGv x x1 -> splitG (M x) (M' x1))
+			<- splitG E E'.
 splg-tup : splitG (tup E1 E2) (tup E1' E2')
 			<- splitG E2 E2'
 			<- splitG E1 E1'.

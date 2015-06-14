@@ -23,6 +23,11 @@ splv-npres : splitval E I Q -> form I norm -> form Q norm -> type.
 %% GROUND SPLITTING NORMALITY PRESERVATION
 splG-npres : splitG E I -> form I comp -> type.
 %mode splG-npres +Dspl -Dcomp1.
+splG-npres/branch : ({x}{x1} splitGv x x1 -> splitG (E x) (I x1)) -> ({x1} form x1 norm -> form (I x1) comp) -> type.
+%mode splG-npres/branch +Dspl -Dcomp1.
+
+- : splG-npres/branch Dsplg (Dcomp ztup)
+	<- {x}{x1}{splx}{valx1} splGv-npres splx valx1 -> splG-npres (Dsplg x x1 splx) (Dcomp x x1 valx1).
 
 - : splGv-npres splgv-ztup form-ztup.
 - : splGv-npres (splgv-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
@@ -32,8 +37,8 @@ splG-npres : splitG E I -> form I comp -> type.
 	<- splGv-npres Dsplv Dval.
 - : splGv-npres (splgv-inj2 Dsplv) (form-inj2 Dval)
 	<- splGv-npres Dsplv Dval.
-- : splGv-npres (splgv-lam Dsplg) (form-lam (Dcomp ztup))
-	<- {x}{x1}{splx}{valx1} splGv-npres splx valx1 -> splG-npres (Dsplg x x1 splx) (Dcomp x x1 valx1).
+- : splGv-npres (splgv-lam Dsplg) (form-lam Dcomp)
+	<- splG-npres/branch Dsplg Dcomp.
 
 - : splG-npres (splg-exv Dspl) (form-exv Dval)
 	<- splGv-npres Dspl Dval.
@@ -45,14 +50,18 @@ splG-npres : splitG E I -> form I comp -> type.
 	<- splG-npres Dspl Dcomp.
 - : splG-npres (splg-inj2 Dspl) (form-inj2 Dcomp)
 	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-case DsplE DsplM DsplN) (form-case DcompE DcompM DcompN)
+	<- splG-npres DsplE DcompE
+	<- splG-npres/branch DsplM DcompM
+	<- splG-npres/branch DsplN DcompN.
 - : splG-npres (splg-tup Dspl1 Dspl2) (form-tup Dcomp1 Dcomp2)
 	<- splG-npres Dspl1 Dcomp1
 	<- splG-npres Dspl2 Dcomp2.
 - : splG-npres (splg-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
 	<- splG-npres Dspl1 Dcomp1
 	<- splG-npres Dspl2 Dcomp2.
-%worlds (splitting-npres-block) (splGv-npres _ _) (splG-npres _ _).
-%total (D1 D2) (splGv-npres D1 _) (splG-npres D2 _). 
+%worlds (splitting-npres-block) (splGv-npres _ _) (splG-npres _ _) (splG-npres/branch _ _).
+%total (D1 D2 D3) (splGv-npres D1 _) (splG-npres D2 _) (splG-npres/branch D3 _). 
 
 %% SECOND STAGE VARIABLE NORMALITY PRESERVATION (TRIVIAL BECAUSE ALWAYS ASSUMED)
 %worlds (splitting-npres-block) (splvar2-npres _ _).

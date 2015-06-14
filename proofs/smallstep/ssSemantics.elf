@@ -55,6 +55,8 @@ ms-inj1-s	: mstep worG (inj1 E) (inj1 E')
 			<- mstep worG E E'.
 ms-inj2-s	: mstep worG (inj2 E) (inj2 E')
 			<- mstep worG E E'.
+ms-case-s	: mstep W (case E M N) (case E' M N)
+			<- mstep W E E'.
 ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
 			<- mstep W E1 E1'.
 ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')
@@ -82,6 +84,8 @@ ms-pi2-r	: mstep W (pi2 (exv (tup E1 E2))) (exv E2)
 				<- first-stage-wor W.
 ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M E)
 				<- first-stage-wor W.
+ms-case-r1	: mstep worG (case (exv (inj1 E)) M N) (M E).
+ms-case-r2	: mstep worG (case (exv (inj2 E)) M N) (N E).
 %{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%
 
 			

@@ -111,6 +111,16 @@ splr-total : of^ E A wor2 -> form^ E norm1 wor2 -> splitres E _ -> type.
 %% SPLITTING GROUND TERMS AND VALUES
 splg-total : of^ E A worG -> form^ E comp1 worG -> splitG E _ -> type.
 %mode splg-total +Dof +Dcomp -Dspl.
+splg-total/branch : 
+	({x} of^ x B worG -> of^ (E x) A worG) -> 
+	({x} form^ x norm1 worG -> form^ (E x) comp1 worG) -> 
+	({x} {x1} splitGv x x1 -> splitG (E x) (G x1)) -> type.
+%mode splg-total/branch +Dof +Dcomp -Dspl.
+- : splg-total/branch Dof Dcomp Dsplg'
+	<- ({x}{x1} {dof} {vx} {dspl : splitGv x x1} splgv-total dof vx dspl ->
+		splg-total (Dof x dof) (Dcomp x vx) (Dsplg x x1 dspl))
+	<- ({x1} strengthen-splitGv ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).
+
 - : splgv-total of^-ztup _ splgv-ztup.
 - : splgv-total (of^-tup Dof1 Dof2) (form^tup-n Dval1 Dval2) (splgv-tup Dsplg1 Dsplg2)
 	<- splgv-total Dof1 Dval1 Dsplg1
@@ -119,10 +129,8 @@ splg-total : of^ E A worG -> form^ E comp1 worG -> splitG E _ -> type.
 	<- splgv-total Dof Dcomp Dsplg.
 - : splgv-total (of^-inj2 _ Dof) (form^inj2-n Dcomp) (splgv-inj2 Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
-- : splgv-total (of^-lam _ Dof) (form^lamG Dcomp) (splgv-lam Dsplg')
-	<- ({x}{x1} {dof} {vx} {dspl : splitGv x x1} splgv-total dof vx dspl ->
-		splg-total (Dof x dof) (Dcomp x vx) (Dsplg x x1 dspl))
-	<- ({x1} strengthen-splitGv ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).
+- : splgv-total (of^-lam _ Dof) (form^lamG Dcomp) (splgv-lam Dsplg)
+	<- splg-total/branch Dof Dcomp Dsplg.
 
 - : splg-total (of^-tup Dof1 Dof2) (form^tup-c Dcomp1 Dcomp2) (splg-tup Dsplg1 Dsplg2)
 	<- splg-total Dof1 Dcomp1 Dsplg1
@@ -135,13 +143,17 @@ splg-total : of^ E A worG -> form^ E comp1 worG -> splitG E _ -> type.
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (splg-inj2 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
+- : splg-total (of^-case DofE DofM DofN) (form^case-c DcompE DcompM DcompN) (splg-case DsplgE DsplgM DsplgN)
+	<- splg-total DofE DcompE DsplgE
+	<- splg-total/branch DofM DcompM DsplgM
+	<- splg-total/branch DofN DcompN DsplgN.
 - : splg-total (of^-app Dof1 Dof2) (form^app-c Dcomp1 Dcomp2) (splg-app Dsplg1 Dsplg2)
 	<- splg-total Dof1 Dcomp1 Dsplg1
 	<- splg-total Dof2 Dcomp2 Dsplg2.
 - : splg-total (of^-exv Dof) (form^exv Dcomp) (splg-exv Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
-%worlds (total-block) (splg-total _ _ _) (splgv-total _ _ _).
-%total (Dsplg Dsplgv) (splg-total Dsplg _ _) (splgv-total Dsplgv _ _).
+%worlds (total-block) (splg-total _ _ _) (splgv-total _ _ _) (splg-total/branch _ _ _).
+%total (Dsplg Dsplgv D3) (splg-total Dsplg _ _) (splgv-total Dsplgv _ _) (splg-total/branch D3 _ _).
 
 
 %% MAIN SPLITTING TOTALITY
