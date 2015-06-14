@@ -79,39 +79,40 @@ ss-pres-ty : step E E' -> of E T -> of E' T -> type.
 
 ss-pres-norm : step E E' -> form E comp -> form E' comp -> type.
 %mode ss-pres-norm +Dstep +Dof -Dof'.
-- : ss-pres-norm ss-pi1-r (form-pi1 (form-exv (form-tup Dcomp _))) (form-exv Dcomp).
-- : ss-pres-norm ss-pi2-r (form-pi2 (form-exv (form-tup _ Dcomp))) (form-exv Dcomp).
-
-- : ss-pres-norm ss-case-r1 (form-case (form-exv (form-inj1 _ DcompV)) DcompM _) (DcompM V DcompV).
-- : ss-pres-norm ss-case-r2 (form-case (form-exv (form-inj2 _ DcompV)) _ DcompN) (DcompN V DcompV).
-- : ss-pres-norm ss-app-r (form-app (form-exv (form-lam _ DcompM)) (form-exv DcompE)) (DcompM E DcompE).
-- : ss-pres-norm ss-let-r (form-let (form-exv DcompE) DcompM) (DcompM E DcompE).
+- : ss-pres-norm ss-pi1-r (form-pi1 (form-exv (form-tup Dval _))) (form-exv Dval).
+- : ss-pres-norm ss-pi2-r (form-pi2 (form-exv (form-tup _ Dval))) (form-exv Dval).
+- : ss-pres-norm ss-case-r1 (form-case (form-exv (form-inj1 DvalV)) DcompM _) (DcompM V DvalV).
+- : ss-pres-norm ss-case-r2 (form-case (form-exv (form-inj2 DvalV)) _ DcompN) (DcompN V DvalV).
+- : ss-pres-norm ss-app-r (form-app (form-exv (form-lam DcompM)) (form-exv DvalE)) (DcompM E DvalE).
+- : ss-pres-norm ss-let-r (form-let (form-exv DvalE) DcompM) (DcompM E DvalE).
 - : ss-pres-norm ss-lett-r (form-lett (form-exv (form-tup DcompE1 DcompE2)) DcompM) (DcompM E1 DcompE1 E2 DcompE2).
-- : ss-pres-norm ss-tup-d (form-tup (form-exv Dcomp1) (form-exv Dcomp2)) (form-exv (form-tup Dcomp1 Dcomp2)).
-- : ss-pres-norm ss-inj1-d (form-inj1 T (form-exv Dcomp)) (form-exv (form-inj1 T Dcomp)).
-- : ss-pres-norm ss-inj2-d (form-inj2 T (form-exv Dcomp)) (form-exv (form-inj2 T Dcomp)).
-- : ss-pres-norm (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
-	<- ss-pres-norm Dstep Dof1 Dof1'.
-- : ss-pres-norm (ss-tup-s2 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
-	<- ss-pres-norm Dstep Dof2 Dof2'. 
-- : ss-pres-norm (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
-	<- ss-pres-norm Dstep Dof Dof'.
-- : ss-pres-norm (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
-	<- ss-pres-norm Dstep Dof Dof'.
-- : ss-pres-norm (ss-inj1-s Dstep) (of-inj1 T Dof) (of-inj1 T Dof')
-	<- ss-pres-norm Dstep Dof Dof'.
-- : ss-pres-norm (ss-inj2-s Dstep) (of-inj2 T Dof) (of-inj2 T Dof')
-	<- ss-pres-norm Dstep Dof Dof'.
-- : ss-pres-norm (ss-case-s Dstep) (of-case DofE DofM DofN) (of-case DofE' DofM DofN) 
-	<- ss-pres-norm Dstep DofE DofE'.
-- : ss-pres-norm (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
-	<- ss-pres-norm Dstep Dof1 Dof1'.
-- : ss-pres-norm (ss-app-s2 Dstep) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
-	<- ss-pres-norm Dstep Dof2 Dof2'.
-- : ss-pres-norm (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
-	<- ss-pres-norm Dstep DofE DofE'.
-- : ss-pres-norm (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
-	<- ss-pres-norm Dstep DofE DofE'.
+
+- : ss-pres-norm ss-tup-d (form-tup (form-exv Dval1) (form-exv Dval2)) (form-exv (form-tup Dval1 Dval2)).
+- : ss-pres-norm ss-inj1-d (form-inj1 (form-exv Dval)) (form-exv (form-inj1 Dval)).
+- : ss-pres-norm ss-inj2-d (form-inj2 (form-exv Dval)) (form-exv (form-inj2 Dval)).
+
+- : ss-pres-norm (ss-tup-s1 Dstep) (form-tup Dcomp1 Dcomp2) (form-tup Dcomp1' Dcomp2)
+	<- ss-pres-norm Dstep Dcomp1 Dcomp1'.
+- : ss-pres-norm (ss-tup-s2 Dstep) (form-tup Dcomp1 Dcomp2) (form-tup Dcomp1 Dcomp2')
+	<- ss-pres-norm Dstep Dcomp2 Dcomp2'. 
+- : ss-pres-norm (ss-pi1-s Dstep) (form-pi1 Dcomp) (form-pi1 Dcomp')
+	<- ss-pres-norm Dstep Dcomp Dcomp'.
+- : ss-pres-norm (ss-pi2-s Dstep) (form-pi2 Dcomp) (form-pi2 Dcomp')
+	<- ss-pres-norm Dstep Dcomp Dcomp'.
+- : ss-pres-norm (ss-inj1-s Dstep) (form-inj1 Dcomp) (form-inj1 Dcomp')
+	<- ss-pres-norm Dstep Dcomp Dcomp'.
+- : ss-pres-norm (ss-inj2-s Dstep) (form-inj2 Dcomp) (form-inj2 Dcomp')
+	<- ss-pres-norm Dstep Dcomp Dcomp'.
+- : ss-pres-norm (ss-case-s Dstep) (form-case DcompE DcompM DcompN) (form-case DcompE' DcompM DcompN) 
+	<- ss-pres-norm Dstep DcompE DcompE'.
+- : ss-pres-norm (ss-app-s1 Dstep) (form-app Dcomp1 Dcomp2) (form-app Dcomp1' Dcomp2)
+	<- ss-pres-norm Dstep Dcomp1 Dcomp1'.
+- : ss-pres-norm (ss-app-s2 Dstep) (form-app Dcomp1 Dcomp2) (form-app Dcomp1 Dcomp2')
+	<- ss-pres-norm Dstep Dcomp2 Dcomp2'.
+- : ss-pres-norm (ss-let-s Dstep) (form-let DcompE DcompM) (form-let DcompE' DcompM) 
+	<- ss-pres-norm Dstep DcompE DcompE'.
+- : ss-pres-norm (ss-lett-s Dstep) (form-lett DcompE DcompM) (form-lett DcompE' DcompM) 
+	<- ss-pres-norm Dstep DcompE DcompE'.
 %worlds () (ss-pres-norm _ _ _).
 %total (Dstep) (ss-pres-norm Dstep _ _).
 
