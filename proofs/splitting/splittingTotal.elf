@@ -129,7 +129,7 @@ splg-total/branch :
 	<- splgv-total Dof Dcomp Dsplg.
 - : splgv-total (of^-inj2 _ Dof) (form^inj2-n Dcomp) (splgv-inj2 Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
-- : splgv-total (of^-lam _ Dof) (form^lamG Dcomp) (splgv-lam Dsplg)
+- : splgv-total (of^-lam _ Dof) (form^lam1 Dcomp _) (splgv-lam Dsplg)
 	<- splg-total/branch Dof Dcomp Dsplg.
 
 - : splg-total (of^-tup Dof1 Dof2) (form^tup-c Dcomp1 Dcomp2) (splg-tup Dsplg1 Dsplg2)
@@ -170,7 +170,7 @@ spl2-total : of^ E A wor2 -> form^ E comp1 wor2 -> split2 E _ _ -> type.
 - : splv-total (of^-tup Dof1 Dof2) (form^tup-n Dcomp1 Dcomp2) (splv-tup Dspl1 Dspl2)
 	<- splv-total Dof1 Dcomp1 Dspl1
 	<- splv-total Dof2 Dcomp2 Dspl2.
-- : splv-total (of^-lam Dwf Dof) (form^lam1 Dcomp) (splv-lam Dspl')
+- : splv-total (of^-lam Dwf Dof) (form^lam1 Dcomp _) (splv-lam Dspl')
 	<- ({x}{x1}{x2} {ofx} {vx} {dspl} splv-total ofx vx dspl ->
 		spl1-total (Dof x ofx) (Dcomp x vx) (Dspl x x1 x2 dspl))
 	<- strengthen-split1 Dspl Dspl'.

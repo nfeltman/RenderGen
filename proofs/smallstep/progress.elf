@@ -97,7 +97,7 @@ prog/app/help : {E2} of^ E1 (arr T1 T2) W -> form^ E1 norm1 W -> dos W (app (exv
 - : prog/app/help _ _ _ (dos-mstep (ms-app-r fsw-worG)).
 - : prog/app/help _ _ _ (dos-mstep ms-app-d).
 %% following case can't fire, just here to get coverage checker to behave
-- : prog/app/help _ _ (form^lam1 _) (dos-mstep (ms-app-r fsw-wor1)).
+- : prog/app/help _ _ (form^lam1 _ _) (dos-mstep (ms-app-r fsw-wor1)).
 %worlds (von-block) (prog/app/help _ _ _ _).
 %total (Ddos) (prog/app/help _ Ddos _ _).
 

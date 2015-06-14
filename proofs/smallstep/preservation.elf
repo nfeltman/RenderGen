@@ -160,8 +160,7 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
 - : mstep-pres-norm (ms-pi1-r _) (form^pi1-c (form^exv (form^tup-n Dof _))) (form^exv Dof).
 - : mstep-pres-norm (ms-pi2-r _) (form^pi2-c (form^exv (form^tup-n _ Dof))) (form^exv Dof).
-- : mstep-pres-norm (ms-app-r _) (form^app-c (form^exv (form^lamG DofM)) (form^exv DofE)) (DofM E DofE).
-- : mstep-pres-norm (ms-app-r _) (form^app-c (form^exv (form^lam1 DofM)) (form^exv DofE)) (DofM E DofE).
+- : mstep-pres-norm (ms-app-r _) (form^app-c (form^exv (form^lam1 DofM _)) (form^exv DofE)) (DofM E DofE).
 - : mstep-pres-norm (ms-case-r1) (form^case-c (form^exv (form^inj1-n DofE)) DofM DofN) (DofM E DofE).
 - : mstep-pres-norm (ms-case-r2) (form^case-c (form^exv (form^inj2-n DofE)) DofM DofN) (DofN E DofE).
 - : mstep-pres-norm ms-prev-r (form^prev (form^exv (form^next-n Dof))) (form^exv (form^var2 Dof)).

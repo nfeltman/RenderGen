@@ -161,10 +161,9 @@ vars2 : normality^.
 
 form^ : term L -> normality^ -> wor -> type. %name form^ Dform.
 form^ztup : form^ ztup norm1 W.
-form^lamG : form^ (lam M) norm1 worG
-			<- {x} form^ x norm1 worG -> form^ (M x) comp1 worG.
-form^lam1 : form^ (lam M) norm1 wor1
-			<- {x} form^ x norm1 wor1 -> form^ (M x) comp1 wor1.
+form^lam1 : form^ (lam M) norm1 W
+			<- first-stage-wor W
+			<- {x} form^ x norm1 W -> form^ (M x) comp1 W.
 form^lam2n : form^ (lam M) norm1 wor2
 			<- {x} form^ x vars2 wor2 -> form^ (M x) norm1 wor2.
 form^lam2c : form^ (lam M) comp1 wor2

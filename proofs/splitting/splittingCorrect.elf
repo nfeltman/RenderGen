@@ -28,7 +28,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(splg-pi2 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi2 mred-exv)
 	<- splgv-total Dof1 Dval1 Dsplg1.
-- : scG (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (form^app-c (form^exv (form^lamG DcompM)) (form^exv DvalE))
+- : scG (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (form^app-c (form^exv (form^lam1 DcompM _)) (form^exv DvalE))
 	(Dsplg3 : splitG (M E) I')
 	(Dred3 : mred I' _)
 	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M E))
