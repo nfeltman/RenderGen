@@ -40,42 +40,80 @@ ss-lett-s	: step (lett E M) (lett E' M)
 			<- step E E'.
 			
 %% PRESERVATION
-pres : step E E' -> of E T -> of E' T -> type.
-%mode pres +Dstep +Dof -Dof'.
-- : pres ss-pi1-r (of-pi1 (of-exv (of-tup Dof _))) (of-exv Dof).
-- : pres ss-pi2-r (of-pi2 (of-exv (of-tup _ Dof))) (of-exv Dof).
-- : pres ss-case-r1 (of-case (of-exv (of-inj1 _ DofV)) DofM _) (DofM V DofV).
-- : pres ss-case-r2 (of-case (of-exv (of-inj2 _ DofV)) _ DofN) (DofN V DofV).
-- : pres ss-app-r (of-app (of-exv (of-lam _ DofM)) (of-exv DofE)) (DofM E DofE).
-- : pres ss-let-r (of-let (of-exv DofE) DofM) (DofM E DofE).
-- : pres ss-lett-r (of-lett (of-exv (of-tup DofE1 DofE2)) DofM) (DofM E1 DofE1 E2 DofE2).
-- : pres ss-tup-d (of-tup (of-exv Dof1) (of-exv Dof2)) (of-exv (of-tup Dof1 Dof2)).
-- : pres ss-inj1-d (of-inj1 T (of-exv Dof)) (of-exv (of-inj1 T Dof)).
-- : pres ss-inj2-d (of-inj2 T (of-exv Dof)) (of-exv (of-inj2 T Dof)).
-- : pres (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
-	<- pres Dstep Dof1 Dof1'.
-- : pres (ss-tup-s2 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
-	<- pres Dstep Dof2 Dof2'. 
-- : pres (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ss-inj1-s Dstep) (of-inj1 T Dof) (of-inj1 T Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ss-inj2-s Dstep) (of-inj2 T Dof) (of-inj2 T Dof')
-	<- pres Dstep Dof Dof'.
-- : pres (ss-case-s Dstep) (of-case DofE DofM DofN) (of-case DofE' DofM DofN) 
-	<- pres Dstep DofE DofE'.
-- : pres (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
-	<- pres Dstep Dof1 Dof1'.
-- : pres (ss-app-s2 Dstep) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
-	<- pres Dstep Dof2 Dof2'.
-- : pres (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
-	<- pres Dstep DofE DofE'.
-- : pres (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
-	<- pres Dstep DofE DofE'.
-%worlds () (pres _ _ _).
-%total (Dstep) (pres Dstep _ _).
+ss-pres-ty : step E E' -> of E T -> of E' T -> type.
+%mode ss-pres-ty +Dstep +Dof -Dof'.
+- : ss-pres-ty ss-pi1-r (of-pi1 (of-exv (of-tup Dof _))) (of-exv Dof).
+- : ss-pres-ty ss-pi2-r (of-pi2 (of-exv (of-tup _ Dof))) (of-exv Dof).
+- : ss-pres-ty ss-case-r1 (of-case (of-exv (of-inj1 _ DofV)) DofM _) (DofM V DofV).
+- : ss-pres-ty ss-case-r2 (of-case (of-exv (of-inj2 _ DofV)) _ DofN) (DofN V DofV).
+- : ss-pres-ty ss-app-r (of-app (of-exv (of-lam _ DofM)) (of-exv DofE)) (DofM E DofE).
+- : ss-pres-ty ss-let-r (of-let (of-exv DofE) DofM) (DofM E DofE).
+- : ss-pres-ty ss-lett-r (of-lett (of-exv (of-tup DofE1 DofE2)) DofM) (DofM E1 DofE1 E2 DofE2).
+- : ss-pres-ty ss-tup-d (of-tup (of-exv Dof1) (of-exv Dof2)) (of-exv (of-tup Dof1 Dof2)).
+- : ss-pres-ty ss-inj1-d (of-inj1 T (of-exv Dof)) (of-exv (of-inj1 T Dof)).
+- : ss-pres-ty ss-inj2-d (of-inj2 T (of-exv Dof)) (of-exv (of-inj2 T Dof)).
+- : ss-pres-ty (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
+	<- ss-pres-ty Dstep Dof1 Dof1'.
+- : ss-pres-ty (ss-tup-s2 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
+	<- ss-pres-ty Dstep Dof2 Dof2'. 
+- : ss-pres-ty (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
+	<- ss-pres-ty Dstep Dof Dof'.
+- : ss-pres-ty (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
+	<- ss-pres-ty Dstep Dof Dof'.
+- : ss-pres-ty (ss-inj1-s Dstep) (of-inj1 T Dof) (of-inj1 T Dof')
+	<- ss-pres-ty Dstep Dof Dof'.
+- : ss-pres-ty (ss-inj2-s Dstep) (of-inj2 T Dof) (of-inj2 T Dof')
+	<- ss-pres-ty Dstep Dof Dof'.
+- : ss-pres-ty (ss-case-s Dstep) (of-case DofE DofM DofN) (of-case DofE' DofM DofN) 
+	<- ss-pres-ty Dstep DofE DofE'.
+- : ss-pres-ty (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
+	<- ss-pres-ty Dstep Dof1 Dof1'.
+- : ss-pres-ty (ss-app-s2 Dstep) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
+	<- ss-pres-ty Dstep Dof2 Dof2'.
+- : ss-pres-ty (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
+	<- ss-pres-ty Dstep DofE DofE'.
+- : ss-pres-ty (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
+	<- ss-pres-ty Dstep DofE DofE'.
+%worlds () (ss-pres-ty _ _ _).
+%total (Dstep) (ss-pres-ty Dstep _ _).
+
+ss-pres-norm : step E E' -> form E comp -> form E' comp -> type.
+%mode ss-pres-norm +Dstep +Dof -Dof'.
+- : ss-pres-norm ss-pi1-r (form-pi1 (form-exv (form-tup Dcomp _))) (form-exv Dcomp).
+- : ss-pres-norm ss-pi2-r (form-pi2 (form-exv (form-tup _ Dcomp))) (form-exv Dcomp).
+
+- : ss-pres-norm ss-case-r1 (form-case (form-exv (form-inj1 _ DcompV)) DcompM _) (DcompM V DcompV).
+- : ss-pres-norm ss-case-r2 (form-case (form-exv (form-inj2 _ DcompV)) _ DcompN) (DcompN V DcompV).
+- : ss-pres-norm ss-app-r (form-app (form-exv (form-lam _ DcompM)) (form-exv DcompE)) (DcompM E DcompE).
+- : ss-pres-norm ss-let-r (form-let (form-exv DcompE) DcompM) (DcompM E DcompE).
+- : ss-pres-norm ss-lett-r (form-lett (form-exv (form-tup DcompE1 DcompE2)) DcompM) (DcompM E1 DcompE1 E2 DcompE2).
+- : ss-pres-norm ss-tup-d (form-tup (form-exv Dcomp1) (form-exv Dcomp2)) (form-exv (form-tup Dcomp1 Dcomp2)).
+- : ss-pres-norm ss-inj1-d (form-inj1 T (form-exv Dcomp)) (form-exv (form-inj1 T Dcomp)).
+- : ss-pres-norm ss-inj2-d (form-inj2 T (form-exv Dcomp)) (form-exv (form-inj2 T Dcomp)).
+- : ss-pres-norm (ss-tup-s1 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1' Dof2)
+	<- ss-pres-norm Dstep Dof1 Dof1'.
+- : ss-pres-norm (ss-tup-s2 Dstep) (of-tup Dof1 Dof2) (of-tup Dof1 Dof2')
+	<- ss-pres-norm Dstep Dof2 Dof2'. 
+- : ss-pres-norm (ss-pi1-s Dstep) (of-pi1 Dof) (of-pi1 Dof')
+	<- ss-pres-norm Dstep Dof Dof'.
+- : ss-pres-norm (ss-pi2-s Dstep) (of-pi2 Dof) (of-pi2 Dof')
+	<- ss-pres-norm Dstep Dof Dof'.
+- : ss-pres-norm (ss-inj1-s Dstep) (of-inj1 T Dof) (of-inj1 T Dof')
+	<- ss-pres-norm Dstep Dof Dof'.
+- : ss-pres-norm (ss-inj2-s Dstep) (of-inj2 T Dof) (of-inj2 T Dof')
+	<- ss-pres-norm Dstep Dof Dof'.
+- : ss-pres-norm (ss-case-s Dstep) (of-case DofE DofM DofN) (of-case DofE' DofM DofN) 
+	<- ss-pres-norm Dstep DofE DofE'.
+- : ss-pres-norm (ss-app-s1 Dstep) (of-app Dof1 Dof2) (of-app Dof1' Dof2)
+	<- ss-pres-norm Dstep Dof1 Dof1'.
+- : ss-pres-norm (ss-app-s2 Dstep) (of-app Dof1 Dof2) (of-app Dof1 Dof2')
+	<- ss-pres-norm Dstep Dof2 Dof2'.
+- : ss-pres-norm (ss-let-s Dstep) (of-let DofE DofM) (of-let DofE' DofM) 
+	<- ss-pres-norm Dstep DofE DofE'.
+- : ss-pres-norm (ss-lett-s Dstep) (of-lett DofE DofM) (of-lett DofE' DofM) 
+	<- ss-pres-norm Dstep DofE DofE'.
+%worlds () (ss-pres-norm _ _ _).
+%total (Dstep) (ss-pres-norm Dstep _ _).
 
 %% VALUE-OR-STEP JUDGEMENT
 vos : term L -> type.

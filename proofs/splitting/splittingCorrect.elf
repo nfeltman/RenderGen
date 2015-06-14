@@ -16,15 +16,6 @@ splitG-eval-resp : splitG E C -> splitG E C' -> mred C V -> mred C' V -> type.
 scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep worG E E' -> splitG E I -> mred I V -> type.
 %mode scG +Dof +Dcomp +Dstep +Dspl' +Dred' -Dspl -Dred.
 
-%{
-scG/branch : 
-	({x} of^ x A worG -> of^ (M x) B worG) -> ({x} form^ x norm1 worG -> form^ (M x) comp1 worG) -> 
-	of^ E A worG ->	form^ E norm1 worG -> 
-	splitG (M E) I' -> mred I' V -> 
-	mred (NI) V -> type.
-%mode scG/branch +Dof +Dcomp +Dstep +Dspl' +Dred' -Dspl -Dred.
-}%
-
 - : scG (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dval2)))
 	(splg-exv Dsplg1) _
 	(ms-pi1-r _)
@@ -129,16 +120,16 @@ split1-unique/strengthen :
 %worlds (correctness-block) (split1-unique/strengthen _ _ _ _).
 %total {} (split1-unique/strengthen _ _ _ _).
 
-
 %% LIFTING CORRECTNESS
 lc : split1 E C R -> 
 	({x}{x2} splitvar2 x x2 -> split1 (E' x) C' (R' x2)) -> 
 	lstep E Q E' ->
-	eq-term C C' -> type.
-%mode lc +DsplE +DsplE' +Dstep -Deq.
+	eq-term C C' -> 
+	({x}{l} reqv (R l) (R' x l)) -> type.
+%mode lc +DsplE +DsplE' +Dstep -Deq -Deqv.
 
 %% LIFT RULES
-- : lc (spl1-next (spl2-exv _)) ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _) eq-term_.
+- : lc (spl1-next (spl2-exv _)) ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _) eq-term_ _.
 - : lc (spl1-tup Dspl DsplB) ([x][x2][s] spl1-tup (Dspl' x x2 s) (DsplB' x x2 s)) (ls-tup-s1 Dstep) Deq'
 	<- lc Dspl Dspl' Dstep Deq
 	<- (split1-unique/strengthen DsplB DsplB' DeqB _)

@@ -113,7 +113,7 @@ ls-app-s2	: lstep (app (exv E1) E2) Q ([x] app (exv E1) (E2' x))
 %% STAGING FEATURES
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
-ls-next-r	: lstep (next (exv E)) E ([x] next (exv x))
+ls-next-r	: lstep (next (exv E)) E ([x] next (exv (exv x)))
 			<- not-variable E.
 ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
