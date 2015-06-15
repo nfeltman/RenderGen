@@ -113,71 +113,59 @@ split1-unique/strengthen :
 	split1 E C R -> 
 	({x}{x2} splitvar2 x x2 -> split1 E C' ([l] R' l x2)) -> 
 	eq-term C C' -> 
-	({x2}{l} eq-term (R l) (R' l x2)) -> type.
+	({l}{x2} eq-term (R l) (R' l x2)) -> type.
 %mode split1-unique/strengthen +DsplE +DsplE' -Deq1 -Deq2.
 - : split1-unique/strengthen Dspl Dspl' (DeqC ztup ztup) (DeqR ztup)
-	<- ({x}{x2}{s} split1-unique Dspl (Dspl' x x2 s) (DeqC x x2) ([l] DeqR x x2 l)).
+	<- ({x}{x2}{s} split1-unique Dspl (Dspl' x x2 s) (DeqC x x2) ([l] DeqR x l x2)).
 %worlds (correctness-block) (split1-unique/strengthen _ _ _ _).
 %total {} (split1-unique/strengthen _ _ _ _).
 
 %% LIFTING CORRECTNESS
 lc : split1 E C R -> 
+	splitres Q Q' -> 
 	({x}{x2} splitvar2 x x2 -> split1 (E' x) C' (R' x2)) -> 
 	lstep E Q E' ->
 	eq-term C C' -> 
-	({x}{l} reqv (R l) (R' x l)) -> type.
-%mode lc +DsplE +DsplE' +Dstep -Deq -Deqv.
+	({l} reqv (R l) (let Q' ([y] R' y l))) -> type.
+%mode lc +DsplE +Dsplres +DsplE' +Dstep -Deq -Deqv.
 
 %% LIFT RULES
-- : lc (spl1-next (spl2-exv _)) ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _) eq-term_ _.
-- : lc (spl1-tup Dspl DsplB) ([x][x2][s] spl1-tup (Dspl' x x2 s) (DsplB' x x2 s)) (ls-tup-s1 Dstep) Deq'
-	<- lc Dspl Dspl' Dstep Deq
-	<- (split1-unique/strengthen DsplB DsplB' DeqB _)
+- : lc (spl1-next (spl2-exv _)) _ ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _ : lstep (next (exv E)) E ([x] next (exv (exv x)))) eq-term_ ([l] reqv-lift-base).
+- : lc (spl1-tup Dspl DsplB) DsplQ ([x][x2][s] spl1-tup (Dspl' x x2 s) (DsplB' x x2 s)) (ls-tup-s1 Dstep) 
+		Deq' ([l] reqv-lift-lett ([l1][l2] reqv-lift-tup1 (Deqv l1) (DeqR l2)))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett DeqB ([x][y] eq-term_) (DeqB' y z))
 	<- eq-cong/lett Deq DeqB' Deq'.
-- : lc (spl1-tup DsplB Dspl) ([x][x2][s] spl1-tup (DsplB' x x2 s) (Dspl' x x2 s)) (ls-tup-s2 Dstep) Deq''
-	<- lc Dspl Dspl' Dstep Deq
-	<- split1-unique/strengthen DsplB DsplB' DeqB _
+- : lc (spl1-tup DsplB Dspl) DsplQ ([x][x2][s] spl1-tup (DsplB' x x2 s) (Dspl' x x2 s)) (ls-tup-s2 Dstep) 
+		Deq'' ([l] reqv-lift-lett ([l1][l2] reqv-lift-tup2 (Deqv l2) (DeqR l1)))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen DsplB DsplB' DeqB (DeqR : {l}{x2} eq-term (R l) (R' l x2))
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
 	<- eq-cong/lett DeqB Deq' Deq''.
-- : lc (spl1-pi1 Dspl) ([x][x2][s] spl1-pi1 (Dspl' x x2 s)) (ls-pi1-s Dstep) Deq'
-	<- lc Dspl Dspl' Dstep Deq
+- : lc (spl1-pi1 Dspl) DsplQ  ([x][x2][s] spl1-pi1 (Dspl' x x2 s)) (ls-pi1-s Dstep) Deq' ([l] reqv-lift-pi1 (Deqv l))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
-- : lc (spl1-pi2 Dspl) ([x][x2][s] spl1-pi2 (Dspl' x x2 s)) (ls-pi2-s Dstep) Deq'
-	<- lc Dspl Dspl' Dstep Deq
+- : lc (spl1-pi2 Dspl) DsplQ ([x][x2][s] spl1-pi2 (Dspl' x x2 s)) (ls-pi2-s Dstep) Deq' ([l] reqv-lift-pi2 (Deqv l))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
-- : lc (spl1-app Dspl DsplB) ([x][x2][s] spl1-app (Dspl' x x2 s) (DsplB' x x2 s)) (ls-app-s1 Dstep) Deq'
-	<- lc Dspl Dspl' Dstep Deq
-	<- split1-unique/strengthen DsplB DsplB' DeqB _
+- : lc (spl1-app Dspl DsplB) DsplQ ([x][x2][s] spl1-app (Dspl' x x2 s) (DsplB' x x2 s)) (ls-app-s1 Dstep) 
+		Deq' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
+				reqv-lift-app1 (Deqv l1) (DeqR' l2 l3))))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett DeqB ([x][y] eq-term_) (DeqB' y z))
-	<- eq-cong/lett Deq DeqB' Deq'.
-- : lc (spl1-app DsplB Dspl) ([x][x2][s] spl1-app (DsplB' x x2 s) (Dspl' x x2 s)) (ls-app-s2 Dstep) Deq''
-	<- lc Dspl Dspl' Dstep Deq
-	<- split1-unique/strengthen DsplB DsplB' DeqB _
+	<- eq-cong/lett Deq DeqB' Deq'
+	<- ({y}{l2}{l3} eq-cong2 tup (DeqR l2 y) eq-term_ (DeqR' l2 l3 y)).
+- : lc (spl1-app DsplB Dspl) DsplQ ([x][x2][s] spl1-app (DsplB' x x2 s) (Dspl' x x2 s)) (ls-app-s2 Dstep) 
+		Deq'' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
+				reqv-lift-app2 (reqv-lift-tup1 (Deqv l2) ([l] eq-term_)) (DeqR l1))))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
 	<- eq-cong/lett DeqB Deq' Deq''.
-%worlds (correctness-block) (lc _ _ _ _).
-%total (D) (lc D _ _ _).
-
-%{
-lc :  lstep E Q E' -> split1 E C R -> splitres Q Q' -> ({x}{x2} splitres x x2 -> split1 (E' x) C (R' x2)) -> type.
-%mode lc +Dstep +DsplE -DsplrQ -DsplE'.
-%% LIFT RULES
-- : lc (ls-next-r _) (spl1-next (spl2-exv Dsplr)) Dsplr ([x][x2][s] spl1-exv (splv-next s)).
-- : lc (ls-tup-s1 Dstep) (spl1-tup DsplA DsplB) Dsplr ([x][x2][s] spl1-tup (DsplA' x x2 s) DsplB)
-	<- lc Dstep DsplA Dsplr DsplA'.
-- : lc (ls-tup-s2 Dstep) (spl1-tup DsplA DsplB) Dsplr ([x][x2][s] spl1-tup DsplA (DsplB' x x2 s))
-	<- lc Dstep DsplB Dsplr DsplB'.
-- : lc (ls-pi1-s Dstep) (spl1-pi1 Dspl) Dsplr ([x][x2][s] spl1-pi1 (Dspl' x x2 s))
-	<- lc Dstep Dspl Dsplr Dspl'.
-- : lc (ls-pi2-s Dstep) (spl1-pi2 Dspl) Dsplr ([x][x2][s] spl1-pi2 (Dspl' x x2 s))
-	<- lc Dstep Dspl Dsplr Dspl'.
-- : lc (ls-app-s1 Dstep) (spl1-app DsplA DsplB) Dsplr ([x][x2][s] spl1-app (DsplA' x x2 s) DsplB)
-	<- lc Dstep DsplA Dsplr DsplA'.
-- : lc (ls-app-s2 Dstep) (spl1-app DsplA DsplB) Dsplr ([x][x2][s] spl1-app DsplA (DsplB' x x2 s))
-	<- lc Dstep DsplB Dsplr DsplB'.
-%worlds (correctness-block) (lc _ _ _ _).
-%total (D) (lc D _ _ _).}%
+%worlds (correctness-block) (lc _ _ _ _ _ _).
+%total (D) (lc D _ _ _ _ _).
 
 %% USES UNIQUENESS OF SPLITTING TO SHOW REDUCTION RESPECTS IT
 split-eval-resp : split1 E C R -> split1 E C' R' -> mred C (tup I B) -> mred C' (tup I B) -> ({x} eq-term (R x) (R' x)) -> type.
@@ -193,6 +181,7 @@ split-eval-eq : split1 E C _ -> mred C V -> split1 E C' _  -> mred C' V' -> eq-t
 %worlds (correctness-block) (split-eval-eq _ _ _ _ _).
 %total {} (split-eval-eq _ _ _ _ _).
 
+%{
 strengthen-split-eval : 
 	({x : term lang0}{x2 : term lang2} splitvar2 x x2 -> split2 (E x) (P x x2) (Q x x2)) -> 
 	({x : term lang0}{x2 : term lang2} mred (P x x2) (B x x2)) ->
@@ -221,7 +210,7 @@ strengthen-split-eval :
 	<- ({x}{x2} mred-resp (Dred x x2) (DeqP x x2) (DeqV x x2) (Dred' x x2))
 	<- conv-resp (Dconv ztup ztup) (DeqV ztup ztup) eq-term_ Dconv'.
 %worlds (term-block | splitting-block) (strengthen-split-eval _ _ _ _ _ _).
-%total (D) (strengthen-split-eval D _ _ _ _ _).
+%total (D) (strengthen-split-eval D _ _ _ _ _).}%
 
 %% LEMMAS FOR SPLITTING CORRECTNESS
 sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 -> 
@@ -591,7 +580,7 @@ invert/exv--resp/tup :
 		(reqv-lett-p (reqv-tup-s reqv-id Deqv))
 	<- sc2 Dof Dcomp DsplB' DredB' Dstep DsplB DredB DconvB DconvB' Deqv
 	<- lang-convert_12-total _ DconvA.
-- : sc2 (of^-lam _ DofM) (form^lam2c Dcomp) 
+%{- : sc2 (of^-lam _ DofM) (form^lam2c Dcomp) 
 		(spl2-lam ([x][x2][s] DsplM' x x2 s : split2 (M' x) P' (Q' x2))) 
 		(Dred' : mred P' B')
 		(ms-lam-s Dstep) 
@@ -602,7 +591,7 @@ invert/exv--resp/tup :
 			(DsplM x x2 splx : split2 (M x) (P x x2) (R x x2)) (Dred x x2)
 			(Dconv x x2 : lang-convert (B x x2) (BB x x2)) (Dconv' x x2 : lang-convert B' (BB' x x2)) 
 			(Deqv x2 : reqv (R x x2 B) ()))
-	<- strengthen-split-eval DsplM Dred Dconv DsplM+ Dred+ Dconv+.
+	<- strengthen-split-eval DsplM Dred Dconv DsplM+ Dred+ Dconv+.}%
 - : sc2 (of^-app Dof _) (form^app-c Dcomp _) (spl2-app DsplA' DsplB) (mred-tup DredA' DredB) (ms-app-s1 Dstep) 
 		(spl2-app DsplA DsplB) (mred-tup DredA DredB) 
 		(conv-tup DconvA DconvB) (conv-tup DconvA' DconvB)
@@ -631,20 +620,22 @@ invert/exv--resp/tup :
 - : sc2 (of^-prev Dof) (form^prev Dcomp) (spl2-prev Dspl') (mred-pi2 Dred') (ms-prev-s Dstep) 
 		(spl2-prev Dspl) (mred-pi2 Dred) Dconv Dconv' Deqv
 	<- sc1 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Deqv.
-%{- : sc2 (of^-prev (Dof : of^ E (fut A) wor1)) (form^prev Dcomp)
-		(spl2-let (spl2-exv Dsplr) ([x][x2][s] spl2-prev (Dspl' x x2 s : split1 (E' x) C' _)))
-		(Dred : mred (tup (exv ztup) (pi2 C')) _)
+- : sc2 (of^-prev (Dof : of^ E (fut A) wor1)) (form^prev Dcomp)
+		(spl2-let (spl2-exv Dsplr) ([x][x2][s] spl2-prev (Dspl' x x2 s : split1 (E' x) C' (R' x2))))
+		(Dred : mred (tup (exv ztup) (pi2 C')) (tup I B))
 		(ms-prev-ls Dstep : mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x))))
 		(spl2-prev Dspl) 
 		Dred'
-		Dconv Dconv'
-	<- spl1-total Dof Dcomp (Dspl : split1 E C _)
-	<- lc Dspl Dspl' Dstep (Deq : eq-term C C')
+		Dconv (conv-tup DconvI Dconv)
+		(reqv-lett-r2 (Deqv BB))
+	<- spl1-total Dof Dcomp (Dspl : split1 E C R)
+	<- lc Dspl Dsplr Dspl' Dstep (Deq : eq-term C C') (Deqv : {l} reqv (R l) (let Q' ([y] R' y l)))
 	<- eq-term-sym Deq (Deq' : eq-term C' C)
-	<- eq-cong ([x] tup (exv ztup) (pi2 x)) Deq' Deq''
-	<- mred-resp Dred Deq'' eq-term_ (mred-tup _ Dred')
-	<- lang-convert_12-total _ Dconv'
-	<- lang-convert_12-total _ Dconv.}%
+	<- eq-cong ([x] tup (exv ztup) (pi2 x)) Deq' (Deq'' : eq-term (tup (exv ztup) (pi2 C')) (tup (exv ztup) (pi2 C)))
+	<- mred-resp Dred Deq'' eq-term_ (mred-tup (DredI : mred (exv ztup) I) Dred')
+	<- lang-convert_12-total B (Dconv : lang-convert B BB)
+	<- mred-invert/exv DredI (DeqI : eq-term ztup I)
+	<- conv-resp conv-ztup DeqI eq-term_ (DconvI : lang-convert I ztup).
 
 %worlds (correctness-block) (sc1 _ _ _ _ _ _ _ _ _ _) (sc2 _ _ _ _ _ _ _ _ _ _).
 %total (D1 E) (sc1 _ _ _ _ D1 _ _ _ _ _) (sc2 _ _ _ _ E _ _ _ _ _).
