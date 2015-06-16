@@ -43,7 +43,7 @@ hbv-ztup	: hb-val of^-ztup tyc-ztup.
 hbv-tup		: hb-val (of^-tup Dof1 Dof2) (tyc-tup T1 T2)
 			<- hb-val Dof2 T2
 			<- hb-val Dof1 T1.
-hbv-lam		: hb-val (of^-lam (Dwf : ty^wf A wor1) DofM) (tyc-tup (tyc-tup T1 T2) (tyc-ty A))
+hbv-lam		: hb-val (of^-lam (_ : ty^wf A wor1) DofM) (tyc-tup (tyc-tup T1 T2) (tyc-ty A))
 			<- ({x}{ofx : of^ x A wor1} hb-val ofx T1 -> hb1 (DofM x ofx) A T2)
 			<- hk T1 K
 			<- ibk A K.
@@ -83,63 +83,63 @@ hb2-let	: hb2 (of^-let DofE DofM) (prod A1 A2)
 			<- hb2 DofE A1.
 
 %% OUTPUTS OF BOUNDARY TYPING ARE WELL-FORMED
-hb1-wf : form^ E comp1 wor1 -> hb1 (_ : of^ E A wor1) B T -> ty-wf B -> ibk A K -> hk T K -> type.
-%mode hb1-wf +Dcomp +Dhb -Dwf -Dibk -Dhk. 
-hbv-wf : form^ E norm1 wor1 -> hb-val (_ : of^ E A wor1) T -> ibk A K -> hk T K -> type.
-%mode hbv-wf +Dcomp +Dhb -Dibk -Dhk. 
-hb2-wf : form^ E comp1 wor2 -> hb2 (_ : of^ E A wor2) B -> ty-wf B -> type.
-%mode hb2-wf +Dcomp +Dhb -Dwf. 
+hb1-wf : hb1 (_ : of^ E A wor1) B T -> ty-wf B -> ibk A K -> hk T K -> type.
+%mode hb1-wf +Dhb -Dwf -Dibk -Dhk. 
+hbv-wf : hb-val (_ : of^ E A wor1) T -> ibk A K -> hk T K -> type.
+%mode hbv-wf +Dhb -Dibk -Dhk. 
+hb2-wf : hb2 (_ : of^ E A wor2) B -> ty-wf B -> type.
+%mode hb2-wf +Dhb -Dwf. 
 
-- : hbv-wf _ hbv-ztup ibk-unit hk-ztup.
-- : hbv-wf (form^tup-n Dval1 Dval2) (hbv-tup Dhb1 Dhb2) (ibk-prod Dibk1 Dibk2) (hk-tup Dhk1 Dhk2)
-	<- hbv-wf Dval1 Dhb1 Dibk1 Dhk1
-	<- hbv-wf Dval2 Dhb2 Dibk2 Dhk2.
-- : hbv-wf (form^lam1 Dcomp _) (hbv-lam Dibk1 Dhk1 Dhb) (ibk-arr Dibk1 Dibk2) (hk-tup (hk-tup Dhk1 Dhk2) (hk-ty Dwf))
-	<- ({x}{ofx}{vx}{xb : hb-val ofx T} hbv-wf vx xb Dibk1 Dhk1 ->
-		hb1-wf (Dcomp x vx) (Dhb x ofx xb) Dwf Dibk2 Dhk2).
+- : hbv-wf hbv-ztup ibk-unit hk-ztup.
+- : hbv-wf (hbv-tup Dhb1 Dhb2) (ibk-prod Dibk1 Dibk2) (hk-tup Dhk1 Dhk2)
+	<- hbv-wf Dhb1 Dibk1 Dhk1
+	<- hbv-wf Dhb2 Dibk2 Dhk2.
+- : hbv-wf (hbv-lam Dibk1 Dhk1 Dhb) (ibk-arr Dibk1 Dibk2) (hk-tup (hk-tup Dhk1 Dhk2) (hk-ty Dwf))
+	<- ({x}{ofx}{xb : hb-val ofx T} hbv-wf xb Dibk1 Dhk1 ->
+		hb1-wf (Dhb x ofx xb) Dwf Dibk2 Dhk2).
 
 
-- : hb1-wf (form^exv Dcomp) (hb1-exv Dhb) ty-wf-unit Dibk Dhk
-	<- hbv-wf Dcomp Dhb Dibk Dhk.
-- : hb1-wf (form^tup-c Dcomp1 Dcomp2) (hb1-tup Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2) (ibk-prod Dibk1 Dibk2) (hk-tup Dhk1 Dhk2)
-	<- hb1-wf Dcomp1 Dhb1 Dwf1 Dibk1 Dhk1
-	<- hb1-wf Dcomp2 Dhb2 Dwf2 Dibk2 Dhk2.
-- : hb1-wf (form^pi1-c Dcomp) (hb1-pi1 Dhb) Dwf Dibk Dhk
-	<- hb1-wf Dcomp Dhb Dwf (ibk-prod Dibk _) (hk-tup Dhk _).
-- : hb1-wf (form^pi2-c Dcomp) (hb1-pi2 Dhb) Dwf Dibk Dhk
-	<- hb1-wf Dcomp Dhb Dwf (ibk-prod _ Dibk) (hk-tup _ Dhk).
-- : hb1-wf (form^app-c Dcomp1 Dcomp2) (hb1-app Dhb1 Dhb2) (ty-wf-prod (ty-wf-prod Dwf1 Dwf2) Dwf3) Dibk2 Dhk2
-	<- hb1-wf Dcomp1 Dhb1 Dwf1 (ibk-arr _ Dibk2) (hk-tup (hk-tup _ Dhk2) (hk-ty Dwf3))
-	<- hb1-wf Dcomp2 Dhb2 Dwf2 _ _.
-- : hb1-wf (form^next-c Dcomp) (hb1-next Dhb) Dwf ibk-fut hk-ztup
-	<- hb2-wf Dcomp Dhb Dwf.
+- : hb1-wf (hb1-exv Dhb) ty-wf-unit Dibk Dhk
+	<- hbv-wf Dhb Dibk Dhk.
+- : hb1-wf (hb1-tup Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2) (ibk-prod Dibk1 Dibk2) (hk-tup Dhk1 Dhk2)
+	<- hb1-wf Dhb1 Dwf1 Dibk1 Dhk1
+	<- hb1-wf Dhb2 Dwf2 Dibk2 Dhk2.
+- : hb1-wf (hb1-pi1 Dhb) Dwf Dibk Dhk
+	<- hb1-wf Dhb Dwf (ibk-prod Dibk _) (hk-tup Dhk _).
+- : hb1-wf (hb1-pi2 Dhb) Dwf Dibk Dhk
+	<- hb1-wf Dhb Dwf (ibk-prod _ Dibk) (hk-tup _ Dhk).
+- : hb1-wf (hb1-app Dhb1 Dhb2) (ty-wf-prod (ty-wf-prod Dwf1 Dwf2) Dwf3) Dibk2 Dhk2
+	<- hb1-wf Dhb1 Dwf1 (ibk-arr _ Dibk2) (hk-tup (hk-tup _ Dhk2) (hk-ty Dwf3))
+	<- hb1-wf Dhb2 Dwf2 _ _.
+- : hb1-wf (hb1-next Dhb) Dwf ibk-fut hk-ztup
+	<- hb2-wf Dhb Dwf.
 
-- : hb2-wf (form^exv Dcomp) hb2-exv ty-wf-unit.
-- : hb2-wf (form^tup-c Dcomp1 Dcomp2) (hb2-tup Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2)
-	<- hb2-wf Dcomp1 Dhb1 Dwf1
-	<- hb2-wf Dcomp2 Dhb2 Dwf2.
-- : hb2-wf (form^pi1-c Dcomp) (hb2-pi1 Dhb) Dwf
-	<- hb2-wf Dcomp Dhb Dwf.
-- : hb2-wf (form^pi2-c Dcomp) (hb2-pi2 Dhb) Dwf
-	<- hb2-wf Dcomp Dhb Dwf.
-- : hb2-wf (form^app-c Dcomp1 Dcomp2) (hb2-app Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2)
-	<- hb2-wf Dcomp1 Dhb1 Dwf1
-	<- hb2-wf Dcomp2 Dhb2 Dwf2.
-- : hb2-wf (form^prev Dcomp) (hb2-prev Dhb) Dwf
-	<- hb1-wf Dcomp Dhb Dwf _ _.
-- : hb2-wf (form^lam2c Dcomp) (hb2-lam Dhb) Dwf
-	<- ({x}{ofx}{vx} hb2-wf (Dcomp x vx) (Dhb x ofx) Dwf).
-- : hb2-wf (form^let-c DcompE DcompM) (hb2-let DhbE DhbM) (ty-wf-prod Dwf1 Dwf2)
-	<- hb2-wf DcompE DhbE Dwf1
-	<- ({x}{ofx}{vx} hb2-wf (DcompM x vx) (DhbM x ofx) Dwf2).
+- : hb2-wf hb2-exv ty-wf-unit.
+- : hb2-wf (hb2-tup Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2)
+	<- hb2-wf Dhb1 Dwf1
+	<- hb2-wf Dhb2 Dwf2.
+- : hb2-wf (hb2-pi1 Dhb) Dwf
+	<- hb2-wf Dhb Dwf.
+- : hb2-wf (hb2-pi2 Dhb) Dwf
+	<- hb2-wf Dhb Dwf.
+- : hb2-wf (hb2-app Dhb1 Dhb2) (ty-wf-prod Dwf1 Dwf2)
+	<- hb2-wf Dhb1 Dwf1
+	<- hb2-wf Dhb2 Dwf2.
+- : hb2-wf (hb2-prev Dhb) Dwf
+	<- hb1-wf Dhb Dwf _ _.
+- : hb2-wf (hb2-lam Dhb) Dwf
+	<- ({x}{ofx} hb2-wf (Dhb x ofx) Dwf).
+- : hb2-wf (hb2-let DhbE DhbM) (ty-wf-prod Dwf1 Dwf2)
+	<- hb2-wf DhbE Dwf1
+	<- ({x}{ofx} hb2-wf (DhbM x ofx) Dwf2).
 
 %block hb-wf-var1 : some {L : lang} {A : ty} {K : kind} {Dibk : ibk A K} {TC : tyc} {Dhk : hk TC K}
-	block {x:term L} {ofx:of^ x A wor1} {vx:form^ x norm1 wor1} 
-	{xb : hb-val ofx TC} {_: hbv-wf vx xb Dibk Dhk}.
+	block {x:term L} {ofx:of^ x A wor1}
+	{xb : hb-val ofx TC} {_: hbv-wf xb Dibk Dhk}.
 %block hb-wf-var2 : some {L : lang} {A : ty}
-	block {x:term L} {ofx:of^ x A wor2} {vx:form^ x vars2 wor2}.
-%worlds (hb-wf-var1 | hb-wf-var2) (hb1-wf _ _ _ _ _) (hbv-wf _ _ _ _) (hb2-wf _ _ _).
-%total (D1 D2 D3) (hb1-wf D1 _ _ _ _) (hbv-wf D2 _ _ _) (hb2-wf D3 _ _).
+	block {x:term L} {ofx:of^ x A wor2}.
+%worlds (hb-wf-var1 | hb-wf-var2) (hb1-wf _ _ _ _) (hbv-wf _ _ _) (hb2-wf _ _).
+%total (D1 D2 D3) (hb1-wf D1 _ _ _) (hbv-wf D2 _ _) (hb2-wf D3 _).
 
 
 %% TYPES AT TWO ARE MONOTYPES
