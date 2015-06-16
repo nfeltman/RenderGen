@@ -6,7 +6,6 @@ unit	: ty.
 prod  : ty -> ty -> ty.
 sum	  : ty -> ty -> ty.
 arr		: ty -> ty -> ty.
-arr+	: ty -> ty -> ty -> ty.
 fut		: ty -> ty.
 curr	: ty -> ty.
 %freeze ty.

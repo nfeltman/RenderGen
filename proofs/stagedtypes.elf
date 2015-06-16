@@ -10,6 +10,11 @@ fsw-wor1 : first-stage-wor wor1.
 fsw-worG : first-stage-wor worG.
 %worlds () (first-stage-wor _).
 
+ground-wor : wor -> type.
+grnd-wor2 : ground-wor wor2.
+grnd-worG : ground-wor worG.
+%worlds () (ground-wor _).
+
 %% TYPE WELL-FORMED
 ty^wf : ty -> wor -> type.
 %mode ty^wf +T +W.
