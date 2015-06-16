@@ -1,23 +1,22 @@
 %% TYPE SPLITTING
 
-tysplit : ty -> ty -> ty -> type.
+tysplit : tyc -> ty -> ty -> ty -> type.
 
-spl-unit : tysplit unit unit unit.
-spl-fut  : tysplit (fut A) unit A.
-spl-prod : tysplit (prod A B) (prod A1 B1) (prod A2 B2)
-	<- tysplit B B1 B2
-	<- tysplit A A1 A2.
-spl-arr  : {T} tysplit (arr+ A T B) (arr A1 (prod B1 T)) (arr (prod A2 T) B2)
-	<- tysplit B B1 B2
-	<- tysplit A A1 A2.
+spl-unit : tysplit tyc-ztup unit unit unit.
+spl-fut  : tysplit tyc-ztup (fut A) unit A.
+spl-prod : tysplit (tyc-tup IA IB) (prod A B) (prod A1 B1) (prod A2 B2)
+	<- tysplit IB B B1 B2
+	<- tysplit IA A A1 A2.
+spl-arr  : tysplit (tyc-tup (tyc-tup IA IB) (tyc-ty T)) (arr A B) (arr A1 (prod B1 T)) (arr (prod A2 T) B2)
+	<- tysplit IB B B1 B2
+	<- tysplit IA A A1 A2.
 
-tysplit-pres : tysplit A A1 A2 -> ty+wf A wor1 -> ty-wf A1 -> ty-wf A2 -> type.
-%mode tysplit-pres +Dspl +Dwf -Dwf1 -Dwf2.
-- : tysplit-pres spl-unit ty+wf-unit ty-wf-unit ty-wf-unit.
-- : tysplit-pres (spl-prod DsplA DsplB) (ty+wf-prod DwfA DwfB) 
-		(ty-wf-prod DwfA1 DwfB1) (ty-wf-prod DwfA2 DwfB2)
-	<- tysplit-pres DsplA DwfA DwfA1 DwfA2
-	<- tysplit-pres DsplB DwfB DwfB1 DwfB2.
+tysplit-pres : tysplit I A A1 A2 -> hk I K -> ibk A K -> ty-wf A1 -> ty-wf A2 -> type.
+%mode tysplit-pres +Dspl +Dhk +Dibk -Dwf1 -Dwf2.
+- : tysplit-pres spl-unit _ _ ty-wf-unit ty-wf-unit.
+- : tysplit-pres (spl-prod DsplA DsplB) (hk-tup DhkA DhkB) (ibk-prod DibkA DibkB) (ty-wf-prod DwfA1 DwfB1) (ty-wf-prod DwfA2 DwfB2)
+	<- tysplit-pres DsplA DhkA DibkA DwfA1 DwfA2
+	<- tysplit-pres DsplB DhkB DibkB DwfB1 DwfB2.
 - : tysplit-pres spl-fut (ty+wf-fut Dwf) ty-wf-unit Dwf'
 	<- wor2+mono Dwf Dwf'.
 - : tysplit-pres (spl-arr _ DsplA DsplB) (ty+wf-arr+ DwfA DwfT DwfB) 
