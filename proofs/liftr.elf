@@ -127,6 +127,12 @@ eq-cong2 : {F : term L -> term L -> term L} eq-term E1 E1' -> eq-term E2 E2' -> 
 %worlds (term-block) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
 
+eq-cong-hole : ({x:term L} eq-term (M x : term L) (M' x)) ->  eq-term E E' -> eq-term (M E) (M' E') -> type.
+%mode eq-cong-hole +F +Deq -Deq'.
+- : eq-cong-hole ([x] eq-term_) eq-term_ eq-term_.
+%worlds (general-term-block) (eq-cong-hole _ _ _).
+%total {} (eq-cong-hole _ _ _).
+
 eq-cong/0/2 : {F : term L -> (term L -> term L -> term L) -> term L} 
   (eq-term E1 E1') -> 
   ({x}{y} eq-term (E2 x y) (E2' x y)) -> 
@@ -274,6 +280,17 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 
 %worlds (term-block) (lang-indep _ _ _).
 %total (D) (lang-indep _ D _).
+
+
+lang-indep2 : neq-lang L1 L3 -> neq-lang L2 L3 -> {E : term L1 -> term L2 -> term L3} ({x : term L1}{y : term L2} eq-term (E x y) E') -> type.
+%mode lang-indep2 +Dneq1 +Dneq2 +E -Deq.
+- : lang-indep2 Dneq1 Dneq2 E_2 Deq
+    <- ({y} lang-indep Dneq1 ([x] E_2 x y) ([x] Deq1 x y : eq-term (E_2 x y) (E_1 y))) 
+    <- lang-indep Dneq2 E_1 ([y] Deq2 y : eq-term (E_1 y) E)
+    <- ({x}{y} eq-term-trans (Deq1 x y) (Deq2 y) (Deq x y : eq-term (E_2 x y) E)).
+%worlds (term-block) (lang-indep2 _ _ _ _).
+%total (D) (lang-indep2 _ _ D _).
+
 %{
 convert-hole : {M : ({L1} term L1) -> {L2} term L2} {N : {L} term L -> term L} ({x : {L'} term L'}{L} eq-term (M x L) (N L (x L))) -> type.
 %mode convert-hole +M -N -Deq.
@@ -337,31 +354,50 @@ lang-convert_12-total : {E : term lang1} {F : {L} term L} eq-term E (F lang1) ->
 
 
 %% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
-lang-convert : term L1 -> term L2 -> type. %name lang-convert Dconv.
-conv-lam : lang-convert (lam M) (lam (M' (ztup : term L1)))
-    <- {x:term L1}{x': term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2).
-conv-case : lang-convert (case E M N) (case E' (M' (ztup : term L1)) (N' (ztup : term L1)))
-    <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (N x) (N' x x' : term L2))
-    <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2))
-    <- lang-convert E E'.
-conv-let : lang-convert (let E M) (let E' (M' (ztup : term L1)))
-    <- ({x:term L1}{x':term L2} lang-convert x x' -> lang-convert (M x) (M' x x' : term L2))
-    <- lang-convert E E'.
-conv-lett : lang-convert (lett E M) (lett E' (M' (ztup : term L1) (ztup : term L1)))
-    <- ({x:term L1}{x':term L2} lang-convert x x' -> {y:term L1}{y':term L2} lang-convert y y' -> lang-convert (M x y) (M' x y x' y' : term L2))
-    <- lang-convert E E'.
-conv-gen0 : {F : {L} term L} lang-convert (F L1) (F L2).
-conv-gen1 : {F : {L} term L -> term L} lang-convert (F L1 E) (F L2 E')
-    <- lang-convert E E'.
-conv-gen2 : {F : {L} term L -> term L -> term L} lang-convert (F L1 E1 E2) (F L2 E1' E2')
-    <- lang-convert E2 E2'
-    <- lang-convert E1 E1'.
-%block convert-block : some {L1} {L2} block {x1 : term L1} {x2 : term L2} {_ : lang-convert x1 x2}.
-%worlds (convert-block) (lang-convert _ _).
+lang-convert : term L1 -> {L2} term L2 -> type. %name lang-convert Dconv.
+conv-lam : lang-convert (lam M) L2 (lam (M' (ztup : term L1)))
+    <- {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2).
+conv-case : lang-convert (case E M N) L2 (case E' (M' (ztup : term L1)) (N' (ztup : term L1)))
+    <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (N x) L2 (N' x x' : term L2))
+    <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2))
+    <- lang-convert E L2 E'.
+conv-let : lang-convert (let E M) L2 (let E' (M' (ztup : term L1)))
+    <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2))
+    <- lang-convert E L2 E'.
+conv-lett : lang-convert (lett E M) L2 (lett E' (M' (ztup : term L1) (ztup : term L1)))
+    <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> 
+        {y:term L1}{y':term L2} lang-convert y L2 y' -> 
+        lang-convert (M x y) L2 (M' x y x' y' : term L2))
+    <- lang-convert E L2 E'.
+conv-ztup : lang-convert ztup _ ztup.
+conv-pi1 : lang-convert (pi1 E) _ (pi1 E')
+    <- lang-convert E _ E'.
+conv-pi2 : lang-convert (pi2 E) _ (pi2 E')
+    <- lang-convert E _ E'.
+conv-inj1 : lang-convert (inj1 E) _ (inj1 E')
+    <- lang-convert E _ E'.
+conv-inj2 : lang-convert (inj2 E) _ (inj2 E')
+    <- lang-convert E _ E'.
+conv-next : lang-convert (next E) _ (next E')
+    <- lang-convert E _ E'.
+conv-prev : lang-convert (prev E) _ (prev E')
+    <- lang-convert E _ E'.
+conv-grnd : lang-convert (grnd E) _ (grnd E')
+    <- lang-convert E _ E'.
+conv-exv : lang-convert (exv E) _ (exv E')
+    <- lang-convert E _ E'.
 
-conv-ztup = conv-gen0 ([l] ztup).
-conv-tup = conv-gen2 ([l] tup).
-conv-tupzz = conv-gen2 ([l] tup) conv-ztup conv-ztup.
+conv-tup : lang-convert (tup E1 E2) _ (tup E1' E2')
+    <- lang-convert E2 _ E2'
+    <- lang-convert E1 _ E1'.
+conv-app : lang-convert (app E1 E2) _ (app E1' E2')
+    <- lang-convert E2 _ E2'
+    <- lang-convert E1 _ E1'.
+%block convert-block : some {L1} {L2} block {x1 : term L1} {x2 : term L2} {_ : lang-convert x1 L2 x2}.
+%worlds (convert-block) (lang-convert _ _ _).
+%unique lang-convert +E +L -1E'.
+
+conv-tupzz = conv-tup conv-ztup conv-ztup.
 
 %%unique lang-convert +E -1E'.
 %{
@@ -383,56 +419,83 @@ conv-cong/lam : ({x : {L} term L} lang-convert (M (x lang1) : term lang1) (M' (x
 %worlds (term-block) (conv-conglam _ _).
 %total {} (conv-conglam _ _).}%
 
-lang-convert_12-total : {E : term lang1} lang-convert E (E2 : term lang2) -> type.
+lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) -> type.
 %mode lang-convert_12-total +E -E'.
-- : lang-convert_12-total ztup (conv-gen0 ([l] ztup)).
-- : lang-convert_12-total (tup E1 E2) (conv-gen2 ([l] tup) Dconv1' Dconv2')
+- : lang-convert_12-total ztup conv-ztup.
+- : lang-convert_12-total (tup E1 E2) (conv-tup Dconv1' Dconv2')
     <- lang-convert_12-total E2 Dconv2'
     <- lang-convert_12-total E1 Dconv1'.
-- : lang-convert_12-total (pi1 E) (conv-gen1 ([l] pi1) Dconv')
+- : lang-convert_12-total (pi1 E) (conv-pi1 Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (pi2 E) (conv-gen1 ([l] pi2) Dconv')
+- : lang-convert_12-total (pi2 E) (conv-pi2 Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (inj1 E) (conv-gen1 ([l] inj1) Dconv')
+- : lang-convert_12-total (inj1 E) (conv-inj1 Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (inj2 E) (conv-gen1 ([l] inj2) Dconv')
+- : lang-convert_12-total (inj2 E) (conv-inj2 Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (case E M N) (conv-case Dconv' DconvM DconvN)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (M x) (DconvM x x2 convx))
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (N x) (DconvN x x2 convx))
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (lam M) (conv-lam DconvM)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (M x) (DconvM x x2 convx)).
-- : lang-convert_12-total (app E1 E2) (conv-gen2 ([l] app) Dconv1' Dconv2')
+- : lang-convert_12-total (app E1 E2) (conv-app Dconv1' Dconv2')
     <- lang-convert_12-total E2 Dconv2'
     <- lang-convert_12-total E1 Dconv1'.
 - : lang-convert_12-total (let E M) (conv-let Dconv' DconvM)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (M x) (DconvM x x2 convx))
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (lett E M) (conv-lett Dconv' DconvM)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
-       {y}{y2}{convy : lang-convert y y2} lang-convert_12-total y convy ->  
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
+       {y}{y2}{convy : lang-convert y lang2 y2} lang-convert_12-total y convy ->  
        lang-convert_12-total (M x y) (DconvM x x2 convx y y2 convy))
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (next E) (conv-gen1 ([l] next) Dconv')
+- : lang-convert_12-total (next E) (conv-next Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (prev E) (conv-gen1 ([l] prev) Dconv')
+- : lang-convert_12-total (prev E) (conv-prev Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (grnd E) (conv-gen1 ([l] grnd) Dconv')
+- : lang-convert_12-total (grnd E) (conv-grnd Dconv')
     <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (exv E) (conv-gen1 ([l] exv) Dconv')
+- : lang-convert_12-total (exv E) (conv-exv Dconv')
     <- lang-convert_12-total E Dconv'.
-%block convert-total-block : block {x1 : term lang1} {x2 : term lang2} {Dconv : lang-convert x1 x2} {_ : lang-convert_12-total x1 Dconv}.
-%block convert-total-ignore-block : block {x1 : term lang0} {x2 : term lang2}.
+%block convert-total-block : block {x1 : term lang1} {x2 : term lang2} {Dconv : lang-convert x1 lang2 x2} {_ : lang-convert_12-total x1 Dconv}.
+%block convert-total-ignore-block_0 : block {x1 : term lang0}.
+%block convert-total-ignore-block_2 : block {x2 : term lang2}.
+%block convert-total-ignore-block = (convert-total-ignore-block_0 | convert-total-ignore-block_2).
 %worlds (convert-total-block | convert-total-ignore-block) (lang-convert_12-total _ _).
 %total (D) (lang-convert_12-total D _).
 
+lang-convert-unique : (lang-convert A L B) -> (lang-convert A L B') -> eq-term B B' -> type.
+%mode lang-convert-unique +D1 +D2 -D3.
+- : lang-convert-unique _ _ eq-term_.
+%worlds (term-block | convert-block) (lang-convert-unique _ _ _).
+%total (D) (lang-convert-unique D _ _).
 
-conv-resp : lang-convert E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> lang-convert E1' E2' -> type.
+conv-strengthen_12 : 
+    ({x:term lang2} lang-convert (A : term lang1) lang2 (B_1 x : term lang2)) -> ({x} eq-term (B_1 x) B) -> type.
+%mode conv-strengthen_12 +D1 -D3.
+- : conv-strengthen_12 ([x] Dconv_1 x : lang-convert A lang2 (B_1 x)) Deq
+    <- lang-convert_12-total A (Dconv : lang-convert A lang2 B)
+    <- {x} lang-convert-unique (Dconv_1 x) Dconv (Deq x : eq-term (B_1 x) B).
+%worlds (convert-total-block | convert-total-ignore-block) (conv-strengthen_12 _ _).
+%total (D) (conv-strengthen_12 D _).
+
+conv-strengthen2_12 : 
+    ({x:term lang0}{x2:term lang2} lang-convert (A : term lang1) lang2 (B_2 x x2 : term lang2)) -> 
+    ({x}{x2} eq-term (B_2 x x2) B) -> type.
+%mode conv-strengthen2_12 +D1 -D3.
+- : conv-strengthen2_12 ([x][x2] Dconv_2 x x2 : lang-convert A lang2 (B_2 x x2)) Deq
+  <- ({x} conv-strengthen_12 (Dconv_2 x) ([x2] Deq_2 x x2 : eq-term (B_2 x x2) (B_1 x)))
+  <- lang-indep neq-lang_02 B_1 ([x] Deq_1 x : eq-term (B_1 x) B)
+  <- ({x}{x2} eq-term-trans (Deq_2 x x2) (Deq_1 x) (Deq x x2 : eq-term (B_2 x x2) B)).
+%worlds (convert-total-block | convert-total-ignore-block) (conv-strengthen2_12 _ _).
+%total (D) (conv-strengthen2_12 D _).
+
+conv-resp : lang-convert E1 L E2 -> eq-term E1 E1' -> eq-term E2 E2' -> lang-convert E1' L E2' -> type.
 %mode conv-resp +D1 +D2 +D3 -D3.
 - : conv-resp Dof eq-term_ eq-term_ Dof.
 %worlds (term-block) (conv-resp _ _ _ _).
