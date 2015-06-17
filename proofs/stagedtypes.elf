@@ -132,7 +132,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 %block var-of^-wf : 
 	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W}
 	block {x:term L} {Dof : of^ x A W} {_ : of^-wf Dof Dwf}.
-%worlds (var-of^-wf) (of^-wf _ _).
+%worlds (var-of^-wf | term-block) (of^-wf _ _).
 %total D (of^-wf D _).
 
 %% TYPES AT TWO ARE MONOTYPES

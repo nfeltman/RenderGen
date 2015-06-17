@@ -5,6 +5,9 @@ ty-wf-unit	: ty-wf unit.
 ty-wf-prod	: ty-wf (prod A B)
 				<- ty-wf B
 				<- ty-wf A.
+ty-wf-sum	: ty-wf (sum A B)
+				<- ty-wf B
+				<- ty-wf A.
 ty-wf-arr	: ty-wf (arr A B)
 				<- ty-wf B
 				<- ty-wf A.

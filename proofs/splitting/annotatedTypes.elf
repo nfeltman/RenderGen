@@ -138,7 +138,7 @@ hb2-wf : hb2 (_ : of^ E A wor2) B -> ty-wf B -> type.
 	{xb : hb-val ofx TC} {_: hbv-wf xb Dibk Dhk}.
 %block hb-wf-var2 : some {L : lang} {A : ty}
 	block {x:term L} {ofx:of^ x A wor2}.
-%worlds (hb-wf-var1 | hb-wf-var2) (hb1-wf _ _ _ _) (hbv-wf _ _ _) (hb2-wf _ _).
+%worlds (hb-wf-var1 | hb-wf-var2 | of-block | term-block) (hb1-wf _ _ _ _) (hbv-wf _ _ _) (hb2-wf _ _).
 %total (D1 D2 D3) (hb1-wf D1 _ _ _) (hbv-wf D2 _ _) (hb2-wf D3 _).
 
 
@@ -154,3 +154,20 @@ wor2+mono : ty^wf A wor2 -> ty-wf A -> type.
 	<- wor2+mono Dwf2 Dwf2'.
 %worlds () (wor2+mono _ _).
 %total (D) (wor2+mono D _).
+
+
+%% TYPES AT TWO ARE MONOTYPES
+worG+mono : ty^wf A worG -> ty-wf A -> type.
+%mode worG+mono +Dwf -Dwf'.
+- : worG+mono ty^wf-unit ty-wf-unit.
+- : worG+mono (ty^wf-prod Dwf1 Dwf2) (ty-wf-prod Dwf1' Dwf2')
+	<- worG+mono Dwf1 Dwf1'
+	<- worG+mono Dwf2 Dwf2'.
+- : worG+mono (ty^wf-sum Dwf1 Dwf2) (ty-wf-sum Dwf1' Dwf2')
+	<- worG+mono Dwf1 Dwf1'
+	<- worG+mono Dwf2 Dwf2'.
+- : worG+mono (ty^wf-arr Dwf1 Dwf2) (ty-wf-arr Dwf1' Dwf2')
+	<- worG+mono Dwf1 Dwf1'
+	<- worG+mono Dwf2 Dwf2'.
+%worlds () (worG+mono _ _).
+%total (D) (worG+mono D _).

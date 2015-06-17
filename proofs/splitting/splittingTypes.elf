@@ -4,41 +4,47 @@ tysplit : tyc -> ty -> ty -> ty -> type.
 
 spl-unit : tysplit tyc-ztup unit unit unit.
 spl-fut  : tysplit tyc-ztup (fut A) unit A.
+spl-curr : tysplit tyc-ztup (curr A) A unit.
 spl-prod : tysplit (tyc-tup IA IB) (prod A B) (prod A1 B1) (prod A2 B2)
 	<- tysplit IB B B1 B2
 	<- tysplit IA A A1 A2.
 spl-arr  : tysplit (tyc-tup (tyc-tup IA IB) (tyc-ty T)) (arr A B) (arr A1 (prod B1 T)) (arr (prod A2 T) B2)
 	<- tysplit IB B B1 B2
 	<- tysplit IA A A1 A2.
+%worlds () (tysplit _ _ _ _).
+%unique tysplit +T +A -1A1 -1A2.
 
-tysplit-pres : tysplit I A A1 A2 -> hk I K -> ibk A K -> ty-wf A1 -> ty-wf A2 -> type.
-%mode tysplit-pres +Dspl +Dhk +Dibk -Dwf1 -Dwf2.
-- : tysplit-pres spl-unit _ _ ty-wf-unit ty-wf-unit.
-- : tysplit-pres (spl-prod DsplA DsplB) (hk-tup DhkA DhkB) (ibk-prod DibkA DibkB) (ty-wf-prod DwfA1 DwfB1) (ty-wf-prod DwfA2 DwfB2)
-	<- tysplit-pres DsplA DhkA DibkA DwfA1 DwfA2
-	<- tysplit-pres DsplB DhkB DibkB DwfB1 DwfB2.
-- : tysplit-pres spl-fut (ty+wf-fut Dwf) ty-wf-unit Dwf'
+tysplit-pres : tysplit I A A1 A2 -> ty^wf A wor1 -> ibk A K -> hk I K -> ty-wf A1 -> ty-wf A2 -> type.
+%mode tysplit-pres +Dspl +Dwf +Dhk +Dibk -Dwf1 -Dwf2.
+- : tysplit-pres spl-unit _ _ _ ty-wf-unit ty-wf-unit.
+- : tysplit-pres (spl-prod DsplA DsplB) (ty^wf-prod DwfA DwfB) (ibk-prod DibkA DibkB) (hk-tup DhkA DhkB) (ty-wf-prod DwfA1 DwfB1) (ty-wf-prod DwfA2 DwfB2)
+	<- tysplit-pres DsplA DwfA DibkA DhkA DwfA1 DwfA2
+	<- tysplit-pres DsplB DwfB DibkB DhkB DwfB1 DwfB2.
+- : tysplit-pres spl-fut (ty^wf-fut Dwf) _ _ ty-wf-unit Dwf'
 	<- wor2+mono Dwf Dwf'.
-- : tysplit-pres (spl-arr _ DsplA DsplB) (ty+wf-arr+ DwfA DwfT DwfB) 
+- : tysplit-pres spl-curr (ty^wf-curr Dwf) _ _ Dwf' ty-wf-unit
+	<- worG+mono Dwf Dwf'.
+- : tysplit-pres (spl-arr DsplA DsplB) (ty^wf-arr DwfA DwfB) (ibk-arr DibkA DibkB) (hk-tup (hk-tup DhkA DhkB) (hk-ty DwfT))
 		(ty-wf-arr DwfA1 (ty-wf-prod DwfB1 DwfT)) (ty-wf-arr (ty-wf-prod DwfA2 DwfT) DwfB2)
-	<- tysplit-pres DsplA DwfA DwfA1 DwfA2
-	<- tysplit-pres DsplB DwfB DwfB1 DwfB2.
-%worlds () (tysplit-pres _ _ _ _).
-%total (D) (tysplit-pres D _ _ _).
+	<- tysplit-pres DsplA DwfA DibkA DhkA DwfA1 DwfA2
+	<- tysplit-pres DsplB DwfB DibkB DhkB DwfB1 DwfB2.
+%worlds () (tysplit-pres _ _ _ _ _ _).
+%total (D) (tysplit-pres D _ _ _ _ _).
 
-tysplit-tot : ty+wf A wor1 -> tysplit A A1 A2 -> type.
-%mode tysplit-tot +Dwf -Dspl.
-- : tysplit-tot ty+wf-unit spl-unit.
-- : tysplit-tot (ty+wf-prod DwfA DwfB) (spl-prod DsplA DsplB)
-	<- tysplit-tot DwfA DsplA
-	<- tysplit-tot DwfB DsplB.
-- : tysplit-tot (ty+wf-arr+ DwfA (_ : ty-wf T) DwfB) (spl-arr T DsplA DsplB)
-	<- tysplit-tot DwfA DsplA
-	<- tysplit-tot DwfB DsplB.
-- : tysplit-tot (ty+wf-fut _) spl-fut.
-%worlds () (tysplit-tot _ _).
-%total (D) (tysplit-tot D _).
-
+tysplit-tot : ty^wf A wor1 -> ibk A K -> hk I K -> tysplit I A A1 A2 -> type.
+%mode tysplit-tot +Dwf +Dibk +Dhk -Dspl.
+- : tysplit-tot ty^wf-unit _ _ spl-unit.
+- : tysplit-tot (ty^wf-fut _) _ _ spl-fut.
+- : tysplit-tot (ty^wf-curr _) _ _ spl-curr.
+- : tysplit-tot (ty^wf-prod DwfA DwfB) (ibk-prod DibkA DibkB) (hk-tup DhkA DhkB) (spl-prod DsplA DsplB)
+	<- tysplit-tot DwfA DibkA DhkA DsplA
+	<- tysplit-tot DwfB DibkB DhkB DsplB.
+- : tysplit-tot (ty^wf-arr DwfA DwfB) (ibk-arr DibkA DibkB) (hk-tup (hk-tup DhkA DhkB) (hk-ty DwfT)) (spl-arr DsplA DsplB)
+	<- tysplit-tot DwfA DibkA DhkA DsplA
+	<- tysplit-tot DwfB DibkB DhkB DsplB.
+%worlds () (tysplit-tot _ _ _ _).
+%total (D) (tysplit-tot D _ _ _).
+%{
 tysplit-tot-pres : ty+wf A wor1 -> tysplit A A1 A2 -> ty-wf A1 -> ty-wf A2 -> type.
 %mode tysplit-tot-pres +Dwf -Dspl -Dwf1 -Dwf2.
 - : tysplit-tot-pres Dwf Dspl Dwf1 Dwf2
@@ -75,4 +81,4 @@ tysplit-resp : tysplit A A1 A2 -> eq-ty A1 A1' -> eq-ty A2 A2' -> tysplit A A1' 
 %mode tysplit-resp +Dtspl +Deq1 +Deq2 -Dtspl'.
 - : tysplit-resp Dtspl eq-ty_ eq-ty_ Dtspl.
 %worlds () (tysplit-resp _ _ _ _).
-%total D (tysplit-resp D _ _ _).
+%total D (tysplit-resp D _ _ _).}%
