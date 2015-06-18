@@ -79,8 +79,8 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-tup-d ms-tup-d eq-term_.
 - : step/unique ms-pi1-d ms-pi1-d eq-term_.
 - : step/unique ms-pi2-d ms-pi2-d eq-term_.
-- : step/unique ms-inj1-d ms-inj1-d eq-term_.
-- : step/unique ms-inj2-d ms-inj2-d eq-term_.
+- : step/unique (ms-inj1-d _) (ms-inj1-d _) eq-term_.
+- : step/unique (ms-inj2-d _) (ms-inj2-d _) eq-term_.
 - : step/unique ms-lam-d ms-lam-d eq-term_.
 - : step/unique ms-app-d ms-app-d eq-term_.
 - : step/unique ms-let-d ms-let-d eq-term_.
@@ -108,6 +108,12 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-case-s Dstep1) (ms-case-s Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong/case Deq ([_] eq-term_) ([_] eq-term_) Deq'.
+- : step/unique (ms-case-s2 Dstep1) (ms-case-s2 Dstep2) Deq'
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- eq-cong/case eq-term_ Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-case-s3 Dstep1) (ms-case-s3 Dstep2) Deq'
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- eq-cong/case eq-term_ ([x] eq-term_) Deq Deq'.
 - : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
 	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
 	<- eq-cong/lam Deq Deq'.

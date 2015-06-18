@@ -11,6 +11,7 @@ fsw-worG : first-stage-wor worG.
 %worlds () (first-stage-wor _).
 
 ground-wor : wor -> type.
+%mode ground-wor +W.
 grnd-wor2 : ground-wor wor2.
 grnd-worG : ground-wor worG.
 %worlds () (ground-wor _).
@@ -22,9 +23,10 @@ ty^wf-unit	: ty^wf unit W.
 ty^wf-prod	: ty^wf (prod A B) W
 				<- ty^wf B W
 				<- ty^wf A W.
-ty^wf-sum	: ty^wf (sum A B) worG
-				<- ty^wf B worG
-				<- ty^wf A worG.
+ty^wf-sum	: ty^wf (sum A B) W
+				<- ground-wor W
+				<- ty^wf B W
+				<- ty^wf A W.
 ty^wf-arr	: ty^wf (arr A B) W
 				<- ty^wf B W
 				<- ty^wf A W.
@@ -46,13 +48,16 @@ of^-pi1		: of^ (pi1 E) A W
 				<- of^ E (prod A B) W.
 of^-pi2		: of^ (pi2 E) B W
 				<- of^ E (prod A B) W.
-of^-inj1	: of^ (inj1 E) (sum A T) worG
-				<- of^ E A worG
-				<- ty^wf T worG.
-of^-inj2	: of^ (inj2 E) (sum T B) worG
-				<- of^ E B worG
-				<- ty^wf T worG.
+of^-inj1	: of^ (inj1 E) (sum A T) W
+				<- ground-wor W
+				<- of^ E A W
+				<- ty^wf T W.
+of^-inj2	: of^ (inj2 E) (sum T B) W
+				<- ground-wor W
+				<- of^ E B W
+				<- ty^wf T W.
 of^-case 	: of^ (case E M N) C worG
+				<- ground-wor worG
 				<- ({x} of^ x B worG -> of^ (N x) C worG)
 				<- ({x} of^ x A worG -> of^ (M x) C worG)
 				<- of^ E (sum A B) worG.	
@@ -101,12 +106,12 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
 - : of^-wf (of^-pi2 Dof) DwfB
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
-- : of^-wf (of^-inj1 DwfB Dof) (ty^wf-sum DwfA DwfB)
+- : of^-wf (of^-inj1 DwfB Dof W) (ty^wf-sum DwfA DwfB W)
 	<- of^-wf Dof DwfA.
-- : of^-wf (of^-inj2 DwfA Dof) (ty^wf-sum DwfA DwfB)
+- : of^-wf (of^-inj2 DwfA Dof W) (ty^wf-sum DwfA DwfB W)
 	<- of^-wf Dof DwfB.
-- : of^-wf (of^-case DofE DofM _) Dwf2
-	<- of^-wf DofE (ty^wf-sum Dwf1 _)
+- : of^-wf (of^-case DofE DofM _ _) Dwf2
+	<- of^-wf DofE (ty^wf-sum Dwf1 _ _)
 	<- ({x} {ofx : of^ x A worG} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-lam Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
 	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
@@ -145,6 +150,9 @@ wor2^mono : ty^wf A wor2 -> ty-wf A -> type.
 - : wor2^mono (ty^wf-arr Dwf1 Dwf2) (ty-wf-arr Dwf1' Dwf2')
 	<- wor2^mono Dwf1 Dwf1'
 	<- wor2^mono Dwf2 Dwf2'.
+- : wor2^mono (ty^wf-sum Dwf1 Dwf2 _) (ty-wf-sum Dwf1' Dwf2')
+	<- wor2^mono Dwf1 Dwf1'
+	<- wor2^mono Dwf2 Dwf2'.
 %worlds () (wor2^mono _ _).
 %total (D) (wor2^mono D _).
 
@@ -179,14 +187,18 @@ form^tup-c : form^ (tup E1 E2) comp1 W
 form^tup-n : form^ (tup E1 E2) norm1 W
 			<- form^ E2 norm1 W
 			<- form^ E1 norm1 W.
-form^inj1-c : form^ (inj1 E) comp1 worG
-			<- form^ E comp1 worG.
-form^inj2-c : form^ (inj2 E) comp1 worG
-			<- form^ E comp1 worG.
-form^inj1-n : form^ (inj1 E) norm1 worG
-			<- form^ E norm1 worG.
-form^inj2-n : form^ (inj2 E) norm1 worG
-			<- form^ E norm1 worG.
+form^inj1-c : form^ (inj1 E) comp1 W
+			<- ground-wor W
+			<- form^ E comp1 W.
+form^inj2-c : form^ (inj2 E) comp1 W
+			<- ground-wor W
+			<- form^ E comp1 W.
+form^inj1-n : form^ (inj1 E) norm1 W
+			<- ground-wor W
+			<- form^ E norm1 W.
+form^inj2-n : form^ (inj2 E) norm1 W
+			<- ground-wor W
+			<- form^ E norm1 W.
 
 form^exv  : form^ (exv E) comp1 W
 			<- form^ E norm1 W.
@@ -199,20 +211,28 @@ form^pi2-c  : form^ (pi2 E) comp1 W
 form^app-c  : form^ (app E1 E2) comp1 W
 			<- form^ E2 comp1 W
 			<- form^ E1 comp1 W.
+form^case-cG : form^ (case E M N) comp1 worG
+			<- ({x} form^ x norm1 worG -> form^ (N x) comp1 worG)
+			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 worG)
+			<- form^ E comp1 worG.
+form^case-c2 : form^ (case E M N) comp1 wor2
+			<- ({x} form^ x vars2 wor2 -> form^ (N x) comp1 wor2)
+			<- ({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2)
+			<- form^ E comp1 wor2.
+form^let-c  : form^ (let E M) comp1 wor2
+			<- ({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2)
+			<- form^ E comp1 wor2.
 form^pi1-n2  : form^ (pi1 E) norm1 wor2
 			<- form^ E norm1 wor2.
 form^pi2-n2  : form^ (pi2 E) norm1 wor2
 			<- form^ E norm1 wor2.
-form^case-c  : form^ (case E M N) comp1 worG
-			<- ({x} form^ x norm1 worG -> form^ (N x) comp1 worG)
-			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 worG)
-			<- form^ E comp1 worG.
 form^app-n2  : form^ (app E1 E2) norm1 wor2
 			<- form^ E2 norm1 wor2
 			<- form^ E1 norm1 wor2.
-form^let-c  : form^ (let E M) comp1 wor2
-			<- ({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2)
-			<- form^ E comp1 wor2.
+form^case-n2  : form^ (case E M N) norm1 wor2
+			<- ({x} form^ x vars2 wor2 -> form^ (N x) norm1 wor2)
+			<- ({x} form^ x vars2 wor2 -> form^ (M x) norm1 wor2)
+			<- form^ E norm1 wor2.
 form^let-n2  : form^ (let E M) norm1 wor2
 			<- ({x} form^ x vars2 wor2 -> form^ (M x) norm1 wor2)
 			<- form^ E norm1 wor2.

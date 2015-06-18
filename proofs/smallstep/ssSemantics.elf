@@ -5,12 +5,15 @@
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
 not-variable : term L -> type.
 nv-ztup : not-variable ztup.
-nv-tup : not-variable (tup _ _).
-nv-pi1 : not-variable (pi1 _).
-nv-pi2 : not-variable (pi2 _).
-nv-lam : not-variable (lam _).
-nv-app : not-variable (app _ _).
-nv-let : not-variable (let _ _).
+nv-tup  : not-variable (tup _ _).
+nv-pi1  : not-variable (pi1 _).
+nv-pi2  : not-variable (pi2 _).
+nv-lam  : not-variable (lam _).
+nv-app  : not-variable (app _ _).
+nv-let 	: not-variable (let _ _).
+nv-inj1 : not-variable (inj1 _).
+nv-inj2 : not-variable (inj2 _).
+nv-case : not-variable (case _ _ _).
 
 %% STANDARD COMPATABILITY CONTEXT
 compc : (term L -> term L) -> type.
@@ -33,8 +36,8 @@ mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 
 %% DONE MARKING RULES
 ms-tup-d 	: mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
-ms-inj1-d 	: mstep worG (inj1 (exv E)) (exv (inj1 E)).
-ms-inj2-d 	: mstep worG (inj2 (exv E)) (exv (inj2 E)).
+ms-inj1-d 	: mstep W (inj1 (exv E)) (exv (inj1 E)) <- ground-wor W.
+ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)) <- ground-wor W.
 ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
 ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
 ms-lam-d 	: mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
@@ -51,12 +54,16 @@ ms-pi1-s	: mstep W (pi1 E) (pi1 E')
 			<- mstep W E E'.
 ms-pi2-s	: mstep W (pi2 E) (pi2 E')
 			<- mstep W E E'.
-ms-inj1-s	: mstep worG (inj1 E) (inj1 E')
-			<- mstep worG E E'.
-ms-inj2-s	: mstep worG (inj2 E) (inj2 E')
-			<- mstep worG E E'.
+ms-inj1-s	: mstep W (inj1 E) (inj1 E')
+			<- mstep W E E'.
+ms-inj2-s	: mstep W (inj2 E) (inj2 E')
+			<- mstep W E E'.
 ms-case-s	: mstep W (case E M N) (case E' M N)
 			<- mstep W E E'.
+ms-case-s2	: mstep wor2 (case (exv E) M N) (case (exv E) M' N)
+			<- {x} mstep wor2 (M x) (M' x).
+ms-case-s3	: mstep wor2 (case (exv E) ([x] exv (M x)) N) (case (exv E) ([x] exv (M x)) N')
+			<- {x} mstep wor2 (N x) (N' x).
 ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
 			<- mstep W E1 E1'.
 ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')

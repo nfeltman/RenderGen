@@ -79,6 +79,10 @@ splr-npres : splitres E Q -> form Q comp -> type.
 	<- splr-npres Dspl Dcomp.
 - : splr-npres (splr-pi2 Dspl) (form-pi2 Dcomp)
 	<- splr-npres Dspl Dcomp.
+- : splr-npres (splr-inj1 Dspl) (form-inj1 Dcomp)
+	<- splr-npres Dspl Dcomp.
+- : splr-npres (splr-inj2 Dspl) (form-inj2 Dcomp)
+	<- splr-npres Dspl Dcomp.
 - : splr-npres (splr-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
 	<- splr-npres Dsplv1 Dval1
 	<- splr-npres Dsplv2 Dval2.
@@ -149,14 +153,18 @@ spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp)
 - : spl2-npres (spl2-exv Dspl) (form-exv form-ztup) ([x][fx] Dcomp)
 	<- splr-npres Dspl Dcomp.
 
-- : spl2-npres (spl2-pi1 Dspl) Dcomp1 ([l][vl] form-pi1 (Dcomp2 l vl))
-	<- spl2-npres Dspl Dcomp1 Dcomp2.
-- : spl2-npres (spl2-pi2 Dspl) Dcomp1 ([l][vl] form-pi2 (Dcomp2 l vl))
-	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-tup DsplA DsplB) (form-tup DcompA1 DcompB1) 
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-tup (DcompA2 l1 vl1) (DcompB2 l2 vl2)))
 	<- spl2-npres DsplA DcompA1 DcompA2
 	<- spl2-npres DsplB DcompB1 DcompB2.
+- : spl2-npres (spl2-pi1 Dspl) Dcomp1 ([l][vl] form-pi1 (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
+- : spl2-npres (spl2-pi2 Dspl) Dcomp1 ([l][vl] form-pi2 (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
+- : spl2-npres (spl2-inj1 Dspl) Dcomp1 ([l][vl] form-inj1 (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
+- : spl2-npres (spl2-inj2 Dspl) Dcomp1 ([l][vl] form-inj2 (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-lam Dspl) 
 		(Dcomp1 ztup ztup form-ztup) 
 		([l][vl] form-exv (form-lam ([x][vx] Dcomp2 ztup x vx l vl)))
