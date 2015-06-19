@@ -40,7 +40,7 @@ next  : term L -> term L.
 %{letn  : term L -> (term L -> term L) -> term L.}%
 prev  : term L -> term L.
 grnd  : term L -> term L.
-%{letm  : term L -> (term L -> term L) -> term L.}%
+letg  : term L -> (term L -> term L) -> term L.
 exv   : term L -> term L.
 
 %block term-block : some {L : lang} block {x : term L}.
@@ -107,6 +107,12 @@ eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 
 - : eq-cong/let eq-term_ _ eq-term_.
 %worlds (term-block) (eq-cong/let _ _ _).
 %total {} (eq-cong/let _ _ _).
+
+eq-cong/letg : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (letg E1 E2) (letg E1' E2') -> type.
+%mode eq-cong/letg +Deq +E -Deq'.
+- : eq-cong/letg eq-term_ _ eq-term_.
+%worlds (term-block) (eq-cong/letg _ _ _).
+%total {} (eq-cong/letg _ _ _).
 
 eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
 %mode eq-cong/lett +Deq +E -Deq'.
@@ -260,6 +266,10 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
   <- lang-indep Dneq E DeqE
   <- ({y} lang-indep Dneq (M y) ([x] DeqM x y))
   <- {x} eq-cong/let (DeqE x) (DeqM x) (Deq x).
+- : lang-indep Dneq ([x] letg (E x) ([y] M y x)) Deq
+  <- lang-indep Dneq E DeqE
+  <- ({y} lang-indep Dneq (M y) ([x] DeqM x y))
+  <- {x} eq-cong/letg (DeqE x) (DeqM x) (Deq x).
 - : lang-indep Dneq ([x] lett (E x) ([y][z] M y z x)) Deq
   <- lang-indep Dneq E DeqE
   <- ({y}{z} lang-indep Dneq (M y z) ([x] DeqM x y z))
@@ -383,6 +393,9 @@ conv-prev : lang-convert (prev E) _ (prev E')
     <- lang-convert E _ E'.
 conv-grnd : lang-convert (grnd E) _ (grnd E')
     <- lang-convert E _ E'.
+conv-letg : lang-convert (letg E M) L2 (letg E' (M' (ztup : term L1)))
+    <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2))
+    <- lang-convert E L2 E'.
 conv-exv : lang-convert (exv E) _ (exv E')
     <- lang-convert E _ E'.
 
@@ -458,6 +471,10 @@ lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) 
 - : lang-convert_12-total (prev E) (conv-prev Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (grnd E) (conv-grnd Dconv')
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (letg E M) (conv-letg Dconv' DconvM)
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
+        lang-convert_12-total (M x) (DconvM x x2 convx))
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (exv E) (conv-exv Dconv')
     <- lang-convert_12-total E Dconv'.

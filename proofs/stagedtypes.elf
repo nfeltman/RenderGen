@@ -84,9 +84,9 @@ of^-prev	: of^ (prev E) A wor2
 				<- of^ E (fut A) wor1.
 of^-grnd 	: of^ (grnd E) (curr T) wor1
 				<- of^ E T worG.
-%{of^-letm 	: of^ (letm E M) T2 wor1
-				<- of^ E (curr T1) wor1
-				<- ({x:term} of^ x T1 worM -> of^ (M x) T2 wor1).}%
+of^-letg 	: of^ (letg E M) T2 wor1
+				<- ({x} of^ x T1 worG -> of^ (M x) T2 wor1)
+				<- of^ E (curr T1) wor1.
 
 %block var-of1 : 
 	some {A : ty} {L : lang} {W : wor} {_ : first-stage-wor W} 
@@ -131,9 +131,9 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof Dwf.
 - : of^-wf (of^-grnd Dof) (ty^wf-curr Dwf)
 	<- of^-wf Dof Dwf.
-%{- : of^-wf (of^-letm DofM DofE) DwfM
+- : of^-wf (of^-letg DofE DofM) DwfM
 	<- of^-wf DofE (ty^wf-curr DwfE)
-	<- ({x:term} {Dof : of^ x A worM} of^-wf Dof DwfE -> of^-wf (DofM x Dof) DwfM).}%
+	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
 %block var-of^-wf : 
 	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W}
 	block {x:term L} {Dof : of^ x A W} {_ : of^-wf Dof Dwf}.
@@ -244,9 +244,11 @@ form^next-n : form^ (next E) norm1 wor1
 form^prev  : form^ (prev E) comp1 wor2
 			<- form^ E comp1 wor1.
 
-
 form^grnd  : form^ (grnd E) N wor1
 			<- form^ E N worG.
+form^letg  : form^ (letg E M) comp1 wor1
+			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 wor1)
+			<- form^ E comp1 wor1.
 
 %block form^-block : some {L} {N} {W} {x : term L} block {_ : form^ x N W}.
 %block of^-form^-block = (ofs-block | form^-block).

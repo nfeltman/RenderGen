@@ -118,6 +118,14 @@ spl1-next	: split1 (next E) (tup (exv ztup) P) R
 			<- split2 E P R.
 spl1-grnd	: split1 (grnd E) (tup E' (exv ztup)) ([_] (exv ztup))
 			<- splitG E E'.
+spl1-letg	: split1 (letg E M) 
+					(lett C1 ([x] [z1] 
+						lett (C2 x) ([y] [z2] 
+							exv (tup y (tup z1 z2))
+					)))
+					([l] lett (exv l) ([l1] [l2] let (R1 l1) ([_] R2 l2)))
+			<- ({x}{x1} splitGv x x1 -> split1 (M x) (C2 x1) R2)
+			<- split1 E C1 R1.
 
 spl2-exv	: split2 (exv Q) (exv ztup) ([_] Q')
 				<- splitres Q Q'.

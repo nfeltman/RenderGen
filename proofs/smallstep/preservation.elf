@@ -19,6 +19,8 @@ lstep-pres-ty : lstep E Q E' -> of^ E T wor1 -> of^ Q TQ wor2 -> ({x} of^ x TQ w
 	<- lstep-pres-ty Dstep Dof1 DofQ Dof1'.
 - : lstep-pres-ty (ls-app-s2 Dstep) (of^-app Dof1 Dof2) DofQ ([x][dof] of^-app Dof1 (Dof2' x dof))
 	<- lstep-pres-ty Dstep Dof2 DofQ Dof2'.
+- : lstep-pres-ty (ls-letg-s1 Dstep) (of^-letg Dof1 Dof2) DofQ ([x][dof] of^-letg (Dof1' x dof) Dof2)
+	<- lstep-pres-ty Dstep Dof1 DofQ Dof1'.
 %worlds (pres-ty-block) (lstep-pres-ty _ _ _ _).
 %total {Dstep Dof} (lstep-pres-ty Dstep Dof _ _).
 
@@ -55,6 +57,8 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 	<- {x} {dof} mstep-pres-ty (Dstep x) (DofM x dof) (DofM' x dof).
 - : mstep-pres-ty (ms-grnd-s Dstep) (of^-grnd Dof) (of^-grnd Dof')
 	<- mstep-pres-ty Dstep Dof Dof'.
+- : mstep-pres-ty (ms-letg-s1 Dstep) (of^-letg DofE DofM) (of^-letg DofE' DofM) 
+	<- mstep-pres-ty Dstep DofE DofE'.
 - : mstep-pres-ty (ms-next-s Dstep) (of^-next Dof) (of^-next Dof')
 	<- mstep-pres-ty Dstep Dof Dof'.
 - : mstep-pres-ty (ms-prev-s Dstep) (of^-prev Dof) (of^-prev Dof')
@@ -83,6 +87,7 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 - : mstep-pres-ty (ms-case-r1) (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (DofM E DofE).
 - : mstep-pres-ty (ms-case-r2) (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (DofN E DofE).
 - : mstep-pres-ty ms-prev-r (of^-prev (of^-exv (of^-next Dof))) (of^-exv (of^-exv Dof)).
+- : mstep-pres-ty ms-letg-r (of^-letg (of^-exv (of^-grnd DofV)) DofM) (DofM V DofV).
 
 %worlds (pres-ty-block) (mstep-pres-ty _ _ _).
 %total (Dstep) (mstep-pres-ty Dstep _ _).
@@ -109,6 +114,8 @@ lstep-pres-norm : lstep E Q E' -> form^ E comp1 wor1 -> form^ Q norm1 wor2 -> ({
 	<- lstep-pres-norm Dstep Dcomp1 DcompQ Dcomp1'.
 - : lstep-pres-norm (ls-app-s2 Dstep) (form^app-c Dcomp1 Dcomp2) DcompQ ([x][vx] form^app-c Dcomp1 (Dcomp2' x vx))
 	<- lstep-pres-norm Dstep Dcomp2 DcompQ Dcomp2'.
+- : lstep-pres-norm (ls-letg-s1 Dstep) (form^letg Dcomp1 Dcomp2) DcompQ ([x][vx] form^letg (Dcomp1' x vx) Dcomp2)
+	<- lstep-pres-norm Dstep Dcomp1 DcompQ Dcomp1'.
 %worlds (pres-norm-block) (lstep-pres-norm _ _ _ _).
 %total {Dstep Dof} (lstep-pres-norm Dstep Dof _ _).
 
@@ -147,6 +154,8 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 	<- mstep-pres-norm Dstep DcompE DcompE'.
 - : mstep-pres-norm (ms-grnd-s Dstep) (form^grnd Dcomp) (form^grnd Dcomp')
 	<- mstep-pres-norm Dstep Dcomp Dcomp'.
+- : mstep-pres-norm (ms-letg-s1 Dstep) (form^letg DcompE DcompM) (form^letg DcompE' DcompM) 
+	<- mstep-pres-norm Dstep DcompE DcompE'.
 - : mstep-pres-norm (ms-next-s Dstep) (form^next-c Dcomp) (form^next-c Dcomp')
 	<- mstep-pres-norm Dstep Dcomp Dcomp'.
 - : mstep-pres-norm (ms-prev-s Dstep) (form^prev Dcomp) (form^prev Dcomp')
@@ -175,6 +184,7 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 - : mstep-pres-norm (ms-case-r1) (form^case-cG (form^exv (form^inj1-n DofE _)) DofM DofN) (DofM E DofE).
 - : mstep-pres-norm (ms-case-r2) (form^case-cG (form^exv (form^inj2-n DofE _)) DofM DofN) (DofN E DofE).
 - : mstep-pres-norm ms-prev-r (form^prev (form^exv (form^next-n Dof))) (form^exv (form^var2 Dof)).
+- : mstep-pres-norm ms-letg-r (form^letg (form^exv (form^grnd DofV)) DofM) (DofM V DofV).
 
 %worlds (pres-norm-block) (mstep-pres-norm _ _ _).
 %total (Dstep) (mstep-pres-norm Dstep _ _).

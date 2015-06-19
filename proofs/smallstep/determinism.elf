@@ -23,6 +23,8 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s2 Dstep) (ls-app-s2 Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-letg-s1 Dstep) (ls-letg-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep ms-next-d (ls-next-r Dnotvar) Dfalse
 	<- excl-var-notvar Dnotvar Dfalse.
 %worlds (det-block) (excl-mstep-lstep _ _ _).
@@ -59,9 +61,9 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 - : lstep/unique (ls-app-s2 Dstep) (ls-app-s2 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong2 app eq-term_ (DeqE x) (DeqE' x).
-%{- : lstep/unique (ls-let-s1 Dstep) (ls-let-s1 Dstep') DeqQ DeqE'
+- : lstep/unique (ls-letg-s1 Dstep) (ls-letg-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
-	<- {x} eq-cong/let (DeqE x) ([x] eq-term_) (DeqE' x).}%
+	<- {x} eq-cong/letg (DeqE x) ([x] eq-term_) (DeqE' x).
 %worlds (det-block) (lstep/unique _ _ _ _).
 %total D (lstep/unique D _ _ _).
 
@@ -74,6 +76,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-app-r _) (ms-app-r _) eq-term_.
 - : step/unique ms-case-r1 ms-case-r1 eq-term_.
 - : step/unique ms-case-r2 ms-case-r2 eq-term_.
+- : step/unique ms-letg-r ms-letg-r eq-term_.
 %{- : step/unique ms-let-r ms-let-r eq-term_.}%
 - : step/unique ms-prev-r ms-prev-r eq-term_.
 - : step/unique ms-tup-d ms-tup-d eq-term_.
@@ -85,8 +88,8 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-lam-d ms-lam-d eq-term_.
 - : step/unique ms-app-d ms-app-d eq-term_.
 - : step/unique ms-let-d ms-let-d eq-term_.
-- : step/unique ms-next-d ms-next-d eq-term_.
 - : step/unique ms-grnd-d ms-grnd-d eq-term_.
+- : step/unique ms-next-d ms-next-d eq-term_.
 %% SUBSTEP RECURSIVE CASES
 - : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
@@ -147,6 +150,9 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-grnd-s Dstep1) (ms-grnd-s Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong grnd Deq Deq'.
+- : step/unique (ms-letg-s1 Dstep1) (ms-letg-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/letg Deq ([x] eq-term_) Deq'.
 %% CONTRADICTION CASES
 - : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
 	<- excl-mstep-lstep Dstep' Dstep Dfalse

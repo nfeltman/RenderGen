@@ -111,8 +111,8 @@ ls-app-s1	: lstep (app E1 E2) Q ([x] app (E1' x) E2)
 			<- lstep E1 Q E1'.
 ls-app-s2	: lstep (app (exv E1) E2) Q ([x] app (exv E1) (E2' x))
 			<- lstep E2 Q E2'.
-%{ls-let-s1	: lstep (let E M) Q ([x] let (E' x) M)
-			<- lstep E Q E'.}%
+ls-letg-s1	: lstep (letg E M) Q ([x] letg (E' x) M)
+			<- lstep E Q E'.
 %{ls-compat	: lstep (F E) Q ([x] F (E' x))
 			<- compc F
 			<- lstep E Q E'.}%
@@ -131,6 +131,9 @@ ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv (exv E)).
 ms-grnd-s	: mstep wor1 (grnd E) (grnd E')
 			<- mstep worG E E'.
 ms-grnd-d 	: mstep wor1 (grnd (exv E)) (exv (grnd E)).
+ms-letg-s1	: mstep wor1 (letg E M) (letg E' M)
+			<- mstep wor1 E E'.
+ms-letg-r	: mstep wor1 (letg (exv (grnd V)) M) (M V).
 
 %freeze mstep.
 %freeze lstep.

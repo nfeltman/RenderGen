@@ -116,6 +116,21 @@ spl2-npres/branch :
 	({x}{x2} splitvar2 x x2 -> split2 (E x) P (R x2)) -> 
 	form P comp -> ({l} form l norm -> {x2} form x2 norm -> form (R x2 l) comp) -> type.
 %mode spl2-npres/branch +Dspl -DcompP -DcompR.
+spl1-npres/branchG : 
+	({x}{x1} splitGv x x1 -> split1 (E x) (C x1) R) -> 
+	({x1} form x1 norm -> form (C x1) comp) -> ({l} form l norm -> form (R l) comp) -> type.
+%mode spl1-npres/branchG +Dspl -DcompP -DcompR.
+
+%% BRANCHES
+
+- : spl2-npres/branch Dspl (Dcomp1 ztup ztup form-ztup) (Dcomp2 ztup)
+	<- {x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
+		spl2-npres (Dspl x x2 s) (Dcomp1 x x2 vx2) ([l][vl] Dcomp2 x l vl x2 vx2).
+- : spl1-npres/branchG Dspl (Dcomp1 ztup) (Dcomp2 ztup ztup form-ztup)
+	<- {x}{x1}{s}{vx1} splGv-npres s vx1 -> 
+		spl1-npres (Dspl x x1 s) (Dcomp1 x x1 vx1) (Dcomp2 x x1 vx1).
+
+%% NOT BRANCHES
 
 - : splv-npres splv-ztup form-ztup form-ztup.
 - : splv-npres (splv-grnd Dspl) Dval1 form-ztup
@@ -161,10 +176,13 @@ spl2-npres/branch :
 	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl1-npres (spl1-grnd Dspl) (form-tup Dcomp1 (form-exv form-ztup)) ([_][_] form-exv form-ztup)
 	<- splG-npres Dspl Dcomp1.
-
-- : spl2-npres/branch Dspl (Dcomp1 ztup ztup form-ztup) (Dcomp2 ztup)
-	<- {x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
-		spl2-npres (Dspl x x2 s) (Dcomp1 x x2 vx2) ([l][vl] Dcomp2 x l vl x2 vx2).
+- : spl1-npres (spl1-letg DsplE DsplM) 
+		(form-lett DcompE1 ([x][vx][_][z1] 
+			(form-lett (DcompM1 x vx) ([_][y][_][z2] 
+				(form-exv (form-tup y (form-tup z1 z2)))))))
+		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-let (DcompE2 l1 vl1) ([_][_] DcompM2 l2 vl2)))
+	<- spl1-npres DsplE DcompE1 DcompE2
+	<- spl1-npres/branchG DsplM DcompM1 DcompM2.
 
 - : spl2-npres (spl2-exv Dspl) (form-exv form-ztup) ([x][fx] Dcomp)
 	<- splr-npres Dspl Dcomp.
@@ -205,10 +223,12 @@ spl2-npres/branch :
 %worlds (splitting-npres-block) 
 	(splv-npres _ _ _) 
 	(spl1-npres _ _ _) 
+	(spl1-npres/branchG _ _ _)
 	(spl2-npres _ _ _) 
 	(spl2-npres/branch _ _ _).
-%total (D1 D2 D3 D4) 
+%total (D1 D2 D3 D4 D5) 
 	(splv-npres D1 _ _) 
 	(spl1-npres D2 _ _) 
-	(spl2-npres D3 _ _) 
-	(spl2-npres/branch D4 _ _). 
+	(spl1-npres/branchG D3 _ _)
+	(spl2-npres D4 _ _) 
+	(spl2-npres/branch D5 _ _). 

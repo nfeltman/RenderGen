@@ -148,19 +148,6 @@ splg-total/branch :
 %total (Dsplg Dsplgv D3) (splg-total Dsplg _ _) (splgv-total Dsplgv _ _) (splg-total/branch D3 _ _).
 
 
-strengthen-split2 : 
-	({x : term lang0}{x2 : term lang2} splitvar2 x x2 -> split2 (E x) (P x x2) (Q x x2)) -> 
-	({x : term lang0}{x2 : term lang2} splitvar2 x x2 -> split2 (E x) P' (Q' x2)) -> type.
-%mode strengthen-split2 +Dspl -Dspl'.
-- : strengthen-split2 ([x][x2][s] Dsplr x x2 s : split2 (E x) (P x x2) (Q x x2)) Dsplr''
-	<- ({x2} lang-indep neq-lang_01 ([x] P x x2) ([x] DeqP x x2))
-	<- ({l}{x2} lang-indep neq-lang_02 ([x] Q x x2 l) ([x] DeqQ x x2 l))
-	<- ({x}{x2}{s} split2-resp (Dsplr x x2 s) eq-term_ (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split2 (E x) (P' x2) _))
-	<- lang-indep neq-lang_21 P' DeqP'
-	<- ({x}{x2}{s} split2-resp (Dsplr' x x2 s) eq-term_ (DeqP' x2) ([l] eq-term_) (Dsplr'' x x2 s)).
-%worlds (strengthening-block) (strengthen-split2 _ _).
-%total (D) (strengthen-split2 D _).
-
 
 %% MAIN SPLITTING TOTALITY
 spl1-total : of^ E A wor1 -> form^ E comp1 wor1 -> split1 E _ _ -> type.
@@ -170,6 +157,9 @@ spl2-total : of^ E A wor2 -> form^ E comp1 wor2 -> split2 E _ _ -> type.
 spl2-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2 wor2 -> form^ (E x) comp1 wor2) -> 
 	({x}{x2} splitvar2 x x2 -> split2 (E x) P (R x2)) -> type.
 %mode spl2-total/branch +Dof +Dcomp -Dspl.
+spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm1 worG -> form^ (E x) comp1 wor1) -> 
+	({x}{x1} splitGv x x1 -> split1 (E x) (C x1) R) -> type.
+%mode spl1-total/branchG +Dof +Dcomp -Dspl.
 
 %% SPLITTING VALUES IS TOTAL
 - : splv-total of^-ztup _ splv-ztup.
@@ -185,11 +175,20 @@ spl2-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 - : splv-total (of^-grnd Dof) (form^grnd Dcomp) (splv-grnd Dsplr)
 	<- splgv-total Dof Dcomp Dsplr.
 
-%% BRANCH CASE
-- : spl2-total/branch Dof Dcomp Dsplg'
+%% BRANCH CASES
+- : spl2-total/branch Dof Dcomp Dsplr'
 	<- ({x}{x2} {dof} {vx} {dspl : splitvar2 x x2} splvar2-total dof vx dspl ->
-		spl2-total (Dof x dof) (Dcomp x vx) (Dsplg x x2 dspl))
-	<- strengthen-split2 Dsplg Dsplg'.
+		spl2-total (Dof x dof) (Dcomp x vx) (Dsplr x x2 dspl : split2 (E x) (P x x2) (Q x x2)))
+	<- lang-indep2 neq-lang_01 neq-lang_21 ([x][x2] P x x2) ([x][x2] DeqP x x2)
+	<- ({l}{x2} lang-indep neq-lang_02 ([x] Q x x2 l) ([x] DeqQ x x2 l))
+	<- ({x}{x2}{s} split2-resp (Dsplr x x2 s) eq-term_ (DeqP x x2) (DeqQ x x2) (Dsplr' x x2 s : split2 (E x) P' _)).
+
+- : spl1-total/branchG Dof Dcomp Dspl'
+	<- ({x}{x1} {dof} {vx} {dspl} splgv-total dof vx dspl ->
+		spl1-total (Dof x dof) (Dcomp x vx) (Dspl x x1 dspl : split1 (E x) (C x1 x) ([l] R l x x1)))
+	<- ({x1} lang-indep neq-lang_01 (C x1) ([x] DeqC x x1))
+	<- ({l} lang-indep2 neq-lang_02 neq-lang_12 (R l) ([x][x1] DeqR x x1 l ))
+	<- ({x}{x1}{s} split1-resp (Dspl x x1 s) eq-term_ (DeqC x x1) (DeqR x x1) (Dspl' x x1 s)).
 
 
 %% MAIN PROOF OF TOTALITY
@@ -236,14 +235,19 @@ spl2-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 	<- splr-total Dof Dcomp Dsplr.
 - : spl1-total (of^-grnd Dof) (form^grnd Dcomp) (spl1-grnd Dspl)
 	<- splg-total Dof Dcomp Dspl.
+- : spl1-total (of^-letg DofE DofM) (form^letg DcompE DcompM) (spl1-letg DsplrE DsplM)
+	<- spl1-total DofE DcompE DsplrE
+	<- spl1-total/branchG DofM DcompM DsplM.
 
 %worlds (total-block) 
 	(spl1-total _ _ _) 
+	(spl1-total/branchG _ _ _) 
 	(spl2-total _ _ _) 
 	(spl2-total/branch _ _ _) 
 	(splv-total _ _ _).
-%total (Dspl1 Dspl2 Dspl2b Dsplr) 
-	(spl1-total Dspl1 _ _) 
-	(spl2-total Dspl2 _ _) 
-	(spl2-total/branch Dspl2b _ _) 
-	(splv-total Dsplr _ _).
+%total (D1 D2 D3 D4 D5) 
+	(spl1-total D1 _ _) 
+	(spl1-total/branchG D2 _ _) 
+	(spl2-total D3 _ _) 
+	(spl2-total/branch D4 _ _) 
+	(splv-total D5 _ _).

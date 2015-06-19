@@ -10,6 +10,7 @@ reqv-id : reqv E E.
 reqv-pi1 : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
 reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q2).
 reqv-lett : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
+reqv-let : reqv (let (exv Q) M) (M Q).
 reqv-app : reqv (app (exv (lam M)) (exv V)) (M V).
 reqv-app-s : reqv E1 E1' -> reqv E2 E2' -> reqv (app E1 E2) (app E1' E2').
 reqv-app-s2 : reqv E2 E2' -> reqv (app E1 E2) (app E1 E2').
@@ -35,7 +36,8 @@ reqv-lift-tup1 : reqv A (let Q M) -> ({x} eq-term E (E' x)) -> reqv (tup A E) (l
 reqv-lift-tup2 : reqv A (let Q M) -> ({x} eq-term E (E' x)) -> reqv (tup E A) (let Q ([x] (tup (E' x) (M x)))).
 reqv-lift-app1 : reqv A (let Q M) -> ({x} eq-term E (E' x)) -> reqv (app A E) (let Q ([x] (app (M x) (E' x)))).
 reqv-lift-app2 : reqv A (let Q M) -> ({x} eq-term E (E' x)) -> reqv (app E A) (let Q ([x] (app (E' x) (M x)))).
-reqv-lift-lett : ({l1:term L}{l2 : term L} reqv (A l1 l2) (let Q ([l] M l l1 l2))) -> reqv (lett E A) (let Q ([l] lett E (M l))).
+reqv-lift-chain : reqv A (let Q M) -> ({x} eq-term E (E' x)) -> reqv (let A ([_] E)) (let Q ([x] let (M x) ([_] E' x))).
+reqv-lift-lett : ({x1:term L}{x2 : term L} reqv (A x1 x2) (let Q ([l] M l x1 x2))) -> reqv (lett E A) (let Q ([l] lett E (M l))).
 
 
 have-reqv : reqv E V -> reqv E V -> type.

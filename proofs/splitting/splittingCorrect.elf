@@ -117,8 +117,19 @@ split1-unique/strengthen :
 %mode split1-unique/strengthen +DsplE +DsplE' -Deq1 -Deq2.
 - : split1-unique/strengthen Dspl Dspl' (DeqC ztup ztup) (DeqR ztup)
 	<- ({x}{x2}{s} split1-unique Dspl (Dspl' x x2 s) (DeqC x x2) ([l] DeqR x l x2)).
-%worlds (correctness-block) (split1-unique/strengthen _ _ _ _).
+%worlds (splitting-block) (split1-unique/strengthen _ _ _ _).
 %total {} (split1-unique/strengthen _ _ _ _).
+
+split1-unique/strengthen/branchG : 
+	({y}{y1} splitGv y y1 -> split1 (E y) (C y1) R) -> 
+	({x}{x2} splitvar2 x x2 -> {y}{y1} splitGv y y1 -> split1 (E y) (C' y1) ([l] R' l x2)) -> 
+	({y1} eq-term (C y1) (C' y1)) -> 
+	({l}{x2} eq-term (R l) (R' l x2)) -> type.
+%mode split1-unique/strengthen/branchG +DsplE +DsplE' -Deq1 -Deq2.
+- : split1-unique/strengthen/branchG Dspl Dspl' (DeqC ztup ztup ztup) (DeqR ztup ztup ztup)
+	<- ({x}{x2}{s}{y}{y1}{ys} split1-unique (Dspl y y1 ys) (Dspl' x x2 s y y1 ys) (DeqC x x2 y y1) ([l] DeqR x y y1 l x2)).
+%worlds (splitting-block) (split1-unique/strengthen/branchG _ _ _ _).
+%total {} (split1-unique/strengthen/branchG _ _ _ _).
 
 %% LIFTING CORRECTNESS
 lc : split1 E C R -> 
@@ -164,6 +175,15 @@ lc : split1 E C R ->
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
 	<- eq-cong/lett DeqB Deq' Deq''.
+- : lc (spl1-letg Dspl DsplM) DsplQ 
+		([x][x2][s] spl1-letg (Dspl' x x2 s) (DsplM' x x2 s)) 
+		(ls-letg-s1 Dstep) 
+		Deq' 
+		([l] reqv-lift-lett ([l1][l2] reqv-lift-chain (Deqv l1) (DeqR l2)))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqR
+	<- ({y}{z1} eq-cong/lett (DeqM y) ([_][_] eq-term_) (DeqM' y z1))
+	<- eq-cong/lett Deq DeqM' Deq'.
 %worlds (correctness-block) (lc _ _ _ _ _ _).
 %total (D) (lc D _ _ _ _ _).
 
@@ -243,13 +263,6 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	lang-convert B lang2 B2 -> lang-convert B' lang2 B2' -> 
 	reqv (R B2) (R' B2') -> type.
 %mode sc2 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv' -Deqv.
-%{
-sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' -> split1 E C R -> mred C (tup I B) -> lang-convert B lang2 (B2 : term lang2) -> lang-convert B' lang2 (B2' : term lang2) -> reqv (R B2) (R' B2') -> type.
-%mode sc1+ +Dof +Dstep +Dspl' +Dred' -Dspl -Dred -Dconv +Dconv'.
-
-%% POLARITY CONVERSION
-- : sc1+ Dof Dspl' DredC' Dstep Dspl DredC Dconv Dconv'
-	<- sc1 Dof Dspl' DredC' Dstep Dspl DredC Dconv _.}%
 
 
 %% STAGE ONE REDUCTION RULES
@@ -290,6 +303,23 @@ sc1+ : of^ E A wor1 -> split1 E' C' R' -> mred C' (tup I B') -> mstep wor1 E E' 
 		(ms-prev-r : mstep wor2 (prev (exv (next E))) (exv (exv E))) 
 		(spl2-prev (spl1-exv (splv-next Dsplr))) (mred-pi2 mred-exv) 
 		conv-ztup conv-ztup reqv-id.
+
+- : sc1 (of^-letg (of^-exv (of^-grnd DofV)) DofM) (form^letg (form^exv (form^grnd DvalE)) DcompM)
+	(Dspl : split1 _ _ R2') Dred
+	ms-letg-r
+	(spl1-letg (spl1-exv (splv-grnd DsplV)) DsplM)
+	(mred-lett (mred-lett mred-exv Dred') mred-exv)
+	(conv-tup conv-ztup Dconv) Dconv
+	Deqv
+	<- splgv-total DofV DvalE DsplV
+	<- spl1-total/branchG DofM DcompM (DsplM : {x}{x1} splitGv x x1 -> split1 (M x) (C2 x1) R2)
+	<- split-eval-resp Dspl (DsplM V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R2' x) (R2 x))
+	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
+	<- lang-convert_12-total _ Dconv
+	<- reqv-resp (reqv-trans reqv-lett reqv-let : reqv 
+			(lett (exv (tup ztup B2)) ([l1][l2] let (exv ztup) ([_] R2 l2)))
+			(R2 B2)) 
+		eq-term_ (DeqR' B2) Deqv.
 
 %% STAGE ONE DONENESS MARKING
 
@@ -505,6 +535,25 @@ invert/exv--resp/tup :
 		(spl1-grnd Dspl) (mred-tup Dred mred-exv) 
 		conv-ztup conv-ztup reqv-id
 	<- scG Dof Dcomp Dspl' Dred' Dstep Dspl Dred.
+
+- : sc1 (of^-letg Dof1 _) (form^letg Dcomp1 _)
+		(spl1-letg (Dspl1' : split1 E' C1' R1') ([x][x1][s] Dspl2 x x1 s : split1 (M x) (C2 x1) R2))
+		(mred-lett 
+			(mred-lett _ (DredC2 : mred (C2 I1) (tup I2' B2)))
+			(DredC1' : mred C1' (tup I1 _)))
+		(ms-letg-s1 Dstep)
+		(spl1-letg Dspl1 Dspl2)
+		(mred-lett (mred-lett mred-exv DredC2) DredC1)
+		(conv-tup Dconv1 Dconv2) (conv-tup Dconv1' Dconv2)
+		(reqv-lett-p (reqv-let-s Deqv ([_] reqv-id)) : reqv 
+			(lett (exv (tup BB1  BB2)) ([l1][l2] let (R1  l1) ([_] R2 l2)))
+			(lett (exv (tup BB1' BB2)) ([l1][l2] let (R1' l1) ([_] R2 l2))))
+	<- sc1 Dof1 Dcomp1 Dspl1' DredC1' Dstep 
+		(Dspl1 : split1 _ C1 R1) 
+		(DredC1 : mred C1 (tup I1 B1)) 
+		(Dconv1 : lang-convert B1 lang2 BB1) (Dconv1' : lang-convert B1' lang2 BB1')
+		(Deqv : reqv (R1 BB1) (R1' BB1'))
+	<- lang-convert_12-total B2 (Dconv2 : lang-convert B2 lang2 BB2).
 
 
 %% STAGE TWO DONENESS MARKING
