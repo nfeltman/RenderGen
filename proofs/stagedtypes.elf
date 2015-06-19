@@ -56,11 +56,11 @@ of^-inj2	: of^ (inj2 E) (sum T B) W
 				<- ground-wor W
 				<- of^ E B W
 				<- ty^wf T W.
-of^-case 	: of^ (case E M N) C worG
-				<- ground-wor worG
-				<- ({x} of^ x B worG -> of^ (N x) C worG)
-				<- ({x} of^ x A worG -> of^ (M x) C worG)
-				<- of^ E (sum A B) worG.	
+of^-case 	: of^ (case E M N) C W
+				<- ground-wor W
+				<- ({x} of^ x B W -> of^ (N x) C W)
+				<- ({x} of^ x A W -> of^ (M x) C W)
+				<- of^ E (sum A B) W.	
 of^-lam 	: of^ (lam ([x] M x)) (arr A B) W
 				<- ({x} of^ x A W -> of^ (M x) B W) 
 				<- ty^wf A W.
@@ -112,7 +112,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof DwfB.
 - : of^-wf (of^-case DofE DofM _ _) Dwf2
 	<- of^-wf DofE (ty^wf-sum Dwf1 _ _)
-	<- ({x} {ofx : of^ x A worG} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
+	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-lam Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
 	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-app Dof1 Dof2) Dwf

@@ -20,6 +20,7 @@ reqv-pi1-s : reqv E E' -> reqv (pi1 E) (pi1 E').
 reqv-pi2-s : reqv E E' -> reqv (pi2 E) (pi2 E').
 reqv-inj1-s : reqv E E' -> reqv (inj1 E) (inj1 E').
 reqv-inj2-s : reqv E E' -> reqv (inj2 E) (inj2 E').
+reqv-case-s : reqv E E' -> ({x} reqv (M x) (M' x)) -> ({x} reqv (N x) (N' x)) -> reqv (case E M N) (case E' M' N').
 reqv-exv-s : reqv E E' -> reqv (exv E) (exv E').
 reqv-lam-s : ({x} reqv (M x) (M' x)) -> reqv (lam M) (lam M').
 reqv-lett-s2 : ({l1:term L}{l2 : term L} reqv (M l1 l2) (M' l1 l2)) -> reqv (lett E M) (lett E M').

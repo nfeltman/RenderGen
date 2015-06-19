@@ -71,10 +71,19 @@ splG-npres/branch : ({x}{x1} splitGv x x1 -> splitG (E x) (I x1)) -> ({x1} form 
 %% RESIDUAL SPLITTING NORMALITY PRESERVATION
 splr-npres : splitres E Q -> form Q comp -> type.
 %mode splr-npres +Dspl -Dcomp.
+splr-npres/branch : ({x}{x2} splitvar2 x x2 -> splitres (E x) (Q x2)) -> ({x2} form x2 norm -> form (Q x2) comp) -> type.
+%mode splr-npres/branch +Dspl -Dcomp.
+
+- : splr-npres/branch Dsplr (Dcomp ztup)
+	<- {x}{x2}{splx}{compx2} splvar2-npres splx compx2 -> 
+		splr-npres (Dsplr x x2 splx) (Dcomp x x2 compx2).
 
 - : splr-npres (splr-var Dsplvar) (form-exv Dval)
 	<- splvar2-npres Dsplvar Dval.
 - : splr-npres splr-ztup (form-exv form-ztup).
+- : splr-npres (splr-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
+	<- splr-npres Dsplv1 Dval1
+	<- splr-npres Dsplv2 Dval2.
 - : splr-npres (splr-pi1 Dspl) (form-pi1 Dcomp)
 	<- splr-npres Dspl Dcomp.
 - : splr-npres (splr-pi2 Dspl) (form-pi2 Dcomp)
@@ -83,27 +92,30 @@ splr-npres : splitres E Q -> form Q comp -> type.
 	<- splr-npres Dspl Dcomp.
 - : splr-npres (splr-inj2 Dspl) (form-inj2 Dcomp)
 	<- splr-npres Dspl Dcomp.
-- : splr-npres (splr-tup Dsplv1 Dsplv2) (form-tup Dval1 Dval2)
-	<- splr-npres Dsplv1 Dval1
-	<- splr-npres Dsplv2 Dval2.
-- : splr-npres (splr-lam Dsplg) (form-exv (form-lam (Dcomp ztup)))
-	<- {x}{x2}{splx}{compx2} splvar2-npres splx compx2 -> 
-		splr-npres (Dsplg x x2 splx) (Dcomp x x2 compx2).
+- : splr-npres (splr-case DsplgE DsplgM DsplgN) (form-case DcompE DcompM DcompN)
+	<- splr-npres DsplgE DcompE
+	<- splr-npres/branch DsplgM DcompM
+	<- splr-npres/branch DsplgN DcompN.
+- : splr-npres (splr-lam Dsplg) (form-exv (form-lam Dcomp))
+	<- splr-npres/branch Dsplg Dcomp.
 - : splr-npres (splr-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
 	<- splr-npres Dspl1 Dcomp1
 	<- splr-npres Dspl2 Dcomp2.
-- : splr-npres (splr-let DsplgE DsplgM) (form-let DcompE (DcompM ztup))
+- : splr-npres (splr-let DsplgE DsplgM) (form-let DcompE DcompM)
 	<- splr-npres DsplgE DcompE
-	<- {x}{x2}{splx}{compx2} splvar2-npres splx compx2 -> 
-		splr-npres (DsplgM x x2 splx) (DcompM x x2 compx2).
-%worlds (splitting-npres-block) (splr-npres _ _).
-%total (D1) (splr-npres D1 _). 
+	<- splr-npres/branch DsplgM DcompM.
+%worlds (splitting-npres-block) (splr-npres _ _) (splr-npres/branch _ _).
+%total (D1 D2) (splr-npres D1 _) (splr-npres/branch D2 _). 
 
 
-spl1-npres : split1 E C R -> form C comp -> ({x} form x norm -> form (R x) comp) -> type.
+spl1-npres : split1 E C R -> form C comp -> ({l} form l norm -> form (R l) comp) -> type.
 %mode spl1-npres +Dspl -Dcomp1 -Dcomp2.
-spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp) -> type.
+spl2-npres : split2 E P R -> form P comp -> ({l} form l norm -> form (R l) comp) -> type.
 %mode spl2-npres +Dspl -Dcomp1 -Dcomp2.
+spl2-npres/branch : 
+	({x}{x2} splitvar2 x x2 -> split2 (E x) P (R x2)) -> 
+	form P comp -> ({l} form l norm -> {x2} form x2 norm -> form (R x2 l) comp) -> type.
+%mode spl2-npres/branch +Dspl -DcompP -DcompR.
 
 - : splv-npres splv-ztup form-ztup form-ztup.
 - : splv-npres (splv-grnd Dspl) Dval1 form-ztup
@@ -150,9 +162,12 @@ spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp)
 - : spl1-npres (spl1-grnd Dspl) (form-tup Dcomp1 (form-exv form-ztup)) ([_][_] form-exv form-ztup)
 	<- splG-npres Dspl Dcomp1.
 
+- : spl2-npres/branch Dspl (Dcomp1 ztup ztup form-ztup) (Dcomp2 ztup)
+	<- {x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
+		spl2-npres (Dspl x x2 s) (Dcomp1 x x2 vx2) ([l][vl] Dcomp2 x l vl x2 vx2).
+
 - : spl2-npres (spl2-exv Dspl) (form-exv form-ztup) ([x][fx] Dcomp)
 	<- splr-npres Dspl Dcomp.
-
 - : spl2-npres (spl2-tup DsplA DsplB) (form-tup DcompA1 DcompB1) 
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-tup (DcompA2 l1 vl1) (DcompB2 l2 vl2)))
 	<- spl2-npres DsplA DcompA1 DcompA2
@@ -165,23 +180,35 @@ spl2-npres : split2 E P R -> form P comp -> ({x} form x norm -> form (R x) comp)
 	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-inj2 Dspl) Dcomp1 ([l][vl] form-inj2 (Dcomp2 l vl))
 	<- spl2-npres Dspl Dcomp1 Dcomp2.
-- : spl2-npres (spl2-lam Dspl) 
-		(Dcomp1 ztup ztup form-ztup) 
-		([l][vl] form-exv (form-lam ([x][vx] Dcomp2 ztup x vx l vl)))
-	<- {x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
-		spl2-npres (Dspl x x2 s) (Dcomp1 x x2 vx2) (Dcomp2 x x2 vx2).
+- : spl2-npres (spl2-case DsplE DsplM DsplN) 
+		(form-tup DcompE1 (form-tup DcompM1 DcompN1))
+		([_][l] form-lett (form-exv l) ([l1][vl1][_][l23] 
+			form-lett (form-exv l23) ([l2][vl2][l3][vl3] 
+				form-case (DcompE2 l1 vl1) (DcompM2 l2 vl2) (DcompN2 l3 vl3))))
+	<- spl2-npres DsplE DcompE1 DcompE2
+	<- spl2-npres/branch DsplM DcompM1 DcompM2
+	<- spl2-npres/branch DsplN DcompN1 DcompN2.
+- : spl2-npres (spl2-lam Dspl) Dcomp1 ([l][vl] form-exv (form-lam (Dcomp2 l vl)))
+	<- spl2-npres/branch Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-app DsplA DsplB) (form-tup DcompA1 DcompB1) 
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-app (DcompA2 l1 vl1) (DcompB2 l2 vl2)))
 	<- spl2-npres DsplA DcompA1 DcompA2
 	<- spl2-npres DsplB DcompB1 DcompB2.
 - : spl2-npres (spl2-let DsplE DsplM) 
-		(form-tup DcompE1 (DcompM1 ztup ztup form-ztup))  
-		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-let (DcompE2 l1 vl1) ([x][vx] DcompM2 ztup x vx l2 vl2)))
+		(form-tup DcompE1 DcompM1)  
+		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-let (DcompE2 l1 vl1) (DcompM2 l2 vl2)))
 	<- spl2-npres DsplE DcompE1 DcompE2
-	<- ({x}{x2}{s}{vx2} splvar2-npres s vx2 -> 
-		spl2-npres (DsplM x x2 s) (DcompM1 x x2 vx2) (DcompM2 x x2 vx2)).
+	<- spl2-npres/branch DsplM DcompM1 DcompM2.
 - : spl2-npres (spl2-prev Dspl) (form-pi2 Dcomp1) Dcomp2
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
 
-%worlds (splitting-npres-block) (splv-npres _ _ _) (spl1-npres _ _ _) (spl2-npres _ _ _).
-%total (D1 D2 D3) (splv-npres D1 _ _) (spl1-npres D2 _ _) (spl2-npres D3 _ _). 
+%worlds (splitting-npres-block) 
+	(splv-npres _ _ _) 
+	(spl1-npres _ _ _) 
+	(spl2-npres _ _ _) 
+	(spl2-npres/branch _ _ _).
+%total (D1 D2 D3 D4) 
+	(splv-npres D1 _ _) 
+	(spl1-npres D2 _ _) 
+	(spl2-npres D3 _ _) 
+	(spl2-npres/branch D4 _ _). 

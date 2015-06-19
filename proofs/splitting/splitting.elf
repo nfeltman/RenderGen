@@ -49,6 +49,9 @@ splitres : term lang0 -> term lang2 -> type. %name splitres Dsplr.
 splr-var : splitres (exv E) (exv Q)
 			<- splitvar2 E Q.
 splr-ztup : splitres ztup (exv ztup).
+splr-tup : splitres (tup E1 E2) (tup E1' E2')
+			<- splitres E2 E2'
+			<- splitres E1 E1'.
 splr-pi1 : splitres (pi1 E) (pi1 E')
 			<- splitres E E'.
 splr-pi2 : splitres (pi2 E) (pi2 E')
@@ -57,9 +60,10 @@ splr-inj1 : splitres (inj1 E) (inj1 E')
 			<- splitres E E'.
 splr-inj2 : splitres (inj2 E) (inj2 E')
 			<- splitres E E'.
-splr-tup : splitres (tup E1 E2) (tup E1' E2')
-			<- splitres E2 E2'
-			<- splitres E1 E1'.
+splr-case : splitres (case E M N) (case E' M' N')
+			<- ({x}{x2} splitvar2 x x2 -> splitres (N x) (N' x2))
+			<- ({x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2))
+			<- splitres E E'.
 splr-lam : splitres (lam M) (exv (lam M'))
 			<- {x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2).
 splr-app : splitres (app E1 E2) (app E1' E2')
@@ -129,6 +133,10 @@ spl2-inj1	: split2 (inj1 E) P ([l] inj1 (R l))
 			<- split2 E P R.
 spl2-inj2	: split2 (inj2 E) P ([l] inj2 (R l))
 			<- split2 E P R.
+spl2-case	: split2 (case E M N) (tup P1 (tup P2 P3)) ([l] lett (exv l) ([l1][l23] lett (exv l23) ([l2][l3] case (R1 l1) ([x] R2 x l2) ([x] R3 x l3))))
+			<- ({x}{x2} splitvar2 x x2 -> split2 (N x) P3 ([l] R3 x2 l))
+			<- ({x}{x2} splitvar2 x x2 -> split2 (M x) P2 ([l] R2 x2 l))
+			<- split2 E P1 R1.
 spl2-lam	: split2 (lam M) P ([l] exv (lam ([x] R x l)))
 			<- {x}{x2} splitvar2 x x2 -> split2 (M x) P ([l] R x2 l).
 spl2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett (exv l) ([l1] [l2] app (R1 l1) (R2 l2)))

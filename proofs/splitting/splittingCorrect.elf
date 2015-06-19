@@ -93,7 +93,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
 - : scG (of^-case Dof _ _ _) (form^case-cG Dcomp _ _) 
 		(splg-case Dsplg' DsplgM DsplgN) (mred-case DredMN Dred') 
-		(ms-case-s Dstep) 
+		(ms-case-s1 Dstep) 
 		(splg-case Dsplg DsplgM DsplgN) (mred-case DredMN Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
 - : scG (of^-app Dof _) (form^app-c Dcomp _) 
@@ -524,6 +524,11 @@ invert/exv--resp/tup :
 - : sc2 _ _ (spl2-exv (splr-inj2 Dsplr)) mred-exv
 		(ms-inj2-d _)
 		(spl2-inj2 (spl2-exv Dsplr)) mred-exv conv-ztup conv-ztup reqv-id.
+- : sc2 _ _ (spl2-exv (splr-case DsplrE DsplrM DsplrN)) mred-exv
+		ms-case-d
+		(spl2-case (spl2-exv DsplrE) ([x][x2][splx] spl2-exv (DsplrM x x2 splx)) ([x][x2][splx] spl2-exv (DsplrN x x2 splx)))
+		(mred-tup mred-exv (mred-tup mred-exv mred-exv)) 
+		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-trans reqv-lett reqv-lett).
 - : sc2 _ _ (spl2-exv (splr-lam Dsplr)) mred-exv
 		ms-lam-d
 		(spl2-lam ([x][x2][splx] spl2-exv (Dsplr x x2 splx))) mred-exv conv-ztup conv-ztup reqv-id.
@@ -602,6 +607,29 @@ sc2/branch :
 - : sc2 (of^-inj2 _ Dof _) (form^inj2-c Dcomp _) (spl2-inj2 Dspl') Dred' (ms-inj2-s Dstep) 
 		(spl2-inj2 Dspl) Dred Dconv Dconv' (reqv-inj2-s Deqv)
 	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Deqv.
+- : sc2 (of^-case DofE _ _ _) (form^case-c2 DcompE _ _) (spl2-case DsplE' DsplM DsplN) (mred-tup DredE' DredMN) (ms-case-s1 Dstep)
+		(spl2-case DsplE DsplM DsplN) (mred-tup DredE DredMN) 
+		(conv-tup DconvE (conv-tup DconvM DconvN)) (conv-tup DconvE' (conv-tup DconvM DconvN))
+		(reqv-lett-p (reqv-lett-p (reqv-case-s Deqv ([x] reqv-id) ([x] reqv-id))))
+	<- sc2 DofE DcompE DsplE' DredE' Dstep DsplE DredE DconvE DconvE' Deqv
+	<- lang-convert_12-total _ DconvM
+	<- lang-convert_12-total _ DconvN.
+- : sc2 (of^-case _ DofM _ _) (form^case-c2 _ DcompM _) 
+		(spl2-case DsplE DsplM' DsplN) (mred-tup DredE (mred-tup DredM' DredN)) (ms-case-s2 Dstep)
+		(spl2-case DsplE DsplM  DsplN) (mred-tup DredE (mred-tup DredM  DredN)) 
+		(conv-tup DconvE (conv-tup DconvM DconvN)) (conv-tup DconvE (conv-tup DconvM' DconvN))
+		(reqv-lett-p (reqv-lett-p (reqv-case-s reqv-id DeqvM ([x] reqv-id))))
+	<- sc2/branch DofM DcompM DsplM' DredM' Dstep DsplM DredM DconvM DconvM' DeqvM
+	<- lang-convert_12-total _ DconvE
+	<- lang-convert_12-total _ DconvN.
+- : sc2 (of^-case _ _ DofN _) (form^case-c2 _ _ DcompN) 
+		(spl2-case DsplE DsplM DsplN') (mred-tup DredE (mred-tup DredM DredN')) (ms-case-s3 Dstep)
+		(spl2-case DsplE DsplM DsplN ) (mred-tup DredE (mred-tup DredM DredN )) 
+		(conv-tup DconvE (conv-tup DconvM DconvN)) (conv-tup DconvE (conv-tup DconvM DconvN'))
+		(reqv-lett-p (reqv-lett-p (reqv-case-s reqv-id ([x] reqv-id) DeqvN)))
+	<- sc2/branch DofN DcompN DsplN' DredN' Dstep DsplN DredN DconvN DconvN' DeqvN
+	<- lang-convert_12-total _ DconvE
+	<- lang-convert_12-total _ DconvM.
 - : sc2 (of^-lam _ DofM) (form^lam2c Dcomp) 
 		(spl2-lam DsplM') Dred'
 		(ms-lam-s Dstep) 

@@ -79,13 +79,22 @@ prog/inj2 : dos W E -> ground-wor W -> dos W (inj2 E) -> type.
 %worlds (von-block) (prog/inj2 _ _ _).
 %total (Ddos) (prog/inj2 Ddos _ _).
 
-prog/case : dos worG E -> of^ (case E M N) _ worG -> form^ E comp1 worG -> mstep worG (case E M N) _ -> type.
-%mode prog/case +Dvos +Dof +Dform -Dvos'.
-- : prog/case (dos-mstep Dstep) _ _ (ms-case-s Dstep).
-- : prog/case dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) ms-case-r1.
-- : prog/case dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) ms-case-r2.
-%worlds (von-block) (prog/case _ _ _ _).
-%total (Dvos) (prog/case Dvos _ _ _).
+prog/case-1G : dos worG E -> of^ (case E M N) _ worG -> form^ E comp1 worG -> mstep worG (case E M N) _ -> type.
+%mode prog/case-1G +Dvos +Dof +Dform -Dvos'.
+- : prog/case-1G (dos-mstep Dstep) _ _ (ms-case-s1 Dstep).
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) ms-case-r1.
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) ms-case-r2.
+%worlds (von-block) (prog/case-1G _ _ _ _).
+%total (Dvos) (prog/case-1G Dvos _ _ _).
+
+prog/case-2 : dos wor2 E -> ({x} dos wor2 (M x)) -> ({x} dos wor2 (N x)) -> mstep wor2 (case E M N) _ -> type.
+%mode prog/case-2 +Dvos +DdosM +DosN -Dvos'.
+- : prog/case-2 (dos-mstep Dstep) _ _ (ms-case-s1 Dstep).
+- : prog/case-2 dos-done ([x] dos-mstep (Dstep x)) _ (ms-case-s2 Dstep).
+- : prog/case-2 dos-done ([x] dos-done) ([x] dos-mstep (Dstep x)) (ms-case-s3 Dstep).
+- : prog/case-2 dos-done ([x] dos-done) ([x] dos-done) ms-case-d.
+%worlds (von-block) (prog/case-2 _ _ _ _).
+%total (Dvos) (prog/case-2 Dvos _ _ _).
 
 prog/lam : ({x} dos wor2 (M x)) -> dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos -Ddos'.
@@ -184,10 +193,14 @@ prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 	<- prog/inj2 Ddos W Ddos'.
 - : prog (of^-case DofE DofM DofN W) (form^case-cG DcompE DcompM DcompN) (dos-mstep Ddos)
 	<- prog DofE DcompE DdosE
-	<- prog/case DdosE (of^-case DofE DofM DofN W) DcompE Ddos.
+	<- prog/case-1G DdosE (of^-case DofE DofM DofN W) DcompE Ddos.
+- : prog (of^-case DofE DofM DofN W) (form^case-c2 DcompE DcompM DcompN) (dos-mstep Ddos)
+	<- prog DofE DcompE DdosE
+	<- ({x} {dof} {dvar} prog (DofM x dof) (DcompM x dvar) (DdosM x))
+	<- ({x} {dof} {dvar} prog (DofN x dof) (DcompN x dvar) (DdosN x))
+	<- prog/case-2 DdosE DdosM DdosN Ddos.
 - : prog (of^-lam _ DofM) (form^lam2c Dcomp) Ddos'
-	<- ({x} {dof: of^ x T wor2} {dvar : form^ x vars2 wor2}
-		prog (DofM x dof) (Dcomp x dvar) (Ddos x))
+	<- ({x} {dof} {dvar} prog (DofM x dof) (Dcomp x dvar) (Ddos x))
 	<- prog/lam Ddos Ddos'.
 - : prog (of^-app Dof1 Dof2) (form^app-c Dcomp1 Dcomp2) Ddos
 	<- prog Dof1 Dcomp1 Ddos1
