@@ -238,6 +238,10 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 - : spl1-total (of^-letg DofE DofM) (form^letg DcompE DcompM) (spl1-letg DsplrE DsplM)
 	<- spl1-total DofE DcompE DsplrE
 	<- spl1-total/branchG DofM DcompM DsplM.
+- : spl1-total (of^-caseg DofE DofM DofN) (form^caseg DcompE DcompM DcompN) (spl1-caseg DsplrE DsplM DsplN)
+	<- spl1-total DofE DcompE DsplrE
+	<- spl1-total/branchG DofM DcompM DsplM
+	<- spl1-total/branchG DofN DcompN DsplN.
 
 %worlds (total-block) 
 	(spl1-total _ _ _) 

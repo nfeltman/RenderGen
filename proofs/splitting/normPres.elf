@@ -183,6 +183,16 @@ spl1-npres/branchG :
 		([_][l] form-lett (form-exv l) ([l1][vl1][l2][vl2] form-let (DcompE2 l1 vl1) ([_][_] DcompM2 l2 vl2)))
 	<- spl1-npres DsplE DcompE1 DcompE2
 	<- spl1-npres/branchG DsplM DcompM1 DcompM2.
+- : spl1-npres (spl1-caseg DsplE DsplM DsplN) 
+		(form-lett DcompE1 ([_][x23][_][z1]
+			form-case (form-exv x23)
+			([x][vx] (form-lett (DcompM1 x vx) ([_][y][_][z2] (form-exv (form-tup y (form-tup z1 (form-inj1 z2)))))))
+			([x][vx] (form-lett (DcompN1 x vx) ([_][y][_][z3] (form-exv (form-tup y (form-tup z1 (form-inj2 z3)))))))
+		))
+		([_][l] form-lett (form-exv l) ([l1][vl1][_][l23] form-case (form-let (DcompE2 l1 vl1) ([_][_] (form-exv l23))) DcompM2 DcompN2))
+	<- spl1-npres DsplE DcompE1 DcompE2
+	<- spl1-npres/branchG DsplM DcompM1 DcompM2
+	<- spl1-npres/branchG DsplN DcompN1 DcompN2.
 
 - : spl2-npres (spl2-exv Dspl) (form-exv form-ztup) ([x][fx] Dcomp)
 	<- splr-npres Dspl Dcomp.

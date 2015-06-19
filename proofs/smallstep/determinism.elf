@@ -25,6 +25,8 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-letg-s1 Dstep) (ls-letg-s1 Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-caseg-s1 Dstep) (ls-caseg-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep ms-next-d (ls-next-r Dnotvar) Dfalse
 	<- excl-var-notvar Dnotvar Dfalse.
 %worlds (det-block) (excl-mstep-lstep _ _ _).
@@ -64,6 +66,9 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 - : lstep/unique (ls-letg-s1 Dstep) (ls-letg-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong/letg (DeqE x) ([x] eq-term_) (DeqE' x).
+- : lstep/unique (ls-caseg-s1 Dstep) (ls-caseg-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/caseg (DeqE x) ([x] eq-term_) ([x] eq-term_) (DeqE' x).
 %worlds (det-block) (lstep/unique _ _ _ _).
 %total D (lstep/unique D _ _ _).
 
@@ -77,6 +82,8 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique ms-case-r1 ms-case-r1 eq-term_.
 - : step/unique ms-case-r2 ms-case-r2 eq-term_.
 - : step/unique ms-letg-r ms-letg-r eq-term_.
+- : step/unique ms-caseg-r1 ms-caseg-r1 eq-term_.
+- : step/unique ms-caseg-r2 ms-caseg-r2 eq-term_.
 %{- : step/unique ms-let-r ms-let-r eq-term_.}%
 - : step/unique ms-prev-r ms-prev-r eq-term_.
 - : step/unique ms-tup-d ms-tup-d eq-term_.
@@ -153,6 +160,9 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-letg-s1 Dstep1) (ms-letg-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong/letg Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-caseg-s1 Dstep1) (ms-caseg-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/caseg Deq ([x] eq-term_) ([x] eq-term_) Deq'.
 %% CONTRADICTION CASES
 - : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
 	<- excl-mstep-lstep Dstep' Dstep Dfalse

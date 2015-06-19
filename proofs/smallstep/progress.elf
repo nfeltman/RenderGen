@@ -179,6 +179,29 @@ prog/letg : dos wor1 E -> of^ E (curr T) wor1 -> form^ E comp1 wor1 -> {M} dos w
 %worlds (von-block) (prog/letg _ _ _ _ _).
 %total (Dvos) (prog/letg Dvos _ _ _ _).
 
+prog/caseg/pred2 : {M}{N} form^ E norm1 worG -> of^ E (sum A B) worG -> mstep wor1 (caseg (exv (grnd E)) M N) V -> type.
+%mode prog/caseg/pred2 +Dof +Dform +M +N -Dvos'.
+- : prog/caseg/pred2 _ _ (form^inj1-n _ _) (of^-inj1 _ _ _) ms-caseg-r1.
+- : prog/caseg/pred2 _ _ (form^inj2-n _ _) (of^-inj2 _ _ _) ms-caseg-r2.
+%worlds (von-block) (prog/caseg/pred2 _ _ _ _ _).
+%total (Dvos) (prog/caseg/pred2 Dvos _ _ _ _).
+
+prog/caseg/pred : {M}{N} of^ E (curr (sum A B)) wor1 -> form^ E norm1 wor1 -> mstep wor1 (caseg (exv E) M N) V -> type.
+%mode prog/caseg/pred +Dof +Dform +M +N -Dvos'.
+- : prog/caseg/pred M N (of^-grnd Dof) (form^grnd Dval) Dstep
+	<- prog/caseg/pred2 M N Dval Dof Dstep.
+%worlds (von-block) (prog/caseg/pred _ _ _ _ _).
+%total {} (prog/caseg/pred _ _ _ _ _).
+
+prog/caseg : {M}{N} dos wor1 E -> form^ E comp1 wor1 -> of^ E (curr (sum A B)) wor1 -> dos wor1 (caseg E M N) -> type.
+%mode prog/caseg +Dvos +Dof +Dform +M +N -Dvos'.
+- : prog/caseg _ _ (dos-lstep Dstep) _ _ (dos-lstep (ls-caseg-s1 Dstep)).
+- : prog/caseg _ _ (dos-mstep Dstep) _ _ (dos-mstep (ms-caseg-s1 Dstep)).
+- : prog/caseg M N dos-done (form^exv Dval) (of^-exv Dof) (dos-mstep Dstep)
+	<- prog/caseg/pred M N Dof Dval Dstep.
+%worlds (von-block) (prog/caseg _ _ _ _ _ _).
+%total (Dvos) (prog/caseg Dvos _ _ _ _ _).
+
 %% PROGRESS
 prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 %mode prog +Dof +Dform -Ddos.
@@ -234,5 +257,8 @@ prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 - : prog (of^-letg DofE DofM) (form^letg DcompE DcompM) Ddos'
 	<- prog DofE DcompE DdosE
 	<- prog/letg DdosE DofE DcompE _ Ddos'.
+- : prog (of^-caseg DofE DofM DofN) (form^caseg DcompE DcompM DcompN) Ddos'
+	<- prog DofE DcompE DdosE
+	<- prog/caseg _ _ DdosE DcompE DofE Ddos'.
 %worlds (von-block) (prog _ _ _).
 %total (Ddos) (prog Ddos _ _).

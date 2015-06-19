@@ -184,6 +184,18 @@ lc : split1 E C R ->
 	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqR
 	<- ({y}{z1} eq-cong/lett (DeqM y) ([_][_] eq-term_) (DeqM' y z1))
 	<- eq-cong/lett Deq DeqM' Deq'.
+- : lc (spl1-caseg Dspl DsplM DsplN) DsplQ 
+		([x][x2][s] spl1-caseg (Dspl' x x2 s) (DsplM' x x2 s) (DsplN' x x2 s)) 
+		(ls-caseg-s1 Dstep) 
+		Deq' 
+		([l] reqv-lift-lett ([l1][l23] reqv-lift-case (reqv-lift-chain (Deqv l1) ([_] eq-term_)) DeqvM DeqvN))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqvM
+	<- split1-unique/strengthen/branchG DsplN DsplN' DeqN DeqvN
+	<- ({z}{x} eq-cong/lett (DeqM x) ([_][_] eq-term_) (DeqM' z x))
+	<- ({z}{x} eq-cong/lett (DeqN x) ([_][_] eq-term_) (DeqN' z x))
+	<- ({x}{z} eq-cong/case eq-term_ (DeqM' z) (DeqN' z) (DeqMN x z))
+	<- eq-cong/lett Deq DeqMN Deq'.
 %worlds (correctness-block) (lc _ _ _ _ _ _).
 %total (D) (lc D _ _ _ _ _).
 
@@ -234,11 +246,10 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 	<- lang-convert_12-total B0 (Dconv : lang-convert B0 lang2 B)
 	<- eq-term-sym (Deq B) (Deq' : eq-term (R Vq B) (R' B))
 	<- reqv-resp 
-		((reqv-trans5
-			reqv-lett
-			reqv-lett
-			(reqv-app-s2 reqv-tup-d) 
-			reqv-app  								
+		((	reqv-lett ;;
+			reqv-lett ;;
+			(reqv-app-s reqv-id reqv-tup-d) ;;
+			reqv-app ;;		
 			reqv-lett
 			)
 		: reqv 
@@ -316,7 +327,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	<- split-eval-resp Dspl (DsplM V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R2' x) (R2 x))
 	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
 	<- lang-convert_12-total _ Dconv
-	<- reqv-resp (reqv-trans reqv-lett reqv-let : reqv 
+	<- reqv-resp (reqv-lett ;; reqv-let : reqv 
 			(lett (exv (tup ztup B2)) ([l1][l2] let (exv ztup) ([_] R2 l2)))
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
@@ -330,7 +341,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2))
 		(mred-lett (mred-lett DredM mred-exv) mred-exv : mred _ (tup I (tup ztup ztup)))
 		conv-tupzz Dconv'
-		(reqv-trans reqv-lett reqv-tup-d : reqv 
+		(reqv-lett ;; reqv-tup-d : reqv 
 			(lett (exv (tup ztup ztup)) ([l1] [l2] tup (exv Q1) (exv Q2))) 
 			(exv (tup Q1 Q2))
 		)
@@ -556,6 +567,25 @@ invert/exv--resp/tup :
 	<- lang-convert_12-total B2 (Dconv2 : lang-convert B2 lang2 BB2).
 
 
+- : sc1 (of^-caseg Dof1 _) (form^caseg Dcomp1 _)
+		(spl1-caseg (Dspl1' : split1 E' C1' R1') ([x][x1][s] Dspl2 x x1 s : split1 (M x) (C2 x1) R2) ([x][x1][s] Dspl3 x x1 s : split1 (N x) (C3 x1) R3))
+		(mred-lett 
+			(mred-lett _ (DredC2 : mred (C2 I1) (tup I2' B2)))
+			(DredC1' : mred C1' (tup I1 _)))
+		(ms-caseg-s1 Dstep)
+		(spl1-caseg Dspl1 Dspl2 Dspl3)
+		(mred-lett (mred-lett mred-exv DredC2) DredC1)
+		(conv-tup Dconv1 Dconv2) (conv-tup Dconv1' Dconv2)
+		(reqv-lett-p (reqv-let-s Deqv ([_] reqv-id)) : reqv 
+			(lett (exv (tup BB1  BB2)) ([l1][l2] let (R1  l1) ([_] R2 l2)))
+			(lett (exv (tup BB1' BB2)) ([l1][l2] let (R1' l1) ([_] R2 l2))))
+	<- sc1 Dof1 Dcomp1 Dspl1' DredC1' Dstep 
+		(Dspl1 : split1 _ C1 R1) 
+		(DredC1 : mred C1 (tup I1 B1)) 
+		(Dconv1 : lang-convert B1 lang2 BB1) (Dconv1' : lang-convert B1' lang2 BB1')
+		(Deqv : reqv (R1 BB1) (R1' BB1'))
+	<- lang-convert_12-total B2 (Dconv2 : lang-convert B2 lang2 BB2).
+
 %% STAGE TWO DONENESS MARKING
 - : sc2 _ _ (spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-exv
 		ms-tup-d
@@ -577,7 +607,7 @@ invert/exv--resp/tup :
 		ms-case-d
 		(spl2-case (spl2-exv DsplrE) ([x][x2][splx] spl2-exv (DsplrM x x2 splx)) ([x][x2][splx] spl2-exv (DsplrN x x2 splx)))
 		(mred-tup mred-exv (mred-tup mred-exv mred-exv)) 
-		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-trans reqv-lett reqv-lett).
+		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-lett ;; reqv-lett).
 - : sc2 _ _ (spl2-exv (splr-lam Dsplr)) mred-exv
 		ms-lam-d
 		(spl2-lam ([x][x2][splx] spl2-exv (Dsplr x x2 splx))) mred-exv conv-ztup conv-ztup reqv-id.

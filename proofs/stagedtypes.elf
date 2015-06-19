@@ -87,6 +87,10 @@ of^-grnd 	: of^ (grnd E) (curr T) wor1
 of^-letg 	: of^ (letg E M) T2 wor1
 				<- ({x} of^ x T1 worG -> of^ (M x) T2 wor1)
 				<- of^ E (curr T1) wor1.
+of^-caseg 	: of^ (caseg E M N) C wor1
+				<- ({x} of^ x B worG -> of^ (N x) C wor1)
+				<- ({x} of^ x A worG -> of^ (M x) C wor1)
+				<- of^ E (curr (sum A B)) wor1.
 
 %block var-of1 : 
 	some {A : ty} {L : lang} {W : wor} {_ : first-stage-wor W} 
@@ -133,6 +137,9 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof Dwf.
 - : of^-wf (of^-letg DofE DofM) DwfM
 	<- of^-wf DofE (ty^wf-curr DwfE)
+	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
+- : of^-wf (of^-caseg DofE DofM DofN) DwfM
+	<- of^-wf DofE (ty^wf-curr (ty^wf-sum DwfE _ _))
 	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
 %block var-of^-wf : 
 	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W}
@@ -247,6 +254,10 @@ form^prev  : form^ (prev E) comp1 wor2
 form^grnd  : form^ (grnd E) N wor1
 			<- form^ E N worG.
 form^letg  : form^ (letg E M) comp1 wor1
+			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 wor1)
+			<- form^ E comp1 wor1.
+form^caseg : form^ (caseg E M N) comp1 wor1
+			<- ({x} form^ x norm1 worG -> form^ (N x) comp1 wor1)
 			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 wor1)
 			<- form^ E comp1 wor1.
 
