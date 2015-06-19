@@ -259,6 +259,9 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 %worlds (correctness-block) (sc1/app-r _ _ _ _ _ _ _ _).
 %total (D) (sc1/app-r D _ _ _ _ _ _ _).
 
+
+
+
 %% SPLITTING CORRECTNESS
 sc1 : of^ E A wor1 -> form^ E comp1 wor1 -> 
 	split1 E' C' R' -> mred C' (tup I B') -> 
@@ -566,25 +569,71 @@ invert/exv--resp/tup :
 		(Deqv : reqv (R1 BB1) (R1' BB1'))
 	<- lang-convert_12-total B2 (Dconv2 : lang-convert B2 lang2 BB2).
 
+sc1/case-s : 
+		mred/case V1 
+			([xx] lett (C2 xx) ([y] [z2] exv (tup y (tup B1' (inj1 z2)))))
+			([xx] lett (C3 xx) ([y] [z3] exv (tup y (tup B1' (inj2 z3))))) 
+			(tup I' B') ->
+		{B1 : term lang1}
+		eq-term (tup B1' B23) B' ->
+		mred/case V1 
+			([xx] lett (C2 xx) ([y] [z2] exv (tup y (tup B1 (inj1 z2)))))
+			([xx] lett (C3 xx) ([y] [z3] exv (tup y (tup B1 (inj2 z3))))) 
+			(tup I' (tup B1 B23)) -> 
+		type.
+%mode sc1/case-s +Dred' +B1 -Deq -Dred.
+- : sc1/case-s 
+		(mred/case-inj1 (mred-lett 
+			(DredBody' : mred (exv (tup I2 (tup B1' (inj1 B2)))) (tup I' B'))
+			(DredC2 : mred (C2 V1) (tup I2 B2)))
+		: mred/case (inj1 V1) ([xx] lett (C2 xx) _) _ (tup I' B'))
+		_ Deq
+		(mred/case-inj1 (mred-lett mred-exv DredC2'))
+	<- mred-invert/exv-tup DredBody' (DredI2 : mred (exv I2) I') (DredB12 : mred (exv (tup B1' (inj1 B2))) B')
+	<- invert/exv--resp/tup DredI2 DredC2 (DredC2' : mred (C2 V1) (tup I' B2))
+	<- mred-invert/exv DredB12 (Deq : eq-term (tup B1' (inj1 B2)) B').
 
-- : sc1 (of^-caseg Dof1 _) (form^caseg Dcomp1 _)
-		(spl1-caseg (Dspl1' : split1 E' C1' R1') ([x][x1][s] Dspl2 x x1 s : split1 (M x) (C2 x1) R2) ([x][x1][s] Dspl3 x x1 s : split1 (N x) (C3 x1) R3))
+- : sc1/case-s 
+		(mred/case-inj2 (mred-lett 
+			(DredBody' : mred (exv (tup I2 (tup B1' (inj2 B2)))) (tup I' B'))
+			(DredC2 : mred (C2 V1) (tup I2 B2)))
+		: mred/case (inj2 V1) _ ([xx] lett (C2 xx) _) (tup I' B'))
+		_ Deq
+		(mred/case-inj2 (mred-lett mred-exv DredC2')) 
+	<- mred-invert/exv-tup DredBody' (DredI2 : mred (exv I2) I') (DredB12 : mred (exv (tup B1' (inj2 B2))) B')
+	<- invert/exv--resp/tup DredI2 DredC2 (DredC2' : mred (C2 V1) (tup I' B2))
+	<- mred-invert/exv DredB12 (Deq : eq-term (tup B1' (inj2 B2)) B').
+%worlds (correctness-block) (sc1/case-s _ _ _ _).
+%total (D) (sc1/case-s D _ _ _).
+
+- : sc1 (of^-caseg Dof1 _ _) (form^caseg Dcomp1 _ _)
+		(spl1-caseg 
+				(Dspl1' : split1 E' C1' R1') 
+				([x][x1][s] Dspl2 x x1 s : split1 (M x) (C2 x1) R2) 
+				([x][x1][s] Dspl3 x x1 s : split1 (N x) (C3 x1) R3))
 		(mred-lett 
-			(mred-lett _ (DredC2 : mred (C2 I1) (tup I2' B2)))
-			(DredC1' : mred C1' (tup I1 _)))
+			(mred-case 
+				(DredC23' : mred/case
+					V1
+					([xx] lett (C2 xx) ([y] [z2] exv (tup y (tup B1' (inj1 z2)))))
+					([xx] lett (C3 xx) ([y] [z3] exv (tup y (tup B1' (inj2 z3)))))
+					(tup I' B'))
+				(DredI1 : mred (exv I1) V1)
+			)
+			(DredC1' : mred C1' (tup I1 B1')))
 		(ms-caseg-s1 Dstep)
 		(spl1-caseg Dspl1 Dspl2 Dspl3)
-		(mred-lett (mred-lett mred-exv DredC2) DredC1)
-		(conv-tup Dconv1 Dconv2) (conv-tup Dconv1' Dconv2)
-		(reqv-lett-p (reqv-let-s Deqv ([_] reqv-id)) : reqv 
-			(lett (exv (tup BB1  BB2)) ([l1][l2] let (R1  l1) ([_] R2 l2)))
-			(lett (exv (tup BB1' BB2)) ([l1][l2] let (R1' l1) ([_] R2 l2))))
+		(mred-lett (mred-case DredC23 DredI1) DredC1)
+		(conv-tup Dconv1 Dconv23) Dconv'
+		(reqv-lett-p (reqv-case-s (reqv-let-s Deqv ([x] reqv-id)) ([x] reqv-id)([x] reqv-id)))
 	<- sc1 Dof1 Dcomp1 Dspl1' DredC1' Dstep 
 		(Dspl1 : split1 _ C1 R1) 
 		(DredC1 : mred C1 (tup I1 B1)) 
 		(Dconv1 : lang-convert B1 lang2 BB1) (Dconv1' : lang-convert B1' lang2 BB1')
 		(Deqv : reqv (R1 BB1) (R1' BB1'))
-	<- lang-convert_12-total B2 (Dconv2 : lang-convert B2 lang2 BB2).
+	<- sc1/case-s DredC23' _ (Deq : eq-term (tup B1' B23) B') DredC23
+	<- lang-convert_12-total B23 (Dconv23 : lang-convert B23 lang2 BB23)
+	<- conv-resp (conv-tup Dconv1' Dconv23) Deq eq-term_ Dconv'.
 
 %% STAGE TWO DONENESS MARKING
 - : sc2 _ _ (spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-exv
