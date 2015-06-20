@@ -6,6 +6,7 @@ unit	: ty.
 prod  : ty -> ty -> ty.
 sum	  : ty -> ty -> ty.
 arr		: ty -> ty -> ty.
+rec   : (ty -> ty) -> ty.
 fut		: ty -> ty.
 curr	: ty -> ty.
 %freeze ty.
@@ -32,6 +33,8 @@ pi2   : term L -> term L.
 inj1  : term L -> term L.
 inj2  : term L -> term L.
 case  : term L -> (term L -> term L) -> (term L -> term L) -> term L.
+roll  : term L -> term L.
+unrl  : term L -> term L.
 lam   : (term L -> term L) -> term L.
 app   : term L -> term L -> term L.
 let   : term L -> (term L -> term L) -> term L.
@@ -265,6 +268,12 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
   <- ({y} lang-indep Dneq (M1 y) ([x] DeqM1 x y))
   <- ({y} lang-indep Dneq (M2 y) ([x] DeqM2 x y))
   <- {x} eq-cong/case (DeqE x) (DeqM1 x) (DeqM2 x) (Deq x).
+- : lang-indep Dneq ([x] roll (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong roll (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] unrl (E x)) Deq'
+  <- lang-indep Dneq E Deq
+  <- {x} eq-cong unrl (Deq x) (Deq' x).
 - : lang-indep Dneq ([x] lam ([y] E y x)) Deq'
   <- ({y} lang-indep Dneq (E y) ([x] Deq x y))
   <- {x} eq-cong/lam (Deq x) (Deq' x).
@@ -410,6 +419,10 @@ conv-next : lang-convert (next E) _ (next E')
     <- lang-convert E _ E'.
 conv-prev : lang-convert (prev E) _ (prev E')
     <- lang-convert E _ E'.
+conv-roll : lang-convert (roll E) _ (roll E')
+    <- lang-convert E _ E'.
+conv-unrl : lang-convert (unrl E) _ (unrl E')
+    <- lang-convert E _ E'.
 conv-grnd : lang-convert (grnd E) _ (grnd E')
     <- lang-convert E _ E'.
 conv-letg : lang-convert (letg E M) L2 (letg E' (M' (ztup : term L1)))
@@ -469,6 +482,10 @@ lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) 
         lang-convert_12-total (M x) (DconvM x x2 convx))
     <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (N x) (DconvN x x2 convx))
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (roll E) (conv-roll Dconv')
+    <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (unrl E) (conv-unrl Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (lam M) (conv-lam DconvM)
     <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 

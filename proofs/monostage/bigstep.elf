@@ -24,6 +24,10 @@ mred-inj2  : mred (inj2 E) (inj2 V)
 mred-case : mred (case E M N) V2
 			<- mred E V
 			<- mred/case V M N V2.
+mred-roll  : mred (roll E) (roll V)
+			<- mred E V.
+mred-unrl  : mred (unrl E) V
+			<- mred E (roll V).
 mred-lam  : mred (lam M) (lam M).
 mred-app  : mred (app E1 E2) V
 			<- mred E2 V2

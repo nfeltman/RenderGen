@@ -25,6 +25,8 @@ res\von : form^ E norm1 wor2 -> var-or-not E -> type.
 - : res\von (form^let-n2 _ _) (von-not nv-let).
 - : res\von (form^inj1-n _ _) (von-not nv-inj1).
 - : res\von (form^inj2-n _ _) (von-not nv-inj2).
+- : res\von (form^roll-n _) (von-not nv-roll).
+- : res\von (form^unrl-n2 _) (von-not nv-unrl).
 - : res\von (form^case-n2 _ _ _) (von-not nv-case).
 %block von-block : 
 	some {A : ty} {L :lang} 
@@ -95,6 +97,25 @@ prog/case-2 : dos wor2 E -> ({x} dos wor2 (M x)) -> ({x} dos wor2 (N x)) -> mste
 - : prog/case-2 dos-done ([x] dos-done) ([x] dos-done) ms-case-d.
 %worlds (von-block) (prog/case-2 _ _ _ _).
 %total (Dvos) (prog/case-2 Dvos _ _ _).
+
+prog/roll : dos W E -> dos W (roll E) -> type.
+%mode prog/roll +Ddos -Ddos'.
+- : prog/roll (dos-lstep Dstep) (dos-lstep (ls-roll-s Dstep)).
+- : prog/roll (dos-mstep Dstep) (dos-mstep (ms-roll-s Dstep)).
+- : prog/roll dos-done (dos-mstep ms-roll-d).
+%worlds (von-block) (prog/roll _ _).
+%total (Ddos) (prog/roll Ddos _).
+
+prog/unrl : dos W E -> of^ E (rec F) W -> form^ E comp1 W -> dos W (unrl E) -> type.
+%mode prog/unrl +Ddos +Dof +Dcomp -Ddos'.
+- : prog/unrl (dos-lstep Dstep) _ _ (dos-lstep (ls-unrl-s Dstep)).
+- : prog/unrl (dos-mstep Dstep) _ _ (dos-mstep (ms-unrl-s Dstep)).
+- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-unrl-r fsw-wor1)).
+- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-unrl-r fsw-worG)).
+- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep ms-unrl-d).
+%worlds (von-block) (prog/unrl _ _ _ _).
+%total (Ddos) (prog/unrl Ddos _ _ _).
+
 
 prog/lam : ({x} dos wor2 (M x)) -> dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos -Ddos'.
@@ -230,6 +251,12 @@ prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 	<- ({x} {dof} {dvar} prog (DofM x dof) (DcompM x dvar) (DdosM x))
 	<- ({x} {dof} {dvar} prog (DofN x dof) (DcompN x dvar) (DdosN x))
 	<- prog/case-2 DdosE DdosM DdosN Ddos.
+- : prog (of^-roll _ Dof) (form^roll-c Dcomp) Ddos'
+	<- prog Dof Dcomp Ddos
+	<- prog/roll Ddos Ddos'.
+- : prog (of^-unrl Dof) (form^unrl-c Dcomp) Ddos'
+	<- prog Dof Dcomp Ddos
+	<- prog/unrl Ddos Dof Dcomp Ddos'.
 - : prog (of^-lam _ DofM) (form^lam2c Dcomp) Ddos'
 	<- ({x} {dof} {dvar} prog (DofM x dof) (Dcomp x dvar) (Ddos x))
 	<- prog/lam Ddos Ddos'.

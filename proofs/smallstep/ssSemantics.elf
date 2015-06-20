@@ -13,6 +13,8 @@ nv-app  : not-variable (app _ _).
 nv-let 	: not-variable (let _ _).
 nv-inj1 : not-variable (inj1 _).
 nv-inj2 : not-variable (inj2 _).
+nv-roll : not-variable (roll _).
+nv-unrl : not-variable (unrl _).
 nv-case : not-variable (case _ _ _).
 
 %% STANDARD COMPATABILITY CONTEXT
@@ -40,6 +42,8 @@ ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
 ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
 ms-inj1-d 	: mstep W (inj1 (exv E)) (exv (inj1 E)) <- ground-wor W.
 ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)) <- ground-wor W.
+ms-roll-d 	: mstep W (roll (exv E)) (exv (roll E)).
+ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
 ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).
 ms-lam-d 	: mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
 ms-app-d 	: mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
@@ -65,6 +69,10 @@ ms-case-s2	: mstep wor2 (case (exv E) M N) (case (exv E) M' N)
 			<- {x} mstep wor2 (M x) (M' x).
 ms-case-s3	: mstep wor2 (case (exv E) ([x] exv (M x)) N) (case (exv E) ([x] exv (M x)) N')
 			<- {x} mstep wor2 (N x) (N' x).
+ms-roll-s	: mstep W (roll E) (roll E')
+			<- mstep W E E'.
+ms-unrl-s	: mstep W (unrl E) (unrl E')
+			<- mstep W E E'.
 ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
 			<- mstep W E1 E1'.
 ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')
@@ -90,6 +98,8 @@ ms-pi1-r	: mstep W (pi1 (exv (tup E1 E2))) (exv E1)
 				<- first-stage-wor W.
 ms-pi2-r	: mstep W (pi2 (exv (tup E1 E2))) (exv E2)
 				<- first-stage-wor W.
+ms-unrl-r	: mstep W (unrl (exv (roll E))) (exv E)
+				<- first-stage-wor W.
 ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M E)
 				<- first-stage-wor W.
 ms-case-r1	: mstep worG (case (exv (inj1 E)) M N) (M E).
@@ -106,6 +116,10 @@ ls-tup-s2	: lstep (tup (exv E1) E2) Q ([x] tup (exv E1) (E2' x))
 ls-pi1-s	: lstep (pi1 E) Q ([x] pi1 (E' x))
 			<- lstep E Q E'.
 ls-pi2-s	: lstep (pi2 E) Q ([x] pi2 (E' x))
+			<- lstep E Q E'.
+ls-roll-s	: lstep (roll E) Q ([x] roll (E' x))
+			<- lstep E Q E'.
+ls-unrl-s	: lstep (unrl E) Q ([x] unrl (E' x))
 			<- lstep E Q E'.
 ls-app-s1	: lstep (app E1 E2) Q ([x] app (E1' x) E2)
 			<- lstep E1 Q E1'.

@@ -19,6 +19,10 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-pi2-s Dstep) (ls-pi2-s Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-unrl-s Dstep) (ls-unrl-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-roll-s Dstep) (ls-roll-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s1 Dstep) (ls-app-s1 Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s2 Dstep) (ls-app-s2 Dstep') Dfalse
@@ -57,6 +61,12 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 - : lstep/unique (ls-pi2-s Dstep) (ls-pi2-s Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong pi2 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-roll-s Dstep) (ls-roll-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong roll (DeqE x) (DeqE' x).
+- : lstep/unique (ls-unrl-s Dstep) (ls-unrl-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong unrl (DeqE x) (DeqE' x).
 - : lstep/unique (ls-app-s1 Dstep) (ls-app-s1 Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong2 app (DeqE x) eq-term_ (DeqE' x).
@@ -78,6 +88,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 %% REDUCTION AND DONE MARKER RULES
 - : step/unique (ms-pi1-r _) (ms-pi1-r _) eq-term_.
 - : step/unique (ms-pi2-r _) (ms-pi2-r _) eq-term_.
+- : step/unique (ms-unrl-r _) (ms-unrl-r _) eq-term_.
 - : step/unique (ms-app-r _) (ms-app-r _) eq-term_.
 - : step/unique ms-case-r1 ms-case-r1 eq-term_.
 - : step/unique ms-case-r2 ms-case-r2 eq-term_.
@@ -92,6 +103,9 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-inj1-d _) (ms-inj1-d _) eq-term_.
 - : step/unique (ms-inj2-d _) (ms-inj2-d _) eq-term_.
 - : step/unique ms-case-d ms-case-d eq-term_.
+- : step/unique ms-roll-d ms-roll-d eq-term_.
+- : step/unique ms-roll-d ms-roll-d eq-term_.
+- : step/unique ms-unrl-d ms-unrl-d eq-term_.
 - : step/unique ms-lam-d ms-lam-d eq-term_.
 - : step/unique ms-app-d ms-app-d eq-term_.
 - : step/unique ms-let-d ms-let-d eq-term_.
@@ -116,6 +130,12 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-inj2-s Dstep1) (ms-inj2-s Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong inj2 Deq Deq'.
+- : step/unique (ms-roll-s Dstep1) (ms-roll-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong roll Deq Deq'.
+- : step/unique (ms-unrl-s Dstep1) (ms-unrl-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong unrl Deq Deq'.
 - : step/unique (ms-case-s1 Dstep1) (ms-case-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq
 	<- eq-cong/case Deq ([_] eq-term_) ([_] eq-term_) Deq'.

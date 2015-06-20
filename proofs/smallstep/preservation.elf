@@ -15,6 +15,10 @@ lstep-pres-ty : lstep E Q E' -> of^ E T wor1 -> of^ Q TQ wor2 -> ({x} of^ x TQ w
 	<- lstep-pres-ty Dstep Dof DofQ Dof'.
 - : lstep-pres-ty (ls-pi2-s Dstep) (of^-pi2 Dof) DofQ ([x][dof] of^-pi2 (Dof' x dof))
 	<- lstep-pres-ty Dstep Dof DofQ Dof'.
+- : lstep-pres-ty (ls-roll-s Dstep) (of^-roll Dwf Dof) DofQ ([x][dof] of^-roll Dwf (Dof' x dof))
+	<- lstep-pres-ty Dstep Dof DofQ Dof'.
+- : lstep-pres-ty (ls-unrl-s Dstep) (of^-unrl Dof) DofQ ([x][dof] of^-unrl (Dof' x dof))
+	<- lstep-pres-ty Dstep Dof DofQ Dof'.
 - : lstep-pres-ty (ls-app-s1 Dstep) (of^-app Dof1 Dof2) DofQ ([x][dof] of^-app (Dof1' x dof) Dof2)
 	<- lstep-pres-ty Dstep Dof1 DofQ Dof1'.
 - : lstep-pres-ty (ls-app-s2 Dstep) (of^-app Dof1 Dof2) DofQ ([x][dof] of^-app Dof1 (Dof2' x dof))
@@ -43,6 +47,10 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 	<- mstep-pres-ty Dstep Dof Dof'.
 - : mstep-pres-ty (ms-case-s1 Dstep) (of^-case DofE DofM DofN W) (of^-case DofE' DofM DofN W) 
 	<- mstep-pres-ty Dstep DofE DofE'.
+- : mstep-pres-ty (ms-roll-s Dstep) (of^-roll Dwf Dof) (of^-roll Dwf Dof')
+	<- mstep-pres-ty Dstep Dof Dof'.
+- : mstep-pres-ty (ms-unrl-s Dstep) (of^-unrl Dof) (of^-unrl Dof')
+	<- mstep-pres-ty Dstep Dof Dof'.
 - : mstep-pres-ty (ms-case-s2 Dstep) (of^-case DofE DofM DofN W) (of^-case DofE DofM' DofN W) 
 	<- {x} {dof} mstep-pres-ty (Dstep x) (DofM x dof) (DofM' x dof).
 - : mstep-pres-ty (ms-case-s3 Dstep) (of^-case DofE DofM DofN W) (of^-case DofE DofM DofN' W) 
@@ -76,8 +84,10 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 - : mstep-pres-ty (ms-inj1-d _) (of^-inj1 Dwf (of^-exv Dof) W) (of^-exv (of^-inj1 Dwf Dof W)).
 - : mstep-pres-ty (ms-inj2-d _) (of^-inj2 Dwf (of^-exv Dof) W) (of^-exv (of^-inj2 Dwf Dof W)).
 - : mstep-pres-ty ms-case-d (of^-case (of^-exv DofE) ([x][ofx] of^-exv (DofM x ofx)) ([x][ofx] of^-exv (DofN x ofx)) W) (of^-exv (of^-case DofE DofM DofN W)).
+- : mstep-pres-ty ms-roll-d (of^-roll Dwf (of^-exv Dof)) (of^-exv (of^-roll Dwf Dof)).
 - : mstep-pres-ty ms-pi1-d (of^-pi1 (of^-exv Dof)) (of^-exv (of^-pi1 Dof)).
 - : mstep-pres-ty ms-pi2-d (of^-pi2 (of^-exv Dof)) (of^-exv (of^-pi2 Dof)).
+- : mstep-pres-ty ms-unrl-d (of^-unrl (of^-exv Dof)) (of^-exv (of^-unrl Dof)).
 - : mstep-pres-ty ms-lam-d (of^-lam Dwf ([x][ofx] of^-exv (Dof x ofx))) (of^-exv (of^-lam Dwf Dof)).
 - : mstep-pres-ty ms-app-d (of^-app (of^-exv Dof1) (of^-exv Dof2)) (of^-exv (of^-app Dof1 Dof2)).
 - : mstep-pres-ty ms-let-d (of^-let (of^-exv DofE) ([x][ofx] of^-exv (DofM x ofx))) (of^-exv (of^-let DofE DofM)).
@@ -87,6 +97,7 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
 - : mstep-pres-ty (ms-pi1-r W) (of^-pi1 (of^-exv (of^-tup Dof _))) (of^-exv Dof).
 - : mstep-pres-ty (ms-pi2-r W) (of^-pi2 (of^-exv (of^-tup _ Dof))) (of^-exv Dof).
+- : mstep-pres-ty (ms-unrl-r W) (of^-unrl (of^-exv (of^-roll _ Dof))) (of^-exv Dof).
 - : mstep-pres-ty (ms-app-r W) (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (DofM E DofE).
 - : mstep-pres-ty ms-case-r1 (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (DofM E DofE).
 - : mstep-pres-ty ms-case-r2 (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (DofN E DofE).
@@ -116,6 +127,10 @@ lstep-pres-norm : lstep E Q E' -> form^ E comp1 wor1 -> form^ Q norm1 wor2 -> ({
 	<- lstep-pres-norm Dstep Dcomp DcompQ Dcomp'.
 - : lstep-pres-norm (ls-pi2-s Dstep) (form^pi2-c Dcomp) DcompQ ([x][vx] form^pi2-c (Dcomp' x vx))
 	<- lstep-pres-norm Dstep Dcomp DcompQ Dcomp'.
+- : lstep-pres-norm (ls-roll-s Dstep) (form^roll-c Dcomp) DcompQ ([x][vx] form^roll-c (Dcomp' x vx))
+	<- lstep-pres-norm Dstep Dcomp DcompQ Dcomp'.
+- : lstep-pres-norm (ls-unrl-s Dstep) (form^unrl-c Dcomp) DcompQ ([x][vx] form^unrl-c (Dcomp' x vx))
+	<- lstep-pres-norm Dstep Dcomp DcompQ Dcomp'.
 - : lstep-pres-norm (ls-app-s1 Dstep) (form^app-c Dcomp1 Dcomp2) DcompQ ([x][vx] form^app-c (Dcomp1' x vx) Dcomp2)
 	<- lstep-pres-norm Dstep Dcomp1 DcompQ Dcomp1'.
 - : lstep-pres-norm (ls-app-s2 Dstep) (form^app-c Dcomp1 Dcomp2) DcompQ ([x][vx] form^app-c Dcomp1 (Dcomp2' x vx))
@@ -144,6 +159,10 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 	<- mstep-pres-norm Dstep Dcomp Dcomp'.
 - : mstep-pres-norm (ms-case-s1 Dstep) (form^case-cG DcompE DcompM DcompN) (form^case-cG DcompE' DcompM DcompN) 
 	<- mstep-pres-norm Dstep DcompE DcompE'.
+- : mstep-pres-norm (ms-roll-s Dstep) (form^roll-c Dcomp) (form^roll-c Dcomp')
+	<- mstep-pres-norm Dstep Dcomp Dcomp'.
+- : mstep-pres-norm (ms-unrl-s Dstep) (form^unrl-c Dcomp) (form^unrl-c Dcomp')
+	<- mstep-pres-norm Dstep Dcomp Dcomp'.
 - : mstep-pres-norm (ms-app-s1 Dstep) (form^app-c Dcomp1 Dcomp2) (form^app-c Dcomp1' Dcomp2)
 	<- mstep-pres-norm Dstep Dcomp1 Dcomp1'.
 - : mstep-pres-norm (ms-app-s2 Dstep) (form^app-c Dcomp1 Dcomp2) (form^app-c Dcomp1 Dcomp2')
@@ -180,6 +199,8 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 - : mstep-pres-norm ms-pi2-d (form^pi2-c (form^exv Dval)) (form^exv (form^pi2-n2 Dval)).
 - : mstep-pres-norm (ms-inj1-d _) (form^inj1-c (form^exv Dval) W) (form^exv (form^inj1-n Dval W)).
 - : mstep-pres-norm (ms-inj2-d _) (form^inj2-c (form^exv Dval) W) (form^exv (form^inj2-n Dval W)).
+- : mstep-pres-norm ms-roll-d (form^roll-c (form^exv Dval)) (form^exv (form^roll-n Dval)).
+- : mstep-pres-norm ms-unrl-d (form^unrl-c (form^exv Dval)) (form^exv (form^unrl-n2 Dval)).
 - : mstep-pres-norm ms-case-d (form^case-c2 (form^exv DvalE) ([x][ofx] form^exv (DvalM x ofx)) ([x][ofx] form^exv (DvalN x ofx))) (form^exv (form^case-n2 DvalE DvalM DvalN)).
 - : mstep-pres-norm ms-lam-d (form^lam2c ([x][vx] form^exv (Dval x vx))) (form^exv (form^lam2n Dval)).
 - : mstep-pres-norm ms-app-d (form^app-c (form^exv Dval1) (form^exv Dval2)) (form^exv (form^app-n2 Dval1 Dval2)).
@@ -190,6 +211,7 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 %% NORMAL STEP PRESERVATION (REDUCTION RULES)
 - : mstep-pres-norm (ms-pi1-r _) (form^pi1-c (form^exv (form^tup-n Dof _))) (form^exv Dof).
 - : mstep-pres-norm (ms-pi2-r _) (form^pi2-c (form^exv (form^tup-n _ Dof))) (form^exv Dof).
+- : mstep-pres-norm (ms-unrl-r _) (form^unrl-c (form^exv (form^roll-n Dof))) (form^exv Dof).
 - : mstep-pres-norm (ms-app-r _) (form^app-c (form^exv (form^lam1 DofM _)) (form^exv DofE)) (DofM E DofE).
 - : mstep-pres-norm ms-case-r1 (form^case-cG (form^exv (form^inj1-n DofE _)) DofM DofN) (DofM E DofE).
 - : mstep-pres-norm ms-case-r2 (form^case-cG (form^exv (form^inj2-n DofE _)) DofM DofN) (DofN E DofE).

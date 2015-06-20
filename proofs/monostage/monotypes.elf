@@ -11,7 +11,10 @@ ty-wf-sum	: ty-wf (sum A B)
 ty-wf-arr	: ty-wf (arr A B)
 				<- ty-wf B
 				<- ty-wf A.
-%worlds () (ty-wf _).
+ty-wf-rec	: ty-wf (rec F)
+				<- {a} ty-wf a -> ty-wf (F a).
+%block ty-wf-block : block {a : ty} {_ : ty-wf a}.
+%worlds (ty-wf-block) (ty-wf _).
 
 %% TYPING JUDGMENT
 of : term L -> ty -> type. %name of Dof.
@@ -120,12 +123,16 @@ form-inj1 : form (inj1 E) N
 			<- form E N.
 form-inj2 : form (inj2 E) N 
 			<- form E N.
+form-roll : form (roll E) N 
+			<- form E N.
 
 form-exv  : form (exv E) comp
 			<- form E norm.
 form-pi1  : form (pi1 E) comp
 			<- form E comp.
 form-pi2  : form (pi2 E) comp
+			<- form E comp.
+form-unrl  : form (unrl E) comp
 			<- form E comp.
 form-case : form (case E M N) comp
 			<- ({x} form x norm -> form (N x) comp)

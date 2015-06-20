@@ -14,6 +14,8 @@ splgv-inj1 : splitGv (inj1 E) (inj1 E')
 			<- splitGv E E'.
 splgv-inj2 : splitGv (inj2 E) (inj2 E')
 			<- splitGv E E'.
+splgv-roll : splitGv (roll E) (roll E')
+			<- splitGv E E'.
 splgv-lam  : splitGv (lam M) (lam M')
 			<- {x}{x1} splitGv x x1 -> splitG (M x) (M' x1).
 
@@ -24,6 +26,10 @@ splg-pi2 : splitG (pi2 E) (pi2 E')
 splg-inj1 : splitG (inj1 E) (inj1 E')
 			<- splitG E E'.
 splg-inj2 : splitG (inj2 E) (inj2 E')
+			<- splitG E E'.
+splg-roll : splitG (roll E) (roll E')
+			<- splitG E E'.
+splg-unrl : splitG (unrl E) (unrl E')
 			<- splitG E E'.
 splg-case : splitG (case E M N) (case E' M' N')
 			<- ({x}{x1} splitGv x x1 -> splitG (N x) (N' x1))
@@ -60,6 +66,10 @@ splr-inj1 : splitres (inj1 E) (inj1 E')
 			<- splitres E E'.
 splr-inj2 : splitres (inj2 E) (inj2 E')
 			<- splitres E E'.
+splr-roll : splitres (roll E) (roll E')
+			<- splitres E E'.
+splr-unrl : splitres (unrl E) (unrl E')
+			<- splitres E E'.
 splr-case : splitres (case E M N) (case E' M' N')
 			<- ({x}{x2} splitvar2 x x2 -> splitres (N x) (N' x2))
 			<- ({x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2))
@@ -90,6 +100,8 @@ splv-next	: splitval (next E) ztup E'
 splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E2 I2 Q2
 			<- splitval E1 I1 Q1.
+splv-roll 	: splitval (roll E) (roll I) Q
+			<- splitval E I Q.
 splv-lam	: splitval (lam M) (lam C) (lam ([xl] lett (exv xl) R))
 			<- {x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (C x1) ([l] R x2 l). 
 
@@ -104,6 +116,10 @@ spl1-tup	: split1 (tup E1 E2)
 spl1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 (exv y)) (exv z))) ([l] pi1 (R l))
 			<- split1 E C R.
 spl1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 (exv y)) (exv z))) ([l] pi2 (R l))
+			<- split1 E C R.
+spl1-roll	: split1 (roll E) (lett C ([y] [z] exv (tup (roll y) z))) R
+			<- split1 E C R.
+spl1-unrl	: split1 (unrl E) (lett C ([y] [z] tup (unrl (exv y)) (exv z))) R
 			<- split1 E C R.
 spl1-app	: split1 (app E1 E2) 
 					(lett C1 ([y1] [z1] 
@@ -150,6 +166,10 @@ spl2-pi2	: split2 (pi2 E) P ([l] pi2 (R l))
 spl2-inj1	: split2 (inj1 E) P ([l] inj1 (R l))
 			<- split2 E P R.
 spl2-inj2	: split2 (inj2 E) P ([l] inj2 (R l))
+			<- split2 E P R.
+spl2-roll	: split2 (roll E) P ([l] roll (R l))
+			<- split2 E P R.
+spl2-unrl	: split2 (unrl E) P ([l] unrl (R l))
 			<- split2 E P R.
 spl2-case	: split2 (case E M N) (tup P1 (tup P2 P3)) ([l] lett (exv l) ([l1][l23] lett (exv l23) ([l2][l3] case (R1 l1) ([x] R2 x l2) ([x] R3 x l3))))
 			<- ({x}{x2} splitvar2 x x2 -> split2 (N x) P3 ([l] R3 x2 l))

@@ -37,6 +37,8 @@ splG-npres/branch : ({x}{x1} splitGv x x1 -> splitG (E x) (I x1)) -> ({x1} form 
 	<- splGv-npres Dsplv Dval.
 - : splGv-npres (splgv-inj2 Dsplv) (form-inj2 Dval)
 	<- splGv-npres Dsplv Dval.
+- : splGv-npres (splgv-roll Dsplv) (form-roll Dval)
+	<- splGv-npres Dsplv Dval.
 - : splGv-npres (splgv-lam Dsplg) (form-lam Dcomp)
 	<- splG-npres/branch Dsplg Dcomp.
 
@@ -49,6 +51,10 @@ splG-npres/branch : ({x}{x1} splitGv x x1 -> splitG (E x) (I x1)) -> ({x1} form 
 - : splG-npres (splg-inj1 Dspl) (form-inj1 Dcomp)
 	<- splG-npres Dspl Dcomp.
 - : splG-npres (splg-inj2 Dspl) (form-inj2 Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-roll Dspl) (form-roll Dcomp)
+	<- splG-npres Dspl Dcomp.
+- : splG-npres (splg-unrl Dspl) (form-unrl Dcomp)
 	<- splG-npres Dspl Dcomp.
 - : splG-npres (splg-case DsplE DsplM DsplN) (form-case DcompE DcompM DcompN)
 	<- splG-npres DsplE DcompE
@@ -96,6 +102,10 @@ splr-npres/branch : ({x}{x2} splitvar2 x x2 -> splitres (E x) (Q x2)) -> ({x2} f
 	<- splr-npres DsplgE DcompE
 	<- splr-npres/branch DsplgM DcompM
 	<- splr-npres/branch DsplgN DcompN.
+- : splr-npres (splr-roll Dspl) (form-roll Dcomp)
+	<- splr-npres Dspl Dcomp.
+- : splr-npres (splr-unrl Dspl) (form-unrl Dcomp)
+	<- splr-npres Dspl Dcomp.
 - : splr-npres (splr-lam Dsplg) (form-exv (form-lam Dcomp))
 	<- splr-npres/branch Dsplg Dcomp.
 - : splr-npres (splr-app Dspl1 Dspl2) (form-app Dcomp1 Dcomp2)
@@ -140,6 +150,8 @@ spl1-npres/branchG :
 - : splv-npres (splv-tup Dspl1 Dspl2) (form-tup Dval1 Dval2) (form-tup Dcomp1 Dcomp2)
 	<- splv-npres Dspl1 Dval1 Dcomp1
 	<- splv-npres Dspl2 Dval2 Dcomp2.
+- : splv-npres (splv-roll Dspl) (form-roll Dval) Dcomp
+	<- splv-npres Dspl Dval Dcomp.
 - : splv-npres (splv-lam Dspl) 
 	(form-lam (DcompC ztup ztup form-ztup))
 	(form-lam ([xl][vxl] form-lett (form-exv vxl) (DcompR ztup ztup form-ztup)))
@@ -161,6 +173,14 @@ spl1-npres/branchG :
 - : spl1-npres (spl1-pi2 Dspl) 
 		(form-lett Dcomp1 ([_][y1][_][z1] (form-tup (form-pi2 (form-exv y1)) (form-exv z1))))
 		([l][vl] form-pi2 (Dcomp2 l vl))
+	<- spl1-npres Dspl Dcomp1 Dcomp2.
+- : spl1-npres (spl1-roll Dspl) 
+		(form-lett Dcomp1 ([_][y1][_][z1] form-exv (form-tup (form-roll y1) z1)))
+		Dcomp2
+	<- spl1-npres Dspl Dcomp1 Dcomp2.
+- : spl1-npres (spl1-unrl Dspl) 
+		(form-lett Dcomp1 ([_][y1][_][z1] form-tup (form-unrl (form-exv y1)) (form-exv z1)))
+		Dcomp2
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
 - : spl1-npres (spl1-app DsplA DsplB) 
 		(form-lett DcompA1 ([_][y1][_][z1] 
@@ -207,6 +227,10 @@ spl1-npres/branchG :
 - : spl2-npres (spl2-inj1 Dspl) Dcomp1 ([l][vl] form-inj1 (Dcomp2 l vl))
 	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-inj2 Dspl) Dcomp1 ([l][vl] form-inj2 (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
+- : spl2-npres (spl2-roll Dspl) Dcomp1 ([l][vl] form-roll (Dcomp2 l vl))
+	<- spl2-npres Dspl Dcomp1 Dcomp2.
+- : spl2-npres (spl2-unrl Dspl) Dcomp1 ([l][vl] form-unrl (Dcomp2 l vl))
 	<- spl2-npres Dspl Dcomp1 Dcomp2.
 - : spl2-npres (spl2-case DsplE DsplM DsplN) 
 		(form-tup DcompE1 (form-tup DcompM1 DcompN1))
