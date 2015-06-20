@@ -11,6 +11,8 @@ reqv-pi1 : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
 reqv-pi2 : reqv (pi2 (exv (tup Q1 Q2))) (exv Q2).
 reqv-lett : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
 reqv-let : reqv (let (exv Q) M) (M Q).
+reqv-case-r1 : reqv (case (exv (inj1 Q)) M N) (M Q).
+reqv-case-r2 : reqv (case (exv (inj2 Q)) M N) (N Q).
 reqv-app : reqv (app (exv (lam M)) (exv V)) (M V).
 
 reqv-tup-d : reqv (tup (exv Q1) (exv Q2)) (exv (tup Q1 Q2)).

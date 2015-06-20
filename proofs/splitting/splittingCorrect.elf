@@ -335,6 +335,42 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
 
+- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj1 _ DofV _))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj1-n DvalE _))) DcompM DcompN)
+	(Dspl : split1 _ _ R2') Dred
+	ms-caseg-r1
+	(spl1-caseg (spl1-exv (splv-grnd (splgv-inj1 DsplV))) DsplM DsplN)
+	(mred-lett (mred-case (mred/case-inj1 (mred-lett mred-exv Dred')) mred-exv) mred-exv)
+	(conv-tup conv-ztup (conv-inj1 Dconv)) Dconv
+	Deqv
+	<- splgv-total DofV DvalE DsplV
+	<- spl1-total/branchG DofM DcompM (DsplM : {x}{x1} splitGv x x1 -> split1 (M x) (C2 x1) R2)
+	<- spl1-total/branchG DofN DcompN DsplN
+	<- split-eval-resp Dspl (DsplM V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R2' x) (R2 x))
+	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
+	<- lang-convert_12-total _ Dconv
+	<- reqv-resp ( reqv-lett ;; (reqv-case-s reqv-let ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r1 : reqv 
+			(lett (exv (tup ztup (inj1 B2))) ([l1] [l23] case (let (exv ztup) ([_] exv l23)) R2 R3))
+			(R2 B2)) 
+		eq-term_ (DeqR' B2) Deqv.
+
+- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj2 _ DofV _))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj2-n DvalE _))) DcompM DcompN)
+	(Dspl : split1 _ _ R3') Dred
+	ms-caseg-r2
+	(spl1-caseg (spl1-exv (splv-grnd (splgv-inj2 DsplV))) DsplM DsplN)
+	(mred-lett (mred-case (mred/case-inj2 (mred-lett mred-exv Dred')) mred-exv) mred-exv)
+	(conv-tup conv-ztup (conv-inj2 Dconv)) Dconv
+	Deqv
+	<- splgv-total DofV DvalE DsplV
+	<- spl1-total/branchG DofM DcompM DsplM
+	<- spl1-total/branchG DofN DcompN (DsplN : {x}{x1} splitGv x x1 -> split1 (N x) (C3 x1) R3)
+	<- split-eval-resp Dspl (DsplN V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R3' x) (R3 x))
+	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
+	<- lang-convert_12-total _ Dconv
+	<- reqv-resp (reqv-lett ;; (reqv-case-s reqv-let ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r2 : reqv 
+			(lett (exv (tup ztup (inj2 B3))) ([l1] [l23] case (let (exv ztup) ([_] exv l23)) R2 R3))
+			(R3 B3)) 
+		eq-term_ (DeqR' B3) Deqv.
+
 %% STAGE ONE DONENESS MARKING
 
 - : sc1 (of^-tup (of^-exv Dof1) (of^-exv Dof2)) (form^tup-c (form^exv Dcomp1) (form^exv Dcomp2))
