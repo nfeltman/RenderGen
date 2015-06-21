@@ -29,11 +29,6 @@ cc-app2 : compc ([x] app (exv E) x).
 cc-let : compc ([x] let x M).
 %freeze compc.
 
-%% UNDER BINDER COMPATABILITY CONTEXT
-binder-compc : ((term L -> term L) -> term L) -> type.
-bcc-lam : binder-compc lam.
-bcc-let : binder-compc (let E).
-
 %% MSTEPS
 mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 
@@ -46,7 +41,7 @@ ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)) <- ground-wor W.
 ms-roll-d 	: mstep W (roll (exv E)) (exv (roll E)).
 ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
 ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).
-ms-lam-d 	: mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
+ms-lam-d 	: mstep wor2 (lam ([f][x] exv (M f x))) (exv (lam M)).
 %{ms-fix-d 	: mstep wor2 (fix ([f][x] exv (M f x))) (exv (fix M)).}%
 ms-app-d 	: mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
 ms-let-d 	: mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
@@ -84,7 +79,7 @@ ms-let-s1	: mstep W (let E M) (let E' M)
 ms-lett-s1	: mstep W (lett E M) (lett E' M)
 			<- mstep W E E'.
 ms-lam-s	: mstep wor2 (lam M) (lam M')
-			<- {x} mstep wor2 (M x) (M' x).
+			<- {f}{x} mstep wor2 (M f x) (M' f x).
 ms-let-s2	: mstep wor2 (let (exv E) M) (let (exv E) M')
 			<- {x} mstep wor2 (M x) (M' x).
 
@@ -102,7 +97,7 @@ ms-pi2-r	: mstep W (pi2 (exv (tup E1 E2))) (exv E2)
 				<- first-stage-wor W.
 ms-unrl-r	: mstep W (unrl (exv (roll E))) (exv E)
 				<- first-stage-wor W.
-ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M E)
+ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M (lam M) E)
 				<- first-stage-wor W.
 %{ms-fix-r	: mstep W (fix M) (exv (lam ([x] let (fix M) ([f] M f x))))
 				<- first-stage-wor W.}%

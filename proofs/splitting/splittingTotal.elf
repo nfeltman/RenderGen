@@ -16,16 +16,14 @@ strengthen-splitGv :
 
 
 strengthen-split1 : 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P x x1 x2) (Q x x1 x2)) -> 
-	({x : term lang0}{x1 : term lang1}{x2 : term lang2} splitval x x1 x2 -> split1 (E x) (P' x1) (Q' x2)) -> type.
+	({f}{f1}{f2} splitval f f1 f2 -> {x}{x1}{x2} splitval x x1 x2 -> split1 (E f x) (P f f1 f2 x x1 x2) (Q f f1 f2 x x1 x2)) -> 
+	({f}{f1}{f2} splitval f f1 f2 -> {x}{x1}{x2} splitval x x1 x2 -> split1 (E f x) (P' f1 x1) (Q' f2 x2)) -> type.
 %mode strengthen-split1 +Dspl -Dspl'.
-- : strengthen-split1 ([x][x1][x2][s] Dspl x x1 x2 s : split1 (E x) (P x x1 x2) (Q x x1 x2)) Dspl''
-	<- ({x1}{x2} lang-indep neq-lang_01 ([x] P x x1 x2) ([x] DeqP x x1 x2))
-	<- ({l}{x1}{x2} lang-indep neq-lang_02 ([x] Q x x1 x2 l) ([x] DeqQ x x1 x2 l))
-	<- ({x}{x1}{x2}{s} split1-resp (Dspl x x1 x2 s) eq-term_ (DeqP x x1 x2) (DeqQ x x1 x2) (Dspl' x x1 x2 s : split1 (E x) (P' x1 x2) (Q' x1 x2)))
-	<- ({x1} lang-indep neq-lang_21 ([x2] P' x1 x2) ([x2] DeqP' x1 x2))
-	<- ({l}{x2} lang-indep neq-lang_12 ([x1] Q' x1 x2 l) ([x1] DeqQ' x1 x2 l))
-	<- ({x}{x1}{x2}{s} split1-resp (Dspl' x x1 x2 s) eq-term_ (DeqP' x1 x2) ([l] DeqQ' x1 x2 l) (Dspl'' x x1 x2 s)).
+- : strengthen-split1 Dspl Dspl'
+	<- ({f1}{x1} lang-indep4 neq-lang_01 neq-lang_21 neq-lang_01 neq-lang_21 ([f][f2][x][x2] P f f1 f2 x x1 x2) ([f][f2][x][x2] DeqP f f1 f2 x x1 x2))
+	<- ({l}{f2}{x2} lang-indep4 neq-lang_02 neq-lang_12 neq-lang_02 neq-lang_12 ([f][f1][x][x1] Q f f1 f2 x x1 x2 l) ([f][f1][x][x1] DeqQ f f1 f2 x x1 x2 l))
+	<- ({f}{f1}{f2}{sf}{x}{x1}{x2}{sx} 
+		split1-resp (Dspl f f1 f2 sf x x1 x2 sx) eq-term_ (DeqP f f1 f2 x x1 x2) (DeqQ f f1 f2 x x1 x2) (Dspl' f f1 f2 sf x x1 x2 sx)).
 %worlds (strengthening-block) (strengthen-split1 _ _).
 %total (D) (strengthen-split1 D _).
 
@@ -93,8 +91,12 @@ splr-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 	<- splr-total DofE DresE DsplrE
 	<- splr-total/branch DofM DresM DsplrM
 	<- splr-total/branch DofN DresN DsplrN.
-- : splr-total (of^-lam _ Dof) (form^lam2n Dres) (splr-lam Dsplr)
-	<- splr-total/branch Dof Dres Dsplr.
+- : splr-total (of^-lam _ Dof) (form^lam2n Dres) (splr-lam Dsplr')
+	<- ({f} {f2} {off} {vf} {splf : splitvar2 f f2} splvar2-total off vf splf ->
+		{x} {x2} {ofx} {vx} {splx : splitvar2 x x2} splvar2-total ofx vx splx ->
+		splr-total (Dof f off x ofx) (Dres f vf x vx) (Dsplr f f2 splf x x2 splx : splitres (E f x) (Q f f2 x x2)))
+	<- ({f2}{x2} lang-indep2 neq-lang_02 neq-lang_02 ([f][x] Q f f2 x x2) ([f][x] Deq f f2 x x2))
+	<- ({f}{f2}{sf}{x}{x2}{sx} splitres-resp (Dsplr f f2 sf x x2 sx) eq-term_ (Deq f f2 x x2) (Dsplr' f f2 sf x x2 sx)).
 - : splr-total (of^-app Dof1 Dof2) (form^app-n2 Dres1 Dres2) (splr-app Dsplr1 Dsplr2)
 	<- splr-total Dof1 Dres1 Dsplr1
 	<- splr-total Dof2 Dres2 Dsplr2.
@@ -112,10 +114,23 @@ splg-total/branch :
 	({x} form^ x norm1 worG -> form^ (E x) comp1 worG) -> 
 	({x} {x1} splitGv x x1 -> splitG (E x) (G x1)) -> type.
 %mode splg-total/branch +Dof +Dcomp -Dspl.
+splg-total/branch2 : 
+	({f} of^ f (arr B A) worG -> {x} of^ x B worG -> of^ (E f x) A worG) -> 
+	({f} form^ f norm1 worG -> {x} form^ x norm1 worG -> form^ (E f x) comp1 worG) -> 
+	({f} {f1} splitGv f f1 -> {x} {x1} splitGv x x1 -> splitG (E f x) (G f1 x1)) -> type.
+%mode splg-total/branch2 +Dof +Dcomp -Dspl.
+
 - : splg-total/branch Dof Dcomp Dsplg'
 	<- ({x}{x1} {dof} {vx} {dspl : splitGv x x1} splgv-total dof vx dspl ->
 		splg-total (Dof x dof) (Dcomp x vx) (Dsplg x x1 dspl))
 	<- ({x1} strengthen-splitGv ([x][dspl] Dsplg x x1 dspl) ([x][dspl] Dsplg' x x1 dspl)).
+
+- : splg-total/branch2 Dof Dcomp Dsplg'
+	<- ({f} {f2} {off} {vf} {splf} splgv-total off vf splf ->
+		{x} {x2} {ofx} {vx} {splx} splgv-total ofx vx splx ->
+		splg-total (Dof f off x ofx) (Dcomp f vf x vx) (Dsplg f f2 splf x x2 splx : splitG (E f x) (Q f f2 x x2)))
+	<- ({f2}{x2} lang-indep2 neq-lang_01 neq-lang_01 ([f][x] Q f f2 x x2) ([f][x] Deq f f2 x x2))
+	<- ({f}{f2}{sf}{x}{x2}{sx} splitG-resp (Dsplg f f2 sf x x2 sx) eq-term_ (Deq f f2 x x2) (Dsplg' f f2 sf x x2 sx)).
 
 - : splgv-total of^-ztup _ splgv-ztup.
 - : splgv-total (of^-tup Dof1 Dof2) (form^tup-n Dval1 Dval2) (splgv-tup Dsplg1 Dsplg2)
@@ -128,7 +143,7 @@ splg-total/branch :
 - : splgv-total (of^-roll _ Dof) (form^roll-n Dcomp) (splgv-roll Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
 - : splgv-total (of^-lam _ Dof) (form^lam1 Dcomp _) (splgv-lam Dsplg)
-	<- splg-total/branch Dof Dcomp Dsplg.
+	<- splg-total/branch2 Dof Dcomp Dsplg.
 
 - : splg-total (of^-tup Dof1 Dof2) (form^tup-c Dcomp1 Dcomp2) (splg-tup Dsplg1 Dsplg2)
 	<- splg-total Dof1 Dcomp1 Dsplg1
@@ -154,8 +169,8 @@ splg-total/branch :
 	<- splg-total Dof2 Dcomp2 Dsplg2.
 - : splg-total (of^-exv Dof) (form^exv Dcomp) (splg-exv Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
-%worlds (total-block) (splg-total _ _ _) (splgv-total _ _ _) (splg-total/branch _ _ _).
-%total (Dsplg Dsplgv D3) (splg-total Dsplg _ _) (splgv-total Dsplgv _ _) (splg-total/branch D3 _ _).
+%worlds (total-block) (splg-total _ _ _) (splgv-total _ _ _) (splg-total/branch _ _ _) (splg-total/branch2 _ _ _).
+%total (Dsplg Dsplgv D3 D4) (splg-total Dsplg _ _) (splgv-total Dsplgv _ _) (splg-total/branch D3 _ _) (splg-total/branch2 D4 _ _).
 
 
 
@@ -180,9 +195,10 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 - : splv-total (of^-tup Dof1 Dof2) (form^tup-n Dcomp1 Dcomp2) (splv-tup Dspl1 Dspl2)
 	<- splv-total Dof1 Dcomp1 Dspl1
 	<- splv-total Dof2 Dcomp2 Dspl2.
-- : splv-total (of^-lam Dwf Dof) (form^lam1 Dcomp _) (splv-lam Dspl')
-	<- ({x}{x1}{x2} {ofx} {vx} {dspl} splv-total ofx vx dspl ->
-		spl1-total (Dof x ofx) (Dcomp x vx) (Dspl x x1 x2 dspl))
+- : splv-total (of^-lam Dwf Dof) (form^lam1 Dcomp W) (splv-lam Dspl')
+	<- ({f}{f1}{f2} {off} {vf} {splf} splv-total off vf splf ->
+		{x}{x1}{x2} {ofx} {vx} {splx} splv-total ofx vx splx ->
+		spl1-total (Dof f off x ofx) (Dcomp f vf x vx) (Dspl f f1 f2 splf x x1 x2 splx))
 	<- strengthen-split1 Dspl Dspl'.
 - : splv-total (of^-grnd Dof) (form^grnd Dcomp) (splv-grnd Dsplr)
 	<- splgv-total Dof Dcomp Dsplr.
@@ -251,8 +267,13 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- spl2-total Dof Dcomp Dspl.
 - : spl2-total (of^-unrl Dof) (form^unrl-c Dcomp) (spl2-unrl Dspl)
 	<- spl2-total Dof Dcomp Dspl.
-- : spl2-total (of^-lam _ Dof) (form^lam2c Dcomp) (spl2-lam Dspl)
-	<- spl2-total/branch Dof Dcomp Dspl.
+- : spl2-total (of^-lam _ Dof) (form^lam2c Dcomp) (spl2-lam Dsplr')
+	<- ({f}{f2}{off}{vf}{splf} splvar2-total off vf splf ->
+		{x}{x2}{ofx}{vx}{splx} splvar2-total ofx vx splx ->
+		spl2-total (Dof f off x ofx) (Dcomp f vf x vx) (Dsplr f f2 splf x x2 splx : split2 (E f x) (P f f2 x x2) (Q f f2 x x2)))
+	<- lang-indep4 neq-lang_01 neq-lang_21 neq-lang_01 neq-lang_21 P DeqP
+	<- ({l}{f2}{x2} lang-indep2 neq-lang_02 neq-lang_02 ([f][x] Q f f2 x x2 l) ([f][x] DeqQ f f2 x x2 l))
+	<- ({f}{f2}{sf}{x}{x2}{sx} split2-resp (Dsplr f f2 sf x x2 sx) eq-term_ (DeqP f f2 x x2) (DeqQ f f2 x x2) (Dsplr' f f2 sf x x2 sx)).
 - : spl2-total (of^-app Dof1 Dof2) (form^app-c Dcomp1 Dcomp2) (spl2-app Dspl1 Dspl2)
 	<- spl2-total Dof1 Dcomp1 Dspl1
 	<- spl2-total Dof2 Dcomp2 Dspl2.

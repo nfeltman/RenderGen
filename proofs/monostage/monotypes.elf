@@ -36,9 +36,9 @@ of-case : of (case E M N) C
 			<- ({x} of x B -> of (N x) C)
 			<- ({x} of x A -> of (M x) C)
 			<- of E (sum A B).
-of-lam 	: of (lam ([x] M x)) (arr A B)
-			<- ({x} of x A -> of (M x) B)
-			<- ty-wf A.
+of-lam 	: of (lam M) (arr A B)
+			<- ({f} of f (arr A B) -> {x} of x A -> of (M f x) B)
+			<- ty-wf (arr A B).
 of-app  : of (app E1 E2) B
 			<- of E2 A
 			<- of E1 (arr A B).
@@ -91,8 +91,8 @@ of-strengthen/of : ({x} of x A -> of E B) -> of E B -> type.
 	<- {y} {ofy : of y B} 
 		of-strengthen/of ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
 - : of-strengthen/of ([x][ofx] of-lam Dwf (Dof x ofx)) (of-lam Dwf Dof')
-	<- {y} {ofy : of y A} 
-		of-strengthen/of ([x][ofx] Dof x ofx y ofy) (Dof' y ofy).
+	<- {f} {off}  {y} {ofy} 
+		of-strengthen/of ([x][ofx] Dof x ofx f off y ofy) (Dof' f off y ofy).
 - : of-strengthen/of ([x][ofx] of-app (Dof1 x ofx) (Dof2 x ofx)) (of-app Dof1' Dof2')
 	<- of-strengthen/of Dof1 Dof1'
 	<- of-strengthen/of Dof2 Dof2'.
@@ -114,7 +114,7 @@ of-strengthen/of : ({x} of x A -> of E B) -> of E B -> type.
 form : term L -> normality -> type. %name form Dform.
 form-ztup : form ztup norm.
 form-lam  : form (lam M) norm
-			<- {x} form x norm -> form (M x) comp.
+			<- {f} form f norm -> {x} form x norm -> form (M f x) comp.
 
 form-tup  : form (tup E1 E2) N
 			<- form E2 N

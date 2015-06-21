@@ -29,14 +29,14 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(mred-pi2 mred-exv)
 	<- splgv-total Dof1 Dval1 Dsplg1.
 - : scG (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (form^app-c (form^exv (form^lam1 DcompM _)) (form^exv DvalE))
-	(Dsplg3 : splitG (M E) I')
+	(Dsplg3 : splitG (M _ E) I')
 	(Dred3 : mred I' _)
-	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M E))
+	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M _ E))
 	(splg-app (splg-exv (splgv-lam DsplM)) (splg-exv DsplE)) 
 	(mred-app Dred3' mred-exv mred-exv)
 	<- splgv-total DofE DvalE (DsplE : splitGv E I)
-	<- splg-total/branch DofM DcompM (DsplM : {x}{x1} splitGv x x1 -> splitG (M x) (N x1))
-	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE : splitG (M E) (N I)) Dred3 Dred3'.
+	<- splg-total/branch2 DofM DcompM (DsplM : {f}{f1} splitGv f f1 -> {x}{x1} splitGv x x1 -> splitG (M f x) (N f1 x1))
+	<- splitG-eval-resp Dsplg3 (DsplM _ _ (splgv-lam DsplM) E I DsplE : splitG (M _ E) (N _ I)) Dred3 Dred3'.
 - : scG (of^-unrl (of^-exv (of^-roll _ Dof))) (form^unrl-c (form^exv (form^roll-n Dval)))
 	(splg-exv Dsplg) _
 	(ms-unrl-r _)
@@ -239,12 +239,12 @@ split-eval-eq : split1 E C _ -> mred C V -> split1 E C' _  -> mred C' V' -> eq-t
 %% LEMMAS FOR SPLITTING CORRECTNESS
 sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 -> 
 		form^ (app (exv (lam M)) (exv E)) comp1 wor1 ->
-		split1 (M E) C' R' -> 
+		split1 (M (lam M) E) C' R' -> 
 		mred C' (tup I B0) -> 
 		split1 (app (exv (lam M)) (exv E)) C R -> 
-		mred C (tup I (tup (tup ztup ztup) B0)) -> 
+		mred C (tup I (tup (tup ztup ztup) (roll B0))) -> 
 		lang-convert B0 lang2 B ->
-		reqv (R (tup (tup ztup ztup) B)) (R' B) ->
+		reqv (R (tup (tup ztup ztup) (roll B))) (R' B) ->
 		type.
 %mode sc1/app-r +Dof +Dcomp +Dspl' +Dred' -Dspl -Dred -Dconv -Dreqv.
 
@@ -254,7 +254,7 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 		(mred-lett 
 			(mred-lett 
 				mred-exv
-				(mred-app Dred'' mred-exv mred-exv)
+				(mred-app (mred-lett mred-exv Dred'') mred-exv mred-exv)
 				)
 			mred-exv
 			)
@@ -262,27 +262,31 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 		)
 	Dconv Deqv
 	<- spl1-total Dof Dcomp (spl1-app 
-		(spl1-exv (splv-lam ([x][x1][x2][s] DsplM x x1 x2 s : split1 (M x) (C x1) (R x2) )))
+		(spl1-exv (splv-lam ([f][f1][f2][sf][x][x1][x2][sx] DsplM f f1 f2 sf x x1 x2 sx : split1 (M f x) (C f1 x1) (R f2 x2) )))
 		(spl1-exv (DsplV : splitval V Vi Vq)))
-	<- split-eval-resp Dspl (DsplM V Vi Vq DsplV) Dred Dred'' ([l] Deq l : eq-term (R' l) (R Vq l))
+	<- split-eval-resp Dspl (DsplM (lam M) _ _ (splv-lam DsplM) V Vi Vq DsplV) Dred Dred'' ([l] Deq l : eq-term (R' l) (R _ Vq l))
 	<- lang-convert_12-total B0 (Dconv : lang-convert B0 lang2 B)
-	<- eq-term-sym (Deq B) (Deq' : eq-term (R Vq B) (R' B))
+	<- eq-term-sym (Deq B) (Deq' : eq-term (R _ Vq B) (R' B))
 	<- reqv-resp 
 		((	reqv-lett ;;
 			reqv-lett ;;
 			(reqv-app-s reqv-id reqv-tup-d) ;;
 			reqv-app ;;		
-			reqv-lett
+			reqv-lett ;;
+			(reqv-let-s reqv-unrl ([_] reqv-id)) ;;
+			reqv-let
 			)
 		: reqv 
-			(lett (exv (tup (tup ztup ztup) B)) ([l12] [l3] lett (exv l12) ([l1] [l2] app (exv (lam ([xl] lett (exv xl) R))) (tup (exv Vq) (exv l3)))))
-			(R Vq B))
-		eq-term_ Deq' Deqv.
+			(lett (exv (tup (tup ztup ztup) (roll B))) ([l12] [l3] 
+				lett (exv l12) ([l1] [l2] 
+					app 
+						(exv (lam ([f][xl] lett (exv xl) ([x][l] let (unrl (exv l)) ([ul] R f x ul))))) 
+						(tup (exv Vq) (exv l3)))))
+			(R _ Vq B))
+		eq-term_ Deq' Deqv
+.
 %worlds (correctness-block) (sc1/app-r _ _ _ _ _ _ _ _).
 %total (D) (sc1/app-r D _ _ _ _ _ _ _).
-
-
-
 
 %% SPLITTING CORRECTNESS
 sc1 : of^ E A wor1 -> form^ E comp1 wor1 -> 
@@ -328,9 +332,9 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 - : sc1 Dof Dcomp Dspl' Dred'
 	(Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) 
 	Dspl Dred 
-	(conv-tup conv-tupzz Dconv) Dconv
+	(conv-tup conv-tupzz (conv-roll Dconv)) Dconv
 	Deqv
-	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M E))
+	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M (lam M) E))
 	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
 	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
 
@@ -577,7 +581,7 @@ invert/exv--resp/tup :
 			(mred-lett 
 				(mred-lett 
 					(DredCore : mred (exv (tup I3 (tup (tup B1' B2) B3))) (tup I B)) 
-					(mred-app (Dred3 : mred (M V2) (tup I3 B3)) 
+					(mred-app (Dred3 : mred (M (lam M) V2) (tup I3 B3)) 
 						(Dred1 : mred (exv I1) (lam M)) 
 						(Dred2 : mred (exv I2) V2)))
 				(DredC2 : mred C2 (tup I2 B2)))
@@ -612,7 +616,7 @@ invert/exv--resp/tup :
 			(mred-lett 
 				(mred-lett 
 					(DredCore : mred (exv (tup I3 (tup (tup B1 B2') B3))) (tup I B)) 
-					(mred-app (Dred3 : mred (M V2) (tup I3 B3)) 
+					(mred-app (Dred3 : mred (M (lam M) V2) (tup I3 B3)) 
 						(Dred1 : mred (exv I1) (lam M)) 
 						(Dred2 : mred (exv I2) V2)))
 				DredC2')
@@ -769,7 +773,7 @@ sc1/case-s :
 		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-lett ;; reqv-lett).
 - : sc2 _ _ (spl2-exv (splr-lam Dsplr)) mred-exv
 		ms-lam-d
-		(spl2-lam ([x][x2][splx] spl2-exv (Dsplr x x2 splx))) mred-exv conv-ztup conv-ztup reqv-id.
+		(spl2-lam ([f][f2][splf][x][x2][splx] spl2-exv (Dsplr f f2 splf x x2 splx))) mred-exv conv-ztup conv-ztup reqv-id.
 - : sc2 _ _ (spl2-exv (splr-app Dsplr1 Dsplr2)) mred-exv
 		ms-app-d
 		(spl2-app (spl2-exv Dsplr1) (spl2-exv Dsplr2)) (mred-tup mred-exv mred-exv) 
@@ -809,15 +813,56 @@ sc2/branch :
 	<- ({x}{x2}{s} split2-resp (Dspl_1 x x2 s) eq-term_ (DeqP x x2) (DeqR x x2) (Dspl x x2 s : split2 (M x) P (R x2)))
 	<- lang-indep2 neq-lang_01 neq-lang_21 B_2 ([x][x2] DeqB x x2 : eq-term (B_2 x x2) B)
 	<- ({x}{x2} mred-resp (Dred_1 x x2) (DeqP x x2) (DeqB x x2) (Dred x x2))
-	<- conv-strengthen2_12 Dconv'_2 ([x][x2] DeqBB' x x2 : eq-term (BB'_2 x x2) BB')
+	<- conv-2strengthen_12 Dconv'_2 ([x][x2] DeqBB' x x2 : eq-term (BB'_2 x x2) BB')
 	<- ({x}{x2} conv-resp (Dconv'_2 x x2) eq-term_ (DeqBB' x x2) (Dconv' x x2 : lang-convert B' lang2 BB'))
 	<- ({x}{x2} conv-resp (Dconv_22 x x2) (DeqB x x2) eq-term_ (Dconv_2 x x2 : lang-convert B lang2 (BB_2 x x2)))
-	<- conv-strengthen2_12 Dconv_2 ([x][x2] DeqBB x x2 : eq-term (BB_2 x x2) BB)
+	<- conv-2strengthen_12 Dconv_2 ([x][x2] DeqBB x x2 : eq-term (BB_2 x x2) BB)
 	<- ({x}{x2} conv-resp (Dconv_2 x x2) eq-term_ (DeqBB x x2) (Dconv x x2 : lang-convert B lang2 BB))
 	<- ({x}{x2} eq-cong-hole (DeqR x x2) (DeqBB x x2) (DeqRB x x2 : eq-term (R_1 x x2 (BB_2 x x2)) (R x2 BB)))
 	<- ({x}{x2} eq-cong (R' x2) (DeqBB' x x2) (DeqRB' x x2 : eq-term (R' x2 (BB'_2 x x2)) (R' x2 BB')))
 	<- ({x}{x2} reqv-resp (Deqv_1 x x2) (DeqRB x x2) (DeqRB' x x2) (Deqv x x2))
 .
+
+sc2/branch2 : 
+	({f} of^ f (arr T1 T2) wor2 -> {x} of^ x T1 wor2 -> of^ (M f x) T2 wor2) ->
+	({f} form^ f vars2 wor2 -> {x} form^ x vars2 wor2 -> form^ (M f x) comp1 wor2) ->
+	({f}{f2} splitvar2 f f2 -> {x}{x2} splitvar2 x x2 -> split2 (M' f x) P' (R' f2 x2)) -> 
+	mred P' B' -> 
+	({f}{x} mstep wor2 (M f x) (M' f x)) ->
+	({f}{f2} splitvar2 f f2 -> {x}{x2} splitvar2 x x2 -> split2 (M f x) P (R f2 x2)) -> 
+	mred P B -> 
+	lang-convert B  lang2 (BB  : term lang2) -> 
+	lang-convert B' lang2 (BB' : term lang2) -> 
+	({f2}{x2} reqv (R f2 x2 BB) (R' f2 x2 BB')) -> type.
+%mode sc2/branch2 +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv' -Deqv.
+- : sc2/branch2 Dof Dcomp 
+		(Dspl' : {f}{f2} splitvar2 f f2 -> {x}{x2} splitvar2 x x2 -> split2 (M' f x) P' (R' f2 x2)) 
+		(Dred' : mred P' B')
+		Dstep Dspl (Dred ztup ztup ztup ztup) (Dconv ztup ztup ztup ztup) (Dconv' ztup ztup ztup ztup) (Deqv ztup ztup)
+	<- ({f}{f2}{off}{vf}{splf} splvar2-total off vf splf ->
+		{x}{x2}{ofx}{vx}{splx} splvar2-total ofx vx splx ->
+		sc2 (Dof f off x ofx) (Dcomp f vf x vx) (Dspl' f f2 splf x x2 splx) Dred' (Dstep f x)
+			(Dspl_1 f f2 splf x x2 splx : split2 (M f x) (P_2 f f2 x x2) (R_1 f f2 x x2)) 
+			(Dred_1 f f2 x x2 : mred (P_2 f f2 x x2) (B_2 f f2 x x2))
+			(Dconv_22 f f2 x x2 : lang-convert (B_2 f f2 x x2) lang2 (BB_2 f f2 x x2)) 
+			(Dconv'_2 f f2 x x2 : lang-convert B' lang2 (BB'_2 f f2 x x2)) 
+			(Deqv_1 f f2 x x2 : reqv (R_1 f f2 x x2 (BB_2 f f2 x x2)) (R' f2 x2 (BB'_2 f f2 x x2)))
+		)
+	<- lang-indep4 neq-lang_01 neq-lang_21 neq-lang_01 neq-lang_21 P_2 DeqP
+	<- ({l}{f2}{x2} lang-indep2 neq-lang_02 neq-lang_02 ([f][x] R_1 f f2 x x2 l) ([f][x] DeqR f f2 x x2 l))
+	<- ({f}{f2}{sf}{x}{x2}{sx} split2-resp (Dspl_1 f f2 sf x x2 sx) eq-term_ (DeqP f f2 x x2) (DeqR f f2 x x2) (Dspl f f2 sf x x2 sx))
+	<- lang-indep4 neq-lang_01 neq-lang_21 neq-lang_01 neq-lang_21 B_2 DeqB
+	<- ({f}{f2}{x}{x2} mred-resp (Dred_1 f f2 x x2) (DeqP f f2 x x2) (DeqB f f2 x x2) (Dred f f2 x x2))
+	<- conv-2strengthen2_12 Dconv'_2 DeqBB'
+	<- ({f}{f2}{x}{x2} conv-resp (Dconv'_2 f f2 x x2) eq-term_ (DeqBB' f f2 x x2) (Dconv' f f2 x x2))
+	<- ({f}{f2}{x}{x2} conv-resp (Dconv_22 f f2 x x2) (DeqB f f2 x x2) eq-term_ (Dconv_2 f f2 x x2))
+	<- conv-2strengthen2_12 Dconv_2 DeqBB
+	<- ({f}{f2}{x}{x2} conv-resp (Dconv_2 f f2 x x2) eq-term_ (DeqBB f f2 x x2) (Dconv f f2 x x2))
+	<- ({f}{f2}{x}{x2} eq-cong-hole (DeqR f f2 x x2) (DeqBB f f2 x x2) (DeqRB f f2 x x2))
+	<- ({f}{f2}{x}{x2} eq-cong (R' f2 x2) (DeqBB' f f2 x x2) (DeqRB' f f2 x x2))
+	<- ({f}{f2}{x}{x2} reqv-resp (Deqv_1 f f2 x x2) (DeqRB f f2 x x2) (DeqRB' f f2 x x2) (Deqv f x f2 x2))
+.
+
 
 
 %% STAGE TWO SUBSTEPS
@@ -879,7 +924,7 @@ sc2/branch :
 		(ms-lam-s Dstep) 
 		(spl2-lam DsplM) Dred
 		Dconv Dconv' (reqv-exv-s (reqv-lam-s Deqv))
-	<- sc2/branch DofM Dcomp DsplM' Dred' Dstep DsplM Dred Dconv Dconv' Deqv.
+	<- sc2/branch2 DofM Dcomp DsplM' Dred' Dstep DsplM Dred Dconv Dconv' Deqv.
 - : sc2 (of^-app Dof _) (form^app-c Dcomp _) (spl2-app DsplA' DsplB) (mred-tup DredA' DredB) (ms-app-s1 Dstep) 
 		(spl2-app DsplA DsplB) (mred-tup DredA DredB) 
 		(conv-tup DconvA DconvB) (conv-tup DconvA' DconvB)
@@ -927,10 +972,12 @@ sc2/branch :
 	<- conv-resp conv-ztup DeqI eq-term_ (DconvI : lang-convert I lang2 ztup).
 
 %worlds (correctness-block) 
-	(sc1        _ _ _ _ _ _ _ _ _ _) 
-	(sc2/branch _ _ _ _ _ _ _ _ _ _) 
-	(sc2        _ _ _ _ _ _ _ _ _ _).
-%total (D1 D2 D3) 
-	(sc1        _ _ _ _ D1 _ _ _ _ _) 
-	(sc2        _ _ _ _ D2 _ _ _ _ _)
-	(sc2/branch _ _ _ _ D3 _ _ _ _ _) .
+	(sc1         _ _ _ _ _ _ _ _ _ _) 
+	(sc2/branch  _ _ _ _ _ _ _ _ _ _) 
+	(sc2/branch2 _ _ _ _ _ _ _ _ _ _) 
+	(sc2         _ _ _ _ _ _ _ _ _ _).
+%total (D1 D2 D3 D4) 
+	(sc1         _ _ _ _ D1 _ _ _ _ _) 
+	(sc2         _ _ _ _ D2 _ _ _ _ _)
+	(sc2/branch  _ _ _ _ D3 _ _ _ _ _) 
+	(sc2/branch2 _ _ _ _ D4 _ _ _ _ _) .

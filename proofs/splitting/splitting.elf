@@ -17,7 +17,8 @@ splgv-inj2 : splitGv (inj2 E) (inj2 E')
 splgv-roll : splitGv (roll E) (roll E')
 			<- splitGv E E'.
 splgv-lam  : splitGv (lam M) (lam M')
-			<- {x}{x1} splitGv x x1 -> splitG (M x) (M' x1).
+			<- {f}{f1} splitGv f f1 -> 
+			   {x}{x1} splitGv x x1 -> splitG (M f x) (M' f1 x1).
 
 splg-pi1 : splitG (pi1 E) (pi1 E')
 			<- splitG E E'.
@@ -75,7 +76,8 @@ splr-case : splitres (case E M N) (case E' M' N')
 			<- ({x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2))
 			<- splitres E E'.
 splr-lam : splitres (lam M) (exv (lam M'))
-			<- {x}{x2} splitvar2 x x2 -> splitres (M x) (M' x2).
+			<- {f}{f2} splitvar2 f f2 -> 
+			   {x}{x2} splitvar2 x x2 -> splitres (M f x) (M' f2 x2).
 splr-app : splitres (app E1 E2) (app E1' E2')
 			<- splitres E2 E2'
 			<- splitres E1 E1'.
@@ -102,8 +104,11 @@ splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E1 I1 Q1.
 splv-roll 	: splitval (roll E) (roll I) Q
 			<- splitval E I Q.
-splv-lam	: splitval (lam M) (lam C) (lam ([xl] lett (exv xl) R))
-			<- {x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (C x1) ([l] R x2 l). 
+splv-lam	: splitval (lam M) 
+				(lam ([f][x] lett (C f x) ([y][z] exv (tup y (roll z))))) 
+				(lam ([f][xl] lett (exv xl) ([x][l] let (unrl (exv l)) ([ul] R f x ul))))
+			<- {f}{f1}{f2} splitval f f1 f2 ->  
+			   {x}{x1}{x2} splitval x x1 x2 -> split1 (M f x) (C f1 x1) ([l] R f2 x2 l). 
 
 
 spl1-exv	: split1 (exv V) (exv (tup I ztup)) ([_] (exv Q))
@@ -175,8 +180,8 @@ spl2-case	: split2 (case E M N) (tup P1 (tup P2 P3)) ([l] lett (exv l) ([l1][l23
 			<- ({x}{x2} splitvar2 x x2 -> split2 (N x) P3 ([l] R3 x2 l))
 			<- ({x}{x2} splitvar2 x x2 -> split2 (M x) P2 ([l] R2 x2 l))
 			<- split2 E P1 R1.
-spl2-lam	: split2 (lam M) P ([l] exv (lam ([x] R x l)))
-			<- {x}{x2} splitvar2 x x2 -> split2 (M x) P ([l] R x2 l).
+spl2-lam	: split2 (lam M) P ([l] exv (lam ([f][x] R f x l)))
+			<- {f}{f2} splitvar2 f f2 -> {x}{x2} splitvar2 x x2 -> split2 (M f x) P ([l] R f2 x2 l).
 spl2-app	: split2 (app E1 E2) (tup P1 P2) ([l] lett (exv l) ([l1] [l2] app (R1 l1) (R2 l2)))
 			<- split2 E2 P2 R2
 			<- split2 E1 P1 R1.

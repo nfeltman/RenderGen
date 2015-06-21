@@ -32,8 +32,8 @@ mred-lam  : mred (lam M) (lam M).
 %{mred-fix  : mred (fix M) (lam ([x] let (fix M) ([f] M f x))).}%
 mred-app  : mred (app E1 E2) V
 			<- mred E2 V2
-			<- mred E1 (lam ([x] M x))
-			<- mred (M V2) V.
+			<- mred E1 (lam M)
+			<- mred (M (lam M) V2) V.
 mred-let  : mred (let E M) V2
 			<- mred E V1
 			<- mred (M V1) V2.
@@ -84,7 +84,7 @@ mred/case-pres :
 	<- mred-pres Dred (DofN V1 DofV1) (DcompN V1 DvalV1) DofV2 DvalV2.
 - : mred-pres 
 		(mred-app 
-			(DredM  : mred (M V2) V3) 
+			(DredM  : mred (M (lam M) V2) V3) 
 			(DredE1 : mred E1 (lam M)) 
 			(DredE2 : mred E2 V2)) 
 		(of-app 
@@ -93,9 +93,9 @@ mred/case-pres :
 		(form-app Dcomp1 Dcomp2)
 		DofV3
 		DvalV3 
-	<- mred-pres DredE1 DofE1 Dcomp1 (of-lam _ DofM : of (lam M) (arr A B)) (form-lam DformM)
+	<- mred-pres DredE1 DofE1 Dcomp1 (of-lam Dwf DofM : of (lam M) (arr A B)) (form-lam DformM)
 	<- mred-pres DredE2 DofE2 Dcomp2 (DofV2 : of V2 A) (DvalV2 : form V2 norm)
-	<- mred-pres DredM (DofM V2 DofV2) (DformM V2 DvalV2) DofV3 DvalV3.
+	<- mred-pres DredM (DofM (lam M) (of-lam Dwf DofM) V2 DofV2) (DformM (lam M) (form-lam DformM) V2 DvalV2) DofV3 DvalV3.
 - : mred-pres (mred-let DredM DredE) 
 		(of-let DofE (DofM : {x:term L} of x A -> of (M x) B)) 
 		(form-let DcompE DcompM)

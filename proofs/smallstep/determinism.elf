@@ -146,7 +146,7 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
 	<- eq-cong/case eq-term_ ([x] eq-term_) Deq Deq'.
 - : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
-	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- ({f}{x}	step/unique (Dstep1 f x) (Dstep2 f x) (Deq f x))
 	<- eq-cong/lam Deq Deq'.
 - : step/unique (ms-app-s1 Dstep1) (ms-app-s1 Dstep2) Deq'
 	<- step/unique Dstep1 Dstep2 Deq

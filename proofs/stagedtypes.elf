@@ -64,9 +64,9 @@ of^-case 	: of^ (case E M N) C W
 				<- ({x} of^ x B W -> of^ (N x) C W)
 				<- ({x} of^ x A W -> of^ (M x) C W)
 				<- of^ E (sum A B) W.	
-of^-lam 	: of^ (lam ([x] M x)) (arr A B) W
-				<- ({x} of^ x A W -> of^ (M x) B W) 
-				<- ty^wf A W.
+of^-lam 	: of^ (lam M) (arr A B) W
+				<- ({f} of^ f (arr A B) W -> {x} of^ x A W -> of^ (M f x) B W) 
+				<- ty^wf (arr A B) W.
 %{of^-fix 	: of^ (fix M) (arr A B) W
 				<- ({f} of^ f (arr A B) W -> of^ (M f) (arr A B) W)
 				<- ty^wf (arr A B) W.}%
@@ -132,8 +132,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof _.
 - : of^-wf (of^-unrl Dof) (DwfF (rec F) (ty^wf-rec DwfF))
 	<- of^-wf Dof (ty^wf-rec DwfF).
-- : of^-wf (of^-lam Dwf1 DofM) (ty^wf-arr Dwf1 Dwf2)
-	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
+- : of^-wf (of^-lam Dwf DofM) Dwf.
 %{- : of^-wf (of^-fix Dwf DofM) Dwf.}%
 - : of^-wf (of^-app Dof1 Dof2) Dwf
 	<- of^-wf Dof1 (ty^wf-arr _ Dwf). 
@@ -203,15 +202,15 @@ form^ : term L -> normality^ -> wor -> type. %name form^ Dform.
 form^ztup : form^ ztup norm1 W.
 form^lam1 : form^ (lam M) norm1 W
 			<- first-stage-wor W
-			<- {x} form^ x norm1 W -> form^ (M x) comp1 W.
+			<- {f} form^ f norm1 W -> {x} form^ x norm1 W -> form^ (M f x) comp1 W.
 %{form^fix-c : form^ (fix M) comp1 W
 			<- first-stage-wor W
 			<- {f} form^ f norm1 W -> 
 			   {x} form^ x norm1 W -> form^ (M f x) comp1 W.}%
 form^lam2n : form^ (lam M) norm1 wor2
-			<- {x} form^ x vars2 wor2 -> form^ (M x) norm1 wor2.
+			<- {f} form^ f vars2 wor2 -> {x} form^ x vars2 wor2 -> form^ (M f x) norm1 wor2.
 form^lam2c : form^ (lam M) comp1 wor2
-			<- {x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2.
+			<- {f} form^ f vars2 wor2 -> {x} form^ x vars2 wor2 -> form^ (M f x) comp1 wor2.
 %{form^fix-c2 : form^ (fix M) comp1 wor2
 			<- {f} form^ f vars2 wor2 -> 
 			   {x} form^ x vars2 wor2 -> form^ (M f x) comp1 wor2.

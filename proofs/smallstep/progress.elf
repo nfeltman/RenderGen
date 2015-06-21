@@ -118,10 +118,10 @@ prog/unrl : dos W E -> of^ E (rec F) W -> form^ E comp1 W -> dos W (unrl E) -> t
 %total (Ddos) (prog/unrl Ddos _ _ _).
 
 
-prog/lam : ({x} dos wor2 (M x)) -> dos wor2 (lam M) -> type.
+prog/lam : ({f}{x} dos wor2 (M f x)) -> dos wor2 (lam M) -> type.
 %mode prog/lam +Ddos -Ddos'.
-- : prog/lam ([x] dos-mstep (Dstep x)) (dos-mstep (ms-lam-s Dstep)).
-- : prog/lam ([x] dos-done) (dos-mstep ms-lam-d).
+- : prog/lam ([f][x] dos-mstep (Dstep f x)) (dos-mstep (ms-lam-s Dstep)).
+- : prog/lam ([f][x] dos-done) (dos-mstep ms-lam-d).
 %worlds (von-block) (prog/lam _ _).
 %total (Ddos) (prog/lam Ddos _).
 
@@ -259,7 +259,7 @@ prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.
 	<- prog Dof Dcomp Ddos
 	<- prog/unrl Ddos Dof Dcomp Ddos'.
 - : prog (of^-lam _ DofM) (form^lam2c Dcomp) Ddos'
-	<- ({x} {dof} {dvar} prog (DofM x dof) (Dcomp x dvar) (Ddos x))
+	<- ({f}{off}{vf} {x}{ofx}{vx} prog (DofM f off x ofx) (Dcomp f vf x vx) (Ddos f x))
 	<- prog/lam Ddos Ddos'.
 - : prog (of^-app Dof1 Dof2) (form^app-c Dcomp1 Dcomp2) Ddos
 	<- prog Dof1 Dcomp1 Ddos1

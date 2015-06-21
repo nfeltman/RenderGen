@@ -35,7 +35,7 @@ inj2  : term L -> term L.
 case  : term L -> (term L -> term L) -> (term L -> term L) -> term L.
 roll  : term L -> term L.
 unrl  : term L -> term L.
-lam   : (term L -> term L) -> term L.
+lam   : (term L -> term L -> term L) -> term L.
 app   : term L -> term L -> term L.
 let   : term L -> (term L -> term L) -> term L.
 lett  : term L -> (term L -> term L -> term L) -> term L.
@@ -86,9 +86,9 @@ eq-term-trans : eq-term A B -> eq-term B C -> eq-term A C -> type.
 %total {} (eq-term-trans _ _ _).
 
 %% TERM EQUALITY IS A CONGRUENCE
-eq-cong/lam : ({x} eq-term (M x) (M' x)) -> eq-term (lam M) (lam M') -> type.
+eq-cong/lam : ({x}{y} eq-term (M x y) (M' x y)) -> eq-term (lam M) (lam M') -> type.
 %mode eq-cong/lam +Deq -Deq'.
-- : eq-cong/lam ([x] eq-term_) eq-term_.
+- : eq-cong/lam ([x][y] eq-term_) eq-term_.
 %worlds (term-block) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
 
@@ -184,9 +184,9 @@ eq-gnoc/tup : eq-term (tup E1 E2) (tup E1' E2') -> eq-term E1 E1' -> eq-term E2 
 %worlds (term-block) (eq-gnoc/tup _ _ _).
 %total {} (eq-gnoc/tup _ _ _).
 
-eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x} eq-term (M x) (M' x)) -> type.
+eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x}{y} eq-term (M x y) (M' x y)) -> type.
 %mode eq-gnoc/lam +Deq1 -Deq'.
-- : eq-gnoc/lam eq-term_ ([x] eq-term_).
+- : eq-gnoc/lam eq-term_ ([x][y] eq-term_).
 %worlds (term-block) (eq-gnoc/lam _ _).
 %total {} (eq-gnoc/lam _ _).
 
@@ -281,8 +281,8 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 - : lang-indep Dneq ([x] unrl (E x)) Deq'
   <- lang-indep Dneq E Deq
   <- {x} eq-cong unrl (Deq x) (Deq' x).
-- : lang-indep Dneq ([x] lam ([y] E y x)) Deq'
-  <- ({y} lang-indep Dneq (E y) ([x] Deq x y))
+- : lang-indep Dneq ([x] lam ([f][y] E f y x)) Deq'
+  <- ({f}{y} lang-indep Dneq (E f y) ([x] Deq x f y))
   <- {x} eq-cong/lam (Deq x) (Deq' x).
 - : lang-indep Dneq ([x] app (E1 x) (E2 x)) Deq
   <- lang-indep Dneq E1 Deq1
@@ -333,6 +333,21 @@ lang-indep2 : neq-lang L1 L3 -> neq-lang L2 L3 -> {E : term L1 -> term L2 -> ter
     <- ({x}{y} eq-term-trans (Deq1 x y) (Deq2 y) (Deq x y : eq-term (E_2 x y) E)).
 %worlds (term-block) (lang-indep2 _ _ _ _).
 %total (D) (lang-indep2 _ _ D _).
+
+lang-indep4 : 
+    neq-lang L1 L0 -> 
+    neq-lang L2 L0 -> 
+    neq-lang L3 L0 -> 
+    neq-lang L4 L0 -> 
+    {E : term L1 -> term L2 -> term L3 -> term L4 -> term L0} 
+    ({x1}{x2}{x3}{x4} eq-term (E x1 x2 x3 x4) E') -> type.
+%mode lang-indep4 +Dneq1 +Dneq2 +Dneq3 +Dneq4 +E -Deq.
+- : lang-indep4 Dneq1 Dneq2 Dneq3 Dneq4 E_2 Deq
+    <- ({x3}{x4} lang-indep2 Dneq1 Dneq2 ([x1][x2] E_2 x1 x2 x3 x4) ([x1][x2] Deq1 x1 x2 x3 x4 : eq-term (E_2 x1 x2 x3 x4) (E_1 x3 x4))) 
+    <- lang-indep2 Dneq3 Dneq4 E_1 ([x3][x4] Deq2 x3 x4 : eq-term (E_1 x3 x4) E)
+    <- ({x1}{x2}{x3}{x4} eq-term-trans (Deq1 x1 x2 x3 x4) (Deq2 x3 x4) (Deq x1 x2 x3 x4 : eq-term (E_2 x1 x2 x3 x4) E)).
+%worlds (term-block) (lang-indep4 _ _ _ _ _ _).
+%total (D) (lang-indep4 _ _ _ _ D _).
 
 %{
 convert-hole : {M : ({L1} term L1) -> {L2} term L2} {N : {L} term L -> term L} ({x : {L'} term L'}{L} eq-term (M x L) (N L (x L))) -> type.
@@ -398,8 +413,9 @@ lang-convert_12-total : {E : term lang1} {F : {L} term L} eq-term E (F lang1) ->
 
 %% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
 lang-convert : term L1 -> {L2} term L2 -> type. %name lang-convert Dconv.
-conv-lam : lang-convert (lam M) L2 (lam (M' (ztup : term L1)))
-    <- {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2).
+conv-lam : lang-convert (lam M) L2 (lam (M' ztup (ztup : term L1)))
+    <- {f}{f'} lang-convert f L2 f' ->
+        {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M f x) L2 (M' f x f' x' : term L2).
 conv-fix : lang-convert (fix M) L2 (fix (M' (ztup : term L1)))
     <- {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2).
 conv-case : lang-convert (case E M N) L2 (case E' (M' (ztup : term L1)) (N' (ztup : term L1)))
@@ -500,8 +516,9 @@ lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) 
 - : lang-convert_12-total (unrl E) (conv-unrl Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (lam M) (conv-lam DconvM)
-    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
-        lang-convert_12-total (M x) (DconvM x x2 convx)).
+    <- ({f}{f2}{convf : lang-convert f lang2 f2} lang-convert_12-total f convf -> 
+        {x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
+        lang-convert_12-total (M f x) (DconvM f f2 convf x x2 convx)).
 - : lang-convert_12-total (fix M) (conv-fix DconvM)
     <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
         lang-convert_12-total (M x) (DconvM x x2 convx)).
@@ -558,15 +575,35 @@ conv-strengthen_12 :
 %total (D) (conv-strengthen_12 D _).
 
 conv-strengthen2_12 : 
+    ({f:term lang2}{x:term lang2} lang-convert (A : term lang1) lang2 (B_1 f x : term lang2)) -> ({f}{x} eq-term (B_1 f x) B) -> type.
+%mode conv-strengthen2_12 +D1 -D3.
+- : conv-strengthen2_12 ([f][x] Dconv_1 f x : lang-convert A lang2 (B_1 f x)) Deq
+    <- lang-convert_12-total A (Dconv : lang-convert A lang2 B)
+    <- {f}{x} lang-convert-unique (Dconv_1 f x) Dconv (Deq f x : eq-term (B_1 f x) B).
+%worlds (convert-total-block | convert-total-ignore-block) (conv-strengthen2_12 _ _).
+%total (D) (conv-strengthen2_12 D _).
+
+conv-2strengthen_12 : 
     ({x:term lang0}{x2:term lang2} lang-convert (A : term lang1) lang2 (B_2 x x2 : term lang2)) -> 
     ({x}{x2} eq-term (B_2 x x2) B) -> type.
-%mode conv-strengthen2_12 +D1 -D3.
-- : conv-strengthen2_12 ([x][x2] Dconv_2 x x2 : lang-convert A lang2 (B_2 x x2)) Deq
+%mode conv-2strengthen_12 +D1 -D3.
+- : conv-2strengthen_12 ([x][x2] Dconv_2 x x2 : lang-convert A lang2 (B_2 x x2)) Deq
   <- ({x} conv-strengthen_12 (Dconv_2 x) ([x2] Deq_2 x x2 : eq-term (B_2 x x2) (B_1 x)))
   <- lang-indep neq-lang_02 B_1 ([x] Deq_1 x : eq-term (B_1 x) B)
   <- ({x}{x2} eq-term-trans (Deq_2 x x2) (Deq_1 x) (Deq x x2 : eq-term (B_2 x x2) B)).
-%worlds (convert-total-block | convert-total-ignore-block) (conv-strengthen2_12 _ _).
-%total (D) (conv-strengthen2_12 D _).
+%worlds (convert-total-block | convert-total-ignore-block) (conv-2strengthen_12 _ _).
+%total (D) (conv-2strengthen_12 D _).
+
+conv-2strengthen2_12 : 
+    ({f:term lang0}{f2:term lang2}{x:term lang0}{x2:term lang2} lang-convert (A : term lang1) lang2 (B_2 f f2 x x2 : term lang2)) -> 
+    ({f}{f2}{x}{x2} eq-term (B_2 f f2 x x2) B) -> type.
+%mode conv-2strengthen2_12 +D1 -D3.
+- : conv-2strengthen2_12 ([f][f2][x][x2] Dconv_2 f f2 x x2 : lang-convert A lang2 (B_2 f f2 x x2)) Deq
+  <- ({f}{x} conv-strengthen2_12 ([f2][x2] Dconv_2 f f2 x x2) ([f2][x2] Deq_2 f f2 x x2 : eq-term (B_2 f f2 x x2) (B_1 f x)))
+  <- lang-indep2 neq-lang_02 neq-lang_02 B_1 ([f][x] Deq_1 f x : eq-term (B_1 f x) B)
+  <- ({f}{f2}{x}{x2} eq-term-trans (Deq_2 f f2 x x2) (Deq_1 f x) (Deq f f2 x x2 : eq-term (B_2 f f2 x x2) B)).
+%worlds (convert-total-block | convert-total-ignore-block) (conv-2strengthen2_12 _ _).
+%total (D) (conv-2strengthen2_12 D _).
 
 conv-resp : lang-convert E1 L E2 -> eq-term E1 E1' -> eq-term E2 E2' -> lang-convert E1' L E2' -> type.
 %mode conv-resp +D1 +D2 +D3 -D3.
