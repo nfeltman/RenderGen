@@ -9,6 +9,7 @@ nv-tup  : not-variable (tup _ _).
 nv-pi1  : not-variable (pi1 _).
 nv-pi2  : not-variable (pi2 _).
 nv-lam  : not-variable (lam _).
+nv-fix  : not-variable (fix _).
 nv-app  : not-variable (app _ _).
 nv-let 	: not-variable (let _ _).
 nv-inj1 : not-variable (inj1 _).
@@ -46,6 +47,7 @@ ms-roll-d 	: mstep W (roll (exv E)) (exv (roll E)).
 ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
 ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).
 ms-lam-d 	: mstep wor2 (lam ([x] exv (M x))) (exv (lam M)).
+%{ms-fix-d 	: mstep wor2 (fix ([f][x] exv (M f x))) (exv (fix M)).}%
 ms-app-d 	: mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
 ms-let-d 	: mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
 ms-next-d 	: mstep wor1 (next (exv (exv E))) (exv (next E)).
@@ -102,6 +104,8 @@ ms-unrl-r	: mstep W (unrl (exv (roll E))) (exv E)
 				<- first-stage-wor W.
 ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M E)
 				<- first-stage-wor W.
+%{ms-fix-r	: mstep W (fix M) (exv (lam ([x] let (fix M) ([f] M f x))))
+				<- first-stage-wor W.}%
 ms-case-r1	: mstep worG (case (exv (inj1 E)) M N) (M E).
 ms-case-r2	: mstep worG (case (exv (inj2 E)) M N) (N E).
 %{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%

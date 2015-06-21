@@ -21,6 +21,7 @@ res\von : form^ E norm1 wor2 -> var-or-not E -> type.
 - : res\von (form^pi1-n2 _) (von-not nv-pi1).
 - : res\von (form^pi2-n2 _) (von-not nv-pi2).
 - : res\von (form^lam2n _) (von-not nv-lam).
+%{- : res\von (form^fix-n2 _) (von-not nv-fix).}%
 - : res\von (form^app-n2 _ _) (von-not nv-app).
 - : res\von (form^let-n2 _ _) (von-not nv-let).
 - : res\von (form^inj1-n _ _) (von-not nv-inj1).

@@ -29,6 +29,7 @@ mred-roll  : mred (roll E) (roll V)
 mred-unrl  : mred (unrl E) V
 			<- mred E (roll V).
 mred-lam  : mred (lam M) (lam M).
+%{mred-fix  : mred (fix M) (lam ([x] let (fix M) ([f] M f x))).}%
 mred-app  : mred (app E1 E2) V
 			<- mred E2 V2
 			<- mred E1 (lam ([x] M x))
