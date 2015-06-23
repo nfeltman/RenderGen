@@ -7,39 +7,42 @@
 
 \input{figures/values}
 
-We express two-stage programs as terms in \lang, a typed, modal lambda calculus
-with products, sums, and isorecursive types. Its type system has three distinct
-\emph{worlds} \bbonep, \bbonem, and \bbtwo, which respectively classify
-\emph{ground first-stage} computations (\bbonep); 
-first-stage computations containing a \emph{mix} of code from each stage
-(\bbonem); 
-and second-stage computations (\bbtwo).
+We express two-stage programs as terms in \lang, a typed, modal lambda calculus. 
+The type system of \lang\ (\ref{sec:statics}) classifies both the stage and type of a 
+computation, and is sufficient to show that the staged dynamics of \lang\ (\ref{sec:dynamics})
+do not get stuck.
+
 
 \subsection{Statics}
+\label{sec:statics}
 
 \input{figures/statics}
 
 \begin{abstrsyn}
 
 The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
-$e$ has type $A$ at world $w$, in the context $\Gamma$. (Variables in the
-context are also annotated with the world at which they live.)
+$e$ has type $A$ at world $w$, in the context $\Gamma$. 
+Here, a \emph{world} is a slightly finer classification than a stage.
+Whereas there is only one world, \bbtwo, for second-stage computations,
+there are two worlds corresponding to the first stage:
+\bbonep\ for \emph{ground} first-stage computations, and 
+\bbonem\ for first-stage computations containing a \emph{mix} of code from each stage. 
+The distinction between these two first-stage worlds is necessitated by our splitting algorithm,
+and will be discussed in \ref{sec:needGround}.
 
-All three worlds contain fixpoints and unit, product, sum, function, and
-recursive types defined in the usual fashion. For example, given two terms
-$\typesone{e_1}A$ and $\typesone{e_2}B$ at world \bbonem, one can form the pair
-$\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world \bbonem. 
+All three worlds contain unit, product, and function types defined in the usual fashion;
+sum and recursive types are provided for worlds \bbonep\ and \bbtwo.
+These ``standard'' features can only be constructed from subterms of the same world,
+and variables can only be used at the same world where they were introduced.
 
 Differing worlds (and hence, differing stages of computation) interact by means
-of the $\fut$ and $\curr$ type formers. $\fut A$ is a type in world \bbonem\
-which classifies second-stage computations of type $A$. Given a term $e$ of type
-$A$ at world \bbtwo, $\next{e}$ has type $\fut A$ at \bbonem. This essentially
+of the $\fut$ and $\curr$ type formers.  These modalities are internalizations
+of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonep.
+For example, given a term $e$ of type $A$ at world \bbtwo, 
+$\next{e}$ has type $\fut A$ at \bbonem. This essentially
 encapsulates $e$ as a computation to be evaluated in the future---first-stage
 computations can shuffle it around, but not use its result.  The only way to use
 a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
-
-%This is why well-typed terms cannot have any information flow from stage
-%\bbtwo\ to stage \bbone, and what makes splitting possible.
 
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
@@ -77,6 +80,8 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 
 
 \subsection{(Small Step) Dynamics}
+\label{sec:dynamics}
+
 We provide a small-step semantics which,
 given a \lang\ term $e$, evaluates its first stage subterms
 either until $e$ is a value (if $e$ is at world \bbonep\ or \bbonem)
