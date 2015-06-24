@@ -159,13 +159,13 @@ lc : split1 E C R ->
 %% LIFT RULES
 - : lc (spl1-next (spl2-exv _)) _ ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _ : lstep (next (exv E)) E ([x] next (exv (exv x)))) eq-term_ ([l] reqv-lift-base).
 - : lc (spl1-tup Dspl DsplB) DsplQ ([x][x2][s] spl1-tup (Dspl' x x2 s) (DsplB' x x2 s)) (ls-tup-s1 Dstep) 
-		Deq' ([l] reqv-lift-lett ([l1][l2] reqv-tup-s (Deqv l1) reqv-id ;; reqv-lift-tup1 (DeqR l2)))
+		Deq' ([l] reqv-lift-in-lett ([l1][l2] reqv-tup-s (Deqv l1) reqv-id ;; reqv-lift-tup1 (DeqR l2)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett DeqB ([x][y] eq-term_) (DeqB' y z))
 	<- eq-cong/lett Deq DeqB' Deq'.
 - : lc (spl1-tup DsplB Dspl) DsplQ ([x][x2][s] spl1-tup (DsplB' x x2 s) (Dspl' x x2 s)) (ls-tup-s2 Dstep) 
-		Deq'' ([l] reqv-lift-lett ([l1][l2] reqv-tup-s reqv-id (Deqv l2) ;; reqv-lift-tup2 (DeqR l1)))
+		Deq'' ([l] reqv-lift-in-lett ([l1][l2] reqv-tup-s reqv-id (Deqv l2) ;; reqv-lift-tup2 (DeqR l1)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB (DeqR : {l}{x2} eq-term (R l) (R' l x2))
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
@@ -183,7 +183,7 @@ lc : split1 E C R ->
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
 - : lc (spl1-app Dspl DsplB) DsplQ ([x][x2][s] spl1-app (Dspl' x x2 s) (DsplB' x x2 s)) (ls-app-s1 Dstep) 
-		Deq' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
+		Deq' ([l] reqv-lift-in-lett ([l12][l3] reqv-lift-in-lett ([l1][l2] 
 				reqv-app-s (Deqv l1) reqv-id ;; reqv-lift-app1 (DeqR' l2 l3))))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
@@ -191,7 +191,7 @@ lc : split1 E C R ->
 	<- eq-cong/lett Deq DeqB' Deq'
 	<- ({y}{l2}{l3} eq-cong2 tup (DeqR l2 y) eq-term_ (DeqR' l2 l3 y)).
 - : lc (spl1-app DsplB Dspl) DsplQ ([x][x2][s] spl1-app (DsplB' x x2 s) (Dspl' x x2 s)) (ls-app-s2 Dstep) 
-		Deq'' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
+		Deq'' ([l] reqv-lift-in-lett ([l12][l3] reqv-lift-in-lett ([l1][l2] 
 				reqv-app-s reqv-id (reqv-tup-s (Deqv l2) reqv-id ;; reqv-lift-tup1 ([l] eq-term_)) ;; reqv-lift-app2 (DeqR l1))))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
@@ -201,7 +201,7 @@ lc : split1 E C R ->
 		([x][x2][s] spl1-letg (Dspl' x x2 s) (DsplM' x x2 s)) 
 		(ls-letg-s1 Dstep) 
 		Deq' 
-		([l] reqv-lift-lett ([l1][l2] reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain (DeqR l2)))
+		([l] reqv-lift-in-lett ([l1][l2] reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain (DeqR l2)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqR
 	<- ({y}{z1} eq-cong/lett (DeqM y) ([_][_] eq-term_) (DeqM' y z1))
@@ -210,7 +210,7 @@ lc : split1 E C R ->
 		([x][x2][s] spl1-caseg (Dspl' x x2 s) (DsplM' x x2 s) (DsplN' x x2 s)) 
 		(ls-caseg-s1 Dstep) 
 		Deq' 
-		([l] reqv-lift-lett ([l1][l23] reqv-case-s (reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain ([_] eq-term_)) ([_]reqv-id) ([_]reqv-id) ;; reqv-lift-case DeqvM DeqvN))
+		([l] reqv-lift-in-lett ([l1][l23] reqv-case-s (reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain ([_] eq-term_)) ([_]reqv-id) ([_]reqv-id) ;; reqv-lift-case DeqvM DeqvN))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqvM
 	<- split1-unique/strengthen/branchG DsplN DsplN' DeqN DeqvN
