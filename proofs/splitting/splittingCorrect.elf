@@ -159,21 +159,21 @@ lc : split1 E C R ->
 %% LIFT RULES
 - : lc (spl1-next (spl2-exv _)) _ ([x][x2][s] spl1-next (spl2-exv _)) (ls-next-r _ : lstep (next (exv E)) E ([x] next (exv (exv x)))) eq-term_ ([l] reqv-lift-base).
 - : lc (spl1-tup Dspl DsplB) DsplQ ([x][x2][s] spl1-tup (Dspl' x x2 s) (DsplB' x x2 s)) (ls-tup-s1 Dstep) 
-		Deq' ([l] reqv-lift-lett ([l1][l2] reqv-lift-tup1 (Deqv l1) (DeqR l2)))
+		Deq' ([l] reqv-lift-lett ([l1][l2] reqv-tup-s (Deqv l1) reqv-id ;; reqv-lift-tup1 (DeqR l2)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett DeqB ([x][y] eq-term_) (DeqB' y z))
 	<- eq-cong/lett Deq DeqB' Deq'.
 - : lc (spl1-tup DsplB Dspl) DsplQ ([x][x2][s] spl1-tup (DsplB' x x2 s) (Dspl' x x2 s)) (ls-tup-s2 Dstep) 
-		Deq'' ([l] reqv-lift-lett ([l1][l2] reqv-lift-tup2 (Deqv l2) (DeqR l1)))
+		Deq'' ([l] reqv-lift-lett ([l1][l2] reqv-tup-s reqv-id (Deqv l2) ;; reqv-lift-tup2 (DeqR l1)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB (DeqR : {l}{x2} eq-term (R l) (R' l x2))
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
 	<- eq-cong/lett DeqB Deq' Deq''.
-- : lc (spl1-pi1 Dspl) DsplQ  ([x][x2][s] spl1-pi1 (Dspl' x x2 s)) (ls-pi1-s Dstep) Deq' ([l] reqv-lift-pi1 (Deqv l))
+- : lc (spl1-pi1 Dspl) DsplQ  ([x][x2][s] spl1-pi1 (Dspl' x x2 s)) (ls-pi1-s Dstep) Deq' ([l] reqv-pi1-s (Deqv l) ;; reqv-lift-pi1)
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
-- : lc (spl1-pi2 Dspl) DsplQ ([x][x2][s] spl1-pi2 (Dspl' x x2 s)) (ls-pi2-s Dstep) Deq' ([l] reqv-lift-pi2 (Deqv l))
+- : lc (spl1-pi2 Dspl) DsplQ ([x][x2][s] spl1-pi2 (Dspl' x x2 s)) (ls-pi2-s Dstep) Deq' ([l] reqv-pi2-s (Deqv l) ;; reqv-lift-pi2)
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
 - : lc (spl1-roll Dspl) DsplQ  ([x][x2][s] spl1-roll (Dspl' x x2 s)) (ls-roll-s Dstep) Deq' Deqv
@@ -184,7 +184,7 @@ lc : split1 E C R ->
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
 - : lc (spl1-app Dspl DsplB) DsplQ ([x][x2][s] spl1-app (Dspl' x x2 s) (DsplB' x x2 s)) (ls-app-s1 Dstep) 
 		Deq' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
-				reqv-lift-app1 (Deqv l1) (DeqR' l2 l3))))
+				reqv-app-s (Deqv l1) reqv-id ;; reqv-lift-app1 (DeqR' l2 l3))))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett DeqB ([x][y] eq-term_) (DeqB' y z))
@@ -192,7 +192,7 @@ lc : split1 E C R ->
 	<- ({y}{l2}{l3} eq-cong2 tup (DeqR l2 y) eq-term_ (DeqR' l2 l3 y)).
 - : lc (spl1-app DsplB Dspl) DsplQ ([x][x2][s] spl1-app (DsplB' x x2 s) (Dspl' x x2 s)) (ls-app-s2 Dstep) 
 		Deq'' ([l] reqv-lift-lett ([l12][l3] reqv-lift-lett ([l1][l2] 
-				reqv-lift-app2 (reqv-lift-tup1 (Deqv l2) ([l] eq-term_)) (DeqR l1))))
+				reqv-app-s reqv-id (reqv-tup-s (Deqv l2) reqv-id ;; reqv-lift-tup1 ([l] eq-term_)) ;; reqv-lift-app2 (DeqR l1))))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
@@ -201,7 +201,7 @@ lc : split1 E C R ->
 		([x][x2][s] spl1-letg (Dspl' x x2 s) (DsplM' x x2 s)) 
 		(ls-letg-s1 Dstep) 
 		Deq' 
-		([l] reqv-lift-lett ([l1][l2] reqv-lift-chain (Deqv l1) (DeqR l2)))
+		([l] reqv-lift-lett ([l1][l2] reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain (DeqR l2)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqR
 	<- ({y}{z1} eq-cong/lett (DeqM y) ([_][_] eq-term_) (DeqM' y z1))
@@ -210,7 +210,7 @@ lc : split1 E C R ->
 		([x][x2][s] spl1-caseg (Dspl' x x2 s) (DsplM' x x2 s) (DsplN' x x2 s)) 
 		(ls-caseg-s1 Dstep) 
 		Deq' 
-		([l] reqv-lift-lett ([l1][l23] reqv-lift-case (reqv-lift-chain (Deqv l1) ([_] eq-term_)) DeqvM DeqvN))
+		([l] reqv-lift-lett ([l1][l23] reqv-case-s (reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-chain ([_] eq-term_)) ([_]reqv-id) ([_]reqv-id) ;; reqv-lift-case DeqvM DeqvN))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen/branchG DsplM DsplM' DeqM DeqvM
 	<- split1-unique/strengthen/branchG DsplN DsplN' DeqN DeqvN
@@ -268,13 +268,13 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 	<- lang-convert_12-total B0 (Dconv : lang-convert B0 lang2 B)
 	<- eq-term-sym (Deq B) (Deq' : eq-term (R _ Vq B) (R' B))
 	<- reqv-resp 
-		((	reqv-lett ;;
-			reqv-lett ;;
+		((	reqv-lett-r ;;
+			reqv-lett-r ;;
 			(reqv-app-s reqv-id reqv-tup-d) ;;
-			reqv-app ;;		
-			reqv-lett ;;
-			(reqv-let-s reqv-unrl ([_] reqv-id)) ;;
-			reqv-let
+			reqv-app-r ;;		
+			reqv-lett-r ;;
+			(reqv-let-s reqv-unrl-r ([_] reqv-id)) ;;
+			reqv-let-r
 			)
 		: reqv 
 			(lett (exv (tup (tup ztup ztup) (roll B))) ([l12] [l3] 
@@ -315,7 +315,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 		(mred-tup (mred-pi1 mred-exv) mred-exv) 
 		mred-exv)
 	conv-ztup conv-ztup
-	reqv-pi1
+	reqv-pi1-r
 	<- splv-total Dof2 Dcomp2 Dspl2.
 
 - : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dcomp1 _)))
@@ -326,7 +326,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 		(mred-tup (mred-pi2 mred-exv) mred-exv) 
 		mred-exv)
 	conv-ztup conv-ztup
-	reqv-pi2
+	reqv-pi2-r
 	<- splv-total Dof1 Dcomp1 Dspl1.
 
 - : sc1 Dof Dcomp Dspl' Dred'
@@ -356,7 +356,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	<- split-eval-resp Dspl (DsplM V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R2' x) (R2 x))
 	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
 	<- lang-convert_12-total _ Dconv
-	<- reqv-resp (reqv-lett ;; reqv-let : reqv 
+	<- reqv-resp (reqv-lett-r ;; reqv-let-r : reqv 
 			(lett (exv (tup ztup B2)) ([l1][l2] let (exv ztup) ([_] R2 l2)))
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
@@ -374,7 +374,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	<- split-eval-resp Dspl (DsplM V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R2' x) (R2 x))
 	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
 	<- lang-convert_12-total _ Dconv
-	<- reqv-resp ( reqv-lett ;; (reqv-case-s reqv-let ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r1 : reqv 
+	<- reqv-resp ( reqv-lett-r ;; (reqv-case-s reqv-let-r ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r1 : reqv 
 			(lett (exv (tup ztup (inj1 B2))) ([l1] [l23] case (let (exv ztup) ([_] exv l23)) R2 R3))
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
@@ -392,7 +392,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	<- split-eval-resp Dspl (DsplN V V1 DsplV) Dred Dred' ([x] DeqR x : eq-term (R3' x) (R3 x))
 	<- ({x} eq-term-sym (DeqR x) (DeqR' x))
 	<- lang-convert_12-total _ Dconv
-	<- reqv-resp (reqv-lett ;; (reqv-case-s reqv-let ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r2 : reqv 
+	<- reqv-resp (reqv-lett-r ;; (reqv-case-s reqv-let-r ([x] reqv-id) ([x] reqv-id)) ;; reqv-case-r2 : reqv 
 			(lett (exv (tup ztup (inj2 B3))) ([l1] [l23] case (let (exv ztup) ([_] exv l23)) R2 R3))
 			(R3 B3)) 
 		eq-term_ (DeqR' B3) Deqv.
@@ -425,7 +425,7 @@ invert/exv--resp/tup :
 		(spl1-tup (spl1-exv Dsplv1) (spl1-exv Dsplv2))
 		(mred-lett (mred-lett DredM mred-exv) mred-exv : mred _ (tup I (tup ztup ztup)))
 		conv-tupzz Dconv'
-		(reqv-lett ;; reqv-tup-d : reqv 
+		(reqv-lett-r ;; reqv-tup-d : reqv 
 			(lett (exv (tup ztup ztup)) ([l1] [l2] tup (exv Q1) (exv Q2))) 
 			(exv (tup Q1 Q2))
 		)
@@ -747,7 +747,7 @@ sc1/case-s :
 - : sc2 _ _ (spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-exv
 		ms-tup-d
 		(spl2-tup (spl2-exv Dsplr1) (spl2-exv Dsplr2)) (mred-tup mred-exv mred-exv) 
-		conv-tupzz conv-ztup reqv-lett.
+		conv-tupzz conv-ztup reqv-lett-r.
 - : sc2 _ _ (spl2-exv (splr-pi1 Dsplr)) mred-exv
 		ms-pi1-d
 		(spl2-pi1 (spl2-exv Dsplr)) mred-exv conv-ztup conv-ztup reqv-id.
@@ -770,18 +770,18 @@ sc1/case-s :
 		ms-case-d
 		(spl2-case (spl2-exv DsplrE) ([x][x2][splx] spl2-exv (DsplrM x x2 splx)) ([x][x2][splx] spl2-exv (DsplrN x x2 splx)))
 		(mred-tup mred-exv (mred-tup mred-exv mred-exv)) 
-		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-lett ;; reqv-lett).
+		(conv-tup conv-ztup conv-tupzz) conv-ztup (reqv-lett-r ;; reqv-lett-r).
 - : sc2 _ _ (spl2-exv (splr-lam Dsplr)) mred-exv
 		ms-lam-d
 		(spl2-lam ([f][f2][splf][x][x2][splx] spl2-exv (Dsplr f f2 splf x x2 splx))) mred-exv conv-ztup conv-ztup reqv-id.
 - : sc2 _ _ (spl2-exv (splr-app Dsplr1 Dsplr2)) mred-exv
 		ms-app-d
 		(spl2-app (spl2-exv Dsplr1) (spl2-exv Dsplr2)) (mred-tup mred-exv mred-exv) 
-		conv-tupzz conv-ztup reqv-lett.
+		conv-tupzz conv-ztup reqv-lett-r.
 - : sc2 _ _ (spl2-exv (splr-let DsplrE DsplrM)) mred-exv
 		ms-let-d
 		(spl2-let (spl2-exv DsplrE) ([x][x2][splx] spl2-exv (DsplrM x x2 splx))) (mred-tup mred-exv mred-exv) 
-		conv-tupzz conv-ztup reqv-lett.
+		conv-tupzz conv-ztup reqv-lett-r.
 
 
 sc2/branch : 
