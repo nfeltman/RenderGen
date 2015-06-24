@@ -7,39 +7,47 @@
 
 \input{figures/values}
 
-We express two-stage programs as terms in \lang, a typed, modal lambda calculus
-with products, sums, and isorecursive types. Its type system has three distinct
-\emph{worlds} \bbonep, \bbonem, and \bbtwo, which respectively classify
-\emph{ground first-stage} computations (\bbonep); 
-first-stage computations containing a \emph{mix} of code from each stage
-(\bbonem); 
-and second-stage computations (\bbtwo).
+We express two-stage programs as terms in \lang, a typed, modal lambda calculus. 
+
+One of the central concepts in the formalization of \lang\ is the notion of a \emph{world},
+which is a slightly finer classification than a stage.
+Whereas there is only one world, \bbtwo, for second-stage computations,
+there are two worlds corresponding to the first stage:
+\bbonem\ for \emph{mixed} first-stage computations that may contain second stage subterms with $\next$ blocks,
+and \bbonep\ for \emph{ground} first-stage computations that may not.
+The distinction between these two first-stage worlds is necessitated by our splitting algorithm,
+and will be discussed in \ref{sec:needGround}.
+
+The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
+Note that some production rules are parameterized by world.
+Our syntax also distinguishes values from general terms [need ``series expression'' citation!], 
+as this will be useful in defining our splitting algorithm.
+There are three forms of value: \emph{partial values} for \bbonem, \emph{ground values} for \bbonep, and \emph{residuals} for \bbtwo.
+All represent computations which have no remaining work in the first stage.
 
 \subsection{Statics}
+\label{sec:statics}
 
 \input{figures/statics}
 
 \begin{abstrsyn}
 
 The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
-$e$ has type $A$ at world $w$, in the context $\Gamma$. (Variables in the
-context are also annotated with the world at which they live.)
+$e$ has type $A$ at world $w$, in the context $\Gamma$. 
 
-All three worlds contain fixpoints and unit, product, sum, function, and
-recursive types defined in the usual fashion. For example, given two terms
-$\typesone{e_1}A$ and $\typesone{e_2}B$ at world \bbonem, one can form the pair
-$\typesone{\texttt{<}e_1,e_2\texttt{>}}{A\times B}$ also at world \bbonem. 
+All three worlds contain unit, product, and function types defined in the usual fashion;
+sum and recursive types are provided for worlds \bbonep\ and \bbtwo.
+These ``standard'' features can only be constructed from subterms of the same world,
+and variables can only be used at the same world where they were introduced.
 
 Differing worlds (and hence, differing stages of computation) interact by means
-of the $\fut$ and $\curr$ type formers. $\fut A$ is a type in world \bbonem\
-which classifies second-stage computations of type $A$. Given a term $e$ of type
-$A$ at world \bbtwo, $\next{e}$ has type $\fut A$ at \bbonem. This essentially
+of the $\fut$ and $\curr$ type formers.  These modalities are internalizations
+of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonep.
+For example, given a term $e$ of type $A$ at world \bbtwo, 
+$\next{e}$ has type $\fut A$ at \bbonem. This essentially
 encapsulates $e$ as a computation to be evaluated in the future---first-stage
 computations can shuffle it around, but not use its result.  The only way to use
 a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
-
-%This is why well-typed terms cannot have any information flow from stage
-%\bbtwo\ to stage \bbone, and what makes splitting possible.
 
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
@@ -76,83 +84,47 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \end{abstrsyn}
 
 
-\subsection{(Small Step) Dynamics}
-We provide a small-step semantics which,
-given a \lang\ term $e$, evaluates its first stage subterms
-either until $e$ is a value (if $e$ is at world \bbonep\ or \bbonem)
-or until all of $e$'s first stage subterms have been evaluated away
-(when $e$ is at world \bbtwo).
-Because first- and second-stage code are
-interleaved in \lang\ terms, this first pass of
-evaluation requires some care.
+\subsection{Dynamics}
+\label{sec:dynamics}
 
-Moreover, our staged semantics contains one innovation over those of 
-\cite{davies96} and \cite{taha-thesis-99}, which is the addition
-of {\em hoisting steps}.  
-To illustrate, consider the example
-\begin{lstlisting}
-prev{let x = next{2*3} in next{prev{x}+4}}
-\end{lstlisting}
-A non-staged semantics which ignores $\next$s and $\prev$s
-would proceed on this term by reducing \verb|2*3| to \verb|6| in place.
-A staged semantics does not, because it only reduces first stage redexes, and
-\verb|2*3| is at the second stage.  
-The staged semantics of \cite{davies96} and \cite{taha-thesis-99} instead proceed by
-substituting \verb|next{2*3}| in for \verb|x| to yield
-\begin{lstlisting}
-prev{next{prev{next{2*3}}+4}}
-\end{lstlisting}
-This takes one step to 
-\begin{lstlisting}
-prev{next{2*3+4}}
-\end{lstlisting}
-and then one more step to
-\begin{lstlisting}
-2*3+4
-\end{lstlisting}
-which is the final entirely-second-stage result, called a {\em residual}.
-Our semantics differs from this formulation in one way.
-Consider a slightly modified example where \verb|x| appears twice:
-\begin{lstlisting}
-prev{let x = next{2*3} in next{prev{x}+prev{x}}}
-\end{lstlisting}
-A standard stage semantics would, in four steps, evaluate this to 
-\begin{lstlisting}
-2*3+2*3
-\end{lstlisting}
-Note how the multiplication is duplicated in the residual.
-We find this behavior potentially undesirable for our applications,
-so our semantics instead {\em hoists} the contents of a next statement 
-to the outermost containing $\prev$, turning
-\begin{lstlisting}
-prev{let x = next{2*3} in next{prev{x}+prev{x}}}
-\end{lstlisting}
-into
-\begin{lstlisting}
-let y = 2*3 in
-prev{let x = next{y} in next{prev{x}+prev{x}}}
-\end{lstlisting}
-This then evaluates to 
-\begin{lstlisting}
-let y = 2*3 in y+y
-\end{lstlisting}
-in four steps.  
-This hoisting step occurs as the last step in the evaluation of a $\next$.
+We provide a small-step semantics which evaluates the first stage subterms
+of any \lang\ term.  
+This requires notions of values and steps that are specialized to each world.
 
-Formally, the dynamic semantics comprises three judgements: 
-steps $\stepwor e e'$, which asserts that a term $e$ performs some internal reduction to produce $e'$,
-where both terms are at world $w$;
-doneness $e \done$, which asserts that a term $e$ at world $w$ has no more first stage redexes;
-and hoisting steps $\lift e {e'}$, which are available only at world \bbonem.
+\paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement $\steptwo e {e'}$.
+Since no reduction of stage two terms is to take place, it does nothing but search for \prev\ blocks within $e$.
+A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
+To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
+This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
 
-One important feature of our semantics is that it reduces {\em all} first stage redexes
-in the first pass, even if they occur underneath second stage binders.
-This does not cause evaluation to ``get stuck'' however, 
-because first stage code cannot depend on the results of second stage code,
-as enforced by our type system.
+\paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
+Thus, $\steppure e {e'}$ searches for redexes and reduces them in the standard way, and a ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
 
-More formally, the type safety of our dynamics can be stated
-with the usual progress and preservation lemmas, annotated with a world:
+\paragraph{World \bbonem.}
+Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, searches for redexes and reduces them in place.
+It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other kinds of steps there. 
+The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
+This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable,
+as they would be in the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
+For example, consider:
+\begin{lstlisting} 
+2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
+\end{lstlisting}
+We could reduce this to $\prev([\next~e/x]e')$, but this may potentially duplicate an
+expensive computation $e$. Instead, we choose to \emph{hoist} $e$ outside, binding it
+to a temporary variable $\hat{y}$, and substituting that variable instead:
+\begin{lstlisting} 
+2`let val yhat = e in prev{`1`[next{`2`yhat`1`}/x]e'`2`}`
+\end{lstlisting}
+This behavior is implemented by the $\lift e {e'}$ judgement, called a hoisting step.
+They steps are introduced when a \next\ block has contents that are a residual but not already a variable.
+In essence, they operate by ``bubbling up'' a subtitution to the innermost containing \prev,
+where it is reified into a {\tt let} statement.
+
+\subsection{Type Safety}
+
+The statics and dynamics of \lang\ are related by a type safety theorem
+comprising the usual progress and preservation lemmas, again annotated by world:
 \\{\bf Progress.~} If $\typeswor e A$, then either 
 $\stepwor e {e'}$ or $e \done$ or $\lift e {e'}$ (hoisting available only at $w = \bbonem$).
 \\{\bf Preservation.~} For normal steps, if $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$. 
@@ -160,129 +132,6 @@ For hoisting steps, if $\typesone e A$ and $\lift e {e'}$, then $\typesone {e'} 
 
 In the typing rules above, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage variables under which we are evaluating.
-
-\paragraph{Done.} The judgement $e \done$ indicates that a term $e$ contains no first stage redexes.
-It generalizes over the notions of values and residuals.
-
-\paragraph{Standard Steps.} The step rules are split into reduction rules
-which encode the elimination of redexes, 
-and substep rules which define where such a reduction can occur within a larger term.
-In our semantics, the reduction rules are restricted to worlds \bbonep\ and \bbonem,
-so that only first stage redexes are eliminated.
-Substep rules are provided for all worlds, as well as for $\next$ and $\prev$.
-Also note the extra substep rules at world \bbtwo, which allow steps under binders.
-
-\paragraph{Hoisting Steps.} 
-Once the contents of a next block have been reduced to a residual,
-they are replaced by a fresh variable and then bound to that
-variable in a let term just above the innermost containing prev.
-This is acomplished by a hoisting step,
-most of whose rules are substep rules which ``bubble up'' the
-terms to be bound.
-
-
-\subsection{(Big Step) Dynamics}
-\label{sec:stagedsemantics}
-
-\input{figures/dynamics-overview}
-
-\input{figures/dynamics}
-
-\begin{abstrsyn}
-
-Although the type system of \lang\ (specifically, the opaque nature of $\fut$
-types) ensures that we can perform all first-stage computations before any
-second-stage ones, the fact that first- and second-stage computations are
-interleaved in \lang\ terms means that realizing this notion of staged
-evaluation requires some care.
-
-We evaluate \lang\ terms in two stages. The first stage of evaluation has three
-mutually recursive modes of operation, depending on the world of the term it is
-evaluating. Specifically, first-stage evaluation:
-\begin{itemize}
-\item fully reduces terms in \bbonep, as they are purely first-stage;
-\item reduces terms in \bbonem, save for any world \bbtwo\ terms they may
-contain (inside \texttt{next}s);
-\item scans terms in \bbtwo\ for any world \bbonem\ subterms (inside \texttt{prev}s), 
-and reduces those in place.
-\end{itemize}
-These tasks are accomplished by the $\redsym$, $\redonesym$, and $\redtwosym$
-big-step judgments, respectively (defined in \ref{fig:diaSemantics}).
-
-First-stage evaluation ultimately produces a monostaged term, called a \emph{residual}
-(\ref{fig:values}), all of whose redexes are second-stage computations. The
-second stage of evaluation is therefore just ordinary (unstaged) evaluation of
-this residual, which we notate $\redsym$. (For simplicity, we treat residuals
-and \bbonep\ terms as living in a single language equipped with a standard
-evaluation $\redsym$, whose definition we omit for space reasons.)
-
-Notice that our type system makes it possible to evaluate terms in a staged
-fashion, but doing so still requires some machinery, since the stages are
-syntactically interleaved within an individual term. For example,
-\texttt{qss} contains a first-stage recursive call inside a second-stage
-\texttt{case}; thus, an ordinary outermost-first evaluation strategy would not
-be properly staged.
-
-\paragraph{First-stage evaluation at \bbonem\ ($\redonesym$).}
-The difficulty of evaluating terms at \bbonem\ is that they contain both terms
-at \bbonep\ (via $\curr$) and at \bbtwo\ (via $\fut$); the other evaluation
-rules are ordinary call-by-value rules. When we encounter $\pure{e}$, we
-evaluate $e$ as a monostaged term; \texttt{letg} and \texttt{caseg} simply reach
-inside $\pure$ and evaluate like \texttt{let} and \texttt{case}.
-
-$\next{e}$ is trickier, because we should not evaluate $e$ (at \bbtwo) yet.
-There are two difficulties---$e$ may contain other code at \bbonem\ (which we
-handle with $\redtwosym$, discussed below); and $\next{e}$ may be part of a
-first-stage redex, which we \emph{do} need to reduce. For example, in
-\begin{lstlisting} 
-1`(fn x : $int => e') (next{`2`e`1`})`
-\end{lstlisting}
-we must reduce this first-stage function application, but cannot reduce $e$ yet.
-We could reduce this to $[\next{e}/x]e'$, but this may potentially duplicate an
-expensive computation $e$. Instead, we choose to hoist $e$ outside, binding it
-to a temporary variable $\hat{y}$, and substituting that variable instead:
-\begin{lstlisting} 
-2`let val yhat = e in `1`[next{`2`yhat`1`}/x]e'`
-\end{lstlisting}
-then proceed by evaluating $[\next{\hat{y}}/x]e'$.
-
-We achieve this by threading through a \emph{residual table} $\xi$, which
-functions as a top-level sequence of \texttt{let}-bindings of residuals $e$ to
-variables $\hat{y}$ in an evaluated \bbonem\ term. Thus, $\redonesym$ evaluation
-yields a pair $\rtab \xi v$ of a residual table and a \emph{partial value} $v$
-containing variables bound in that table. The grammar of residual tables and
-partial values (terms fully evaluated at the first but not second stage) is
-given in \ref{fig:values}.
-
-%The input to $\redonesym$ may be open on stage \bbtwo\ variables, but the type
-%system ensures that those must occur under a $\next$. Consequently $\redonesym$
-%will never directly encounter a variable.
-
-\paragraph{First-stage evaluation at \bbtwo\ ($\redtwosym$).}
-Since terms at world \bbtwo\ represent second-stage computations, we should not
-evaluate them yet. However, we do need to evaluate any first-stage computations
-they contain (inside $\prev$), \emph{even if} those computations are guarded or
-underneath binders.
-
-For all constructs other than $\prev{e}$, $\redtwosym$ evaluation proceeds
-recursively on all subterms, yielding a monostaged residual $q$. At $\prev{e}$,
-we evaluate $e$ using $\redonesym$ to $\rtab \xi v$. Because $\colmix e{\fut A}$,
-$v$ must have the canonical form $\next{\hat{y}}$ for some $\hat{y}$ bound in $\xi$. We \emph{reify}
-$\xi$ into a sequence of second-stage \texttt{let} bindings around $\hat{y}$,
-using the auxiliary judgment $\reify\xi q{q'}$ defined in
-\ref{fig:diaSemantics}, then return the resulting residual $q'$.
-
-\end{abstrsyn}
-
-%Note that partial values and residuals are both terms for which stage \bbone\
-%computation has completed; however, partial values are stage~\bbone\ terms,
-%while residuals are stage~\bbtwo\ terms.
-
-%As an optimization, we can include the special-case rule,
-%\begin{mathpar}
-%\inferdiaone [hat] {\red {\next~\hat y}{\cdot,\next~\hat y}}{\cdot}
-%\end{mathpar}
-%to avoid one-for-one variable bindings in the residual.
 
 \subsection{Evaluating Staged Programs}
 
