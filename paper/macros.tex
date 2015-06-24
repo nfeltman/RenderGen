@@ -276,6 +276,12 @@
 			\renewcommand \sub {\steptwosub}
 			\infer {#1}{#2}
 		}
+\newcommand {\infersteppure} [2]
+		{
+			\renewcommand \red {\steppure}
+			\renewcommand \sub {\steppuresub}
+			\infer {#1}{#2}
+		}
 \newcommand {\inferstepone} [2]
 		{
 			\renewcommand \red {\stepwor}

@@ -13,9 +13,9 @@ One of the central concepts in the formalization of \lang\ is the notion of a \e
 which is a slightly finer classification than a stage.
 Whereas there is only one world, \bbtwo, for second-stage computations,
 there are two worlds corresponding to the first stage:
-\bbonem\ for \emph{mixed} first-stage computations that may contain second stage subterms with $\next$ blocks,
-and \bbonep\ for \emph{ground} first-stage computations that may not.
-The distinction between these two first-stage worlds is necessitated by our splitting algorithm,
+\bbonem\ for \emph{mixed} first-stage computations, which may contain second stage subterms with $\next$ blocks,
+and \bbonep\ for \emph{ground} first-stage computations, which that may not.
+The distinction between these two first-stage worlds is necessitated by our splitting algorithm
 and will be discussed in \ref{sec:needGround}.
 
 The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
@@ -87,12 +87,14 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \subsection{Dynamics}
 \label{sec:dynamics}
 
+\input{figures/dynamics}
+
 We provide a small-step semantics which evaluates the first stage subterms
 of any \lang\ term.  
 This requires notions of values and steps that are specialized to each world.
 
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement $\steptwo e {e'}$.
-Since no reduction of stage two terms is to take place, it does nothing but search for \prev\ blocks within $e$.
+Since no reduction of stage two terms is to take place, this judgement does nothing but search for \prev\ blocks within $e$.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
 To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
@@ -117,7 +119,7 @@ to a temporary variable $\hat{y}$, and substituting that variable instead:
 2`let val yhat = e in prev{`1`[next{`2`yhat`1`}/x]e'`2`}`
 \end{lstlisting}
 This behavior is implemented by the $\lift e {e'}$ judgement, called a hoisting step.
-They steps are introduced when a \next\ block has contents that are a residual but not already a variable.
+These steps are introduced when a \next\ block has contents that are a residual but not already a variable.
 In essence, they operate by ``bubbling up'' a subtitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
 
