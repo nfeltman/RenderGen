@@ -71,7 +71,7 @@
 
 
 \newcommand {\pause} {{\tt hold}}
-\renewcommand {\next} {{\tt next}}
+\newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
 \newcommand {\pure} {{\tt gr}}
 
@@ -287,6 +287,12 @@
 			\renewcommand \red {\stepwor}
 			\renewcommand \sub {\stepworsub}
 			\infer {#1}{#2 & w \in \{\bbonem,\bbonep\}}
+		}
+\newcommand {\inferstepGT} [2]
+		{
+			\renewcommand \red {\stepwor}
+			\renewcommand \sub {\stepworsub}
+			\infer {#1}{#2 & w \in \{\bbonep,\bbtwo\}}
 		}
 \newcommand {\inferlift} [2]
 		{

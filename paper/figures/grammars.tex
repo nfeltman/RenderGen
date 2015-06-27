@@ -43,11 +43,9 @@
 %\context &::=\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Terms}\ \ 
-e_w &::= \tup{}
- \gbar \fix {x_w} {x_w} {e_w}
- \gbar \app {e_w} {e_w} \\
-&\gbar \tup{e_w, e_w} 
- \gbar \pio {e_w} 
+e_w &::= \app {e_w} {e_w} 
+ \gbar \tup{e_w, e_w} \\
+&\gbar \pio {e_w} 
  \gbar \pit {e_w} \\
 \exprM &::= \exv v
  \gbar \next \exprT 
@@ -59,7 +57,8 @@ e_w &::= \tup{}
 &\gbar \inl \exprG \gbar \inr \exprG
  \gbar \caseof {\exprG}{\var.\exprG}{\var.\exprG} \\ 
 \exprT &::= \exv q
- \gbar \roll \exprT \gbar \unroll \exprT \\
+ \gbar \fix \varT \varT \exprT \\
+&\gbar \roll \exprT \gbar \unroll \exprT \\
 &\gbar \inl \exprT \gbar \inr \exprT
  \gbar \caseof {\exprT}{\var.\exprT}{\var.\exprT} \\ 
 \text{Partial Values}\ \ 
@@ -74,7 +73,8 @@ u &::= \varG
  \gbar\tup{}
  \gbar \fix \varG \varG \exprG
  \gbar \tup{u, u} \\
-&\gbar \inl u 
+&\gbar \roll u
+ \gbar \inl u 
  \gbar \inr u \\
 \text{Residuals}\ \ 
 q &::= \varT
@@ -84,11 +84,11 @@ q &::= \varT
 &\gbar \tup{q, q} 
  \gbar \pio q 
  \gbar \pit q \\
+&\gbar \roll q
+ \gbar \unroll q\\
 &\gbar \inl q 
  \gbar \inr q
  \gbar \caseof {q}{\varT.q}{\varT.q} \\
-&\gbar \roll q
- \gbar \unroll q\\
 \end{aligned}\]
 \end{abstrsyn}
 \caption{\lang\ abstract syntax. Subscript-$w$ rules apply at all worlds.}

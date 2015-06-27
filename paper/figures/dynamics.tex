@@ -135,7 +135,7 @@
 \fbox{Reduction Rules}	\and
 \inferstepone	{\red {\pio {\exv{\tup{v_1,v_2}}}} {\exv{v_1}}} 										{\cdot} \and
 \inferstepone	{\red {\pit {\exv{\tup{v_1,v_2}}}} {\exv{v_2}}} 										{\cdot} \and
-\inferstepone	{\red {\app {\exv{\lam xe}}{\exv v}} {[v/x]e}} 											{\cdot} \and
+\inferstepone	{\red {\app {\exv{\fix fxe}}{\exv v}} {[\fix fxe,v/f,x]e}} 											{\cdot} \and
 \infersteppure	{\red {\caseof {\exv{\inl v}}{x_2.e_2}{x_3.e_3}} {[v/x_2]e_2}} 							{\cdot} \and
 \infersteppure	{\red {\caseof {\exv{\inr v}}{x_2.e_2}{x_3.e_3}} {[v/x_3]e_3}} 							{\cdot} \and
 \inferstepw		{\stepmix {\caseP {\exv{\pure {\inl v}}}{x_2.e_2}{x_3.e_3}} {[\pure v/x_2]e_2}} 		{\cdot} \and
@@ -145,9 +145,21 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
+\fbox{Value Marking Rules}	\and
+\inferstepw 	{\red {\tup{\exv {v_1},\exv {v_2}}} {\exv{\tup{v_1,v_2}}}} 								{\cdot} \and
+\inferstepGT 	{\red {\inl{\exv v}} {\exv{\inl v}}} 													{\cdot} \and
+\inferstepGT 	{\red {\inr{\exv v}} {\exv{\inr v}}} 													{\cdot} \and
+\infersteptwo 	{\red {\app{\exv {v_1}}{\exv {v_2}}} {\exv{\app{v_1}{v_2}}}} 							{\cdot} \and
+\infersteptwo 	{\red 	{\caseof {\exv{e_1}}{x_2.\exv{e_2}}{x_3.\exv{e_3}}}
+						{\exv{\caseof {e_1}{x_2.e_2}{x_3.e'_3}}}} 										{\cdot} \and
+\inferstepw 	{\stepmix {\pure{\exv v}} {\exv{\pure v}}} 												{\cdot} \and
+\inferstepw 	{\stepmix {\next{\exv y}} {\exv{\next y}}} 												{\cdot} \and
+\end{mathpar}
+\hrule
+\begin{mathpar}
 \fbox{Compatibility Rules}	\and
-\inferstepw		{\red 	{\pio e} 
-						{\pio {e'}}} 											
+\inferstepw		{\red 	{\pio e}
+						{\pio {e'}}}
 				{\sub {}} \and
 \inferstepw		{\red 	{\pit e} 
 						{\pit {e'}}} 											
@@ -164,10 +176,10 @@
 \inferstepw		{\red 	{\app {\exv{v_1}}{e_2 }} 
 						{\app {\exv{v_1}}{e'_2}}} 				
 				{\sub {2}} \and
-\inferstepw		{\red 	{\inl e} 
+\inferstepGT	{\red 	{\inl e} 
 						{\inl {e'}}} 											
 				{\sub {}} \and
-\inferstepw		{\red 	{\inr e} 
+\inferstepGT	{\red 	{\inr e} 
 						{\inr {e'}}} 											
 				{\sub {}} \and
 \inferstepw		{\red	{\caseof {e_1 }{x_2.e_2}{x_3.e_3}} 
@@ -188,6 +200,9 @@
 \inferstepw		{\stepmix	{\letp x {e_1} {e_2}}
 							{\letp x {e_1} {e_2}}}
 				{\stepmix {e_1} {e'_1}} \and
+\inferstepw		{\stepmix	{\caseP {e_1 }{x_2.e_2}{x_3.e_3}} 
+						{\caseP {e'_1}{x_2.e_2}{x_3.e_3}}} 					
+				{\steptwo {e_1} {e'_1}} \and
 \inferstepw		{\stepmix	{\next {e}} 
 							{\next {e'}}} 					
 				{\steptwo e {e'}} \and
@@ -217,7 +232,13 @@
 				{\sub {1}} \and
 \inferlift		{\red 	{\app {\exv{v_1}}{e_2 }}
 						{\app {\exv{v_1}}{e'_2}}}
-				{\sub {2}} 
+				{\sub {2}} \and
+\inferlift		{\red	{\letp x {e_1} {e_2}}
+							{\letp x {e_1} {e_2}}}
+				{\sub {1}} \and
+\inferlift		{\red	{\caseP {e_1 }{x_2.e_2}{x_3.e_3}} 
+						{\caseP {e'_1}{x_2.e_2}{x_3.e_3}}} 
+				{\sub {1}} \and
 \end{mathpar}
 
 \end{abstrsyn}
