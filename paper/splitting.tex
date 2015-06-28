@@ -34,14 +34,19 @@ stage) and \bbtwo\ terms (which only produce second-stage results) is
 fundamental to the structure of the splitting algorithm presented in
 this section.
 
-\textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$ which reduces
-to a residual $q$ (via $\diatwo e q$) and then a final value $v$ (via
-$\reduce q v$), splitting $e$ (via the new relation~$\splittwosym$)
-yields a pair of monostaged terms $\pipeS p l r$. ($p$ and $l.r$
-contain all first- and second-stage computations in $e$ respectively.)
-Executing $p$ in a first pass produces $b$ (via $\reduce p b$). Then,
-in the second pass, $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
-$v$.  Since execution of the first pass serves to generate input for
+\textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$
+which reduces to the residual $\exv q$ (via repeated $\stepsym \bbtwo$),
+splitting $e$ (via the new relation~$\splittwosym$)
+yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
+contain all first- and second-stage computations in $e$ respectively.
+
+First pass evaluation reduces $p$ to $b$,
+which is plugged in for $l$ to produce $[b/l]r$.
+Correctness of splitting states that this should be equivalent 
+to the residual that would have been produced by direct evaluation.
+That is, $[b/l]r \equiv q$.
+
+Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
@@ -51,18 +56,19 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 %masking yields the masked value $\mval i q$ (via~$\vsplito$)
 
 \textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
-to $\rtab \xi v$ (via $\redonesym$) , splitting $e$ (via the new
-relation~$\splitonesym$) again yields the pair of monostage terms
-$\pipeM c l r$. Evaluating $c$ in the first pass produces the pair
+to $\exv v$ (via repeated $\stepsym \bbonem$), 
+splitting $e$ (via the new relation~$\splitonesym$) again 
+yields the pair of monostage terms $\pipeM c l r$. 
+Evaluating $c$ in the first pass produces the pair
 $(i,b)$, where the first element $i$ matches the first-stage results
-contained in $v$.  For example, in the simple case where $\rtab \xi v$
+contained in $v$.  For example, in the simple case where $e$
 contains entirely first-stage computation, such as:
 \begin{lstlisting}
-2`[]`1` 3`gr{`1`literalone+literaltwo`3`}`
+1` 3`gr{`1`literalone+literaltwo`3`}`
 \end{lstlisting}
-the first-stage result is the value 3.  The second element of the pair
+the first-stage result is the value 3.  The second element of the pair, $b$,
 is the boundary value used as input to the resumer in second pass
-evaluation as $\reduce {[b/l]r} {v'}$, where $v'$ is the same as
+evaluation as $[b/l]r \equiv q$, where $q$ is the same as
 result produced by second-stage computations in $e$.  For example, in
 the case where $\rtab \xi v$ contains entirely second-stage
 computation, such as:
