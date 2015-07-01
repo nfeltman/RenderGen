@@ -30,3 +30,44 @@ end-to-end-correct-1 :
 
 %worlds () (end-to-end-correct-1 _ _ _ _ _ _).
 %total (D) (end-to-end-correct-1 _ _ D _ _ _).
+
+
+end-to-end-correct-2 : 
+	of^ E A wor2 ->  
+	form^ E comp1 wor2 -> 
+	mstep* E (exv Q) wor2 -> 
+	split2 E P R -> 
+	mred P B -> 
+	splitres Q Q' -> 
+	lang-convert B lang2 BB ->
+	reqv (R BB) Q' -> type.
+%mode end-to-end-correct-2 +Dof +Dcomp +Dpath -Dspl -Dred' -Dsplv -Dconv -Deqv.
+
+- : end-to-end-correct-2 
+		(of^-exv Dof) (form^exv Dval)
+		mstep*-id
+		(spl2-exv Dsplr)
+		mred-exv
+		Dsplr
+		conv-ztup
+		reqv-id
+	<- splr-total Dof Dval Dsplr.
+
+- : end-to-end-correct-2 
+		Dof Dcomp
+		(mstep*-step Dstep Dpath)
+		Dspl
+		Dred
+		Dsplv
+		Dconv
+		(Deqv1 ;; Deqv2')
+	<- mstep-pres-ty Dstep Dof Dof'
+	<- mstep-pres-norm Dstep Dcomp Dcomp'
+	<- end-to-end-correct-2 Dof' Dcomp' Dpath (Dspl' : split2 E' P' R') Dred' Dsplv Dconv2' Deqv2
+	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv1' Deqv1
+	<- lang-convert-unique Dconv2' Dconv1' Deq
+	<- eq-cong R' Deq Deq'
+	<- reqv-resp Deqv2 Deq' eq-term_ Deqv2'.
+
+%worlds () (end-to-end-correct-2 _ _ _ _ _ _ _ _).
+%total (D) (end-to-end-correct-2 _ _ D _ _ _ _ _).
