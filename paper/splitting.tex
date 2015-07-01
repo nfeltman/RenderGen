@@ -51,8 +51,8 @@ we state a few theorems regarding the totality and uniqueness of splitting:
 \begin{theorem} \leavevmode
 \label{thm:unique}
 \begin{itemize} 
-\item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, $l = l'$, and $r = r'$.
-\item If $\splitone e A p {l.r}$ and $\splitone e A {p'} {l'.r'}$, then $p = p'$, $l = l'$, and $r = r'$.
+\item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, and $l.r = l'.r'$.
+\item If $\splitone e A p {l.r}$ and $\splitone e A {p'} {l'.r'}$, then $p = p'$, and $l.r = l'.r'$.
 \item If $v \vsplito \mval i q$ and $v \vsplito \mval {i'} {q'}$, then $i = i'$ and $q = q'$.
 \end{itemize}
 \end{theorem}
@@ -60,7 +60,64 @@ we state a few theorems regarding the totality and uniqueness of splitting:
 The proofs are by induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
 
-\subsection{Correctness}
+\subsection{Partial Value Splitting}
+\label{sec:masking}
+
+Partial value splitting (given by the relation $\vsplito$) converts a 
+partial value $v$ into a split value $\mval i q$.
+The first part of the masked value, $i$, is a monostage value holding
+the result of all first-stage components of $v$.  The second
+component, $q$, is a residual representing all second-stage
+variable references of $v$.
+
+To provide intuition about the intent of partial value splitting, consider the
+following partial value:
+\begin{lstlisting}
+1` (next{`2`yhat`1`}, (`3`gr{`1`injL 7`3`}`1`, next{`2`yhat`1`}))`
+\end{lstlisting}
+To construct the value $i$ representing its first-stage components,
+splitting first redacts all second-stage (blue) parts, along with the
+surrounding \texttt{next} annotations. 
+The resulting ``holes'' in the term are replaced with
+unit values.
+%\begin{lstlisting}
+%4`##########`1` (`4`######`1`, injL (gr{7}, `4`######`1`))`
+%\end{lstlisting}
+%The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
+\begin{lstlisting}
+1`((), (3`gr{`1`injL 7`3`}`,()))`
+\end{lstlisting}
+Finally, partial value splitting drops \texttt{gr} annotations yielding:
+\begin{lstlisting}
+1`((), (injL 7,()))`
+\end{lstlisting}
+To construct the residual $q$ (corresponding to second-stage computations) partial value splitting redacts all \texttt{gr} blocks
+(replacing them with unit) and \texttt{next} annotations:
+\begin{lstlisting}
+2`(yhat, ((),yhat))`
+\end{lstlisting}
+A precise definition of the partial value splitting relation is given in
+\ref{fig:valMask}.
+
+%Since lambdas may represent multi-stage computations, masking splits
+%the body of lambdas as general world \bbonem\ terms (as described in
+%\ref{sec:split-one}), and packages the resulting terms as functions in
+%both the first- and second-stage parts of the masked value.
+
+% Masking operates by first inducting on the entries of the residual table.  
+% Being purely second-stage content, these are reified into let statements at the top of the resumer.
+% Once the table is empty, masking inducts on value itself.
+
+% Masking assigns ground values to the immediate value
+% and likewise assigns references into the residual table to the resumer.
+% In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
+% Note that the \texttt{gr} and \texttt{next} annotations are erased.
+
+% Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
+% However, the tags of injections and rolls are replicated only in the immediate value, 
+% since they represent first-stage information.
+
+\subsection{Term Splitting}
 
 For any $\coltwo e A$
 which reduces to the residual $\exv q$ (via repeated $\stepsym \bbtwo$),
@@ -68,21 +125,25 @@ splitting $e$ (via the new relation~$\splittwosym$)
 yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
 contain all first- and second-stage computations in $e$ respectively.
 
-First pass evaluation reduces $p$ to $b$,
-which is plugged in for $l$ to produce $[b/l]r$.
-Correctness of splitting states that this should be equivalent 
-to the residual produced by direct evaluation, $q$.
+This output is a multistage program in its own right.
+It evaluates by reducing $p$ to $b$ in the first pass,
+then plugging that result in for $l$ to produce $[b/l]r$,
+which is evaluated in the second pass.
 Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
-More precisely, we can state correctness as \ref{thm:allCorrect}:
+
+We define the correctness of splitting 
+by saying that $[b/l]r$, the \emph{applied resumer}, should be equivalent 
+to the residual produced by direct evaluation, $q$.
+More precisely:
 \begin{theorem}
 \label{thm:allCorrect}
 If $\typestwo [\cdot] e A$, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$,
 then $\reduce p b$ and $[b/l]r \equiv q$.
 \end{theorem}
-In this theorem, $\reduce e v$ indicates standard monostage reduction of the term $e$ to the value $v$,
-and $\equiv$ indicates a monostage equivalence, which we cover later.
+In this theorem, ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
+and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
 
 We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
 In the base case, where $e$ is already a residual of the form $\exv q$, we know
@@ -119,11 +180,12 @@ We can now define an analogue of \ref{lem:twoCorrect} for steps at \bbonem:
 If $e \stepsym \bbonem e'$, $\splitone e A p {l.r}$, $\splitone {e'} A {p'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
 then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
 \end{lemma}
-Like with the \bbtwo\ version, this requires that the boundary-value-applied resumer be equivalent both sides of the step.
-But additionally, it also requires that the $i$ be exactly identical on both sides of the evaluation.
+Like with the \bbtwo\ version, this requires that the applied resumer be equivalent both sides of the step.
+But additionally, it also requires that first stages results be exactly identical.
 
+
+\subsection{writing from here down...}
 ...
-
 
 For example, in the simple case where $e$
 contains entirely first-stage computation, such as:
@@ -165,89 +227,7 @@ describe the algorithm for splitting both \bbonem\ terms
 %  immediate result} $i$ and the boundary value $b$ (motivating the
 %name {\em combined term}). 
 
-\subsection{Masking}
-\label{sec:masking}
 
-%Masking separates residual tables and partial values into first-stage
-%results and second stage residuals.
-
-Masking (given by the relation $\vsplito$) converts a residual table $\xi$
-and associated partial value $v$ into a masked value $\mval i q$.
-%that explicitly separates the first stage components of 
-%result from the residual.
-%where $i$ is a monostage value encoding all
-%first-stage components of the partial value, and $q$ is a monostage
-%term encoding all of the second-stage computations of the partial
-%value.
-The first part of the masked value, $i$, is a monostage value holding
-the result of all first-stage components of $v$.  The second
-component, $q$, is a residual representing all second-stage
-computations in $\xi$ and $v$.
-
-%(A precise definition of masking is
-%given in \ref{sec:masking}.)
-
-%Masking is not a transformation performed as part of the splitting
-%algorithm.  Instead, masking defines an intuitive notion of the first-stage 
-%and second-stage ``components'' of residual tables and partial
-%values, and it is used to define the requirements of what output
-%splitting of \bbonem\ terms must produce.
-To provide intuition about the intent of masking, consider the
-following residual table and partial value:
-\begin{lstlisting}
-2`[yhat |-> 1+2]`1` (next{`2`yhat`1`}, injL (3`gr{`1`7`3`}`, next{`2`yhat`1`}))`
-\end{lstlisting}
-To construct the value $i$ representing its first-stage components,
-masking first redacts all second-stage (blue) parts, along with the
-surrounding \texttt{next} annotations. (This redaction removes the
-entire residual table since it only represents second-stage
-computations.) The resulting ``holes'' in the term are replaced with
-unit values.
-%\begin{lstlisting}
-%4`##########`1` (`4`######`1`, injL (gr{7}, `4`######`1`))`
-%\end{lstlisting}
-%The holes inside the term needs to be filled with something to convey the lack of information, so we use a unit values:
-\begin{lstlisting}
-1`((), injL (3`gr{`1`7`3`}`,()))`
-\end{lstlisting}
-Finally, masking drops \texttt{gr} annotations yielding:
-\begin{lstlisting}
-1`((), injL (7,()))`
-\end{lstlisting}
-To construct the residual $q$ (corresponding to second-stage computations) masking first redacts all \texttt{gr} blocks
-(replacing them with unit), \texttt{next} annotations, and injection tags:
-%\begin{lstlisting}
-%2`[yhat |-> 1+2]`1` (`4`####`2`yhat`4`#`1`, `4`####`1` (`4`####`1`,`4`####`2`yhat`4`#`1`))`
-%\end{lstlisting}
-%Where the \texttt{gr} blocks left a hole, we put in a unit values:
-\begin{lstlisting}
-2`[yhat |-> 1+2] (yhat, ((),yhat))`
-\end{lstlisting}
-Then the residual table is reified into \texttt{let} bindings,
-yielding:
-\begin{lstlisting}
-2`let yhat = 1+2 in (yhat, ((),yhat))`
-\end{lstlisting}
-A precise definition of the masking relation is given in
-\ref{fig:valMask}.
-
-%Since lambdas may represent multi-stage computations, masking splits
-%the body of lambdas as general world \bbonem\ terms (as described in
-%\ref{sec:split-one}), and packages the resulting terms as functions in
-%both the first- and second-stage parts of the masked value.
-
-% Masking operates by first inducting on the entries of the residual table.  
-% Being purely second-stage content, these are reified into let statements at the top of the resumer.
-% Once the table is empty, masking inducts on value itself.
-
-% Masking assigns ground values to the immediate value
-% and likewise assigns references into the residual table to the resumer.
-% In both cases, the alternate component is assigned to $\tup{}$, to represent trivial information.
-% Note that the \texttt{gr} and \texttt{next} annotations are erased.
-
-% Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
-% However, the tags of injections and rolls are replicated only in the immediate value, 
-% since they represent first-stage information.
 
 \subsection{Term Splitting at \bbonem}
 \label{sec:split-one}

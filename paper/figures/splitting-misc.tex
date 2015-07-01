@@ -3,16 +3,13 @@
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
-\infer {\rtab {\hat y \mapsto q,\xi} v	\vsplito \mval i {\letin {\hat y} q r}}				{\rtab \xi v \vsplito \mval i r}					\and
-\infer {\rtab \cdot {\tup{}} 			\vsplito \mval {\tup{}} {\tup{}}}					{\cdot}												\and
-\infer {\rtab \cdot {\pure m} 			\vsplito \mval m {\tup{}}}							{\cdot}												\and
-\infer {\rtab \cdot {\next{\hat y}} 	\vsplito \mval {\tup{}} {\hat y}}					{\cdot}												\and
-\infer {\rtab \cdot {\tup{v_1,v_2}} 	\vsplito \mval {\tup{i_1,i_2}} {\tup{r_1,r_2}}}		{\rtab \cdot {v_1} \vsplito \mval {i_1} {r_1} 
-																							&\rtab \cdot {v_2} \vsplito \mval {i_2} {r_2}}		\and
-\infer {\rtab \cdot {\scriptCapp v} 	\vsplito \mval {\scriptCapp i} r}					{\rtab \cdot v \vsplito \mval i r
-																							&\scriptC \in 
-																							\{\mathtt{inl},\mathtt{inr},\mathtt{roll}\}}		\and
-\infer {\rtab \cdot {\lam x e}			\vsplito \mval {\lam x c} {\lam {\tup{x,l}} r}}		{\splitone e A c {l.r}}								\and
+\infer {\tup{} 				\vsplito \mval {\tup{}} {\tup{}}}										{\cdot}												\and
+\infer {\pure m 			\vsplito \mval m {\tup{}}}												{\cdot}												\and
+\infer {\next{\hat y} 		\vsplito \mval {\tup{}} {\hat y}}										{\cdot}												\and
+\infer {\tup{v_1,v_2} 		\vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}}							{v_1 \vsplito \mval {i_1} {q_1} 
+																									&v_2 \vsplito \mval {i_2} {q_2}}					\and
+\infer {\fix f x e			\vsplito \mval {\fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}} 
+							{\fix f {\tup{x,\roll l}} r}}											{\splitone e A c {l.r}}								\and
 \end{mathpar}
 \end{abstrsyn}
 \caption{Masking separates a residual table and its associated partial value into its first- and second-stage components.}
