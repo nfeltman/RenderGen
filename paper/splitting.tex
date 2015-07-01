@@ -34,7 +34,35 @@ stage) and \bbtwo\ terms (which only produce second-stage results) is
 fundamental to the structure of the splitting algorithm presented in
 this section.
 
-\textbf{\bbtwo\ term splitting.}  For any $\coltwo e A$
+Our splitting algorithm is given by the judgements $\splittwo e A p l r$, $\splitone e A c {l.r}$, and $v \vsplito \mval i q$,
+which apply to \bbtwo\ terms, \bbonem\ terms, and partial values, respectively.
+Before discussing the meaning of these outputs, 
+we state a few theorems regarding the totality and uniqueness of splitting:
+
+\begin{theorem} \leavevmode
+\label{thm:total} 
+\begin{itemize} 
+\item For term $e$, if $\typestwo e A$, then $\splittwo e A p l r$. 
+\item For term $e$, if $\typesone e A$, then $\splitone e A p {l.r}$.
+\item For partial value $v$, if $\typesone v A$, then $v \vsplito \mval i q$.
+\end{itemize}
+\end{theorem}
+
+\begin{theorem} \leavevmode
+\label{thm:unique}
+\begin{itemize} 
+\item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, $l = l'$, and $r = r'$.
+\item If $\splitone e A p {l.r}$ and $\splitone e A {p'} {l'.r'}$, then $p = p'$, $l = l'$, and $r = r'$.
+\item If $v \vsplito \mval i q$ and $v \vsplito \mval {i'} {q'}$, then $i = i'$ and $q = q'$.
+\end{itemize}
+\end{theorem}
+
+The proofs are by induction on the typing derivation
+and simultaneous induction on the splitting derivations, respectively.
+
+\subsection{Correctness}
+
+For any $\coltwo e A$
 which reduces to the residual $\exv q$ (via repeated $\stepsym \bbtwo$),
 splitting $e$ (via the new relation~$\splittwosym$)
 yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
@@ -50,26 +78,54 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 More precisely, we can state correctness as \ref{thm:allCorrect}:
 \begin{theorem}
 \label{thm:allCorrect}
-If $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$ and $\splitone e A p {l.r}$,
+If $\typestwo [\cdot] e A$, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$,
 then $\reduce p b$ and $[b/l]r \equiv q$.
 \end{theorem}
-where $\reduce e v$ indicates standard monostage reduction of the term $e$ to the value $v$,
-and $e_1 \equiv e_2$ indicates a monostage equivalence (defined later).
+In this theorem, $\reduce e v$ indicates standard monostage reduction of the term $e$ to the value $v$,
+and $\equiv$ indicates a monostage equivalence, which we cover later.
 
 We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
 In the base case, where $e$ is already a residual of the form $\exv q$, we know
-$\splitone {\exv q} A {\exv{\tup{}}} {\_.q}$, and so by uniqueness of splitting, 
+$\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, and so by uniqueness of splitting, 
 $p = b = \tup{}$ and $r = q$.
 It directly follows that $\reduce {\exv {\tup {}}} {\tup {}}$ and $q \equiv q$.
+In the recursive case, we have 
+$\typestwo [\cdot] e A$, $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$.
+To help this case, we introduce to a new lemma, whose proof will concern the rest of this section:
+\begin{lemma}
+\label{lem:twoCorrect}
+If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
+then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
+\end{lemma}
+By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
+The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
+From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
+and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly. \qed
 
+All that remains is to prove \ref{lem:twoCorrect}.  
+We will do this by induction on the derivation of the step.
+However, since second-stage steps can depend on first-stage steps,
+we first cover the definition of splitting terms at \bbonem.
 
-\textbf{\bbonem\ term splitting.}  For any $\colmix e A$ which reduces
-to $\exv v$ (via repeated $\stepsym \bbonem$), 
+For any $\colmix e A$, 
 splitting $e$ (via the new relation~$\splitonesym$) again 
 yields the pair of monostage terms $\pipeM c l r$. 
 Evaluating $c$ in the first pass produces the pair
-$(i,b)$, where the first element $i$ matches the first-stage results
-contained in $v$.  For example, in the simple case where $e$
+$\tup{i,b}$, where the first element $i$ represents the first stage part of the results of $e$,
+and $b$ is the boundary value.
+We can now define an analogue of \ref{lem:twoCorrect} for steps at \bbonem:
+\begin{lemma}
+\label{lem:oneCorrect}
+If $e \stepsym \bbonem e'$, $\splitone e A p {l.r}$, $\splitone {e'} A {p'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
+then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
+\end{lemma}
+Like with the \bbtwo\ version, this requires that the boundary-value-applied resumer be equivalent both sides of the step.
+But additionally, it also requires that the $i$ be exactly identical on both sides of the evaluation.
+
+...
+
+
+For example, in the simple case where $e$
 contains entirely first-stage computation, such as:
 \begin{lstlisting}
 1` 3`gr{`1`literalone+literaltwo`3`}`
@@ -394,7 +450,7 @@ Rather than attempt global optimization of the outputs of splitting,
 we instead leverage the type system to indicate when a term contains
 no second-stage computations by adding a third world \bbonep\ whose
 terms are purely first-stage.  While not necessary for ordinary staged
-term evaluation (\ref{sec:stagedsemantics}), this annotation is
+term evaluation (\ref{sec:semantics}), this annotation is
 particularly useful for splitting. Specifically, splitting $\pure e$
 terms trivially yields a unit resumer.
 
