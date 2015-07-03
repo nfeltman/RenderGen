@@ -3,103 +3,144 @@
 \begin{figure*}
 \begin{abstrsyn}
 
-\textbf{Splitting Terms at World \bbtwo\ ---
-$\splittwo {\coltwo e A} A p l r$}
-\begin{enumerate}
-\item[] Precomputation $p$ is a monostaged term containing the first-stage computations in $e$.
-\item[] Resumer $l.r$ is a monostaged term containing the second-stage computations in $e$.
-\end{enumerate}
+\begin{theorem} \leavevmode
+\label{thm:total} 
+\begin{itemize} 
+\item For term $e$, if $\typestwo e A$, then $\splittwo e A p l r$. 
+\item For term $e$, if $\typesone e A$, then $\splitone e A c {l.r}$.
+\item For partial value $v$, if $\typesone v A$, then $v \vsplito \mval i q$.
+\end{itemize}
+\end{theorem}
 
-\textbf{Splitting Terms at World \bbonem\ ---
-$\splitone {\colmix e A} A c {l.r}$}
-\begin{enumerate}
-\item[] Combined result $c$ is a monostage term containing the first-stage computations in $e$.
-\item[] Resumer $l.r$ is a monostage term containing the second-stage computations in $e$.
-\end{enumerate}
+\begin{theorem} \leavevmode
+\label{thm:unique}
+\begin{itemize} 
+\item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, and $l.r = l'.r'$.
+\item If $\splitone e A p {l.r}$ and $\splitone e A {c'} {l'.r'}$, then $c = c'$, and $l.r = l'.r'$.
+\item If $v \vsplito \mval i q$ and $v \vsplito \mval {i'} {q'}$, then $i = i'$ and $q = q'$.
+\end{itemize}
+\end{theorem}
 
-\textbf{Masking ---
-$\rtab \xi v \vsplito \mval i q$}
-\begin{enumerate}
-\item[] Input $\rtab \xi v$ is the residual table and partial value to be masked.
-\item[] Immediate value $i$ is a monostage value representing the first-stage components of $v$.
-\item[] Residual $q$ is a monostaged term representing the second-stage computations in $\xi$ and $v$.
-\end{enumerate}
+\begin{theorem}
+\label{thm:allCorrect}
+If $\typestwo [\cdot] e A$, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$,
+then $\reduce p b$ and $[b/l]r \equiv q$.
+\end{theorem}
 
-\hrule
-\vspace{1em}
+\begin{lemma}
+\label{lem:twoCorrect}
+If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
+then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
+\end{lemma}
 
-\centering
-\setlength{\unitlength}{2.8pt}
-\begin{tabular}{c|c}
-{\large \bf Splitting at World \bbonem} & 
-{\large \bf Splitting at World \bbtwo} \\
+\begin{lemma}
+\label{lem:oneCorrect}
+If $e \stepsym \bbonem e'$, $\splitone e A p {l.r}$, $\splitone {e'} A {p'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
+then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
+\end{lemma}
 
-\begin{picture} (80,54) (10,30)
+\begin{lemma}
+\label{lem:oneCorrect}
+If $e \stepsym \bbonep e'$ and $\reduce {e'} i$, then $\reduce e i$.
+\end{lemma}
 
-\thicklines
-\put(25,37){\oval(22,10)}
-\put(25,75){\oval(22,10)}
-\put(75,37){\oval(22,10)}
-\put(75,75){\oval(22,10)}
-\put(36,37){\vector(1,0){28}}
-\put(36,75){\vector(1,0){28}}
-\put(25,70){\vector(0,-1){28}}
-\put(75,70){\vector(0,-1){28}}
+% \textbf{Splitting Terms at World \bbtwo\ ---
+% $\splittwo {\coltwo e A} A p l r$}
+% \begin{enumerate}
+% \item[] Precomputation $p$ is a monostaged term containing the first-stage computations in $e$.
+% \item[] Resumer $l.r$ is a monostaged term containing the second-stage computations in $e$.
+% \end{enumerate}
 
-\put(14,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\colmix e A$}}}
-\put(14,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\rtab \xi v$}}}
-\put(64,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\pipeM c l r$}}}
-\put(64,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\mval i q$}}}
+% \textbf{Splitting Terms at World \bbonem\ ---
+% $\splitone {\colmix e A} A c {l.r}$}
+% \begin{enumerate}
+% \item[] Combined result $c$ is a monostage term containing the first-stage computations in $e$.
+% \item[] Resumer $l.r$ is a monostage term containing the second-stage computations in $e$.
+% \end{enumerate}
 
-\put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splitonesym\right)$}}
-\put(25,33){\makebox[50 \unitlength]{Masking $\left(\vsplito\right)$}}
-\put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\$\reduce c {\tup{i,b}}$\\$q\equiv [b/l]r$ }}
-\put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\$\diaone e \xi v$}}
+% \textbf{Masking ---
+% $\rtab \xi v \vsplito \mval i q$}
+% \begin{enumerate}
+% \item[] Input $\rtab \xi v$ is the residual table and partial value to be masked.
+% \item[] Immediate value $i$ is a monostage value representing the first-stage components of $v$.
+% \item[] Residual $q$ is a monostaged term representing the second-stage computations in $\xi$ and $v$.
+% \end{enumerate}
 
-\put(28,66){\parbox[t]{44 \unitlength}{ 
-	\textbf{Correctness Condition:} \\ 
-	Splitting followed by evaluation (top and right arrows)
-	produces the same result as 
-	\lang\ evaluation followed by masking (left and bottom arrows),
-	up to a term equivalence.
-}}
-\end{picture}
+% \hrule
+% \vspace{1em}
 
-&
-\begin{picture} (80,54) (10,30)
+% \centering
+% \setlength{\unitlength}{2.8pt}
+% \begin{tabular}{c|c}
+% {\large \bf Splitting at World \bbonem} & 
+% {\large \bf Splitting at World \bbtwo} \\
 
-\thicklines
-\put(25,75){\oval(22,10)}
-\put(75,37){\oval(22,10)}
-\put(75,75){\oval(22,10)}
-\put(25,37){\vector(1,0){39}}
-\put(36,75){\vector(1,0){28}}
-\put(25,70){\line(0,-1){33}}
-\put(75,70){\vector(0,-1){28}}
+% \begin{picture} (80,54) (10,30)
 
-\put(14,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\coltwo e A$}}}
-\put(64,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\pipeS p l r$}}}
-\put(64,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$q$}}}
+% \thicklines
+% \put(25,37){\oval(22,10)}
+% \put(25,75){\oval(22,10)}
+% \put(75,37){\oval(22,10)}
+% \put(75,75){\oval(22,10)}
+% \put(36,37){\vector(1,0){28}}
+% \put(36,75){\vector(1,0){28}}
+% \put(25,70){\vector(0,-1){28}}
+% \put(75,70){\vector(0,-1){28}}
 
-\put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splittwosym\right)$}}
-\put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\ $\reduce p b$\\$q\equiv [b/l]r$}}
-\put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\ $\diatwo e q$}}
+% \put(14,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\colmix e A$}}}
+% \put(14,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\rtab \xi v$}}}
+% \put(64,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\pipeM c l r$}}}
+% \put(64,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\mval i q$}}}
 
-\put(28,66){\parbox[t]{44 \unitlength}{ 
-	\textbf{Correctness Condition:} \\ 
-	Splitting followed by evaluation (top and right arrows)
-	produces the same result as 
-	\lang\ evaluation (left and bottom arrow),
-	up to a term equivalence.
-}}
-\end{picture}
+% \put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splitonesym\right)$}}
+% \put(25,33){\makebox[50 \unitlength]{Masking $\left(\vsplito\right)$}}
+% \put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\$\reduce c {\tup{i,b}}$\\$q\equiv [b/l]r$ }}
+% \put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\$\diaone e \xi v$}}
 
-\\ 
+% \put(28,66){\parbox[t]{44 \unitlength}{ 
+% 	\textbf{Correctness Condition:} \\ 
+% 	Splitting followed by evaluation (top and right arrows)
+% 	produces the same result as 
+% 	\lang\ evaluation followed by masking (left and bottom arrows),
+% 	up to a term equivalence.
+% }}
+% \end{picture}
 
-\end{tabular}
+% &
+% \begin{picture} (80,54) (10,30)
+
+% \thicklines
+% \put(25,75){\oval(22,10)}
+% \put(75,37){\oval(22,10)}
+% \put(75,75){\oval(22,10)}
+% \put(25,37){\vector(1,0){39}}
+% \put(36,75){\vector(1,0){28}}
+% \put(25,70){\line(0,-1){33}}
+% \put(75,70){\vector(0,-1){28}}
+
+% \put(14,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\coltwo e A$}}}
+% \put(64,75){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$\pipeS p l r$}}}
+% \put(64,37){\raisebox{-0.5ex}{\makebox[22 \unitlength]{$q$}}}
+
+% \put(25,78){\makebox[50 \unitlength]{Splitting $\left(\splittwosym\right)$}}
+% \put(76,55){\parbox[l]{20 \unitlength}{Separated \\ Evaluation: \\ $\reduce p b$\\$q\equiv [b/l]r$}}
+% \put(9,55){\parbox[r]{20 \unitlength}{First-Stage \\ \lang\ Eval.: \\ $\diatwo e q$}}
+
+% \put(28,66){\parbox[t]{44 \unitlength}{ 
+% 	\textbf{Correctness Condition:} \\ 
+% 	Splitting followed by evaluation (top and right arrows)
+% 	produces the same result as 
+% 	\lang\ evaluation (left and bottom arrow),
+% 	up to a term equivalence.
+% }}
+% \end{picture}
+
+% \\ 
+
+% \end{tabular}
 
 
 \end{abstrsyn}
-\caption{Overview of splitting.}
+\caption{\TODO put a real caption here and format the figure nicely}
 \label{fig:splittingSummary}
 \end{figure*}

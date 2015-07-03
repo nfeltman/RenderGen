@@ -12,15 +12,15 @@ which includes and subsumes the concept of a stage.
 Our system has three worlds: \bbonem, \bbonep, and \bbtwo.
 Whereas there is only one world, \bbtwo, for second-stage computations,
 there are two worlds corresponding to the first stage:
-\bbonem\ for \emph{mixed} first-stage computations, which may contain second stage subterms with $\next$ blocks,
-and \bbonep\ for \emph{ground} first-stage computations, which that may not.
+\bbonem\ for \emph{mixed} first-stage computations, which may contain second-stage subterms within $\next$ blocks,
+and \bbonep\ for \emph{ground} first-stage computations, which may not.
 The distinction between these two first-stage worlds is necessitated by our splitting algorithm
 and will be discussed in \ref{sec:needGround}.
 
 The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
 Note that some production rules are parameterized by world.
 Our syntax also distinguishes values from general terms, 
-with an underline (``$\exv v$'') noting the explicit inclusion of values into general terms.
+with underline term constructor (``$\exv v$'') explicitly noting the inclusion of values into general terms.
 There are three forms of value: \emph{partial values} for \bbonem, \emph{ground values} for \bbonep, and \emph{residuals} for \bbtwo.
 All represent computations which have no remaining work in the first stage.
 
@@ -48,18 +48,18 @@ encapsulates $e$ as a computation to be evaluated in the future---first-stage
 computations can shuffle it around, but not use its result.  The only way to use
 a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
 
+$\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
+computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
+$\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contain
+second-stage computations because $\fut$ types are not available in world
+\bbonep.)
+
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
 For example, \texttt{qss} is a function at world \bbonem\ which takes a
 $\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
 second-stage integer) to a $\fut\rmint$ (a second-stage
 computation of an integer).
-
-$\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
-computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
-$\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contain
-second-stage computations because $\fut$ types are not available in world
-\bbonep.)
 
 An $e$ of type $\curr A$ at \bbonem\ can be unwrapped as an $A$ at \bbonep\
 using the $\letp xe{e'}$ construct, which binds $\colpure xA$ in a \bbonem\ term
@@ -92,11 +92,11 @@ The central tenet of a staged language
 is that first stage code should be evaluated entirely before second stage code.
 Accordingly, our dynamics operates in two passes.
 The first pass takes an input program $\coltwo e A$ and reduces it to a residual,
-$\exv q$, and the second pass further reduces this residual to a value.
+$\exv q$, and the second pass further reduces this residual.
 Since a residual $q$ is a monostage objects, this second pass is just standard monostage evaluation.
-Accordingly, this paper concerns itself only with the first pass of evaluation.
+Consequently, this paper is concerned only with the first pass of evaluation.
 
-Since $\coltwo e A$ may be constructed out of terms at other world, 
+Since $\coltwo e A$ may be constructed out of terms at other worlds, 
 our dynamics requires notions of values and steps that are specialized to each world.
 
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement $\steptwo e {e'}$.
@@ -115,7 +115,7 @@ The value form for \bbonem, called a partial value, comprises units, tuples, fun
 This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable,
 as they would be in the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
 For example, consider:
-\begin{lstlisting} 
+\begin{lstlisting}
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
 \end{lstlisting}
 We could reduce this to $\prev([\next~e/x]e')$, but this may potentially duplicate an
@@ -132,24 +132,28 @@ where it is reified into a {\tt let} statement.
 \subsection{Type Safety}
 
 The statics and dynamics of \lang\ are related by a type safety theorem
-comprising the usual progress and preservation lemmas, again annotated by world.
+comprising progress and preservation, again annotated by world.
 In all cases below, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
-\\{\bf Progress.~} 
-\begin{itemize}
+\begin{theorem}\leavevmode
+\label{thm:progress} 
+\begin{itemize} 
 \item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
 \item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
 \item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
 \end{itemize}
-{\bf Preservation.~} 
-\begin{itemize}
+\end{theorem}
+\begin{theorem}\leavevmode
+\label{thm:preservation} 
+\begin{itemize} 
 \item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
 \item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
 \end{itemize}
+\end{theorem}
 
 \subsection{Evaluating Staged Programs}
 
-A multistage function, such as \texttt{qss} from \ref{sec:overview}, has
+The multistage function \texttt{qss} from \ref{sec:overview} has
 type $A\to \fut (B \to C)$ at \bbonem.%
 \footnote{We can rewrite \texttt{qss} in this curried form, or apply a
 higher-order currying function.}
