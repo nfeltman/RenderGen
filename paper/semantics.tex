@@ -41,12 +41,13 @@ and variables can only be used at the same world where they were introduced.
 
 Differing worlds (and hence, differing stages of computation) interact by means
 of the $\fut$ and $\curr$ type formers.  These modalities are internalizations
-of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonep.
+of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonem.
 For example, given a term $e$ of type $A$ at world \bbtwo, 
-$\next{e}$ has type $\fut A$ at \bbonem. This essentially
-encapsulates $e$ as a computation to be evaluated in the future---first-stage
-computations can shuffle it around, but not use its result.  The only way to use
-a $\fut A$ is to wrap it with $\prev$, yielding an $A$ at \bbtwo.
+$\next{e}$ has type $\fut A$ at \bbonem. 
+This essentially encapsulates $e$ as a computation that will be evaluated in the future, 
+but it provides a handle (of type $\fut A$) to that eventual value which can be moved around now.
+Computations at \bbonem\ can shuffle this handle around, but not access the future result it refers to.  
+The only way to eliminate a $\fut$ wrapper is to do so from the future by using a {\tt prev}, yielding an $A$ at \bbtwo.
 
 $\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
 computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
@@ -91,15 +92,17 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 The central tenet of a staged language
 is that first stage code should be evaluated entirely before second stage code.
 Accordingly, our dynamics operates in two passes.
-The first pass takes an input program $\coltwo e A$ and reduces it to a residual,
-$\exv q$, and the second pass further reduces this residual.
-Since a residual $q$ is a monostage objects, this second pass is just standard monostage evaluation.
+The first pass takes an input program $\coltwo e A$
+and reduces all of its first-stage subterms in place,
+eventually resulting in a residual $\exv q$.
+The second pass further reduces this residual.
+Since a residual $q$ is a monostage object, this second pass is just standard monostage evaluation.
 Consequently, this paper is concerned only with the first pass of evaluation.
 
 Since $\coltwo e A$ may be constructed out of terms at other worlds, 
 our dynamics requires notions of values and steps that are specialized to each world.
 
-\paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement $\steptwo e {e'}$.
+\paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement \mbox{$\steptwo e {e'}$}.
 Since no reduction of stage two terms is to take place, this judgement does nothing but search for \prev\ blocks within $e$.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
 To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
@@ -112,24 +115,29 @@ Thus, $\steppure e {e'}$ searches for redexes and reduces them in the standard w
 Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, searches for redexes and reduces them in place.
 It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other kinds of steps there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
-This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable,
-as they would be in the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
+This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable.
+This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
+Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future''
+ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
+We find this interpretation to be more natural for our applications.
 For example, consider:
 \begin{lstlisting}
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
 \end{lstlisting}
 We could reduce this to $\prev([\next~e/x]e')$, but this may potentially duplicate an
 expensive computation $e$. Instead, we choose to \emph{hoist} $e$ outside, binding it
-to a temporary variable $\hat{y}$, and substituting that variable instead:
+to a temporary variable $y$, and substituting that variable instead:
 \begin{lstlisting} 
-2`let val yhat = e in prev{`1`[next{`2`yhat`1`}/x]e'`2`}`
+2`let val y = e in prev{`1`[next{`2`y`1`}/x]e'`2`}`
 \end{lstlisting}
-This behavior is implemented by the $\lift e {e'}$ judgement, called a hoisting step.
-These steps are introduced when a \next\ block has contents that are a residual but not already a variable.
-In essence, they operate by ``bubbling up'' a subtitution to the innermost containing \prev,
+This behavior is implemented by the $\lift e {e'}$ judgement, called a \emph{hoisting step}.
+These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
+In essence, the rules for hoisting steps operate by ``bubbling up'' a subtitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
 
 \subsection{Type Safety}
+
+\TODO pull out the theorems into a figure
 
 The statics and dynamics of \lang\ are related by a type safety theorem
 comprising progress and preservation, again annotated by world.
@@ -154,9 +162,9 @@ representing the second stage binders under which we are evaluating.
 \subsection{Evaluating Staged Programs}
 
 The multistage function \texttt{qss} from \ref{sec:overview} has
-type $A\to \fut (B \to C)$ at \bbonem.%
+type fitting the pattern \mbox{$A\to \fut (B \to C)$} at \bbonem.%
 \footnote{We can rewrite \texttt{qss} in this curried form, or apply a
-higher-order currying function.}
+higher-order currying function.} 
 To apply this function to arguments $\colmix a A$ and $\coltwo b B$, simply
 evaluate the program:
 \begin{lstlisting}
@@ -173,8 +181,8 @@ $\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
 To see that the partial application of \texttt{qss} is only evaluated once,
 observe that after the first stage of evaluation, the residual has the form:
 \begin{lstlisting}
-2`let val yhat = ...`
-2`    val qs = yhat`
+2`let val y = ...`
+2`    val qs = y`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
 where $\hat{y}$ is bound to a function containing no first-stage redexes.
