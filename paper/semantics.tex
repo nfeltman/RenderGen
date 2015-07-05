@@ -88,6 +88,7 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \label{sec:dynamics}
 
 \input{figures/dynamics}
+\input{figures/dynamics-overview}
 
 The central tenet of a staged language
 is that first stage code should be evaluated entirely before second stage code.
@@ -137,27 +138,11 @@ where it is reified into a {\tt let} statement.
 
 \subsection{Type Safety}
 
-\TODO pull out the theorems into a figure
-
-The statics and dynamics of \lang\ are related by a type safety theorem
-comprising progress and preservation, again annotated by world.
-In all cases below, $\Gamma$ may be any list of variable bindings at world \bbtwo,
+The statics and dynamics of \lang\ are related by a type safety theorems
+in figure \ref{fig:typeSafety}, again annotated by world.
+In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
-\begin{theorem}\leavevmode
-\label{thm:progress} 
-\begin{itemize} 
-\item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
-\item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
-\item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
-\end{itemize}
-\end{theorem}
-\begin{theorem}\leavevmode
-\label{thm:preservation} 
-\begin{itemize} 
-\item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
-\item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
-\end{itemize}
-\end{theorem}
+
 
 \subsection{Evaluating Staged Programs}
 

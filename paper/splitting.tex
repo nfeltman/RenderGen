@@ -7,44 +7,22 @@
 
 \begin{abstrsyn}
 
-% Splitting statically transforms terms in \lang\ into a pair of
-% monostaged terms ($f_1$ and $f_2(-)$) that correspond to the first-stage 
-% and second-stage computations in the original term. 
+The goal of a stage splitting translation is to send programs in a multistage language
+to a form where the stages are seperated at the top level.
+To be valid, such a translation must meet two requirements:
+at values it must not lose information,
+and at terms it must respect the semantics.
 
-% Recall that full evaluation (both the first and second pass) of a term $\coltwo e A$ 
-% only produces its ``final result'' at the second stage.
-% In contrast, \bbonem\ terms may have final results at both stages. 
-% For example, consider the term:
-% \begin{lstlisting}
-% 1`(`3`gr{`1`4+5`3`}`1`, next{`2`6+7`1`})`
-% \end{lstlisting}
+For a two-stage language like \lang, this means translating a multistage
+object into a pair of monostage objects
+which respectively embody the first-stage and second-stage content of the original.
+Since \lang\ has three classes of multistage object, 
+our splitting algorithm has three forms: 
+\bbtwo-term splitting, \bbonem-term splitting, and partial value splitting.
+These are given by the judgements $\splittwo e A p l r$, $\splitone e A c {l.r}$, and $v \vsplito \mval i q$.
+The rules of all three judgements are given in \ref{fig:termSplit}.
 
-
-% Thus, the idea of splitting for \bbtwo\ terms
-% is to generate terms where evaluating $f_1$ in a first pass, and then
-% evaluating $f_2$ on the result of the first pass, yields the same
-% value as full evaluation of the original \lang\ program.
-
-
-% first pass evaluation of
-% $f_1$ should produce the same value as first-stage evaluation of the
-% original \lang\ term.  However, complexity arises because
-% \bbonem\ terms Thus we also want
-% the second pass evaluation of $f_2$ on the outputs of $f_1$ to yield
-% the same value as fully evaluating all second-stage computations in
-% the original \bbonem\ term. Finally, when splitting \bbonep\ terms,
-% which only produce values in the first stage, we only need to compare
-% the result of $f_1$ with that of the \lang\ term.
-
-% Handling the asymmetry between the results of evaluating
-% \bbonem\ terms (which may produce results at both the first and second
-% stage) and \bbtwo\ terms (which only produce second-stage results) is
-% fundamental to the structure of the splitting algorithm presented in
-% this section.
-
-Our splitting algorithm is given by the judgements $\splittwo e A p l r$, $\splitone e A c {l.r}$, and $v \vsplito \mval i q$,
-which apply to \bbtwo\ terms, \bbonem\ terms, and partial values, respectively.
-Before discussing the meaning of these outputs, 
+Before discussing the validity of these translations, 
 we note that splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
 That is, each splitting relation is a total function.
 We prove these theorems by straightforward induction on the typing derivation
@@ -55,7 +33,7 @@ and simultaneous induction on the splitting derivations, respectively.
 
 Partial value splitting (given by the relation $\vsplito$) converts a 
 partial value $v$ into a split value $\mval i q$.
-The first part of the masked value, $i$, is a monostage value holding
+The first component of the split value, the \emph{immediate value} $i$, is a monostage value holding
 the result of all first-stage components of $v$.  The second
 component, $q$, is a residual representing all second-stage
 variable references of $v$.
@@ -88,6 +66,8 @@ To construct the residual $q$ (corresponding to second-stage computations) parti
 \end{lstlisting}
 A precise definition of the partial value splitting relation is given in
 \ref{fig:valMask}.
+Observe that partial value splitting does not lose any meaningful information (namely injection tags),
+which is the validity requirement for a translation of value forms.
 
 %Since lambdas may represent multi-stage computations, masking splits
 %the body of lambdas as general world \bbonem\ terms (as described in
@@ -151,72 +131,37 @@ we first cover the definition of splitting terms at \bbonem.
 
 \subsection{World \bbonem\ Term Splitting}
 
-\TODO why the added complexity for \bbonem\ terms?
-
 For any $\colmix e A$, 
 splitting $e$ (via $\splitonesym$) again 
 yields the pair of monostage terms $\pipeM c l r$. 
-Evaluating $c$ in the first pass produces the pair
-$\tup{i,b}$, where the first element $i$ represents the first stage part of the results of $e$,
-and $b$ is the boundary value.
-Since execution of the first pass both serves to generate input for
-the second pass, we say $c$ is a {\em combined term} that produces a
-\emph{immediate result} ($i$) and a boundary value ($b$) for the resumer ($l.r$).
 
-The correctness of \bbonem\ term splitting with respect to $\stepsym \bbonem$ is given in \ref{lem:oneCorrect}.
+The responsibilities of this first stage component, $c$, can be seen as a combination of the
+those of world \bbtwo\ term splitting and partial value splitting.
+Since $e$ is a term, the first stage computations within it may yet still
+affect its second stage computations,
+and so $c$ needs to produces a boundary value $b$ to be passed to the resumer ($l.r$).
+But since $e$ is a world \bbonem\ construct, it has an eventual result at the 
+first stage as well as the second, and so it must produce an immediate value $i$.
+The term $c$ meets both of these responsibilities by reducing to the tuple $\tup{i,b}$,
+and so we call it a {\em combined term}.
+
+The correctness of \bbonem\ term splitting with respect to $\stepsym \bbonem$ steps is given in \ref{lem:oneCorrect}.
 Like with the \bbtwo\ version, this requires that the applied resumer be equivalent both sides of the step.
-But additionally, it also requires that first stages results be exactly identical.
+But additionally, it also requires that first stage results be exactly identical.
 
-
-\TODO talk about lifting step correctness
-
-\TODO talk about ground case
+The correctness of \bbonem\ term splitting with respect to hoisting steps is given in \ref{lem:hoistCorrect}.
+Because hoisting steps are nothing but rearrangement of second stage code,
+this lemma can use the strong requirement of idnetical combined terms.
 
 \subsection{Example cases.}
 
 \TODO do some cases of the proof, and use the opportunity to discuss why splitting does what it does
 
-% For example, in the simple case where $e$
-% contains entirely first-stage computation, such as:
-% \begin{lstlisting}
-% 1` 3`gr{`1`literalone+literaltwo`3`}`
-% \end{lstlisting}
-% the first-stage result is the value 3.  The second element of the pair, $b$,
-% is the boundary value used as input to the resumer in second pass
-% evaluation as $[b/l]r \equiv q$, where $q$ is the same as
-% result produced by second-stage computations in $e$.  For example, in
-% the case where $\rtab \xi v$ contains entirely second-stage
-% computation, such as:
-% \begin{lstlisting}
-% 2`[yhat |-> 2+3]`1` next{`2`yhat`1`}`
-% \end{lstlisting}
-% the second-stage result is the value 5. Since in general residual
-% tables and partial values describe a mixture of both first and second
-% stage computations, in the subsequent subsection we define an
-% operation, called {\em masking}, that separates residual tables and
-% partial values into their first- and second-stage results. We then
-% describe the algorithm for splitting both \bbonem\ terms
-% ($\splitonesym$) and \bbtwo\ terms ($\splittwosym$).
-
-
-% %Since $c$ ensapulates computations that produce both $e$'s first-stage
-% %result and also the boundary value required by the resumer, we refer
-% %to it as a {\em combined term}.
-
-% %Note that since $\coltwo e A$ reduces to an entirely second-stage
-% %residual, its first-stage computations only exist to generate input
-% %for second-stage computations.  In contrast, since $\colmix e A$
-% %reduces to a multi-stage residual table and partial value, its first
-% %stage computations serve to both generate the value used as input for
-% %the second stage {\em and also} produce a first-stage value.
-% %Correspondingly, the precomputation $p$ resulting from splitting
-% %\bbtwo\ terms reduces only to a boundary value $b$ which is passed to
-% %the resumer; but the combined term $c$ resulting from splitting
-% %\bbonem\ terms reduces to a tuple containing both the first stage {\em
-% %  immediate result} $i$ and the boundary value $b$ (motivating the
-% %name {\em combined term}). 
-
-
+\paragraph{\bbtwo\ Compatility.}
+\paragraph{\bbone\ Compatility.}
+\paragraph{Functions.}
+\paragraph{Next and prev.}
+\paragraph{Ground and Caseg.}
 
 % \subsection{Term Splitting at \bbonem}
 % \label{sec:split-one}

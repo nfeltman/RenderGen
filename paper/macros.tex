@@ -71,7 +71,7 @@
 
 
 \newcommand {\pause} {{\tt hold}}
-\renewcommand {\next} {{\tt next}}
+\newcommand {\next} {{\tt next}}
 \newcommand {\prev} {{\tt prev}}
 \newcommand {\pure} {{\tt gr}}
 
@@ -181,7 +181,8 @@
 \newcommand{\stepwor}[2]{{#1}\stepsym w {#2}}
 \newcommand{\stepworsub}[1]{e_{#1}\stepsym w e'_{#1}}
 \newcommand{\done}[1][w]{\ \donesym^{#1}}
-\newcommand{\lift}[2]{{#1}\nearrow \llbracket q/y \rrbracket{#2}}
+\newcommand{\liftsym}{\nearrow}
+\newcommand{\lift}[2]{{#1}\liftsym \llbracket q/y \rrbracket{#2}}
 \newcommand{\liftsub}[1]{e_{#1}\nearrow \llbracket q/y \rrbracket e'_{#1}}
 
 \newcommand {\masko} [1] {|#1|_{\bbone}}

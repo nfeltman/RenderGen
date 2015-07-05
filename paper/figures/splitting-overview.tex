@@ -3,7 +3,7 @@
 \begin{figure*}
 \begin{abstrsyn}
 
-\begin{theorem} \leavevmode
+\begin{theorem} [Splitting Totality] \leavevmode
 \label{thm:total} 
 \begin{itemize} 
 \item For term $e$, if $\typestwo e A$, then $\splittwo e A p l r$. 
@@ -12,7 +12,7 @@
 \end{itemize}
 \end{theorem}
 
-\begin{theorem} \leavevmode
+\begin{theorem} [Splitting Uniqueness] \leavevmode
 \label{thm:unique}
 \begin{itemize} 
 \item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, and $l.r = l'.r'$.
@@ -21,27 +21,27 @@
 \end{itemize}
 \end{theorem}
 
-\begin{theorem}
+\begin{theorem} [Program Correctness]
 \label{thm:allCorrect}
 If $\typestwo [\cdot] e A$, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$,
 then $\reduce p b$ and $[b/l]r \equiv q$.
 \end{theorem}
 
-\begin{lemma}
+\begin{lemma} [\bbtwo\ Step Correctness]
 \label{lem:twoCorrect}
 If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
 then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
 \end{lemma}
 
-\begin{lemma}
+\begin{lemma} [\bbonem\ Step Correctness]
 \label{lem:oneCorrect}
-If $e \stepsym \bbonem e'$, $\splitone e A p {l.r}$, $\splitone {e'} A {p'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
+If $e \stepsym \bbonem e'$, $\splitone e A c {l.r}$, $\splitone {e'} A {c'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
 then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
 \end{lemma}
 
-\begin{lemma}
-\label{lem:oneCorrect}
-If $e \stepsym \bbonep e'$ and $\reduce {e'} i$, then $\reduce e i$.
+\begin{lemma} [Hoisting Step Correctness]
+\label{lem:hoistCorrect}
+If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, then $c = c'$, and $l.r \equiv l'.r'$.
 \end{lemma}
 
 % \textbf{Splitting Terms at World \bbtwo\ ---
@@ -141,6 +141,6 @@ If $e \stepsym \bbonep e'$ and $\reduce {e'} i$, then $\reduce e i$.
 
 
 \end{abstrsyn}
-\caption{\TODO put a real caption here and format the figure nicely}
+\caption{Splitting theorems.}
 \label{fig:splittingSummary}
 \end{figure*}

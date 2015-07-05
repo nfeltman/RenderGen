@@ -3,39 +3,55 @@
 \begin{figure}
 \begin{abstrsyn}
 
-\textbf{First-stage evaluation at \bbonep\ ---
-$\reduce e u$}
-\begin{enumerate}
-\item[] Given $\colpure e A$;
-$u$ is a value.
-\end{enumerate}
+% \textbf{First-stage evaluation at \bbonep\ ---
+% $\reduce e u$}
+% \begin{enumerate}
+% \item[] Given $\colpure e A$;
+% $u$ is a value.
+% \end{enumerate}
 
-\textbf{First-stage evaluation at \bbonem\ ---
-$\diaone e \xi v$}
-\begin{enumerate}
-\item[] Given $\colmix e A$;
-$\xi$ is a residual table, 
-$v$ is a partial value.
-\end{enumerate}
+% \textbf{First-stage evaluation at \bbonem\ ---
+% $\diaone e \xi v$}
+% \begin{enumerate}
+% \item[] Given $\colmix e A$;
+% $\xi$ is a residual table, 
+% $v$ is a partial value.
+% \end{enumerate}
 
-\textbf{First-stage evaluation at \bbtwo\ ---
-$\diatwo e q$}
-\begin{enumerate}
-\item[] Given $\coltwo e A$;
-$q$ is a residual.
-\item[] $\redtwosym$ uses reification --- $\reify \xi q q'$ \\
-Given residual table $\xi$ and residual $q$; $q'$ is a residual.
-\end{enumerate}
+% \textbf{First-stage evaluation at \bbtwo\ ---
+% $\diatwo e q$}
+% \begin{enumerate}
+% \item[] Given $\coltwo e A$;
+% $q$ is a residual.
+% \item[] $\redtwosym$ uses reification --- $\reify \xi q q'$ \\
+% Given residual table $\xi$ and residual $q$; $q'$ is a residual.
+% \end{enumerate}
 
-\textbf{Second-stage evaluation of residuals ---
-$\reduce q u$}
-\begin{enumerate}
-\item[] Given residual $q$;
-$u$ is a value.
-\end{enumerate}
+% \textbf{Second-stage evaluation of residuals ---
+% $\reduce q u$}
+% \begin{enumerate}
+% \item[] Given residual $q$;
+% $u$ is a value.
+% \end{enumerate}
+
+\begin{theorem} [Progress] \leavevmode
+\label{thm:progress} 
+\begin{itemize} 
+\item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
+\item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
+\item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
+\end{itemize}
+\end{theorem}
+\begin{theorem} [Preservation] \leavevmode
+\label{thm:preservation} 
+\begin{itemize} 
+\item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
+\item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
+\end{itemize}
+\end{theorem}
 
 \end{abstrsyn}
-\caption{Summary of \lang\ evaluation.}
-\label{fig:dynamicsSummary}
+\caption{Type Safety Theorems.}
+\label{fig:typeSafety}
 \end{figure}
 

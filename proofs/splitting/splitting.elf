@@ -213,6 +213,7 @@ spl2-let	: split2 (let E M) (tup P1 P2) ([l] lett (exv l) ([l1][l2] let (R1 l1) 
 %unique splitres +E -1Q.
 %worlds (splitting-block) (splitval _ _ _) (split1 _ _ _) (split2 _ _ _).
 %unique (splitval +E -1I -1Q) (split1 +E -1P -1R) (split2 +E -1P -1R).
+%unique (splitval -1E +I +Q) (split1 -1E +P +R) (split2 -1E +P +R).
 
 
 %block any-splitG   : some {E : term lang0} {Q : term lang1} block {dsplg : splitGv E Q}.
