@@ -33,7 +33,7 @@ and simultaneous induction on the splitting derivations, respectively.
 
 Partial value splitting (given by the relation $\vsplito$) converts a 
 partial value $v$ into a split value $\mval i q$.
-The first component of the split value, the \emph{immediate value} $i$, is a monostage value holding
+The first component, the \emph{immediate value} $i$, is a monostage value holding
 the result of all first-stage components of $v$.  The second
 component, $q$, is a residual representing all second-stage
 variable references of $v$.
@@ -155,13 +155,78 @@ this lemma can use the strong requirement of idnetical combined terms.
 
 \subsection{Example cases.}
 
-\TODO do some cases of the proof, and use the opportunity to discuss why splitting does what it does
+In this section, we prove the \ref{lem:oneCorrect} and \ref{lem:twoCorrect} lemmas
+by considering a few exemplar cases.
 
-\paragraph{\bbtwo\ Compatility.}
-\paragraph{\bbone\ Compatility.}
-\paragraph{Functions.}
-\paragraph{Next and prev.}
-\paragraph{Ground and Caseg.}
+
+\paragraph{Reduction of {\tt pi1}.}
+Define $E = \pio {\exv{\tup {v_1,v_2}}}$ and  
+$C = \letin{\tup{y,z}}{\exv{\tup{\tup {i_1,i_2},\tup{}}}}{\tup{\pio {\exv y},\exv z}}$.
+We are given $\stepmix  E {\exv {v_1}}$,
+$\splitone E A C {l.\pio {\exv {\tup{q_1,q_2}}}}$, and
+$\splitone {\exv {v_1}} A {\exv {\tup{i_1,\tup{}}}} {\_.\exv{q_1}}$,
+and we need to show $\reduce C {\tup {i_1,\tup{}}}$
+and $\pio {\exv {\tup{q_1,q_2}}} \equiv q_1$.
+Both of these can be derived directly.
+This pattern, where the outputs can be directly derived, extends to the {\tt pi2} and {\tt prev} reduction rules and all value marking rules.
+
+\paragraph{Reduction of Application.} Let $E = \app {\exv{\fix f x e}} {\exv v}$,
+$E' = [\fix fxe, v/f,x] e$, \\ 
+$I = \fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}$, \\
+$Q = \fix f {\tup{x,\roll l}} r$, and \\
+$C = \left[
+\talllet{\tup{y_1,z_1}}{\exv {\tup {I,\tup{}}}}{
+\talllet{\tup{y_2,z_2}} {\exv {\tup {i_1,\tup{}}}}{
+\talllet{\tup{y_3,z_3}}{\app{\exv {y_1}}{\exv {y_2}}}{\exv{\tup{y_3,\tup{z_1,z_2,z_3}}}\ttrpar\ttrpar\ttrpar}}}\right]$.
+\\
+We are given $\stepmix E {E'}$,
+$\splitone E A C {\tup{\_,\_,l}.\app{\exv Q}{\exv{\tup{q_1,l}}}}$,
+$\splitone {E'} A {[I,i_1/f,x]c} {l.[Q,q_1/f,x]r}$,
+and $\reduce {[I,i_1/f,x]c} {\tup{i,b}}$.
+From this, we can directly derive $\reduce C {\tup{i,\tup {\tup{},\tup{},\roll b}}}$
+and $\app{\exv Q}{\exv{\tup{q_1,\roll b}}} \equiv [Q,q_1,b/f,x,l] r$.
+This pattern applies to all of the other reduction rules involving substitution,
+namely those for {\tt caseg}, and {\tt letg}. 
+Observe that, in our formal version of the language, 
+{\tt caseg} is the only construct where information is added to the boundary value.
+
+\paragraph{Compatility of {\tt pi1} at \bbtwo.}
+We are given 
+$\steptwo {\pio e} {\pio {e'}}$, 
+$\splittwo {\pio e} A p l {\pio r}$, 
+$\splittwo {\pio {e'}} A {p'} {l'} {\pio {r'}}$,
+and $\reduce {p'} {b'}$.
+Inversion of the first three yields
+$\steptwo e {e'}$, $\splittwo e A p l r$, and $\splittwo {e'} A {p'} {l'} {r'}$.
+Using \ref{lem:twoCorrect} inductively gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r$.
+From this, $[b/l]\pio r \equiv [b'/l']\pio {r}$ can be derived directly.
+This pattern generalizes to all world \bbtwo\ compatibility rules.
+
+\paragraph{Compatility of {\tt pi1} at \bbonem.}
+We are given
+$\stepmix {\pio e} {\pio {e'}}$, 
+$\splitone {\pio e} A {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {l.\pio r}$, \\
+\mbox{$\splitone {\pio {e'}} A {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {l'.\pio {r'}}$},
+and \\ $\reduce {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b'}}$.
+Inversion of the first three yields 
+$\stepmix e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, 
+and inversion of the reduction yields $\reduce {c'} {\tup{\tup{i,i_2},b'}}$.
+Using \ref{lem:oneCorrect} inductively gives $\reduce c {\tup{\tup{i,i_2},b}}$ and $[b/l]r \equiv [b'/l']r$.
+From this, we can derive $\reduce {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b}}$ and 
+$[b/l]\pio r \equiv [b'/l']\pio {r}$ directly.
+This pattern generalizes to all world \bbonem\ compatibility rules.
+
+\paragraph{Compatibility of {\tt gr}.}
+We are given 
+$\stepmix {\pure e} {\pure {e'}}$, \\
+$\splitone {\pure e} A {\tup {e,\exv {\tup{}}}} {\_.\exv{\tup{}}}$, 
+$\splitone {\pure {e'}} A {\tup {e',\exv {\tup{}}}} {\_.\exv{\tup{}}}$,
+and $\reduce {\tup {e',\exv {\tup{}}}} {\tup{i,\tup{}}}$.
+Inversion of the step and reduction yield \mbox{$\steppure e {e'}$} and $\reduce {e'} i$.
+As a simple property of monostage reduction (which $\stepsym \bbonep$ is), we know $\reduce e i$.
+From here, we can derive $\reduce {\tup {e,\exv {\tup{}}}} {\tup{i,\tup{}}}$ and $\exv{\tup {}} \equiv \exv{\tup {}}$ directly.
+
+
 
 % \subsection{Term Splitting at \bbonem}
 % \label{sec:split-one}
@@ -375,5 +440,4 @@ annotation, would cause splitting to generate a recursive resumer.
 
 \end{abstrsyn}
 
-\input{figures/splitting-misc}
 \input{figures/splitting-term}

@@ -3,27 +3,39 @@
 \begin{figure*}
 \begin{abstrsyn}
 \begin{mathpar}
+\fbox{Partial Values} \and 
+\infer {x 					\vsplito \mval x x}														{\cdot}												\and
+\infer {\tup{} 				\vsplito \mval {\tup{}} {\tup{}}}										{\cdot}												\and
+\infer {\pure m 			\vsplito \mval m {\tup{}}}												{\cdot}												\and
+\infer {\next y 			\vsplito \mval {\tup{}} y}												{\cdot}												\and
+\infer {\tup{v_1,v_2} 		\vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}}							{v_1 \vsplito \mval {i_1} {q_1} 
+																									&v_2 \vsplito \mval {i_2} {q_2}}					\and
+\infer {\fix f x e			\vsplito \mval {\fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}} 
+							{\fix f {\tup{x,\roll l}} r}}											{\splitone e A c {l.r}}								\and
+\end{mathpar}
+\hrule
+\begin{mathpar}
 \fbox{\bbonem\ Terms} 
 \and
-\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}}}{\_.\tup{}}}											{\cdot} \and
+%\infersplitone [unit]			{\spl {\tup{}}{\rmunit}{\tup{\tup{},\tup{}}}{\_.\tup{}}}											{\cdot} \and
 %\infersplitone [int]			{\spl {i}{\rm int}{\tup{i,\tup{}};\_.\tup{}}}														{\cdot} \and
-\infersplitone [hyp]			{\spl {x}{A}{\tup{x,\tup{}}}{\_.x}}																	{\cdot} \and
-\infersplitone [\to I]			{\splitonetall {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}			{\sub [\Gamma,\col x A] {} B} 							\and
-\infersplitone [fix]			{\splitonetall 	
-									{\fix{f}{x}{e}} {} 
-									{\tup{\fix f x {\letin{\tup{y,z}}c{\tup{y,\roll z}}}, \tup{}}}
-									{\_.\fix f {\tup {x,l_0}} {\letin{l}{\unroll {l_0}}{r}}}}										{\sub [\Gamma,\col x A] {} B} 							\and
+%\infersplitone [hyp]			{\spl {x}{A}{\tup{x,\tup{}}}{\_.x}}																	{\cdot} \and
+% \infersplitone [\to I]			{\splitonetall {\lam{x}{e}}{A \to B}{\tup{\lam x c, \tup{}}}{\_.\tup{\lam {\tup{x,l}} r}}}			{\sub [\Gamma,\col x A] {} B} 							\and
+% \infersplitone [fix]			{\splitonetall 	
+% 									{\fix{f}{x}{e}} {} 
+% 									{\tup{\fix f x {\letin{\tup{y,z}}c{\tup{y,\roll z}}}, \tup{}}}
+% 									{\_.\fix f {\tup {x,l_0}} {\letin{l}{\unroll {l_0}}{r}}}}										{\sub [\Gamma,\col x A] {} B} 							\and
 \infersplitone [\to E]			{\splitonetall {\app {e_1}{e_2}}{B}{\left(
 									\talllet{\tup{y_1,z_1}}{c_1}{
 									\talllet{\tup{y_2,z_2}}{c_2}{
-									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\tup{y_3,\tup{z_1,z_2,z_3}}\ttrpar\ttrpar\ttrpar}}}
+									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\exv{\tup{y_3,\tup{z_1,z_2,z_3}}}\ttrpar\ttrpar\ttrpar}}}
 									\right)}
-									{\tup{l_1,l_2,l_3}.\app{r_1}{\tup{r_2,l_3}}}}													{\sub 1 {A \to B} & \sub 2 A}							\and
-\infersplitone [common1]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.\scriptCapp r}}				{\sub {} {A} 
+									{\tup{l_1,l_2,l_3}.\app{\exv {r_1}}{\exv{\tup{r_2,l_3}}}}}													{\sub 1 {A \to B} & \sub 2 A}							\and
+\infersplitone [common1]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp {\exv y},\exv z}}}{l.\scriptCapp r}}	{\sub {} {A} 
 																																	& \scriptC \in \{\mathtt{pi1},\mathtt{pi2}\}} 			\and
-\infersplitone [common2]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.r}}							{\sub {} {A} 
-																																	& \scriptC \in \{\mathtt{inl},\mathtt{inr},
-																																	\mathtt{roll},\mathtt{unroll}\}} 						\and
+% \infersplitone [common2]		{\spl {\scriptCapp e}{A}{\letin{\tup{y,z}}{c}{\tup{\scriptCapp y,z}}}{l.r}}							{\sub {} {A} 
+% 																																	& \scriptC \in \{\mathtt{inl},\mathtt{inr},
+% 																																	\mathtt{roll},\mathtt{unroll}\}} 						\and
 %\infersplitone [\times E_2]	{\spl {\pit~e}{B}{\talllet{\tup{y,z}}{c}{\tup{\pit~y,z}};l.\pit~r}}								{\sub {} {A\times B}} \and
 %\infersplitone [let]			{\spl {\letin{x}{e_1}{e_2}}{B}{
 %								\begin{array}{l}
@@ -38,22 +50,20 @@
 									{\left(
 										\talllet{\tup{y_1,z_1}}{c_1}{
 										\talllet{\tup{y_2,z_2}}{c_2}{
-										\tup{\tup{y_1, y_2},\tup{z_1, z_2}}\ttrpar\ttrpar}}
+										\exv{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}\ttrpar\ttrpar}}
 									\right)}
 									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																	{\sub 1 A & \sub 2 B} \and
-\hspace{-.7em} % hax - saves an entire line
-\infersplitone [+ E]		{\splitonetall {\scriptCapp{e_1 \ttsemi x_2.e_2 \ttsemi x_3.e_3}}{C}
+\infersplitone [+ E]		{\splitonetall {\caseP{e_1} {x_2.e_2} {x_3.e_3}}{C}
 								{\left(
 								\talllet{\tup{y_1,z_1}}{c_1}{
 									\tallcase{y_1}
-									{x_2.\letin{\tup{y_2,z_2}}{c_2}{\tup{y_2,\tup{z_1,\inl{z_2}}}}}
-									{x_3.\letin{\tup{y_3,z_3}}{c_3}{\tup{y_3,\tup{z_1,\inr{z_3}}}}\ttrpar}
+									{x_2.\letin{\tup{y_2,z_2}}{c_2}{\exv {\tup{y_2,\tup{z_1,\inl{z_2}}}}}}
+									{x_3.\letin{\tup{y_3,z_3}}{c_3}{\exv {\tup{y_3,\tup{z_1,\inr{z_3}}}}}\ttrpar}
 								}\right)}
-								{\tup{l_1,l_b}.\letin{z}{r_1}{\caseof{l_b}{l_2.[z/x_2]{r_2}}{l_3.[z/x_3]{r_3}}}
-								}}																									{\sub 1 {A+B} 
+								{\tup{l_1,l_b}.{\ttlpar r_1 \ttsemi \caseof{l_b}{l_2.[\tup{}/x_2]{r_2}}{l_3.[\tup{}/x_3]{r_3}\ttrpar}
+								}}}																									{\sub 1 {A+B} 
 																																	& \sub [\Gamma,\col{x_2} A] 2 C 	
-																																	& \sub [\Gamma,\col{x_3} B] 3 C
-																																	&\scriptC \in \{\mathtt{case},\mathtt{caseg} \} } 	
+																																	& \sub [\Gamma,\col{x_3} B] 3 C} 	
 %
 %\infersplitone [\mu I]		{\spl {\roll~e}{\mu\alpha.\tau}{\talllet{\tup{y,z}}{c}{\tup{\roll~y,z}};l.r}}						{\sub {} {[\mu\alpha.\tau/\alpha]\tau}}							\and
 %\infersplitone [\mu E]		{\spl {\unroll~e}{[\mu\alpha.\tau/\alpha]\tau}{\talllet{\tup{y,z}}{c}{\tup{\unroll~y,z}};l.r}}	{\sub {} {\mu\alpha.\tau}}										\and

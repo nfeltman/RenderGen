@@ -2,15 +2,7 @@
 
 \begin{figure*}
 \begin{abstrsyn}
-\begin{mathpar}
-\infer {\tup{} 				\vsplito \mval {\tup{}} {\tup{}}}										{\cdot}												\and
-\infer {\pure m 			\vsplito \mval m {\tup{}}}												{\cdot}												\and
-\infer {\next{\hat y} 		\vsplito \mval {\tup{}} {\hat y}}										{\cdot}												\and
-\infer {\tup{v_1,v_2} 		\vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}}							{v_1 \vsplito \mval {i_1} {q_1} 
-																									&v_2 \vsplito \mval {i_2} {q_2}}					\and
-\infer {\fix f x e			\vsplito \mval {\fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}} 
-							{\fix f {\tup{x,\roll l}} r}}											{\splitone e A c {l.r}}								\and
-\end{mathpar}
+
 \end{abstrsyn}
 \caption{Masking separates a residual table and its associated partial value into its first- and second-stage components.}
 \label{fig:valMask}
