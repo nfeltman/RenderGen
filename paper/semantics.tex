@@ -35,19 +35,21 @@ The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
 $e$ has type $A$ at world $w$, in the context $\Gamma$. 
 
 All three worlds contain unit, product, and function types defined in the usual fashion;
-sum and recursive types are provided for worlds \bbonep\ and \bbtwo.
+sum and recursive types are provided for worlds \bbonep\ and \bbtwo\ 
+(we omit them from \bbonem, because they are not needed for our examples).
 These ``standard'' features can only be constructed from subterms of the same world,
 and variables can only be used at the same world where they were introduced.
-
-Differing worlds (and hence, differing stages of computation) interact by means
+Thus differing worlds (and hence, differing stages of computation) only interact by means
 of the $\fut$ and $\curr$ type formers.  These modalities are internalizations
 of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonem.
-For example, given a term $e$ of type $A$ at world \bbtwo, 
-$\next{e}$ has type $\fut A$ at \bbonem. 
+
+At the term level, {\tt next} blocks can be used to form future computations:
+given a term $e$ of type $A$ at world \bbtwo, $\next{e}$ has type $\fut A$ at \bbonem. 
 This essentially encapsulates $e$ as a computation that will be evaluated in the future, 
-but it provides a handle (of type $\fut A$) to that eventual value which can be moved around now.
-Computations at \bbonem\ can shuffle this handle around, but not access the future result it refers to.  
-The only way to eliminate a $\fut$ wrapper is to do so from the future by using a {\tt prev}, yielding an $A$ at \bbtwo.
+and it provides a handle (of type $\fut A$) now to that eventual value.
+Computations at \bbonem\ can shuffle this handle around as a value, but the future result it refers to cannot be accessed.
+This is because the only way to eliminate a $\fut$ wrapper is by using a {\tt prev}, which yields an $A$ at \bbtwo.
+This feature was adapted from linear temporal logic, via \cite{davies96}.
 
 $\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
 computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
@@ -55,22 +57,25 @@ $\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contai
 second-stage computations because $\fut$ types are not available in world
 \bbonep.)
 
+An $e$ of type $\curr A$ at \bbonem\ can be unwrapped as an $A$ at \bbonep\
+using the $\letp xe{e'}$ construct, which binds $\colpure xA$ in a \bbonem\ term
+$e'$. This allows us to compute under $\curr$---for example, given a $\colmix
+p{\curr(A\times B)}$, the term $\letp{x}{p}{\pure{\pio x}}$ computes its first
+projection, of type $\curr A$.
+This elimination form, in contrast to that of $\fut$, does not permit world \bbonem\ subterms
+within any world \bbonep\ term.
+
+Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we need the
+$\caseP{e}{x.e_1}{x.e_2}$ construct, whose branches are world \bbonem\ terms
+open on $\curr{A}$ and $\curr{B}$ respectively.
+Without this, there would be no way to get information out from under a $\curr$ wrapper.
+
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
 For example, \texttt{qss} is a function at world \bbonem\ which takes a
 $\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
 second-stage integer) to a $\fut\rmint$ (a second-stage
 computation of an integer).
-
-An $e$ of type $\curr A$ at \bbonem\ can be unwrapped as an $A$ at \bbonep\
-using the $\letp xe{e'}$ construct, which binds $\colpure xA$ in a \bbonem\ term
-$e'$. This allows us to compute under $\curr$---for example, given a $\colmix
-p{\curr(A\times B)}$, the term $\letp{x}{p}{\pure{\pio x}}$ computes its first
-projection, of type $\curr A$.
-
-Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we need the
-$\caseP{e}{x.e_1}{x.e_2}$ construct, whose branches are world \bbonem\ terms
-open on $\curr{A}$ and $\curr{B}$ respectively.
 
 The example code in this paper makes liberal use of $\rmint$s and various
 functions on these, as well as a function $\pause$ which takes a $\curr\rmint$
@@ -94,17 +99,17 @@ The central tenet of a staged language
 is that first stage code should be evaluated entirely before second stage code.
 Accordingly, our dynamics operates in two passes.
 The first pass takes an input program $\coltwo e A$
-and reduces all of its first-stage subterms in place,
+and reduces all of its first-stage (worlds \bbonem\ and \bbonep) subterms in place,
 eventually resulting in a residual $\exv q$.
 The second pass further reduces this residual.
-Since a residual $q$ is a monostage object, this second pass is just standard monostage evaluation.
-Consequently, this paper is concerned only with the first pass of evaluation.
+Since a residual $q$ is monostage by definition, this second pass is just standard unstaged evaluation.
+Consequently, this paper does not describe in any detail the second pass of evaluation.
 
 Since $\coltwo e A$ may be constructed out of terms at other worlds, 
 our dynamics requires notions of values and steps that are specialized to each world.
 
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement \mbox{$\steptwo e {e'}$}.
-Since no reduction of stage two terms is to take place, this judgement does nothing but search for \prev\ blocks within $e$.
+Since first pass evaluation should not reduce stage two terms, this judgement does nothing but search for \prev\ blocks within $e$.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
 To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
