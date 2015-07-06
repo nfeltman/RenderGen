@@ -7,20 +7,20 @@
 
 We express two-stage programs as terms in \lang, a typed, modal lambda calculus. 
 
-One of the central concepts in the formalization of \lang\ is the notion of a \emph{world},
-which includes and subsumes the concept of a stage.
-Our system has three worlds: \bbonem, \bbonep, and \bbtwo.
+Although \lang\ describes computations that occur in two stages,
+we find it helpful for the specification of splitting to differentiate terms into three \emph{worlds}.
+A world is essentially a slightly finer classification than a stage.
 Whereas there is only one world, \bbtwo, for second-stage computations,
 there are two worlds corresponding to the first stage:
 \bbonem\ for \emph{mixed} first-stage computations, which may contain second-stage subterms within $\next$ blocks,
 and \bbonep\ for \emph{ground} first-stage computations, which may not.
-The distinction between these two first-stage worlds is necessitated by our splitting algorithm
+The distinction between these two first-stage worlds is necessary for an efficient splitting algorithm
 and will be discussed in \ref{sec:needGround}.
 
 The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
 Note that some production rules are parameterized by world.
 Our syntax also distinguishes values from general terms, 
-with underline term constructor (``$\exv v$'') explicitly noting the inclusion of values into general terms.
+with the underline term constructor (``$\exv v$'') explicitly noting the inclusion of values into general terms.
 There are three forms of value: \emph{partial values} for \bbonem, \emph{ground values} for \bbonep, and \emph{residuals} for \bbtwo.
 All represent computations which have no remaining work in the first stage.
 
@@ -114,14 +114,15 @@ Thus, $\steppure e {e'}$ searches for redexes and reduces them in the standard w
 
 \paragraph{World \bbonem.}
 Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, searches for redexes and reduces them in place.
-It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other kinds of steps there. 
+It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
 This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable.
 This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
-Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future''
+Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
-We find this interpretation to be more natural for our applications.
-For example, consider:
+This difference is natural, given the goals of metaprogramming and partial evaluation versus our applications.
+One consequence of the stronger requirement on partial values is that we will need a new kind of step to put terms into that form.
+To illustrate, consider:
 \begin{lstlisting}
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
 \end{lstlisting}
@@ -146,7 +147,7 @@ representing the second stage binders under which we are evaluating.
 
 \subsection{Evaluating Staged Programs}
 
-The multistage function \texttt{qss} from \ref{sec:overview} has
+The multistage function \texttt{qss} from \ref{sec:overview} has a
 type fitting the pattern \mbox{$A\to \fut (B \to C)$} at \bbonem.%
 \footnote{We can rewrite \texttt{qss} in this curried form, or apply a
 higher-order currying function.} 
@@ -170,4 +171,4 @@ observe that after the first stage of evaluation, the residual has the form:
 2`    val qs = y`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
-where $\hat{y}$ is bound to a function containing no first-stage redexes.
+where $y$ is bound to a function containing no first-stage redexes.

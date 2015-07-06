@@ -14,13 +14,16 @@ at values it must not lose information,
 and at terms it must respect the semantics.
 
 For a two-stage language like \lang, this means translating a multistage
-object into a pair of monostage objects
+term into a pair of monostage terms
 which respectively embody the first-stage and second-stage content of the original.
-Since \lang\ has three classes of multistage object, 
+Since \lang\ has three classes of multistage term, 
 our splitting algorithm has three forms: 
 \bbtwo-term splitting, \bbonem-term splitting, and partial value splitting.
 These are given by the judgements $\splittwo e A p l r$, $\splitone e A c {l.r}$, and $v \vsplito \mval i q$.
-The rules of all three judgements are given in \ref{fig:termSplit}.
+The rules of all three judgements are given in \ref{fig:termSplit}, 
+and they operate locally on the structure of the term.
+Note that there's no need to provide forms of splitting for ground terms or residuals,
+since those classes of term are already monostage by construction.
 
 Before discussing the validity of these translations, 
 we note that splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
@@ -65,7 +68,7 @@ To construct the residual $q$ (corresponding to second-stage computations) parti
 2`(yhat, ((),yhat))`
 \end{lstlisting}
 A precise definition of the partial value splitting relation is given in
-\ref{fig:valMask}.
+\ref{fig:termSplit}.
 Observe that partial value splitting does not lose any meaningful information (namely injection tags),
 which is the validity requirement for a translation of value forms.
 
@@ -96,17 +99,19 @@ yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
 contain all first- and second-stage computations in $e$ respectively.
 
 This output is a multistage program in its own right.
-It evaluates by reducing $p$ to $b$ in the first pass,
+It evaluates by reducing $p$ to the value $b$ in the first pass,
 then plugging that result in for $l$ to produce $[b/l]r$,
 which is evaluated in the second pass.
 Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-We define the correctness of splitting 
-by saying that $[b/l]r$, the \emph{applied resumer}, should be equivalent 
+The validity of the splitting translation requires that this simple 
+evaluate-and-plug semantics produces the same answer as the staged semantics of the previous section.
+That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
 to the residual produced by direct evaluation, $q$.
-We state this more precisely as \ref{thm:allCorrect},
+This condition, called \emph{correctness},
+is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
 
@@ -124,8 +129,7 @@ The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
 From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
 and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly. \qed
 
-All that remains is to prove \ref{lem:twoCorrect}.  
-We will do this by induction on the derivation of the step.
+We prove \ref{lem:twoCorrect} by induction on the derivation of the step.
 However, since second-stage steps can depend on first-stage steps,
 we first cover the definition of splitting terms at \bbonem.
 
@@ -146,17 +150,17 @@ The term $c$ meets both of these responsibilities by reducing to the tuple $\tup
 and so we call it a {\em combined term}.
 
 The correctness of \bbonem\ term splitting with respect to $\stepsym \bbonem$ steps is given in \ref{lem:oneCorrect}.
-Like with the \bbtwo\ version, this requires that the applied resumer be equivalent both sides of the step.
+As in the world \bbtwo\ version, correctness requires that the applied resumer from either side of the step be equivalent.
 But additionally, it also requires that first stage results be exactly identical.
 
 The correctness of \bbonem\ term splitting with respect to hoisting steps is given in \ref{lem:hoistCorrect}.
 Because hoisting steps are nothing but rearrangement of second stage code,
-this lemma can use the strong requirement of idnetical combined terms.
+this lemma can use the strong requirement of identical combined terms.
 
 \subsection{Example cases.}
 
-In this section, we prove the \ref{lem:oneCorrect} and \ref{lem:twoCorrect} lemmas
-by considering a few exemplar cases.
+In this section, we consider a few exemplar cases 
+from the proofs of \ref{lem:oneCorrect} and \ref{lem:twoCorrect}.
 
 
 \paragraph{Reduction of {\tt pi1}.}
@@ -190,7 +194,7 @@ namely those for {\tt caseg}, and {\tt letg}.
 Observe that, in our formal version of the language, 
 {\tt caseg} is the only construct where information is added to the boundary value.
 
-\paragraph{Compatility of {\tt pi1} at \bbtwo.}
+\paragraph{Compatibility of {\tt pi1} at \bbtwo.}
 We are given 
 $\steptwo {\pio e} {\pio {e'}}$, 
 $\splittwo {\pio e} A p l {\pio r}$, 
@@ -202,7 +206,7 @@ Using \ref{lem:twoCorrect} inductively gives $\reduce p b$ and $[b/l]r \equiv [b
 From this, $[b/l]\pio r \equiv [b'/l']\pio {r}$ can be derived directly.
 This pattern generalizes to all world \bbtwo\ compatibility rules.
 
-\paragraph{Compatility of {\tt pi1} at \bbonem.}
+\paragraph{Compatibility of {\tt pi1} at \bbonem.}
 We are given
 $\stepmix {\pio e} {\pio {e'}}$, 
 $\splitone {\pio e} A {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {l.\pio r}$, \\
@@ -417,11 +421,11 @@ The splitting algorithm described in the previous subsections operates
 purely on the local structure of \lang\ terms.  One artifact of this design
 is that splitting \bbonem\ terms may generate resumers containing
 unnecessary logic.  For example, the rule for splitting
-\bbonem\ \texttt{case} terms inserts the tag from the \texttt{case}
+\bbonem\ \texttt{caseg} terms inserts the tag from the \texttt{caseg}
 argument into the boundary value, then decodes this tag in the
 resumer. This logic occurs regardless of whether the terms forming the
-branches of the \texttt{case} contain second-stage computations.
-Worse, if this \texttt{case} appeared in the body of a recursive
+branches of the \texttt{caseg} contain second-stage computations.
+Worse, if this \texttt{caseg} appeared in the body of a recursive
 function with no other second-stage computations, splitting would
 generate a resumer with (useless) recursive calls.
 
@@ -430,13 +434,15 @@ we instead leverage the type system to indicate when a term contains
 no second-stage computations by adding a third world \bbonep\ whose
 terms are purely first-stage.  While not necessary for ordinary staged
 term evaluation (\ref{sec:semantics}), this annotation is
-particularly useful for splitting. Specifically, splitting $\pure e$
+particularly useful for splitting, since splitting $\pure e$
 terms trivially yields a unit resumer.
 
 The \texttt{partition} function in the quickselect example in
 \ref{sec:exampleQS} is an example of such a function that contains no
 second-stage computations, but, if not defined within a $\pure$
 annotation, would cause splitting to generate a recursive resumer.
+
+\TODO consider expanding, based on comments from reviews
 
 \end{abstrsyn}
 
