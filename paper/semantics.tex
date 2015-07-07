@@ -104,21 +104,24 @@ eventually resulting in a residual $\exv q$.
 The second pass further reduces this residual.
 Since a residual $q$ is monostage by definition, this second pass is just standard unstaged evaluation.
 Consequently, this paper does not describe in any detail the second pass of evaluation.
+Moreover, for the purposes of these dynamics, we consider a top level program to always be typed at world \bbtwo.
 
 Since $\coltwo e A$ may be constructed out of terms at other worlds, 
 our dynamics requires notions of values and steps that are specialized to each world.
 
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement \mbox{$\steptwo e {e'}$}.
-Since first pass evaluation should not reduce stage two terms, this judgement does nothing but search for \prev\ blocks within $e$.
+Since first pass evaluation should not reduce stage two terms, this judgement does nothing but traverse $e$ to find \prev\ blocks, under which it performs in-place reductions.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
 To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
 
 \paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
-Thus, $\steppure e {e'}$ searches for redexes and reduces them in the standard way, and a ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
+Thus, $\steppure e {e'}$ traverses into subterms to to find the left-most unevaluated code (compatibility rules) 
+where it either performs a beta reduction (reduction rules) or marks the term as being evaluated (value marking rules). 
+A ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
 
 \paragraph{World \bbonem.}
-Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, searches for redexes and reduces them in place.
+Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a beta reduction or marks a value.
 It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
 This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable.
@@ -141,6 +144,8 @@ This behavior is implemented by the $\lift e {e'}$ judgement, called a \emph{hoi
 These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
 In essence, the rules for hoisting steps operate by ``bubbling up'' a subtitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
+\footnote{Because a top-level program is a term at \bbtwo, this {\tt prev} always exists.
+Otherwise, the semantics would need a mechanism to accumulate the bindings that hoisting steps create.}
 
 \subsection{Type Safety}
 

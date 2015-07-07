@@ -7,29 +7,78 @@
 
 \begin{abstrsyn}
 
-The goal of a stage splitting translation is to send programs in a multistage language
-to a form where the stages are seperated at the top level.
-To be valid, such a translation must meet two requirements:
-at values it must not lose information,
-and at terms it must respect the semantics.
+The goal of a stage splitting translation 
+is to a send program $\mathcal P$ in a multistage language
+to an equivalent form $\mathcal P'$ where the stages are seperated at the top level.
+By equivalent, we mean that $\mathcal P$ and $\mathcal P'$ should produce 
+the same answer under their respective semantics.
 
-For a two-stage language like \lang, this means translating a multistage
-term into a pair of monostage terms
-which respectively embody the first-stage and second-stage content of the original.
 Since \lang\ has three classes of multistage term, 
 our splitting algorithm has three forms: 
-\bbtwo-term splitting, \bbonem-term splitting, and partial value splitting.
-These are given by the judgements $\splittwo e A p l r$, $\splitone e A c {l.r}$, and $v \vsplito \mval i q$.
-The rules of all three judgements are given in \ref{fig:termSplit}, 
-and they operate locally on the structure of the term.
+$\splittwo e A p l r$ for \bbtwo-terms, 
+$\splitone e A c {l.r}$ for \bbonem-terms, and 
+$v \vsplito \mval i q$ for partial values.
+In each form the output has two parts, corresponding to the
+first-stage ($p$, $c$, and $i$) and second-stage ($l.r$, and $q$) content of the input.
 Note that there's no need to provide forms of splitting for ground terms or residuals,
 since those classes of term are already monostage by construction.
 
-Before discussing the validity of these translations, 
+The rules of the three splitting judgements are given in \ref{fig:termSplit}.
+They are simply recursive on structure of the term, 
+implying that the splitting algorithm runs in linear time.
+
+Before discussing the correctness of these translations, 
 we note that splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
-That is, each splitting relation is a total function.
+That is, each splitting judgement defines a total function.
 We prove these theorems by straightforward induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
+
+\subsection{World \bbtwo\ Term Splitting}
+
+Top level programs in \lang\ are given by a term $\coltwo e A$.
+Reduction of this program, via repeated $\stepsym \bbtwo$, will eventually yield a residual, which can be reduced no further.
+We write this as:
+$
+e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q
+$.
+
+Splitting $e$ (via $\splittwosym$)
+yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
+contain all first- and second-stage computations in $e$ respectively.
+This output is a multistage program in its own right.
+It evaluates by reducing $p$ to the value $b$ in the first pass,
+then plugging that result in for $l$ to produce $[b/l]r$,
+which is evaluated in the second pass.
+Since execution of the first pass serves to generate input for
+the second pass, we say $p$ is a {\em precomputation} that produces a
+{\em boundary value} ($b$) for the {\em resumer} ($l.r$).
+
+The validity of the splitting translation requires that this simple 
+evaluate-and-plug semantics produces the same answer as the staged semantics of the previous section.
+That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
+to the residual produced by direct evaluation, $q$.
+This condition, called \emph{correctness},
+is stated more precisely as \ref{thm:allCorrect},
+where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
+and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
+
+We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
+In the base case, where $e$ is already a residual of the form $\exv q$, we know
+$\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, and so by uniqueness of splitting, 
+$p = \tup{}$ and $r = q$.
+From here, we can directly derive $\reduce {\exv {\tup {}}} {\tup {}}$ and $q \equiv q$.
+
+In the recursive case, we have 
+$\typestwo [\cdot] e A$, $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$.
+To help this case, we introduce \ref{lem:twoCorrect}, whose proof will concern the rest of this section.
+By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
+The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
+From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
+and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly. \qed
+
+We prove \ref{lem:twoCorrect} by induction on the derivation of the step.
+However, since second-stage steps can depend on first-stage steps,
+we first cover the definition of splitting terms at \bbonem.
 
 \subsection{Partial Value Splitting}
 \label{sec:masking}
@@ -89,49 +138,6 @@ which is the validity requirement for a translation of value forms.
 % Masking distributes into tuples, injections, and rolls, since their subvalues may have content at both stages.
 % However, the tags of injections and rolls are replicated only in the immediate value, 
 % since they represent first-stage information.
-
-\subsection{World \bbtwo\ Term Splitting}
-
-For any $\coltwo e A$
-which reduces to the residual $\exv q$ (via repeated $\stepsym \bbtwo$),
-splitting $e$ (via $\splittwosym$)
-yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
-contain all first- and second-stage computations in $e$ respectively.
-
-This output is a multistage program in its own right.
-It evaluates by reducing $p$ to the value $b$ in the first pass,
-then plugging that result in for $l$ to produce $[b/l]r$,
-which is evaluated in the second pass.
-Since execution of the first pass serves to generate input for
-the second pass, we say $p$ is a {\em precomputation} that produces a
-{\em boundary value} ($b$) for the {\em resumer} ($l.r$).
-
-The validity of the splitting translation requires that this simple 
-evaluate-and-plug semantics produces the same answer as the staged semantics of the previous section.
-That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
-to the residual produced by direct evaluation, $q$.
-This condition, called \emph{correctness},
-is stated more precisely as \ref{thm:allCorrect},
-where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
-and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
-
-We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
-In the base case, where $e$ is already a residual of the form $\exv q$, we know
-$\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, and so by uniqueness of splitting, 
-$p = \tup{}$ and $r = q$.
-From here, we can directly derive $\reduce {\exv {\tup {}}} {\tup {}}$ and $q \equiv q$.
-
-In the recursive case, we have 
-$\typestwo [\cdot] e A$, $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$.
-To help this case, we introduce \ref{lem:twoCorrect}, whose proof will concern the rest of this section.
-By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
-The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
-From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
-and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly. \qed
-
-We prove \ref{lem:twoCorrect} by induction on the derivation of the step.
-However, since second-stage steps can depend on first-stage steps,
-we first cover the definition of splitting terms at \bbonem.
 
 \subsection{World \bbonem\ Term Splitting}
 
