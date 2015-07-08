@@ -1,3 +1,5 @@
+%!TEX root = paper.tex
+
 \section{Related Work}
 \label{sec:related}
 
@@ -117,31 +119,29 @@ each stage.  Such an implementation would also maintain sophisticated
 data structures dynamically at run time, the benefits of which depend
 highly on input changes applied.
 
-\paragraph{Frequency-reduction via pass separation.}
-Perhaps the closest work to ours is the algorithm for data
-specialization given by Knoblock and Ruf~\cite{knoblock96}, which
-also seeks to statically split an explicitly staged program into two
-stages.  However, they only consider a simple first-order language and
-straight-line programs. Their work also treats all computations
-guarded by second-stage conditionals as second-stage computations,
-which would prevent optimization (via splitting) of programs such as
-quickselect.
+\paragraph{Stage Splitting.}
+
+Algorithms similar to ours have appeared in the partial evaluation community,
+where they are used as a preprocessing step to partial evaluation. 
+For instance, \cite{Mogensen89a} and \cite{DeNiel91} defined splitting algorithms
+for programs consistening of a set of first-order recursive functions.
+In addition to the lack of first-class functions, 
+the binding time specificiations used by these systems are more complicated and less expressive than the type system of \lang.
+The question of binding time analysis for a higher-order language was visited in \cite{Mogensen89b},
+however the implications for splitting were not explicitly considered.
 
 Automatic pass separation has also been a topic of interest in
-programming systems for computer graphics, where, to achieve
+programming systems for computer graphics, where to achieve
 high performance, programs are typically manually separated into
-components by frequency of execution (Indeed, separation into a pre-determined
+components by frequency of execution. (Indeed, separation into a pre-determined
 set of per-frequency modules is \emph{required} by the execution model
-of modern graphics architectures.)  The software engineering
-challenges of modifying multiple per-stage programs have led to
-suggestions of writing graphics programs in an explicitly-staged
-programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
-deferring the task of pass separation to the compiler. However, all
-prior efforts, like that of Knoblock and Ruf\,\cite{knoblock96} have
-been limited to simple, imperative languages. We are not aware of
-prior work that presents a splitting algorithm in the context of
-higher-order functional languages.
-
+of modern graphics architectures.)  
+The software engineering challenges of modifying programs in the split form (see \cite{Foley:2011}) have led to
+suggestions of differing the task of splitting to the compiler.
+Early work (\cite{knoblock96}) sought to determine the staging of programs automatically through use of binding time analysis,
+however later work (\cite{Proudfoot:2001,Foley:2011,He:2014}) has focused on giving programmers explicit control of the staging through 
+programming language features. 
+All of these efforts in graphics have been limited to simple, imperative languages. 
 
 %% \section{Related Work}
 
