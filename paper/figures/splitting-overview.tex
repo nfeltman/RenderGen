@@ -2,7 +2,8 @@
 
 \begin{figure*}
 \begin{abstrsyn}
-
+\begin{tabular}{@{}ll@{}}
+\begin{minipage}{0.43\textwidth} 
 \begin{theorem} [Splitting Totality] \leavevmode
 \label{thm:total} 
 \begin{itemize} 
@@ -11,7 +12,9 @@
 \item For partial value $v$, if $\typesone v A$, then $v \vsplito \mval i q$.
 \end{itemize}
 \end{theorem}
-
+\end{minipage}
+& 
+\begin{minipage}{0.6\textwidth}
 \begin{theorem} [Splitting Uniqueness] \leavevmode
 \label{thm:unique}
 \begin{itemize} 
@@ -20,6 +23,8 @@
 \item If $v \vsplito \mval i q$ and $v \vsplito \mval {i'} {q'}$, then $i = i'$ and $q = q'$.
 \end{itemize}
 \end{theorem}
+\end{minipage}
+\end{tabular}
 
 \begin{theorem} [Program Correctness]
 \label{thm:allCorrect}
@@ -141,6 +146,6 @@ If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$,
 
 
 \end{abstrsyn}
-\caption{Splitting theorems. \TODO compress this }
+\caption{Splitting theorems.}
 \label{fig:splittingSummary}
 \end{figure*}

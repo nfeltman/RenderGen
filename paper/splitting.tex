@@ -37,28 +37,22 @@ and simultaneous induction on the splitting derivations, respectively.
 
 Top level programs in \lang\ are given by a term $\coltwo e A$.
 Reduction of this program, via repeated $\stepsym \bbtwo$, will eventually yield a residual, which can be reduced no further.
-We write this as:
-$
-e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q
-$.
+We write this as $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$.
 
-Splitting $e$ (via $\splittwosym$)
-yields a pair of monostaged terms $\pipeS p l r$, where $p$ and $l.r$
-contain all first- and second-stage computations in $e$ respectively.
+Splitting $e$, via $\splittwosym$, yields $\pipeS p l r$.
 This output is a multistage program in its own right.
-It evaluates by reducing $p$ to the value $b$ in the first pass,
+It is evaluated by reducing $p$ to the value $b$ in the first pass,
 then plugging that result in for $l$ to produce $[b/l]r$,
 which is evaluated in the second pass.
 Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-The validity of the splitting translation requires that this simple 
+The correctness of the splitting translation requires that this simple 
 evaluate-and-plug semantics produces the same answer as the staged semantics of the previous section.
 That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
 to the residual produced by direct evaluation, $q$.
-This condition, called \emph{correctness},
-is stated more precisely as \ref{thm:allCorrect},
+This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
 
@@ -68,32 +62,44 @@ $\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, and so by uniqueness of splitting,
 $p = \tup{}$ and $r = q$.
 From here, we can directly derive $\reduce {\exv {\tup {}}} {\tup {}}$ and $q \equiv q$.
 
-In the recursive case, we have 
-$\typestwo [\cdot] e A$, $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$.
-To help this case, we introduce \ref{lem:twoCorrect}, whose proof will concern the rest of this section.
+In the recursive case, where the evaluation takes at least one step, we have 
+$e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$
+as well as \mbox{$\typestwo [\cdot] e A$} 
+and \mbox{$\splittwo e A p l r$}.
+To help this case, we introduce \ref{lem:twoCorrect}, 
+which essentially states that any single step is correct,
+and whose proof will concern the rest of this section.
 By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
 The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
 From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
-and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly. \qed
+and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 
-We prove \ref{lem:twoCorrect} by induction on the derivation of the step.
-However, since second-stage steps can depend on first-stage steps,
-we first cover the definition of splitting terms at \bbonem.
+This concludes the proof of program correctness, modulo \ref{lem:twoCorrect}.
+However in order to prove that lemma, 
+we will need to state analogous version for steps at \bbonem,
+since the various kinds multistage term in \lang\ are mutually dependent.
+Thus, this section proceeds by covering the definition of splitting at \bbonem, 
+starting with the value form at that world.
 
 \subsection{Partial Value Splitting}
 \label{sec:masking}
 
 Partial value splitting (given by the relation $\vsplito$) converts a 
 partial value $v$ into a split value $\mval i q$.
-The first component, the \emph{immediate value} $i$, is a monostage value holding
-the result of all first-stage components of $v$.  The second
-component, $q$, is a residual representing all second-stage
-variable references of $v$.
+Since partial values, by definition, have no remaining work in the first pass
+and since transfer of information between the stages occurs in the first pass of evalution,
+we know that the second stage components of $v$ can no longer depend on it's first stage components.
+Analogously, this must hold of the output of splitting, 
+which is why $q$---unlike the resumers of world \bbtwo\ term splitting---is not open on a variable.
 
-To provide intuition about the intent of partial value splitting, consider the
+Thus instead of a pipeline relationship, $i$ and $q$ bear more of a parallel relationship.
+That is, they embody the complementary portions of $v$ that are relevant to each stage.
+For this reason we call $i$ the \emph{immediate value} and $q$ the residual.
+
+To provide intuition about the behavior of partial value splitting, consider the
 following partial value:
 \begin{lstlisting}
-1` (next{`2`yhat`1`}, (`3`gr{`1`injL 7`3`}`1`, next{`2`yhat`1`}))`
+1` (next{`2`y`1`}, (`3`gr{`1`injL 7`3`}`1`, next{`2`y`1`}))`
 \end{lstlisting}
 To construct the value $i$ representing its first-stage components,
 splitting first redacts all second-stage (blue) parts, along with the
@@ -114,12 +120,17 @@ Finally, partial value splitting drops \texttt{gr} annotations yielding:
 To construct the residual $q$ (corresponding to second-stage computations) partial value splitting redacts all \texttt{gr} blocks
 (replacing them with unit) and \texttt{next} annotations:
 \begin{lstlisting}
-2`(yhat, ((),yhat))`
+2`(y, ((),y))`
 \end{lstlisting}
 A precise definition of the partial value splitting relation is given in
 \ref{fig:termSplit}.
-Observe that partial value splitting does not lose any meaningful information (namely injection tags),
-which is the validity requirement for a translation of value forms.
+
+In some regards, the exact formulation of partial value splitting is arbitrary.
+For instance, we chose to replace ``holes'' with unit values,
+but in fact we could have used any value there and it would make no difference in the end.
+There are however, at least some parts of the definition that are not arbitrary.
+Importantly, partial value splitting must not lose any meaningful information,
+such as injection tags.
 
 %Since lambdas may represent multi-stage computations, masking splits
 %the body of lambdas as general world \bbonem\ terms (as described in
