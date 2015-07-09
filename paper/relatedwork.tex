@@ -129,27 +129,29 @@ In the partial evaluation community, stage splitting has been investigated
 mostly as a preprocessing step for self-applied partial evaluators. 
 For instance, \cite{Mogensen89a} and \cite{DeNiel91} defined splitting algorithms
 for programs consistening of a set of first-order recursive functions.
-Those works used a grammar-based binding-time specification that's 
+Those works use a grammar-based binding-time specification that's 
 relatively complicated compared to the type system of \lang.
-This complication mostly stems from the decision to start with an untyped language;
-.
+This complication mostly arises from the decision to start with an untyped language:
+one must first find a way to say ``argument $x$ will be a tuple'' before one can say
+``the first component of $x$ is available at the second stage,'' 
+and so much of their binding-time specification just amounts to a type system.
+Formulations more like \lang\ (namely the two-level system of \cite{NN92-twolevel}) were known at the time,
+but \cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
+Davies essentially solved this limitation in \cite{davies96} (pending our further tweak with $\curr$),
+and the question of stage splitting as we have presented it has been ripe ever since.
+Binding time analysis for a static higher-order language was visited in \cite{Mogensen89b},
+but the implications for splitting were not explicitly considered.
 
-In addition to the lack of first-class functions, 
-the binding time specificiations used by these systems are more complicated and less expressive than the type system of \lang.
-
-The question of binding time analysis for a higher-order language was visited in \cite{Mogensen89b},
-however the implications for splitting were not explicitly considered.
-
-Automatic pass separation has also been a topic of interest in
+Splitting-like algorithms have also been a topic of interest in
 programming systems for computer graphics, where to achieve
 high performance, programs are typically manually separated into
 components by frequency of execution. (Indeed, separation into a pre-determined
 set of per-frequency modules is \emph{required} by the execution model
 of modern graphics architectures.)  
 The software engineering challenges of modifying programs in the split form (see \cite{Foley:2011}) have led to
-suggestions of differing the task of splitting to the compiler.
-Early work (\cite{knoblock96}) sought to determine the staging of programs automatically through use of binding time analysis,
-however later work (\cite{Proudfoot:2001,Foley:2011,He:2014}) has focused on giving programmers explicit control of the staging through 
+suggestions of defering the task of splitting to the compiler.
+Early work \cite{knoblock96} sought to determine the staging of programs automatically through use of binding time analysis,
+however later work \cite{Proudfoot:2001,Foley:2011,He:2014} has focused on giving programmers explicit control of the staging through 
 programming language features. 
 All of these efforts in graphics have been limited to simple, imperative languages. 
 
