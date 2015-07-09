@@ -121,12 +121,22 @@ highly on input changes applied.
 
 \paragraph{Stage Splitting.}
 
-Algorithms similar to ours have appeared in the partial evaluation community,
-where they are used as a preprocessing step to partial evaluation. 
+Algorithms for stage splitting have appeared in the literature under the names 
+{\em pass separation}, {\em binding time separation}, {\em data specialization}, 
+{\em program bifurcation}, and as various unnamed compiler passes.
+
+In the partial evaluation community, stage splitting has been investigated 
+mostly as a preprocessing step for self-applied partial evaluators. 
 For instance, \cite{Mogensen89a} and \cite{DeNiel91} defined splitting algorithms
 for programs consistening of a set of first-order recursive functions.
+Those works used a grammar-based binding-time specification that's 
+relatively complicated compared to the type system of \lang.
+This complication mostly stems from the decision to start with an untyped language;
+.
+
 In addition to the lack of first-class functions, 
 the binding time specificiations used by these systems are more complicated and less expressive than the type system of \lang.
+
 The question of binding time analysis for a higher-order language was visited in \cite{Mogensen89b},
 however the implications for splitting were not explicitly considered.
 
