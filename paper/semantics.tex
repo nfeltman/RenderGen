@@ -64,11 +64,12 @@ projection, of type $\curr A$.
 This elimination form, in contrast to that of $\fut$, does not permit world \bbonem\ subterms
 within any world \bbonep\ term.
 
-Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we introduce the
-$\caseP{e}{x.e_1}{x.e_2}$ construct, whose branches are world \bbonem\ terms
-open on $\curr{A}$ and $\curr{B}$ respectively.
-Importantly, this feature allows information to flow from \bbonep\ to \bbonem,
-which would not be possible otherwise.
+These features are sufficient to ensure that mixed code does not leak into ground code,
+however they also prevent information from ever escaping a $\curr$ wrapper.
+So to allow the latter behavior but not the former, we introduce the $\caseP{e}{x.e_1}{x.e_2}$ construct, 
+whose predicate is of type $\curr(A+B)$ and
+whose branches are world \bbonem\ terms open on $\curr{A}$ and $\curr{B}$ respectively. 
+This essentially allows code at \bbonem\ to inspect an injection tag within a $\curr$.
 
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
@@ -128,7 +129,8 @@ This strong requirement ensures that second-stage computations are not duplicate
 This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
 Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
-This contrast stems from differing goals: metaprogramming explicitly intends to model code writing code.
+This contrast stems from differing goals: metaprogramming explicitly intends to model code manipulating code,
+whereas our applications feel more natural with a eager interpretation of {\tt next}.
 One consequence of the stronger requirement on partial values is that a new kind of step is necessary to put terms into that form.
 To illustrate, consider:
 \begin{lstlisting}
