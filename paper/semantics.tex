@@ -6,7 +6,6 @@
 \input{figures/grammars}
 
 We express two-stage programs as terms in \lang, a typed, modal lambda calculus. 
-
 Although \lang\ describes computations that occur in two stages,
 we find it helpful for the specification of splitting to differentiate terms into three \emph{worlds}.
 A world is essentially a slightly finer classification than a stage.
@@ -49,14 +48,14 @@ This essentially encapsulates $e$ as a computation that will be evaluated in the
 and it provides a handle (of type $\fut A$) now to that eventual value.
 Computations at \bbonem\ can shuffle this handle around as a value, but the future result it refers to cannot be accessed.
 This is because the only way to eliminate a $\fut$ wrapper is by using a {\tt prev}, which yields an $A$ at \bbtwo.
-This feature was adapted from linear temporal logic, via \cite{davies96}.
+This feature was adapted from linear temporal logic, via \cite{davies96},
+and ensures that there can be no flow of information from the second stage to the first.
 
 $\curr A$ is a type in world \bbonem\ which classifies purely-first-stage
 computations of type $A$. Given a world \bbonep\ term $e$ of type $A$,
 $\pure{e}$ has type $\curr A$ at world \bbonem. ($e$ is guaranteed not to contain
 second-stage computations because $\fut$ types are not available in world
 \bbonep.)
-
 An $e$ of type $\curr A$ at \bbonem\ can be unwrapped as an $A$ at \bbonep\
 using the $\letp xe{e'}$ construct, which binds $\colpure xA$ in a \bbonem\ term
 $e'$. This allows us to compute under $\curr$---for example, given a $\colmix
@@ -65,10 +64,11 @@ projection, of type $\curr A$.
 This elimination form, in contrast to that of $\fut$, does not permit world \bbonem\ subterms
 within any world \bbonep\ term.
 
-Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we need the
+Lastly, to case on a term $e$ of type $\curr(A+B)$ at world \bbonem, we introduce the
 $\caseP{e}{x.e_1}{x.e_2}$ construct, whose branches are world \bbonem\ terms
 open on $\curr{A}$ and $\curr{B}$ respectively.
-Without this, there would be no way to get information out from under a $\curr$ wrapper.
+Importantly, this feature allows information to flow from \bbonep\ to \bbonem,
+which would not be possible otherwise.
 
 Although products and functions are restricted to types at the same world,
 $\fut$ allows construction of ``mixed-stage'' products and functions.
@@ -98,12 +98,12 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 The central tenet of a staged language
 is that first stage code should be evaluated entirely before second stage code.
 Accordingly, our dynamics operates in two passes.
-The first pass takes an input program $\coltwo e A$
+The first pass takes an input top-level program $\coltwo e A$
 and reduces all of its first-stage (worlds \bbonem\ and \bbonep) subterms in place,
 eventually resulting in a residual $\exv q$.
 The second pass further reduces this residual.
-Since a residual $q$ is monostage by definition, this second pass is just standard unstaged evaluation.
-Consequently, this paper does not describe in any detail the second pass of evaluation.
+Since a residual $q$ is monostage by definition, this second pass is standard unstaged evaluation
+and is not described in further detail in this paper.
 Moreover, for the purposes of these dynamics, we consider a top level program to always be typed at world \bbtwo.
 
 Since $\coltwo e A$ may be constructed out of terms at other worlds, 
@@ -129,7 +129,8 @@ This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite
 Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
 This difference is natural, given the goals of metaprogramming and partial evaluation versus our applications.
-One consequence of the stronger requirement on partial values is that we will need a new kind of step to put terms into that form.
+\TODO Actually explain what MP and PE want this for.
+One consequence of the stronger requirement on partial values is that a new kind of step is necessary to put terms into that form.
 To illustrate, consider:
 \begin{lstlisting}
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
@@ -174,6 +175,7 @@ $\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
 2`let val qs = prev{`1`qss `3`gr{`1`[7,4,2,5,9,...,3]`3`}`2`}`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
+\TODO what?
 To see that the partial application of \texttt{qss} is only evaluated once,
 observe that after the first stage of evaluation, the residual has the form:
 \begin{lstlisting}
