@@ -214,7 +214,7 @@
 \begin{mathpar}
 \fbox{Hoisting Rules} \and
 \inferlift 		{\red {\next {\exv q}} {\next {\exv y}}} {q \neq x} \and
-\infersteptwo 	{\red {\prev e} {\letin q y {\prev e}}} {\liftsub{}} \and
+\infersteptwo 	{\red {\prev e} {\letin q y {\prev {e'}}}} {\liftsub{}} \and
 \inferlift		{\red 	{\pio e} 
 						{\pio {e'}}} 											
 				{\sub {}} \and
@@ -234,7 +234,7 @@
 						{\app {\exv{v_1}}{e'_2}}}
 				{\sub {2}} \and
 \inferlift		{\red	{\letp x {e_1} {e_2}}
-							{\letp x {e_1} {e_2}}}
+						{\letp x {e'_1} {e_2}}}
 				{\sub {1}} \and
 \inferlift		{\red	{\caseP {e_1 }{x_2.e_2}{x_3.e_3}} 
 						{\caseP {e'_1}{x_2.e_2}{x_3.e_3}}} 

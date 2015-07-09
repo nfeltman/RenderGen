@@ -35,7 +35,7 @@ between these calls to \texttt{qs}. In particular, the comparisons performed by
 
 A first cut at a solution might be to, in a first pass, sort \texttt{l} into
 \texttt{s}, and then in a second pass, perform lookups in \texttt{s}.
-Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since since
+Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since
 \texttt{s} is a list, leading to no improvement in efficiency.  
 
 A more sophisticated solution is to, in a first pass, construct a binary search

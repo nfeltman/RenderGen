@@ -24,7 +24,7 @@ Note that there's no need to provide forms of splitting for ground terms or resi
 since those classes of term are already monostage by construction.
 
 The rules of the three splitting judgements are given in \ref{fig:termSplit}.
-They are simply recursive on structure of the term, 
+They are simply recursive on the structure of the term, 
 implying that the splitting algorithm runs in linear time.
 
 Before discussing the correctness of these translations, 
@@ -88,7 +88,7 @@ Partial value splitting (given by the relation $\vsplito$) converts a
 partial value $v$ into a split value $\mval i q$.
 Since partial values, by definition, have no remaining work in the first pass
 and since transfer of information between the stages occurs in the first pass of evalution,
-we know that the second stage components of $v$ can no longer depend on it's first stage components.
+we know that the second stage components of $v$ can no longer depend on its first stage components.
 Analogously, this must hold of the output of splitting, 
 which is why $q$---unlike the resumers of world \bbtwo\ term splitting---is not open on a variable.
 
