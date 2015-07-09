@@ -128,8 +128,7 @@ This strong requirement ensures that second-stage computations are not duplicate
 This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
 Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
-This difference is natural, given the goals of metaprogramming and partial evaluation versus our applications.
-\TODO Actually explain what MP and PE want this for.
+This contrast stems from differing goals: metaprogramming explicitly intends to model code writing code.
 One consequence of the stronger requirement on partial values is that a new kind of step is necessary to put terms into that form.
 To illustrate, consider:
 \begin{lstlisting}
