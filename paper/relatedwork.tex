@@ -127,7 +127,7 @@ Algorithms for stage splitting have appeared in the literature under the names
 
 In the partial evaluation community, stage splitting has been investigated 
 mostly as a preprocessing step for self-applied partial evaluators. 
-For instance, \cite{Mogensen89a} and \cite{DeNiel91} defined splitting algorithms
+For instance,~\cite{Mogensen89a} and~\cite{DeNiel91} defined splitting algorithms
 for programs consistening of a set of first-order recursive functions.
 Those works use a grammar-based binding-time specification that's 
 relatively complicated compared to the type system of \lang.
@@ -135,142 +135,29 @@ This complication mostly arises from the decision to start with an untyped langu
 one must first find a way to say ``argument $x$ will be a tuple'' before one can say
 ``the first component of $x$ is available at the second stage,'' 
 and so much of their binding-time specification just amounts to a type system.
-Formulations more like \lang\ (namely the two-level system of \cite{NN92-twolevel}) were known at the time,
-but \cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
-Davies essentially solved this limitation in \cite{davies96} (pending our further tweak with $\curr$),
+Formulations more like \lang\ (namely the two-level system of~\cite{NN92-twolevel}) were known at the time,
+but~\cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
+Davies essentially solved this limitation in~\cite{davies96} (pending our further tweak with $\curr$),
 and the question of stage splitting as we have presented it has been ripe ever since.
 Binding time analysis for a static higher-order language was visited in \cite{Mogensen89b},
 but the implications for splitting were not explicitly considered.
 
-Splitting-like algorithms have also been a topic of interest in
-programming systems for computer graphics, where to achieve
-high performance, programs are typically manually separated into
-components by frequency of execution. (Indeed, separation into a pre-determined
-set of per-frequency modules is \emph{required} by the execution model
-of modern graphics architectures.)  
-The software engineering challenges of modifying programs in the split form (see \cite{Foley:2011}) have led to
-suggestions of defering the task of splitting to the compiler.
-Early work \cite{knoblock96} sought to determine the staging of programs automatically through use of binding time analysis,
-however later work \cite{Proudfoot:2001,Foley:2011,He:2014} has focused on giving programmers explicit control of the staging through 
-programming language features. 
-All of these efforts in graphics have been limited to simple, imperative languages. 
-
-%% \section{Related Work}
-
-%% \ur{
-%% \begin{itemize}
-%% \item 
-%% I find it hard to distinguish between blue and black on printed paper.
-%% \item
-%% $\pause$ should be called ``promote'' or something like that. I
-%%   believe this is what Taha calls cross stage persistence.  THat work should
-%%   be cited.
-%% \end{itemize}
-%% }
-
-%% \crem{\emph{This text came from section 3:}
-%% \lang\ is adapted from \cite{davies96}, and is very similar to other staged
-%% languages considered in the partial evaluation and metaprogramming literature.
-%% Unlike \cite{davies96}, we restrict \lang\ to exactly two stages, to simplify
-%% our presentation of our stage-splitting algorithm. We expect that the techniques
-%% presented here extend to more stages.
-%% Our dynamic semantics for \lang\ differ from those given in \cite{davies96} and
-%% the metaprogramming literature, because we avoid duplicating stage \bbtwo\
-%% computations. In addition to being more efficient, our non-duplicating semantics
-%% are easier to compare with our splitting algorithm, whose development and
-%% exposition is our main goal.
-%% }
-
-%% There are several distinctive aspect of our work which we wish to compare and contrast.
-%% Firstly, \lang\ is a simply typed lambda calculus 
-%% with explicit stage annotations and a non-duplicating semantics.
-%% Its statics and dynamics enforce no backward information flow,
-%% which a is necessary property to define a splitting transformation
-%% that is equivalent to the dynamics.
-%% Finally, the splitting transformation itself operates on any well-typed open term in \lang.
-
-%% Partial evaluation is a well-studied technique for specializing programs to some of their input.  
-%% Often, the goal of partial evaluation systems is to go all the way from unstaged code to a specialized version.
-%% Although this problem definition implicitly includes binding time analysis,
-%% many presentations factor out that step and start with a stage-annotated representation, as we have done.
-%% We've shown that our dynamic semantics can be used to perform partial evaluation 
-%% [need to do more reading to know exactly how it compares].
-
-%% One unifying feature of partial evaluation systems is that they operate on code which is closed at the first stage,
-%% and so they must necessarily unfold recursive calls and wait for all stage \bbone\ input to operate.
-%% There has been some work to avoid these issues by templating [need citations].
-%% Stage-splitting, in contrast, goes all the way to operating on terms which are open on first stage variables,
-%% and so these problems are avoided.
-
-
-%% Stage-splitting itself has appeared in the literature---under 
-%% the names {\em pass separation} and {\em data specialization}--- for various simpler input languages.
-
-%% Most often, splitting is considered a compiler optimization (\cite{jorring86},\cite{knoblock96})
-%% to minimize recomputation.
-%% In this use case, only the arguments to the program are annotated with stages, 
-%% and the splitter is left to perform an {\em ad hoc} binding time analysis to determine the 
-%% internal staging of the program.
-%% Because this occurs without programmer supervision, the binding time analyzers for these uses are 
-%% reluctant to place stage \bbone\ code within stage \bbtwo\ conditionals, 
-%% since that would result in speculative behavior that could increase the overall runtime.
-%% We don't worry about this since the annotations of \lang\ are assumed to represent the will of a programmer.
-
-%% Like the previous example, the Spark language (\cite{sparkThesis}) uses staging to minimize recomputation in real-time rendering applications.  
-%% But instead of using a binding-time analysis to determine what parts of the program to put in what shader, 
-%% Spark gives the programmer manual control of term staging using a language that is in spirit similar to \lang. 
-
-%% We are also not the first to use stage splitting to derive algorithms.
-%% \cite{malmkjaer89}, expanding on the work of \cite{barzdins88}, defined a stage-splitter
-%% for a language of tail-recursive first-order equations with explicit staging annotations [double check that],
-%% and considered applications to string matching.
-
-%% Our work is distinct from all previous stage splitters in the following ways:
-%% \begin{itemize}
-%% \item Our input language, \lang, has a disciplined type theory.
-%% \item \lang\ has full first-class functions (and by extension, recursion), as well as sum types.
-%% \item Our stage splitting is proven correct.
-%% \end{itemize}
-
-%% The goal of {\em metaprogramming} (\cite{taha-thesis-99}, \cite{devito13}, \cite{davies01}) is 
-%% to use code in a host language to write code in an object language.
-%% Like partial evaluation and stage-splitting, this can be modeled by a staged language with explicit annotations.
-%% Instead of identifying stages with points in time, stages are identified with host/object levels of the language,
-%% and so type safety ensures the proper separation of levels of the language and safety of the constructed object code.
-
-%% But the differences in goals of metaprogramming do cause a few differences in form.
-%% For example, it's generally preferred in the metaprogramming context to use 
-%% a dynamics that duplicates the contents of $\next$ blocks.
-%% Moreover, in metaprogramming systems it makes sense to define an operator, \texttt{run}, 
-%% which evaluates stage \bbtwo\ code to get an answer back at stage \bbone.
-%% This is essentially a form a backwards information flow.
-%% Thus, the \texttt{run} feature is directly incompatible with a temporal interpretation of stages,
-%% which stage-splitting requires.
-
-%% \cite{davies96} explored the connection between linear temporal logic and its corresponding type system (which is nearly identical to that for \lang), 
-%% and showed the equivalence between that type system and existing one for binding time analysis. 
-%% That work also provided a metaprogramming-style duplicating dynamic semantics, which we purposely avoided.
-%% That said, the dynamics of \cite{davies96} is otherwise very similar to ours.
-%% In fact, if we change the $\next$ and $\prev$ rules of ours to 
-%% \begin{mathpar}
-%% \infer {\diaone {\next~e}{\cdot,\next~q}} {\diatwo e q} \and
-%% \infer {\diatwo{\prev~e}{v}} {\diaone e {\cdot,\next~v}} 
-%% \end{mathpar}
-%% and treat $\next~q$ as a partial value for any residual $q$,
-%% then our semantics becomes rule-for-rule isomorphic to that from \cite{davies96}. This essentially bypasses the
-%% environment bookkeeping in $\redonesym$, by inlining residuals instead of
-%% hoisting them in \verb|let|-bindings.
-%% From this it's clear that the semantics of \cite{davies96} and ours always produce the same value when they both terminate.
-%% {\em However because \lang's semantics dictate that a reified residual will always be evaluated, regardless of whether its result is consumed, \lang\ programs terminate strictly less often than that of \cite{davies96}}.
-
-
-
-
-
-
-
-
-
+Splitting algorithms have also been a topic of interest in programming
+systems for computer graphics, where to achieve high performance,
+programs are typically manually separated into components by frequency
+of execution. (Indeed, separation into a pre-determined set of
+per-frequency modules: e.g., per frame, per pixel, per triangle, is
+\emph{required} by the execution model of modern graphics
+architectures.)  The software engineering challenges of modifying
+graphics programs written in a split form have led to explorations of
+deferring the task of splitting to a compiler\,\cite{Foley:2011}.
+While early work sought to determine the staging of programs
+automatically via binding time analysis\,\cite{knoblock96}, more
+recent designs, like \lang, require explicit staging by the
+programmer\,\cite{Proudfoot:2001,Foley:2011,He:2014}.  However,
+splitting algorithms developed in all of these efforts have been
+limited to simple, imperative graphics shading languages that lack
+simple features such as functions.
 
 
 
@@ -332,55 +219,6 @@ All of these efforts in graphics have been limited to simple, imperative languag
 %% this can lead to non-termination if v is considered static.  
 
 %% Is this a problem for us? 
-
-
-
-%% \paragraph{Supercompilation.}
-%% ~\cite{Turchin86}
-
-
-%% \paragraph{Intro.}
-
-%% A predominating theme in the design, implementatation, and
-%% optimization of algorithm and software is frequency reduction and
-%% precomputation.  The idea is to reduce the frequency of computations
-%% by reducing their frequency and ideally by precomputing when possible.
-
-
-%% The reason for why this theme is as predominant as it is that it is
-%% naturally common in many actual applications.  For example, we may
-%% have a collection of names or numbers that we frequently lookup, as
-%% for example part of a membership test as part of a larger system.  In
-%% some applications areas such as in graphics (the motivation for our
-%% work), this is so common that there is a relatively large literature
-%% on speeding up graphics computations by taking advantage of frequency
-%% reduction and precomputation.
-
-%% One way to express frequency of computations is to allow the
-%% programmer to stage computation explicitly by making explicit the
-%% stage of each computation and then by moving computations between
-%% stages to improve efficiency by performing work as early (to save time
-%% later when performance might be more critical) and  as infrequently
-%% as possible (to reduce overall time).
-
-
-
-
-
-
-%% For example, in meta-programming~\cite{}, the programmer can assign a
-%% program expression a stage (stage 1, 2, 3, ...), which indicates the
-%% stage at which that expression evaluates.  Combined with the ability
-%% for earlier stages to construct expressions of later stages,
-%% meta-programming techniques can be used to construct efficient
-%% programs that improve efficiency over their non-staged counterparts by
-%% reducing frequency reduction and precomputation.  For example, the
-%% programmer can write a program that takes a list of numbers $\ell$ as
-%% a first stage value and returns a second-stage function that performs
-%% a fast membership test on that list $\ell$ by inlining all the
-%% comparisons.  When given a key to lookup in the second stage, the
-%% membership test function would quickly return the result.
-
 
 
 
