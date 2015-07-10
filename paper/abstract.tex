@@ -1,67 +1,25 @@
+%!TEX root = paper.tex
+
 Staged programming languages assign a stage to each expression and
-evaluate each expression in its assigned stage.
-%For example, in a
-%two-staged program, some expressions are evaluated in the first stage
-%and others in the second stage.
-%Programming languages, evaluation
-%strategies, and type systems for staged programs where stages roughly
-%correspond to the arrival order of inputs have been studied
-%extensively in the areas of partial evaluation and meta programming.
-While staged programming has been studied extensively in the areas of
-partial evaluation and meta programming, in this paper we present an
-algorithm for statically {\em splitting} programs written in a
-two-stage typed lambda calculus (with a $\fut$ modality denoting
-computation in a later stage) into multi-pass programs that are
-structured as two dependent, unstaged programs and are evaluated using
-two distinct execution passes.  While splitting has been studied in the past
-under the names \emph{pass separation} and \emph{data specialization},
-such techniques were either manual or applicable only to simple programs
-that lack important features such as recursion and first-class
-functions.
+evaluate each expression in its assigned stage,
+and can be used to describe programs where inputs arrive at different times or rates.
 
-Since our work builds on a lambda calculus, our splitting algorithm
-enables the programmer to write staged programs by using powerful
-programming abstractions in a composable and modular fashion. Our
-splitting transformation maps such programs into multi-pass programs
-that can run asymptotically more efficiently by assigning frequent
-computations to earlier passes so that they can be reused (cheaply)
-later.  Our experiments based on a prototype implementation show that
-our splitting algorithm is able to perform highly non-trivial algorithmic
-transformations, sometimes automatically improving efficiency
-asymptotically by nearly a linear factor.  Since the splitting
-transformation takes place at compile time, these benefits are
-achieved without significant run-time penalty.
-
-\TODO We also proved some stuff.
-
-% The motivations for pass separation are 1) improvements in efficiency
-% by assigning frequent computations to earlier passes so that they can
-% be re-used (cheaply) later and, 2) performing such scheduling
-% statically at compile time without loss of any generality.  To assess
-% the effectiveness of our techniques for pass separation, we consider
-% several examples and demonstrate that our implementation is able to
-% perform pass separation statically as expected.  In a particularly
-% interesting example, involving recursion and recursive data, we show
-% that our techniques perform highly non-trivial algorithmic
-% transformations, improving efficiency asymptotically by nearly a
-% linear factor.
+In this paper we present an 
+algorithm for statically {\em splitting} these mixed-staged programs 
+into two dependent, unstaged programs where the outputs of the first part can be efficiently reused accorss multiple invocations of the second program.  
 
 
+While previous algorithms for performing this transformation 
+(also called \emph{pass separation} and \emph{data specialization}) operate on simpler imperative languages,
+out algorithm operates on an explicitly-two-staged, typed lambda calculus \lang, 
+with a $\fut$ modality denoting computation at a later stage,
+and a $\curr$ modality noting purely first stage code.
+Notably, our algorithm is the first to with support for mixed-stage recursive and higher-order functions.
 
+We have proven the dynamic correctness of our splitting algorithm with respect
+to a partial-evaluation semantics, and mechanized this proof in Twelf.
 
-% Many algorithms can perform useful work before receiving all of their inputs.
-% If we regard those inputs as arriving at different \emph{stages} of the
-% computation, then we can \emph{split} those algorithms into, for each stage, a
-% function performing all the work dependent only on the available inputs.
-
-% Prior work on splitting has been limited to simple, imperative languages; in
-% this paper, we extend splitting to \lang, a typed lambda calculus equipped with
-% a modal staging operator, allowing us to split recursive and higher-order
-% functions.
-
-% These new features allow us to express some familiar algorithms which, when
-% split, yield asymptotic improvements; for example, quickselect of the $k$th
-% smallest element of a list $l$ splits into (1) sorting $l$ into a binary search
-% tree, then (2) finding the tree's $k$th leftmost element.
-
-% % something about compositional, cross-cutting code
+We have implemented the algorithm in a prototype compiler,
+and we show that the ability to split a language with recursion and higher-order features
+can enabled non-trivial algorithmic transformations that asymptotically improve code efficiency by nearly a linear factor,
+as well as modular expression of staged programming, 

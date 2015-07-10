@@ -461,12 +461,15 @@ tantamount to proving it has no second-stage computations,
 allowing splitting to avoid generating the resumer \texttt{partition2}
 and calling it from \texttt{qs2}.
 
-Recall that this annotation is not especially useful 
-for ordinary staged term evaluation (\ref{sec:semantics}).
-We suspect the key factor is that splitting is a static transformation,
-since other static trasofrmations \cite{Mogensen89a,DeNiel91} 
-also benefited from a clear distinction between ground and mixed terms.
-Ground is also similar to the validity mechanism in ML5 \cite{murphy05}.
+Since direct staged term evaluation (\ref{sec:semantics})
+reduces all first stage terms to value forms without any remaining stage two work,
+the distinction between \bbonem\ and \bbonep\ is unnecessary.
+In contrast, when performing program transformations before the first stage inputs are known,
+it is valuable to form a clear distinction between ground and mixed terms.
+This was similarly observed in prior work seeking to implement self-applicable partial evaluators\,\cite{Mogensen89a,Mogensen89b}.
+While this paper assumes that ground annotations already exist in the input,
+it may be possible to use binding-time analysis techniques to automatically insert them.
+Ground is also similar to the validity mechanism in ML5\,\cite{murphy05}.
 \end{abstrsyn}
 
 \input{figures/splitting-term}
