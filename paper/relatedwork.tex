@@ -31,31 +31,32 @@ Kleene, who in 1952 proved that a multivariate program (function)
 $f(x_1, \ldots, x_{n+m})$ can be specialized for any given $a_1 \ldots
 a_m$ to obtain another program $g(x_1, \ldots, x_n)$ such that $f(a_1,
 \ldots, a_m, y_1, \ldots, y_n) = g(y_1, \ldots, y_n)$~\cite{Kleene52}.
-Kleene did not intend to improve efficiency, however.  Lombardi
-appears to be the first person to use the term in his work on
-incremental computation~\cite{Lombardi67}.  There has since been 
-an enormous body of work on partial evaluation, and we refer the reader to the
-book by Jones, Gommard, and Sestoft for a comprehensive discussion of
-work until the early 90's~\cite{JGS93}.
+%Kleene did not intend to improve efficiency, however.  Lombardi
+%appears to be the first person to use the term in his work on
+%incremental computation~\cite{Lombardi67}.
+There has since been an enormous body of work on partial evaluation,
+and we refer the reader to the book by Jones, Gommard, and Sestoft for
+a comprehensive discussion of work until the early 90's~\cite{JGS93}.
 
 Early approaches to partial evaluation can be viewed as operating in
 two stages: binding time analysis and program specialization.  For a
 multivariate program with clearly marked static and dynamic arguments,
 binding-time analysis identifies all the parts of the program that can
 be computed by the knowledge of static arguments. Using this
-information and the values of static arguments, program
-specialization specializes the original program to a partially-evaluated
-one that operates on many different dynamic arguments.  This
-approach has been applied to construct partial evaluators for a number
-of languages such as Scheme~\cite{OB91-Similix,Consel88-Schism}, 
-although for the most part restricted to first-order subsets.
+information and the values of static arguments, program specialization
+specializes the original program to a partially-evaluated one that
+operates on many different dynamic arguments.  This approach has been
+applied to construct partial evaluators for a number of languages such
+as Scheme~\cite{OB91-Similix,Consel88-Schism}, although for the most
+part restricted to first-order subsets.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance was difficult to
 predict. This led to investigations based on type systems for making
-the stage of computations explicit in programs~\cite{GJ91-lambda,NN92-twolevel}
-and writing ``metaprograms'' that, when evaluated at a stage, yield
-a new program to be evaluated at the next stage.
+the stage of computations explicit in
+programs~\cite{GJ91-lambda,NN92-twolevel} and writing ``metaprograms''
+that, when evaluated at a stage, yield a new program to be evaluated
+at the next stage.
 %J{\o}rring and
 %Scherlis describe the idea of meta programming as one of the three possible approaches to
 %taking advantage of staging~\cite{JS86-staging}.
@@ -78,8 +79,8 @@ work on metaprogramming and staged computation.  The specific
 extension to the typed lambda calculus that we use here is based on
 the $\fut$ modality of Davies~\cite{DP01-modal}.  Our types differ in
 small ways to account for the specific evaluation model that we
-propose; however, the key difference between our work and this prior work is
-that we instead focus on the problem of pass separation.
+propose; however, the key difference between our work and this prior
+work is that we instead focus on the problem of splitting.
 %we developed an algorithm
 %for splitting terms in the proposed staged language.
 %the staging or the splitting algorithm, which given a two-staged
@@ -97,27 +98,25 @@ that we instead focus on the problem of pass separation.
 %significant ways.
 
 
-Another class of precomputation techniques is incremental
-computation, where a program can efficiently respond to small changes
-to its input by only recomputing parts of the computation affected
-by the
+Another class of precomputation techniques is incremental computation,
+where a program can efficiently respond to small changes in its inputs
+by only recomputing parts of the computation affected by the
 changes~\cite{DemersReTe81,PughTe89,RamalingamRe93,AcarBlBlHaTa09}.
-Like other precomputation techniques, incremental computation can be
-thought of as a staged model, where changes in inputs come over a
-period of time in stages.
+Thus, incremental computation can be thought of as a staged model,
+where changes in inputs come over a period of time in stages.
 %
-However, incremental computation does not requiring fixing any of its
-inputs and allows, in the general case, for all inputs to
-change. Thus, its benefits are dependent on the input changes made and
-techniques typically utilize significant run-time (dynamic)
-information.  For example, while we can apply incremental computation
-to our quickselect example (\ref{sec:overview}), doing so would not
-realize the same bounds as splitting since incremental computation
-techniques would unfold the quickselect function based on the demanded
-ranks, which can require linear time (as opposed to logarithmic) at
-each stage.  Such an implementation would also maintain sophisticated
-data structures dynamically at run time, the benefits of which depend
-highly on input changes applied.
+However, unlike splitting, incremental computation does not require
+fixing any of its inputs and, in the general case, allows for all
+program inputs to change. Thus, the benefits of incremental
+computation depends on what changes to inputs are made. For example,
+while it is possible to apply incremental computation to our
+quickselect example (\ref{sec:overview}), techniques would unfold the
+quickselect function based on the demanded ranks, potentially
+incurring linear time cost at each step of the algorithm (as opposed
+to logarithmic result produced by splitting). Unlike the results of
+splitting, such an implementation would also maintain sophisticated
+data structures dynamically at run time to track what computations
+must be performed.
 
 \paragraph{Stage Splitting.}
 
@@ -149,7 +148,7 @@ of execution. (Indeed, separation into a pre-determined set of
 per-frequency modules: e.g., per frame, per pixel, per triangle, is
 \emph{required} by the execution model of modern graphics
 architectures.)  The software engineering challenges of modifying
-graphics programs written in a split form have led to explorations of
+graphics programs written in a split form have spurred interest in
 deferring the task of splitting to a compiler\,\cite{Foley:2011}.
 While early work sought to determine the staging of programs
 automatically via binding time analysis\,\cite{knoblock96}, more

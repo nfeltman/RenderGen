@@ -465,12 +465,25 @@ term evaluation (\ref{sec:semantics}), this annotation is
 particularly useful for splitting, since splitting $\pure e$
 terms trivially yields a unit resumer.
 
-The \texttt{partition} function in the quickselect example in
-\ref{sec:exampleQS} is an example of such a function that contains no
-second-stage computations, but, if not defined within a $\pure$
-annotation, would cause splitting to generate a recursive resumer.
+An illustrative example is the \texttt{partition} function in the quickselect
+example of \ref{sec:exampleQS}. If \texttt{partition} were defined at \bbonem\
+instead of \bbonep, then (like \texttt{qs}) it would split into two functions
+\texttt{partition1} and \texttt{partition2}, the latter of which recursively
+computes the (trivial) second-stage component of \texttt{partition}'s result.
+Moreover, \texttt{qs2} would call \texttt{partition2}, just as \texttt{qs1}
+calls \texttt{partition1}:
+\begin{lstlisting}
+2`fun qs2 (p : tree, k : int) : int =
+... | Branch (i,h,p1,p2) =>
+  let val () = partition2 ((),()) in
+  case compare k i of ...
+\end{lstlisting}
+By explicitly marking that \texttt{partition} has no second-stage computations,
+we avoid both generating the resumer \texttt{partition2}, and calling it in
+\texttt{qs2}.
 
-\TODO consider expanding, based on comments from reviews
+
+\TODO somebody should read the new text about partition
 
 \end{abstrsyn}
 
