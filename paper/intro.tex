@@ -10,70 +10,83 @@ fun @$F(x, y_1, y_2 \ldots, y_m)$@ =
   @$f(x, y_1);  f(x, y_2); \ldots; f(x, y_m)$@
 \end{lstlisting}
 %
-In this common scenario, a multivariate function is applied many times with one
-argument fixed, so it is advantageous to find the computations in $f$ that
-depend on $x$ and perform them only once. This is the intent of compiler
-optimization techniques like loop hoisting and common subexpression elimination,
-which identify the computations common to all invocations of $f$, and perform
-them once at the beginning of the computation.
+In this scenario, a multivariate function is applied many times with
+one argument fixed, so it is advantageous to find the computations in
+$f$ that depend on $x$ and then stage program execution so they are
+performed only once at the beginning of execution.
 
-Programs featuring this structure are particularly important in real-time
-computer graphics; in fact, modern graphics architectures \emph{require} that
-graphics computations be organized into distinct {\em passes} which perform
-increasingly fine-grained computations (for example, per object, per region of
-the screen, and per pixel, where many computations in later passes use the
-results from a single computation in an earlier pass)\,\cite{OpenGL4Spec}.
-While performant, this paradigm of programming with explicit passes results in
-complex code where invariants must hold across different passes, and local
-changes for one pass may require changes to other passes to ``plumb'' inputs
-from all other frequencies (\TODO explain what ``frequency'' means here)\,\cite{Foley:2011}.
-%
-In other words, requiring manual separation of passes breaks key programming
-abstractions such as composition and modularity.
-%
-Graphics researchers therefore have suggested using explicitly staged programs
-\,\cite{Proudfoot:2001,Foley:2011,He:2014}, deferring to the compiler the
-mechanical task of separating such programs into passes.
+%Programs featuring this structure are particularly important in real-time
+%computer graphics; in fact, modern graphics architectures \emph{require} that
+%graphics computations be organized into distinct {\em passes} which perform
+%increasingly fine-grained computations (for example, per object, per region of
+%the screen, and per pixel, where many computations in later passes use the
+%results from a single computation in an earlier pass)\,\cite{OpenGL4Spec}.
+%While performant, this paradigm of programming with explicit passes results in
+%complex code where invariants must hold across different passes, and local
+%changes for one pass may require changes to other passes to ``plumb'' inputs
+%from all other frequencies (\TODO explain what ``frequency'' means here)\,\cite{Foley:2011}.
+%In other words, requiring manual separation of passes breaks key programming
+%abstractions such as composition and modularity.
+%Graphics researchers therefore have suggested using explicitly staged programs
+%\,\cite{Proudfoot:2001,Foley:2011,He:2014}, deferring to the compiler the
+%mechanical task of separating such programs into passes.
 
-Programming languages researchers have studied similar problems. In the 1980s,
-J{\o}rring and Scherlis identified {\em frequency reduction} and {\em
-precomputation}~\cite{JS86-staging} as mechanisms for efficiently evaluating
-staged computations. To perform frequency reduction, one identifies and hoists
-computations that are performed multiple times, in order to compute them only
-once. To perform precomputation, one identifies computations that can be
-performed in advance, and does so---for example, at compile time if the relevant
+%Programming languages researchers have studied similar problems, with
+%J{\o}rring and Scherlis identifying {\em frequency reduction} and {\em
+% precomputation} as mechanisms for efficiently evaluating staged
+%computations\,\cite{JS86-staging}.
+
+J{\o}rring and Scherlis classify automatic program staging
+transformations, such as the one described above, as forms of {\em
+  frequency reduction} or {\em
+  precomputation}\,\cite{JS86-staging}. To perform frequency
+reduction, one identifies and hoists computations that are performed
+multiple times, in order to compute them only once. To perform
+precomputation, one identifies computations that can be performed in
+advance, and does so---for example, at compile time if the relevant
 inputs are statically known.
 
-There has been much work on language-based techniques for performing
-precomputation. Partial evaluation~\cite{futamura71,jones96} achieves
-precomputation by specializing functions to specific arguments. Going back to
-our example, if $f$ specializes to a particular $v$, written $f_v$, such that
-$f(v,y) = f_v(y)$, then $F$ can be specialized to $v$ as
+One common precomputation technique is partial
+evaluation\,\cite{futamura71,jones96}, which relies on dynamic
+compilation to specialize functions to known argument values. Going
+back to our example, if $f$ specializes to a particular $v$, written
+$f_v$, such that $f(v,y) = f_v(y)$, then $F$ can be specialized to $v$
+as
 \begin{lstlisting}
 fun @$F_v(y_1, y_2, \ldots, y_m)$@ = 
   @$f_v(y_1);  f_v(y_2); \ldots; f_v(y_m)$@.
 \end{lstlisting}
-eliminating the need to compute $m$ times those parts of $f(v,-)$ which do not
-depend on the second argument.
+eliminating the need to compute $m$ times those parts of $f(v,-)$
+which do not depend on the second argument.
 
-A closely related technique, {\em metaprogramming}, allows writing
-programs that generate specialized
-code~\cite{davies96,Taha97,DP01-modal,NP05-nn}. Metaprogramming
-enables fine-grained control over specialization by requiring \emph{staging
-annotations} that explicitly mark the stage of each computation. (In
-partial evaluation, we typically assume that a \emph{binding-time
-  analysis} has automatically determined which parts of $f$ can be
-specialized.)
+Closely related to partial evaluation is {\em metaprogramming}, where
+known values represent program code to be executed in a later stage
+\,\cite{davies96,Taha97,DP01-modal,NP05-nn}. Metaprogramming enables
+fine-grained control over specialization by requiring explicit
+\emph{staging annotations} that mark the stage of each expression.
 
-While partial evaluation and metaprogramming have been studied extensively,
-frequency reduction techniques have not seen the same attention. In
-\cite{JS86-staging}, J{\o}rring and Scherlis proposed {\em pass separation} as a
-manual method for {\em splitting} a program into multiple passes.
-%
-In our example, pass separation would split the function $f$ into two passes
-$f_1$ and $f_2$ such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
-evaluating the first pass on $x$, and using the result $z$ to evaluate the
-second pass on each $y_i$.
+%(In partial evaluation, we typically assume that a
+%\emph{binding-time analysis} has automatically determined which parts
+%of $f$ can be specialized.)
+
+%This is the intent of compiler optimization techniques like loop
+%hoisting and common subexpression elimination, which identify the
+%computations common to all invocations of $f$, and perform them once
+%at the beginning of the computation.
+
+%While partial evaluation and metaprogramming have been studied
+%extensively, frequency reduction techniques have not seen the same
+%attention.
+
+While simple forms of frequency reduction include standard compiler
+optimizations such as loop hoisting and common subexpression
+elimination, J{\o}rring and Scherlis proposed the more general
+transformation of {\em splitting} a program into multiple passes
+(called pass separation in \,\cite{JS86-staging}). In our example,
+splitting transforms the function $f$ into two passes $f_1$ and $f_2$
+such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
+evaluating the first pass on $x$, and using the result $z$ to evaluate
+the second pass on each $y_i$.
 %
 \begin{lstlisting}
 fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ = 
@@ -81,59 +94,50 @@ fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ =
   in @$f_2(z, y_1);  f_2(z, y_2); \ldots; f_2(z, y_m)$@
 \end{lstlisting}
 %
-The key difference between pass separation and partial evaluation (or
+The key difference between splitting and partial evaluation (or
 metaprogramming) is that the former can be performed without access to
 the first argument $x$; $F_\textrm{multipass}$ works for any $x$,
-while $F_v$ is defined only for $x=v$.  Note that unlike
-precomputation, frequency reduction does not require knowledge of
-arguments; however, if a particular $v$ is known, we can use partial evaluation
-to specialize $F_\textrm{multipass}$ to that $v$.
+while $F_v$ is defined only for $x=v$.  Therefore, unlike partial
+evaluation, splitting is a static program transformation
+(``metastatic'' in parial evaluation terms) and does not require
+dynamic code generation.
 
-Prior work on partial evaluation and metaprogramming has shown that
-precomputation can largely be automated for functional languages. In contrast,
-automatic pass separation has been limited to simple languages that do not
-support recursion or first-class
-functions~\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. In this paper, we
-extend this work by presenting a pass separation algorithm for a typed lambda
-calculus.
+% Note that unlike precomputation, frequency reduction does not require
+%knowledge of arguments; however, if a particular $v$ is known, we can
+%use partial evaluation to specialize $F_\textrm{multipass}$ to that
+%$v$.
 
-As our starting point, we consider an explicitly-two-staged, typed lambda
-calculus \lang\ in the style of Davies~\cite{davies96}, with a $\fut$ modality
-denoting computation in a later stage (\ref{sec:semantics}). We then present a
-splitting algorithm to pass-separate a \lang\ program into two passes
-corresponding to the stages of computation in that program
-(\ref{sec:splitting}). These passes are monostaged programs, expressed in a
-conventional functional language.
+Prior work on partial evaluation and metaprogramming has demonstrated
+automatic application of these techniques on higher order functional
+languages. In contrast, automatic splitting transforms have been
+limited to simple languages that do not support recursion or
+first-class
+functions\,\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. In
+this paper, we extend this work by presenting a splitting algorithm
+for a typed lambda calculus.
 
-The most interesting case involves splitting a mixed-stage function (like $f$ in
-the example) which is moreover recursive. This yields a first pass function
-$f_1$ which computes from its first-stage argument $x$ a \emph{boundary} data
-structure encoding the interstage communication in $f(x,-)$. When $f$ recurs on
-$x$, this boundary structure itself has a recursive type.
-%
-The second pass is a function $f_2$ which takes the boundary data structure
-$f_1(x)$ and a second-stage argument $y_i$, and completes the computation
-$f(x,y_i)$, traversing the boundary structure in light of the particular
-argument $y_i$.
+As our starting point, we consider an explicitly-two-staged, typed
+lambda calculus \lang\ in the style of Davies\,\cite{davies96}, with a
+$\fut$ modality denoting computation in a later stage
+(\ref{sec:semantics}). We then present a splitting algorithm that
+transforms \lang\ program into two passes corresponding to the stages
+of computation in that program (\ref{sec:splitting}). These passes are
+monostaged programs, expressed in a conventional functional language.
 
-We have implemented this splitting algorithm (\ref{sec:implementation}) and
-applied it to a number of staged programs (\ref{sec:examples}) ranging from
-straight-line arithmetic operations to recursive and higher-order functions. In
-the case of the quickselect algorithm, which we discuss next, the split code is
-in fact asymptotically faster over many $y_i$.
+The most interesting case involves splitting a recursive mixed-stage
+function (like $f$ in the example). This yields a first pass function
+$f_1$ which computes from its first-stage argument $x$ a
+\emph{boundary} data structure encoding the interstage communication
+in $f(x,-)$. When $f$ recurs on $x$, this boundary structure itself
+has a recursive type.  The second pass is a function $f_2$ which takes
+the boundary data structure $f_1(x)$ and a second-stage argument
+$y_i$, and completes the computation $f(x,y_i)$, traversing the
+boundary structure in light of the particular argument $y_i$.
 
-%The crux of the splitting algorithm is splitting recursive mixed stage
-%functions that involve both a first stage and second stage computations.  When
-%split, such a function turns into a first-pass function that yields a {\em
-%boundary value} that encodes the ``first-stage'' part of the computation.  If
-%the function recurs on a first-stage argument, then the boundary value is
-%typically a recursive data structure.  In other words, the splitting algorithm
-%maps computational recursion into a recursive data type. If the boundary
-%structure is generated as a result of a conditional, it is typically encoded as
-%a (recursive) sum type, such as a tree, where the kind of the node indicates
-%the recursion status of the first-stage evaluation.  The second-pass part of
-%the computation, which corresponds to the ``second stage'' takes the boundary
-%value as an argument as well as the second-stage argument and uses them to
-%complete the computation, often by traversing the now precomputed boundary in
-%light of the now available second-stage argument.
+We have implemented this splitting algorithm
+(\ref{sec:implementation}) and applied it to a number of staged
+programs (\ref{sec:examples}) ranging from straight-line arithmetic
+operations to recursive and higher-order functions. In the case of the
+quickselect algorithm, which we discuss next, the split code is in
+fact asymptotically faster over many $y_i$.
 

@@ -55,7 +55,7 @@ However, in bifurcation there is no building of data structures to be use in the
 instead, the second stage version of the code also has 
 access to the first stage inputs and just recomputes whatever it needs.
 That difference aside, the grammar-based binding-time specifications used in bifurcation
-were capable of descring data structures with purely-static, purely-dynamic, and mixed stage content,
+were capable of describing data structures with purely-static, purely-dynamic, and mixed stage content,
 much like the type system of \lang.
 
 Experience with binding time analysis showed that it can be difficult
@@ -111,29 +111,28 @@ must be performed.
 
 \paragraph{Stage Splitting.}
 
-Algorithms for stage splitting have appeared in the literature under the names 
-{\em pass separation}\,\cite{JS86-staging} and {\em data specialization}\,\cite{knoblock96}.
-Perhaps the closest work to ours is the algorithm for data
-specialization given by Knoblock and Ruf~\cite{knoblock96}, which
-also seeks to statically split an explicitly staged program into two
-stages.  However, they only consider a simple first-order language and
-straight-line programs. Their work also treats all computations
-guarded by second-stage conditionals as second-stage computations,
-which would prevent optimization (via splitting) of programs such as
-quickselect.
+Algorithms for stage splitting have appeared in the literature under
+the names {\em pass separation}\,\cite{JS86-staging} and {\em data
+  specialization}\,\cite{knoblock96}.  Perhaps the closest work to
+ours is the algorithm for data specialization given by Knoblock and
+Ruf~\cite{knoblock96}, which also seeks to statically split an
+explicitly staged program into two stages.  However, they only
+consider a simple first-order language and straight-line
+programs. Their work also treats all computations guarded by
+second-stage conditionals as second-stage computations, which would
+prevent optimization (via splitting) of programs such as quickselect.
 
-Splitting algorithms have also been a topic of interest in
-programming systems for computer graphics, where, to achieve
-high performance, programs are typically manually separated into
-components by frequency of execution (Indeed, separation into a pre-determined
-set of per-frequency modules is \emph{required} by the execution model
-of modern graphics architectures.)  The software engineering
-challenges of modifying multiple per-stage programs have led to
-suggestions of writing graphics programs in an explicitly-staged
-programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
-deferring the task of pass separation to the compiler. However, all
-prior efforts, like that of Knoblock and Ruf\,\cite{knoblock96} have
-been limited to simple, imperative languages. 
+Splitting algorithms have also been a topic of interest in programming
+systems for computer graphics, where, to achieve high performance,
+programs are typically manually separated into components by frequency
+of execution corresponding to support graphics hardware pipeline
+stages. The software engineering challenges of modifying multiple
+per-stage programs have led to suggestions of writing graphics
+programs in an explicitly-staged programming
+language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and deferring the
+task of pass separation to the compiler. However, all prior efforts,
+like that of Knoblock and Ruf\,\cite{knoblock96} have been limited to
+simple, imperative languages.
 
 
 %% Online and offline.  Both approaches have their merits but online

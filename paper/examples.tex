@@ -208,16 +208,39 @@ provide an example of a program whose boundary data structure is a trie.
 
 \subsection {Composing Graphics Pipeline Programs}
 
-A major motivation for staged programming in computer graphics is to express
-logic related to a single application concern conveniently as a single staged
-function (referred to as a pipeline program)\,\cite{Foley:2011}, rather than
-as a collection of functions distributed across different GPU pipeline stages.  
+Programs featuring staged structure are particularly important in real-time
+computer graphics since modern graphics architectures \emph{require} that
+graphics computations be organized into distinct {\em passes} which perform
+increasingly fine-grained computations (e.g., per object, per screen region,
+per pixel) where many computations in later passes use the
+results from a single computation in an earlier pass\,\cite{OpenGL4Spec}.
 
-Pipeline programs can be directly expressed as staged functions in \lang\, with splitting 
-used to generate monostaged code required for each GPU pipeline stage
-(as well as the plumbing to communicate values between the stages).
-Composition of such functions in \lang\ allows more complex pipelines to be expressed in a modular programming style
-that is becoming increasingly desirable in graphics shading languages\,\cite{Foley:2011,He:2014}. A simple example of composition of staged functions (representing GPU pipeline programs) is given below.  The code defines a pipeline as a staged function that takes an object definition in the first stage (\texttt{obj}) and a pixel coordinate (\texttt{xy}) in the second stage and emits the color of the object at the specified pixel. The code defines a pipeline combinator \texttt{shade} which modulates the results of the object's reflectance at a given pixel with the results of a function that computes the object's albedo (surface color).  
+While performant, programming with explicit passes results in complex
+code where invariants must hold across different passes, and local
+changes for one pass may require changes to other passes to ``plumb''
+its inputs through all upstream passes. Thus, requiring manual
+separation of passes breaks key programming abstractions such as
+composition and modularity.  Graphics researchers therefore have
+suggested using explicitly staged programs
+\,\cite{Proudfoot:2001,Foley:2011,He:2014} to express logic related to
+a single application concern conveniently as a single staged function
+(referred to as a pipeline program)\,\cite{Foley:2011}.
+
+Pipeline programs can be directly expressed as staged functions in
+\lang\ with splitting used to generate monostaged code required for
+each GPU pipeline stage. Composition of such functions in
+\lang\ allows more complex pipelines to be expressed in a modular
+programming style that is becoming increasingly desirable as graphics
+programs increase in complexity\,\cite{Foley:2011,He:2014}.
+
+A simple example of composition of staged functions (representing GPU
+pipeline programs) is given below.  The code defines a pipeline as a
+staged function that takes an object definition in the first stage
+(\texttt{obj}) and a pixel coordinate (\texttt{xy}) in the second
+stage and emits the color of the object at the specified pixel. The
+code defines a pipeline combinator \texttt{shade} which modulates the
+results of the object's reflectance at a given pixel with the results
+of a function that computes the object's albedo (surface color).
 %
 \begin{lstlisting} 
 1`datatype object = ...`
@@ -234,8 +257,9 @@ that is becoming increasingly desirable in graphics shading languages\,\cite{Fol
      * prev{`1`albedo (obj,next{2`xy`})`2`}`)
 \end{lstlisting}
 %
-Most pipeline programming models either force the user to manually split their programs (which harms modularity).
-Others, such as \cite{Foley:2011}, offer only a few multistage types (namely, first order functions) and give 
-combinators like \texttt{par} as language features.
-In contrast, \lang\ is powerful enough to define those combinators in-language.
+Whereas prior systems provides combinators like \texttt{par} as
+language features\,\cite{Foley:2011} to support composition, \lang\ is
+powerful enough to define those combinators in-language.
+
+
 
