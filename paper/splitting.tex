@@ -33,32 +33,41 @@ That is, each splitting judgement defines a total function.
 We prove these theorems by straightforward induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
 
-Recall that a partial value $v$, by definition, has no remaining work in the first pass.
-Since transfer of information between the stages occurs during the first pass, 
-there can be no remaining internal communication between the stages of $v$.
-In contrast, a term $e$ (at either \bbonem\ or \bbtwo) could still evaluate further in the first pass,
-and so there may remain internal communication to happen between the stages of $e$.
+\subsection{Outputs of Splitting}
 
-This difference is why the second-stage output of either form of term splitting ($l.r$) is open on a variable,
-while that of partial value splitting ($q$) is not.
-Substitution for $l$ in $r$ is how communication between stages is represented in these outputs.
-
-\subsection{World \bbtwo\ Term Splitting}
-
-Top level programs in \lang\ are given by a term $\coltwo e A$.
-Reduction of this program, via repeated $\stepsym \bbtwo$, will eventually yield a residual, which can be reduced no further.
-We write this as $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$.
-
-Splitting $e$, via $\splittwosym$, yields $\pipeS p l r$.
-This output is evaluated in two passes by reducing $p$ to the value $b$ in the first pass,
-then plugging that result in for $l$ to produce $[b/l]r$,
-which is evaluated in the second pass.
+Splitting a top level program $\coltwo e A$, via $\splittwosym$, yields $\pipeS p l r$.
+Like $e$, this output is evaluated in two passes.
+The first pass reduces $p$ to the value $b$ and plugs this result in for $l$ to produce $[b/l]r$;
+the second pass evaluates $[b/l]r$.
+The relationship between the two stages in this case is thus like a pipeline,
+which is why we write them with a `\mytt{|}' in between.
 Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-The correctness of the splitting translation requires that this simple 
-evaluate-and-plug semantics produces the same answer as the staged semantics of the previous section.
+\TODO prior work statement
+
+Splitting a partial value $v$, via $\vsplito$, yields $\mval i q$.
+Since partial values, by definition, have no remaining work in the first pass
+and since transfer of information between the stages occurs in the first pass of evalution,
+we know that the second stage components of $v$ can no longer depend on its first stage components.
+Analogously, this must also hold for the output of splitting, 
+which is why $q$---unlike the resumer of world \bbtwo\ term splitting---is not open on a variable.
+Thus, $i$ and $q$ are operationally independent, but they represent the complementary portions of $v$ that are relevant to each stage.
+We call $i$ the \emph{immediate value} and $q$ the residual.
+
+For any $\colmix e A$, splitting $e$ via $\splitonesym$ yields the pair of monostage terms $\pipeM c l r$. 
+This output form is essentially a hybrid of the previous two.
+Because $e$ is a term, $c$ needs to produces a boundary value $b$ to be passed to the resumer ($l.r$)
+And since $e$ types at world \bbonem, it has an eventual result at the 
+first stage as well as the second, and so it must produce an immediate value $i$.
+The term $c$ meets both of these responsibilities by reducing to the tuple $\tup{i,b}$,
+and so we call it a \emph{combined term}.
+
+\subsection{World \bbtwo\ Term Splitting}
+
+The correctness of the splitting translation requires that the simple 
+evaluate-and-plug semantics on the output produces the same answer as the staged semantics of the previous section.
 That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
 to the residual produced by direct evaluation, $q$.
 This condition is stated more precisely as \ref{thm:allCorrect},
@@ -95,17 +104,6 @@ starting with the value form at that world.
 
 \subsection{Partial Value Splitting}
 \label{sec:masking}
-
-Partial value splitting (given by the relation $\vsplito$) converts a 
-partial value $v$ into a split value $\mval i q$.
-Since partial values, by definition, have no remaining work in the first pass
-and since transfer of information between the stages occurs in the first pass of evalution,
-we know that the second stage components of $v$ can no longer depend on its first stage components.
-Analogously, this must hold of the output of splitting, 
-which is why $q$---unlike the resumers of world \bbtwo\ term splitting---is not open on a variable.
-
-Thus $i$ and $q$ embody the complementary portions of $v$ that are relevant to each stage.
-For this reason we call $i$ the \emph{immediate value} and $q$ the residual.
 
 To provide intuition about the behavior of partial value splitting, consider the
 following partial value:
@@ -162,20 +160,6 @@ such as injection tags.
 % since they represent first-stage information.
 
 \subsection{World \bbonem\ Term Splitting}
-
-For any $\colmix e A$, 
-splitting $e$ (via $\splitonesym$) again 
-yields the pair of monostage terms $\pipeM c l r$. 
-
-The responsibilities of this first stage component, $c$, can be seen as a combination of the
-those of world \bbtwo\ term splitting and partial value splitting.
-Since $e$ is a term, the first stage computations within it may yet still
-affect its second stage computations,
-and so $c$ needs to produces a boundary value $b$ to be passed to the resumer ($l.r$).
-But since $e$ is a world \bbonem\ construct, it has an eventual result at the 
-first stage as well as the second, and so it must produce an immediate value $i$.
-The term $c$ meets both of these responsibilities by reducing to the tuple $\tup{i,b}$,
-and so we call it a {\em combined term}.
 
 The correctness of \bbonem\ term splitting with respect to $\stepsym \bbonem$ steps is given in \ref{lem:oneCorrect}.
 As in the world \bbtwo\ version, correctness requires that the applied resumer from either side of the step be equivalent.
