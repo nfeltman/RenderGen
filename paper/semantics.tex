@@ -34,8 +34,8 @@ The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
 $e$ has type $A$ at world $w$, in the context $\Gamma$. 
 
 All three worlds contain unit, product, and function types defined in the usual fashion;
-sum and recursive types are provided for worlds \bbonep\ and \bbtwo\ 
-(we omit them from \bbonem, because they are not needed for our examples).
+sum and recursive types are provided for worlds \bbonep\ and \bbtwo.
+\footnote{We omit sums and recursive types from \bbonem\ to save space, though we do not believe they would present any unique difficulty.}
 These ``standard'' features can only be constructed from subterms of the same world,
 and variables can only be used at the same world where they were introduced.
 Thus differing worlds (and hence, differing stages of computation) only interact by means

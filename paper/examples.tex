@@ -76,7 +76,9 @@ branch in each case.
 Our algorithm, on the other hand, produces:
 %
 \begin{lstlisting} 
-datatype binnat = Zero | Even of nat | Odd of nat
+datatype binnat = Zero
+                | Even of binnat 
+                | Odd of binnat
 
 1`fun exp1 (b : unit, e : int) =
   if e==0 then
@@ -119,7 +121,7 @@ data structures latent in the structure of recursive functions.
 Let us return to the quickselect algorithm, which we discussed at
 length in \ref{sec:overview}. (The code is in \ref{fig:qs-staged}.)
 \texttt{qss} finds the $k$th largest element of a list $l$ by
-recursively \texttt{partition}ing the list by its first element, then recurring
+recursively partitioning the list by its first element, then recurring
 on the side containing the $k$th largest element. $l$ is first-stage and $k$ is
 second-stage.
 
@@ -151,18 +153,17 @@ fun qs1 (l : list, k : unit) =
   case p of
     Leaf => 0
   | Branch (n,left,h,right) =>
-      case compare (k, n) of 
+      case compare k n of 
         LT => qs2 (((), k), left) 
       | EQ => h 
       | GT => qs2 (((), k-n-1), right)`
 \end{lstlisting}
 %
 This is nearly identical to the cleaned-up code we presented in
-\ref{fig:qs-split}, except that the mixed-stage argument to both passes 
-is explicitly masked, and we do not suppress the trivial first-stage result
-returned by \texttt{qs1}.
+\ref{fig:qs-split}, except we do not suppress the trivial inputs and outputs of 
+\texttt{qs1} and \texttt{qs2}.
 
-\texttt{qs1} \texttt{partition}s $l$, but since the comparison with $k$ (to
+The function \texttt{qs1} partitions $l$, but since the comparison with $k$ (to
 determine which half of $l$ to recur on) is at the second stage, it simply
 recurs on \emph{both} halves, pairing up the results along with $h$ (the head of
 $l$) and $n$ (the size of the left half). \texttt{qs2} takes $k$ and this tree

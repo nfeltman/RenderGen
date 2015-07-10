@@ -15,7 +15,9 @@ As implemented in an ML-like language in \ref{fig:qs-unstaged},
 \texttt{qs} partitions \texttt{l} using the first element as
 a pivot, and then recurs on one of the two resulting sides, depending on
 the relationship of \texttt{k} to the size \texttt{i} of the first half, in
-order to find the desired element.  Assuming that the input is uniformly
+order to find the desired element.  
+If the index is out of range, a default value of \texttt{0} is returned.
+Assuming that the input is uniformly
 randomly ordered (which can be achieved by pre-permuting the input), \texttt{qs}
 runs in expected $O(n)$ time.
 %
@@ -90,9 +92,9 @@ Our type system ensures that the staging annotations in \texttt{qss} are
 consistent, in the sense that computations marked as first-stage cannot depend
 on ones marked as second-stage.
 
-The process of adding staging annotations to unstaged code has been
+The process of automatically adding staging annotations to unstaged code has been
 the subject of extensive research (\ref{sec:related}). In this paper, we do not
-consider this problem, instead assuming that the annotations have been provided.
+consider this problem, instead assuming that the annotations already exist.
 In the case of \texttt{qss}, we have specifically chosen annotations which
 maximize the work performed in the first stage.
 
@@ -110,7 +112,7 @@ particular, its first pass (\texttt{qs1}) constructs such a binary search tree,
 and its second pass (\texttt{qs2}) traverses the tree, using the embedded size
 information to find the element of the desired rank.
 %
-The code for \texttt{qs1} and \texttt{qs2} is in \ref{fig:qs-staged}.
+The code for \texttt{qs1} and \texttt{qs2} is in \ref{fig:qs-split}.
 
 %Our splitting algorithm is guided by the local structure of the input program.
 %In particular, the algorithm has no special knowledge of the quickselect

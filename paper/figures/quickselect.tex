@@ -16,11 +16,11 @@ qs: list * int -> int
 fun qs (Empty, k) = 0
   | qs (Cons ht, k) =
     let val (i,left,right) = partition ht
-
-    in case compare k m of
+    in case compare k i of
          LT => qs (left, k)
        | EQ => #1 ht
        | GT => qs (right, k-i-1)
+       
 \end{lstlisting}
 \caption{Unstaged implementation of quickselect.}
 \label{fig:qs-unstaged}

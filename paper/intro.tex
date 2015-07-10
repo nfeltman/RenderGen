@@ -1,3 +1,5 @@
+%!TEX root = paper.tex
+
 \section{Introduction}
 \label{sec:intro}
 
@@ -24,7 +26,7 @@ results from a single computation in an earlier pass)\,\cite{OpenGL4Spec}.
 While performant, this paradigm of programming with explicit passes results in
 complex code where invariants must hold across different passes, and local
 changes for one pass may require changes to other passes to ``plumb'' inputs
-from all other frequencies\,\cite{Foley:2011}.
+from all other frequencies (\TODO explain what ``frequency'' means here)\,\cite{Foley:2011}.
 %
 In other words, requiring manual separation of passes breaks key programming
 abstractions such as composition and modularity.
