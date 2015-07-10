@@ -33,6 +33,16 @@ That is, each splitting judgement defines a total function.
 We prove these theorems by straightforward induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
 
+Recall that a partial value $v$, by definition, has no remaining work in the first pass.
+Since transfer of information between the stages occurs during the first pass, 
+there can be no remaining internal communication between the stages of $v$.
+In contrast, a term $e$ (at either \bbonem\ or \bbtwo) could still evaluate further in the first pass,
+and so there may remain internal communication to happen between the stages of $e$.
+
+This difference is why the second-stage output of either form of term splitting ($l.r$) is open on a variable,
+while that of partial value splitting ($q$) is not.
+Substitution for $l$ in $r$ is how communication between stages is represented in these outputs.
+
 \subsection{World \bbtwo\ Term Splitting}
 
 Top level programs in \lang\ are given by a term $\coltwo e A$.
@@ -54,8 +64,6 @@ to the residual produced by direct evaluation, $q$.
 This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
-
-\TODO ADD EQUIVALENCE FIGURE
 
 We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
 In the base case, where $e$ is already a residual of the form $\exv q$, we know
@@ -181,7 +189,7 @@ this lemma can use the strong requirement of identical combined terms.
 
 In this section, we consider a few exemplar cases 
 from the proofs of \ref{lem:oneCorrect} and \ref{lem:twoCorrect}.
-
+The equivalence relation ``$\equiv$'' is defined in \ref{fig:equiv}.
 
 \paragraph{Reduction of {\tt pi1}.}
 Define $E = \pio {\exv{\tup {v_1,v_2}}}$ and  
