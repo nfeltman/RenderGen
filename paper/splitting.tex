@@ -5,6 +5,8 @@
 
 \input{figures/splitting-overview}
 
+\TODO add related work
+
 \begin{abstrsyn}
 
 The goal of a stage splitting translation 
@@ -24,11 +26,9 @@ Note that there's no need to provide forms of splitting for ground terms or resi
 since those classes of term are already monostage by construction.
 
 The rules of the three splitting judgements are given in \ref{fig:termSplit}.
-They are simply recursive on the structure of the term, 
-implying that the splitting algorithm runs in linear time.
-
-Before discussing the correctness of these translations, 
-we note that splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
+Since the rules are simply recursive on the structure of the term, 
+the splitting algorithm runs in linear time on the size of the input program.
+Splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
 That is, each splitting judgement defines a total function.
 We prove these theorems by straightforward induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
@@ -40,8 +40,7 @@ Reduction of this program, via repeated $\stepsym \bbtwo$, will eventually yield
 We write this as $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$.
 
 Splitting $e$, via $\splittwosym$, yields $\pipeS p l r$.
-This output is a multistage program in its own right.
-It is evaluated by reducing $p$ to the value $b$ in the first pass,
+This output is evaluated in two passes by reducing $p$ to the value $b$ in the first pass,
 then plugging that result in for $l$ to produce $[b/l]r$,
 which is evaluated in the second pass.
 Since execution of the first pass serves to generate input for
@@ -56,9 +55,11 @@ This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
 
+\TODO ADD EQUIVALENCE FIGURE
+
 We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
 In the base case, where $e$ is already a residual of the form $\exv q$, we know
-$\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, and so by uniqueness of splitting, 
+$\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, so by uniqueness of splitting, 
 $p = \tup{}$ and $r = q$.
 From here, we can directly derive $\reduce {\exv {\tup {}}} {\tup {}}$ and $q \equiv q$.
 
@@ -66,16 +67,19 @@ In the recursive case, where the evaluation takes at least one step, we have
 $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$
 as well as \mbox{$\typestwo [\cdot] e A$} 
 and \mbox{$\splittwo e A p l r$}.
+By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
+The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
+
+\TODO defin the gap, then close it with the lemma
 To help this case, we introduce \ref{lem:twoCorrect}, 
 which essentially states that any single step is correct,
 and whose proof will concern the rest of this section.
-By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
-The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
+
 From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
 and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 
-This concludes the proof of program correctness, modulo \ref{lem:twoCorrect}.
-However in order to prove that lemma, 
+The above proof of \ref{thm:allCorrect} invokes \ref{lem:twoCorrect},
+In order to prove that lemma, 
 we will need to state analogous version for steps at \bbonem,
 since the various kinds multistage term in \lang\ are mutually dependent.
 Thus, this section proceeds by covering the definition of splitting at \bbonem, 
@@ -92,8 +96,7 @@ we know that the second stage components of $v$ can no longer depend on its firs
 Analogously, this must hold of the output of splitting, 
 which is why $q$---unlike the resumers of world \bbtwo\ term splitting---is not open on a variable.
 
-Thus instead of a pipeline relationship, $i$ and $q$ bear more of a parallel relationship.
-That is, they embody the complementary portions of $v$ that are relevant to each stage.
+Thus $i$ and $q$ embody the complementary portions of $v$ that are relevant to each stage.
 For this reason we call $i$ the \emph{immediate value} and $q$ the residual.
 
 To provide intuition about the behavior of partial value splitting, consider the
@@ -464,3 +467,4 @@ annotation, would cause splitting to generate a recursive resumer.
 \end{abstrsyn}
 
 \input{figures/splitting-term}
+\input{figures/splitting-misc}

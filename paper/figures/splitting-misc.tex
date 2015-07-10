@@ -2,8 +2,42 @@
 
 \begin{figure*}
 \begin{abstrsyn}
-
+\begin{mathpar}
+%
+\infer {e \equiv e} {\cdot} \and
+\infer {e' \equiv e} {e \equiv e'} \and
+\infer {e \equiv e''} {e \equiv e' & e' \equiv e''} \and
+%
+\infer {\pio {\exv{\tup {v_1,v_2}}} \equiv \exv {v_1}} {\cdot} \and
+\infer {\pit {\exv{\tup {v_1,v_2}}} \equiv \exv {v_2}} {\cdot} \and
+\infer {\unroll {\exv{\roll v}} \equiv \exv v} {\cdot} \and
+\infer {\letin x {\exv v} e \equiv [v/x]e} {\cdot} \and
+\infer {\app {\exv {\fix f x e}} {\exv v} \equiv [\fix f x e, v/f,x]e} {\cdot} \and
+\infer {\caseof {\exv {\inl v}} {x_1.e_1} {x_2.e_2} \equiv [v/x_1]e_1} {\cdot} \and
+\infer {\caseof {\exv {\inr v}} {x_1.e_1} {x_2.e_2} \equiv [v/x_2]e_2} {\cdot} \and
+%
+\infer {\pio e \equiv \pio {e'}} {e \equiv e'} \and
+\infer {\pit e \equiv \pit {e'}} {e \equiv e'} \and
+\infer {\inl e \equiv \inl {e'}} {e \equiv e'} \and
+\infer {\inr e \equiv \inr {e'}} {e \equiv e'} \and
+\infer {\roll e \equiv \roll {e'}} {e \equiv e'} \and
+\infer {\unroll e \equiv \unroll {e'}} {e \equiv e'} \and
+\infer {\tup{e_1,e_2} \equiv \tup {e_1',e_2'}} {e_1 \equiv e_1' & e_2 \equiv e_2'} \and
+\infer {\app{e_1}{e_2} \equiv \app {e_1'}{e_2'}} {e_1 \equiv e_1' & e_2 \equiv e_2'} \and
+\infer {\fix fxe \equiv \fix fx{e'}} {e \equiv e'} \and
+\infer {\letin x {e_1} {e_2} \equiv \letin x {e_1'} {e_2'}} {e_1 \equiv e_1' & e_2 \equiv e_2'} \and
+\infer {\caseof {e_1} {x_2.e_2} {x_3.e_3} \equiv \caseof {e_1'} {x_2.e_2'} {x_3.e_3'}} {e_1 \equiv e_1' & e_2 \equiv e_2' & e_3 \equiv e_3'} \and
+%
+\infer {\letin x q {\exv x} \equiv q} {\cdot} \and
+\infer {\pio {\letin x q e} \equiv \letin x q {\pio e}} {\cdot} \and
+\infer {\pit {\letin x q e} \equiv \letin x q {\pit e}} {\cdot} \and
+\infer {\tup {\letin x q {e_1}, e_2} \equiv \letin x q {\tup {e_1,e_2}}} {\cdot} \and
+\infer {\tup {\exv {v_1}, \letin x q {e_2}} \equiv \letin x q {\tup {\exv {v_1},e_2}}} {\cdot} \and
+\infer {\app {\letin x q {e_1}}{e_2} \equiv \letin x q {\app {e_1}{e_2}}} {\cdot} \and
+\infer {\app {\exv {v_1}}{\letin x q {e_2}} \equiv \letin x q {\app {\exv {v_1}}{e_2}}} {\cdot} \and
+\infer {\caseof {\letin x q e}{x_2.e_2}{x_3.e_3} \equiv \letin x q {\caseof e {x_2.e_2}{x_3.e_3}}} {\cdot}
+\end{mathpar}
 \end{abstrsyn}
-\caption{Masking separates a residual table and its associated partial value into its first- and second-stage components.}
-\label{fig:valMask}
+\caption{Equivalence relation.}
+\label{fig:equiv}
 \end{figure*}
