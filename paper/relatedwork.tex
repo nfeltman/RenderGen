@@ -80,22 +80,6 @@ the $\fut$ modality of Davies~\cite{DP01-modal}.  Our types differ in
 small ways to account for the specific evaluation model that we
 propose; however, the key difference between our work and this prior
 work is that we instead focus on the problem of splitting.
-%we developed an algorithm
-%for splitting terms in the proposed staged language.
-%the staging or the splitting algorithm, which given a two-staged
-%program splits it into two stages that can be executed sequentially,
-%passing information from the earlier to the latter stage by
-%construction.
-%
-%Unlike partial evaluation, splitting requires no knowledge of program
-%argument values, only their staging.
-%Using just the staging
-%information, the splitting algorithm can generate programs that can
-%perform non-trivial transformations on the code automatically.  As our
-%examples illustrate such staging transformations can improve the
-%efficiency of the source program, sometimes in asymptotically
-%significant ways.
-
 
 Another class of precomputation techniques is incremental computation,
 where a program can efficiently respond to small changes in its inputs
@@ -103,17 +87,16 @@ by only recomputing parts of the computation affected by the
 changes~\cite{DemersReTe81,PughTe89,RamalingamRe93,AcarBlBlHaTa09}.
 Thus, incremental computation can be thought of as a staged model,
 where changes in inputs come over a period of time in stages.
-%
 However, unlike splitting, incremental computation does not require
 fixing any of its inputs and, in the general case, allows for all
 program inputs to change. Thus, the benefits of incremental
-computation depends on what changes to inputs are made. For example,
-while it is possible to apply incremental computation to our
-quickselect example (\ref{sec:overview}), techniques would unfold the
+computation depend on what changes to inputs are made. For example,
+while it is possible to apply incremental computation to the
+quickselect example in \ref{sec:overview}, techniques would unfold the
 quickselect function based on the demanded ranks, potentially
 incurring linear time cost at each step of the algorithm (as opposed
-to logarithmic result produced by splitting). Unlike the results of
-splitting, such an implementation would also maintain sophisticated
+to the logarithmic result produced by splitting).  Unlike splitting,
+incremental computation techniques must also maintain sophisticated
 data structures dynamically at run time to track what computations
 must be performed.
 
@@ -155,7 +138,7 @@ recent designs, like \lang, require explicit staging by the
 programmer\,\cite{Proudfoot:2001,Foley:2011,He:2014}.  However,
 splitting algorithms developed in all of these efforts have been
 limited to simple, imperative graphics shading languages that lack
-simple features such as functions.
+even simple features such as functions.
 
 
 
