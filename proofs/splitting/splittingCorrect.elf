@@ -167,7 +167,7 @@ lc : split1 E C R ->
 - : lc (spl1-tup DsplB Dspl) DsplQ ([x][x2][s] spl1-tup (DsplB' x x2 s) (Dspl' x x2 s)) (ls-tup-s2 Dstep) 
 		Deq'' ([l] reqv-lift-in-lett ([l1][l2] reqv-tup-s reqv-id (Deqv l2) ;; reqv-lift-tup2 (DeqR l1)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
-	<- split1-unique/strengthen DsplB DsplB' DeqB (DeqR : {l}{x2} eq-term (R l) (R' l x2))
+	<- split1-unique/strengthen DsplB DsplB' DeqB DeqR
 	<- ({y}{z} eq-cong/lett Deq ([x][y] eq-term_) (Deq' y z))
 	<- eq-cong/lett DeqB Deq' Deq''.
 - : lc (spl1-pi1 Dspl) DsplQ  ([x][x2][s] spl1-pi1 (Dspl' x x2 s)) (ls-pi1-s Dstep) Deq' ([l] reqv-pi1-s (Deqv l) ;; reqv-lift-pi1)
@@ -923,7 +923,7 @@ sc2/branch2 :
 		(spl2-lam DsplM') Dred'
 		(ms-lam-s Dstep) 
 		(spl2-lam DsplM) Dred
-		Dconv Dconv' (reqv-exv-s (reqv-lam-s Deqv))
+		Dconv Dconv' (reqv-exvlam-s Deqv)
 	<- sc2/branch2 DofM Dcomp DsplM' Dred' Dstep DsplM Dred Dconv Dconv' Deqv.
 - : sc2 (of^-app Dof _) (form^app-c Dcomp _) (spl2-app DsplA' DsplB) (mred-tup DredA' DredB) (ms-app-s1 Dstep) 
 		(spl2-app DsplA DsplB) (mred-tup DredA DredB) 
@@ -961,7 +961,7 @@ sc2/branch2 :
 		(spl2-prev Dspl) 
 		Dred'
 		Dconv (conv-tup DconvI Dconv)
-		(reqv-lett-r2 (Deqv BB))
+		((Deqv BB) ;; reqv-sym (reqv-lett-r))
 	<- spl1-total Dof Dcomp (Dspl : split1 E C R)
 	<- lc Dspl Dsplr Dspl' Dstep (Deq : eq-term C C') (Deqv : {l} reqv (R l) (let Q' ([y] R' y l)))
 	<- eq-term-sym Deq (Deq' : eq-term C' C)

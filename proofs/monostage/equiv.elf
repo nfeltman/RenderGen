@@ -7,8 +7,6 @@ reqv-id : reqv E E.
 reqv-eq : eq-term E E' -> reqv E E'.
 reqv-sym : reqv A B -> reqv B A.
 
-
-reqv-lett-r2 : reqv A (M Q1 Q2) -> reqv A (lett (exv (tup Q1 Q2)) M).
 reqv-pi1-r : reqv (pi1 (exv (tup Q1 Q2))) (exv Q1).
 reqv-pi2-r : reqv (pi2 (exv (tup Q1 Q2))) (exv Q2).
 reqv-lett-r : reqv (lett (exv (tup Q1 Q2)) M) (M Q1 Q2).
@@ -30,25 +28,25 @@ reqv-inj2-s : reqv E E' -> reqv (inj2 E) (inj2 E').
 reqv-roll-s : reqv E E' -> reqv (roll E) (roll E').
 reqv-unrl-s : reqv E E' -> reqv (unrl E) (unrl E').
 reqv-case-s : reqv E E' -> ({x} reqv (M x) (M' x)) -> ({x} reqv (N x) (N' x)) -> reqv (case E M N) (case E' M' N').
-reqv-exv-s : reqv E E' -> reqv (exv E) (exv E').
-reqv-lam-s : ({f}{x} reqv (M f x) (M' f x)) -> reqv (lam M) (lam M').
+%%reqv-exv-s : reqv E E' -> reqv (exv E) (exv E').
+reqv-exvlam-s : ({f}{x} reqv (M f x) (M' f x)) -> reqv (exv (lam M)) (exv (lam M')).
 reqv-lett-s2 : ({l1}{l2} reqv (M l1 l2) (M' l1 l2)) -> reqv (lett E M) (lett E M').
 
 reqv-lift-base : reqv Q (let Q ([x] (exv x))).
 reqv-lift-pi1 : reqv (pi1 (let Q M)) (let Q ([x] (pi1 (M x)))).
 reqv-lift-pi2 : reqv (pi2 (let Q M)) (let Q ([x] (pi2 (M x)))).
 reqv-lift-tup1 : ({x} eq-term E (E' x)) -> reqv (tup (let Q M) E) (let Q ([x] (tup (M x) (E' x)))).
-reqv-lift-tup2 : ({x} eq-term E (E' x)) -> reqv (tup E (let Q M)) (let Q ([x] (tup (E' x) (M x)))).
+reqv-lift-tup2 : ({x} eq-term (exv E) (exv (E' x))) -> reqv (tup (exv E) (let Q M)) (let Q ([x] (tup (exv (E' x)) (M x)))).
 reqv-lift-app1 : ({x} eq-term E (E' x)) -> reqv (app (let Q M) E) (let Q ([x] (app (M x) (E' x)))).
-reqv-lift-app2 : ({x} eq-term E (E' x)) -> reqv (app E (let Q M)) (let Q ([x] (app (E' x) (M x)))).
+reqv-lift-app2 : ({x} eq-term (exv E) (exv (E' x))) ->  reqv (app (exv E) (let Q M)) (let Q ([x] (app (exv (E' x)) (M x)))).
 reqv-lift-chain : ({x} eq-term E (E' x)) -> reqv (let (let Q M) ([_] E)) (let Q ([x] let (M x) ([_] E' x))).
 reqv-lift-case : ({y}{x} eq-term (B1 y) (B1' x y)) -> ({y}{x} eq-term (B2 y) (B2' x y)) -> 
 			reqv (case (let Q M) B1 B2) (let Q ([x] case (M x) (B1' x) (B2' x))).
-reqv-lift-lett : reqv (lett E ([x][y] let Q ([z] M z x y))) (let Q ([z] lett E (M z))).
 
+reqv-lift-lett4 : reqv (lett (exv E) ([x][y] let Q ([z] M z x y))) (let Q ([z] lett (exv E) (M z))).
 
-reqv-lift-in-lett = ([deqv] (reqv-lett-s2 deqv) ;; reqv-lift-lett)
-: ({x1:term L}{x2 : term L} reqv (A x1 x2) (let Q ([l] M l x1 x2))) -> reqv (lett E A) (let Q ([l] lett E (M l))).
+reqv-lift-in-lett = ([deqv] (reqv-lett-s2 deqv) ;; reqv-lift-lett4)
+: ({x1:term L}{x2 : term L} reqv (A x1 x2) (let Q ([l] M l x1 x2))) -> reqv (lett (exv E) A) (let Q ([l] lett (exv E) (M l))).
 reqv-lett-p = ([deqv] reqv-lett-r ;; deqv ;; reqv-sym (reqv-lett-r)) 
 	: reqv (M Q1 Q2) (M' Q1' Q2') -> reqv (lett (exv (tup Q1 Q2)) M) (lett (exv (tup Q1' Q2')) M').
 
