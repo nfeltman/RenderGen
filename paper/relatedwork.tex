@@ -100,28 +100,30 @@ incremental computation techniques must also maintain sophisticated
 data structures dynamically at run time to track what computations
 must be performed.
 
+\TODO move this
+
+In the partial evaluation community, metastatic staging transforms (called \emph{program bifurcation} and \emph{binding time separation}) 
+similar to splitting have been investigated 
+as a preprocessing step necessary for simplifying the specialization phase of self-applied partial evaluators. 
+For instance, Mogensen\,\cite{Mogensen89a} and Niel et al.\,\cite{DeNiel91} defined transformations for a set of first-order recursive functions.
+
+Those works operate on the results of binding time analysis
+
+
+and so much of their binding-time specification just amounts to a type system.
+Formulations like \lang\ (namely the two-level system of~\cite{NN92-twolevel}) were known at the time,
+but~\cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
+
+Davies essentially solved this limitation in~\cite{davies96} 
+
+Binding time analysis for a static higher-order language was visited in \cite{Mogensen89b}.
+
 \paragraph{Stage Splitting.}
 
 Algorithms for stage splitting have appeared in the literature under the names 
-{\em pass separation}, {\em binding time separation}, {\em data specialization}, 
-{\em program bifurcation}, and as various unnamed compiler passes.
+{\em pass separation}\,\cite{JS86-staging} and {\em data specialization}\,\cite{knoblock96}.
 
-In the partial evaluation community, stage splitting has been investigated 
-mostly as a preprocessing step for self-applied partial evaluators. 
-For instance,~\cite{Mogensen89a} and~\cite{DeNiel91} defined splitting algorithms
-for programs consisting of a set of first-order recursive functions.
-Those works use a grammar-based binding-time specification that's 
-relatively complicated compared to the type system of \lang.
-This complication mostly arises from the decision to start with an untyped language:
-one must first find a way to say ``argument $x$ will be a tuple'' before one can say
-``the first component of $x$ is available at the second stage,'' 
-and so much of their binding-time specification just amounts to a type system.
-Formulations more like \lang\ (namely the two-level system of~\cite{NN92-twolevel}) were known at the time,
-but~\cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
-Davies essentially solved this limitation in~\cite{davies96} (pending our further tweak with $\curr$),
-and the question of stage splitting as we have presented it has been ripe ever since.
-Binding time analysis for a static higher-order language was visited in \cite{Mogensen89b},
-but the implications for splitting were not explicitly considered.
+
 
 Splitting algorithms have also been a topic of interest in programming
 systems for computer graphics, where to achieve high performance,
