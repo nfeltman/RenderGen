@@ -5,8 +5,6 @@
 
 \input{figures/splitting-overview}
 
-\TODO add related work
-
 \begin{abstrsyn}
 
 The goal of a stage splitting translation 
@@ -45,8 +43,6 @@ Since execution of the first pass serves to generate input for
 the second pass, we say $p$ is a {\em precomputation} that produces a
 {\em boundary value} ($b$) for the {\em resumer} ($l.r$).
 
-\TODO prior work statement
-
 Splitting a partial value $v$, via $\vsplito$, yields $\mval i q$.
 Since partial values, by definition, have no remaining work in the first pass
 and since transfer of information between the stages occurs in the first pass of evalution,
@@ -66,10 +62,10 @@ and so we call it a \emph{combined term}.
 
 \subsection{World \bbtwo\ Term Splitting}
 
-The correctness of the splitting translation requires that the simple 
+The dynamic correctness of the splitting translation requires that the simple 
 evaluate-and-plug semantics on the output produces the same answer as the staged semantics of the previous section.
 That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent 
-to the residual produced by direct evaluation, $q$.
+to the residual $q$ produced by direct evaluation, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$.
 This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
@@ -85,18 +81,14 @@ $e \stepsym \bbtwo e' \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$
 as well as \mbox{$\typestwo [\cdot] e A$} 
 and \mbox{$\splittwo e A p l r$}.
 By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
-The inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
-
-\TODO defin the gap, then close it with the lemma
-To help this case, we introduce \ref{lem:twoCorrect}, 
+From here, the inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
+All that we now require is $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
+To close this gap we introduce \ref{lem:twoCorrect}, 
 which essentially states that any single step is correct,
 and whose proof will concern the rest of this section.
+After invocation of that new lemma, we can derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 
-From here, \ref{lem:twoCorrect} then gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
-and we derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
-
-The above proof of \ref{thm:allCorrect} invokes \ref{lem:twoCorrect},
-In order to prove that lemma, 
+In order to prove that \ref{lem:twoCorrect},
 we will need to state analogous version for steps at \bbonem,
 since the various kinds multistage term in \lang\ are mutually dependent.
 Thus, this section proceeds by covering the definition of splitting at \bbonem, 
@@ -161,9 +153,14 @@ such as injection tags.
 
 \subsection{World \bbonem\ Term Splitting}
 
-The correctness of \bbonem\ term splitting with respect to $\stepsym \bbonem$ steps is given in \ref{lem:oneCorrect}.
-As in the world \bbtwo\ version, correctness requires that the applied resumer from either side of the step be equivalent.
-But additionally, it also requires that first stage results be exactly identical.
+The correctness of \bbonem\ term splitting with respect to a $\stepsym \bbonem$ step is given in \ref{lem:oneCorrect}.
+It's very similar to the world \bbtwo\ version, 
+in that the reduction of the first stage part of $e'$ should imply reduction of the first stage part of $e$,
+and that the resulting applied resumers should be equivalent.
+But split forms at \bbonem\ have one more piece of output than those at \bbtwo,
+namely the immediate value $i$.
+\ref{lem:oneCorrect} accounts for this by saying that 
+that immediate value must be exactly identical on both sides of the step.
 
 The correctness of \bbonem\ term splitting with respect to hoisting steps is given in \ref{lem:hoistCorrect}.
 Because hoisting steps are nothing but rearrangement of second stage code,
@@ -441,17 +438,9 @@ Worse, if this \texttt{caseg} appeared in the body of a recursive
 function with no other second-stage computations, splitting would
 generate a resumer with (useless) recursive calls.
 
-Rather than attempt global optimization of the outputs of splitting,
-we instead leverage the type system to indicate when a term contains
-no second-stage computations by adding a third world \bbonep\ whose
-terms are purely first-stage.  While not necessary for ordinary staged
-term evaluation (\ref{sec:semantics}), this annotation is
-particularly useful for splitting, since splitting $\pure e$
-terms trivially yields a unit resumer.
-
 An illustrative example is the \texttt{partition} function in the quickselect
 example of \ref{sec:exampleQS}. If \texttt{partition} were defined at \bbonem\
-instead of \bbonep, then (like \texttt{qs}) it would split into two functions
+then (like \texttt{qs}) it would split into two functions
 \texttt{partition1} and \texttt{partition2}, the latter of which recursively
 computes the (trivial) second-stage component of \texttt{partition}'s result.
 Moreover, \texttt{qs2} would call \texttt{partition2}, just as \texttt{qs1}
@@ -462,13 +451,22 @@ calls \texttt{partition1}:
   let val () = partition2 ((),()) in
   case compare k i of ...
 \end{lstlisting}
-By explicitly marking that \texttt{partition} has no second-stage computations,
-we avoid both generating the resumer \texttt{partition2}, and calling it in
-\texttt{qs2}.
 
+Rather than attempt global optimization of the outputs of splitting,
+we instead leverage the type system to indicate when a term contains
+no second-stage computations by adding a third world \bbonep\ whose
+terms are purely first-stage.  
+Defining \texttt{partition} in this world is 
+tantamount to proving it has no second-stage computations,
+allowing splitting to avoid generating the resumer \texttt{partition2}
+and calling it from \texttt{qs2}.
 
-\TODO somebody should read the new text about partition
-
+Recall that this annotation is not especially useful 
+for ordinary staged term evaluation (\ref{sec:semantics}).
+We suspect the key factor is that splitting is a static transformation,
+since other static trasofrmations \cite{Mogensen89a,DeNiel91} 
+also benefited from a clear distinction between ground and mixed terms.
+Ground is also similar to the validity mechanism in ML5 \cite{murphy05}.
 \end{abstrsyn}
 
 \input{figures/splitting-term}
