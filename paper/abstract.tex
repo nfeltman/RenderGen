@@ -1,25 +1,24 @@
 %!TEX root = paper.tex
 
-Staged programming languages assign a stage to each expression and
-evaluate each expression in its assigned stage,
-and can be used to describe programs where inputs arrive at different times or rates.
-
-In this paper we present an 
-algorithm for statically {\em splitting} these mixed-staged programs 
-into two dependent, unstaged programs where the outputs of the first part can be efficiently reused accorss multiple invocations of the second program.  
-
-
-While previous algorithms for performing this transformation 
-(also called \emph{pass separation} and \emph{data specialization}) operate on simpler imperative languages,
-out algorithm operates on an explicitly-two-staged, typed lambda calculus \lang, 
-with a $\fut$ modality denoting computation at a later stage,
-and a $\curr$ modality noting purely first stage code.
-Notably, our algorithm is the first to with support for mixed-stage recursive and higher-order functions.
-
-We have proven the dynamic correctness of our splitting algorithm with respect
-to a partial-evaluation semantics, and mechanized this proof in Twelf.
-
-We have implemented the algorithm in a prototype compiler,
-and we show that the ability to split a language with recursion and higher-order features
-can enabled non-trivial algorithmic transformations that asymptotically improve code efficiency by nearly a linear factor,
-as well as modular expression of staged programming, 
+Staged programming languages assign a stage to each program expression
+and evaluate each expression in its assigned stage. A common use of
+staged languages is to describe programs where inputs arrive at
+different times or rates. In this paper we present an algorithm for
+statically {\em splitting} these mixed-staged programs into two
+unstaged, but dependent, programs where the outputs of the first
+program can be efficiently reused across multiple invocations of the
+second. While previous algorithms for performing this transformation
+(also called \emph{pass separation} and \emph{data specialization})
+were limited to operate on simpler, imperative languages, we define a
+splitting algorithm for an explicitly-two-stage, typed lambda
+calculus \lang\ with a $\fut$ modality denoting computation at a later
+stage, and a $\curr$ modality noting purely first stage code.  Most
+notably, the algorithm splits mixed-stage recursive and higher-order
+functions.  We have proven the dynamic correctness of our splitting
+algorithm with respect to a partial-evaluation semantics, and
+mechanized this proof in Twelf. We have also implemented the algorithm
+in a prototype compiler, and demonstrate that the ability to split
+programs in a language featuring recursion and higher-order features
+enables non-trivial algorithmic transformations that asymptotically
+improve code efficiency by nearly a linear factor, and also
+facilitates modular expression of staged programs.
