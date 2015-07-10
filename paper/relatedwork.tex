@@ -27,10 +27,7 @@ partial evaluation.  Partial evaluation distinguishes between static
 for all static inputs, partial evaluation generates a specialized program by
 performing computations that depend only on the static
 inputs~\cite{jones96}.  The roots of partial evaluation go back to
-Kleene, who in 1952 proved that a multivariate program (function)
-$f(x_1, \ldots, x_{n+m})$ can be specialized for any given $a_1 \ldots
-a_m$ to obtain another program $g(x_1, \ldots, x_n)$ such that $f(a_1,
-\ldots, a_m, y_1, \ldots, y_n) = g(y_1, \ldots, y_n)$~\cite{Kleene52}.
+Kleene's $s$-$m$-$n$ theorem~\cite{Kleene52}.
 %Kleene did not intend to improve efficiency, however.  Lombardi
 %appears to be the first person to use the term in his work on
 %incremental computation~\cite{Lombardi67}.
@@ -48,6 +45,18 @@ specializes the original program to a partially-evaluated one that
 operates on many different dynamic arguments.  This approach has been
 applied to construct partial evaluators for a number of languages such
 as Scheme~\cite{OB91-Similix,Consel88-Schism}.
+
+\emph{Program bifurcation}\,\cite{DeNiel91} (also called \emph{binding time separation}\,\cite{Mogensen89a})
+is a metastatic staging transformations
+used as a preprocessing step to simplify the specialization phase of self-applied partial evaluators. 
+Bifurcation is similar to stage splitting in that it factors the input program
+into two versions based on the stages of the input.
+However, in bifurcation there is no building of data structures to be use in the resumer;
+instead, the second stage version of the code also has 
+access to the first stage inputs and just recomputes whatever it needs.
+That difference aside, the grammar-based binding-time specifications used in bifurcation
+were capable of descring data structures with purely-static, purely-dynamic, and mixed stage content,
+much like the type system of \lang.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance was difficult to
@@ -100,48 +109,31 @@ incremental computation techniques must also maintain sophisticated
 data structures dynamically at run time to track what computations
 must be performed.
 
-\TODO move this
-
-In the partial evaluation community, metastatic staging transforms (called \emph{program bifurcation} and \emph{binding time separation}) 
-similar to splitting have been investigated 
-as a preprocessing step necessary for simplifying the specialization phase of self-applied partial evaluators. 
-For instance, Mogensen\,\cite{Mogensen89a} and Niel et al.\,\cite{DeNiel91} defined transformations for a set of first-order recursive functions.
-
-Those works operate on the results of binding time analysis
-
-
-and so much of their binding-time specification just amounts to a type system.
-Formulations like \lang\ (namely the two-level system of~\cite{NN92-twolevel}) were known at the time,
-but~\cite{Mogensen89a} found these unsatisfactory because they could not describe data structures with mixed stage.
-
-Davies essentially solved this limitation in~\cite{davies96} 
-
-Binding time analysis for a static higher-order language was visited in \cite{Mogensen89b}.
-
 \paragraph{Stage Splitting.}
 
 Algorithms for stage splitting have appeared in the literature under the names 
 {\em pass separation}\,\cite{JS86-staging} and {\em data specialization}\,\cite{knoblock96}.
+Perhaps the closest work to ours is the algorithm for data
+specialization given by Knoblock and Ruf~\cite{knoblock96}, which
+also seeks to statically split an explicitly staged program into two
+stages.  However, they only consider a simple first-order language and
+straight-line programs. Their work also treats all computations
+guarded by second-stage conditionals as second-stage computations,
+which would prevent optimization (via splitting) of programs such as
+quickselect.
 
-
-
-Splitting algorithms have also been a topic of interest in programming
-systems for computer graphics, where to achieve high performance,
-programs are typically manually separated into components by frequency
-of execution. (Indeed, separation into a pre-determined set of
-per-frequency modules: e.g., per frame, per pixel, per triangle, is
-\emph{required} by the execution model of modern graphics
-architectures.)  The software engineering challenges of modifying
-graphics programs written in a split form have spurred interest in
-deferring the task of splitting to a compiler\,\cite{Foley:2011}.
-While early work sought to determine the staging of programs
-automatically via binding time analysis\,\cite{knoblock96}, more
-recent designs, like \lang, require explicit staging by the
-programmer\,\cite{Proudfoot:2001,Foley:2011,He:2014}.  However,
-splitting algorithms developed in all of these efforts have been
-limited to simple, imperative graphics shading languages that lack
-even simple features such as functions.
-
+Splitting algorithms have also been a topic of interest in
+programming systems for computer graphics, where, to achieve
+high performance, programs are typically manually separated into
+components by frequency of execution (Indeed, separation into a pre-determined
+set of per-frequency modules is \emph{required} by the execution model
+of modern graphics architectures.)  The software engineering
+challenges of modifying multiple per-stage programs have led to
+suggestions of writing graphics programs in an explicitly-staged
+programming language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and
+deferring the task of pass separation to the compiler. However, all
+prior efforts, like that of Knoblock and Ruf\,\cite{knoblock96} have
+been limited to simple, imperative languages. 
 
 
 %% Online and offline.  Both approaches have their merits but online
