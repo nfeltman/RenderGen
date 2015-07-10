@@ -208,20 +208,21 @@ provide an example of a program whose boundary data structure is a trie.
 
 \subsection {Composing Graphics Pipeline Programs}
 
-Programs featuring staged structure are particularly important in real-time
-computer graphics since modern graphics architectures \emph{require} that
-graphics computations be organized into distinct {\em passes} which perform
-increasingly fine-grained computations (e.g., per object, per screen region,
-per pixel) where many computations in later passes use the
-results from a single computation in an earlier pass\,\cite{OpenGL4Spec}.
+Programs featuring staged structure are particularly important in
+real-time computer graphics since modern graphics architectures
+\emph{require} that graphics computations be organized into a pipeline
+of stages which perform increasingly fine-grained computations (e.g.,
+per object, per screen region, per pixel). Many computations in later
+stages use the results from a single computation in an earlier
+stage\,\cite{OpenGL4Spec}.
 
-While performant, programming with explicit passes results in complex
-code where invariants must hold across different passes, and local
-changes for one pass may require changes to other passes to ``plumb''
-its inputs through all upstream passes. Thus, requiring manual
-separation of passes breaks key programming abstractions such as
-composition and modularity.  Graphics researchers therefore have
-suggested using explicitly staged programs
+While performant, manually partitioning programs by stage results in
+complex code where invariants must hold across different stages, and
+local changes to the logic of one stage may require changes to that of
+upstream stages other stages to ``plumb'' its inputs through the
+pipeline.  Thus, manual separation of programs by stage breaks key
+programming abstractions such as composition and modularity.  Graphics
+researchers therefore have suggested using mixed-staged programs
 \,\cite{Proudfoot:2001,Foley:2011,He:2014} to express logic related to
 a single application concern conveniently as a single staged function
 (referred to as a pipeline program)\,\cite{Foley:2011}.
