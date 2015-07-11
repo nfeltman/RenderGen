@@ -191,8 +191,8 @@
 \infersteptwo	{\red	{\caseof {\exv{e_1}}{x_2.\exv{e_2}}{x_3.e_3}} 
 						{\caseof {\exv{e_1}}{x_2.\exv{e_2}}{x_3.e'_3}}} 
 				{\sub {3}} \and
-\infersteptwo	{\red	{\lam xe} 
-						{\lam x{e'}}}
+\infersteptwo	{\red	{\fix fxe} 
+						{\fix fx{e'}}}
 				{\sub {}} \and
 \inferstepw		{\stepmix	{\pure {e}} 
 							{\pure {e'}}} 					
@@ -213,7 +213,7 @@
 \hrule
 \begin{mathpar}
 \fbox{Hoisting Rules} \and
-\inferlift 		{\red {\next {\exv q}} {\next {\exv y}}} {q \neq x} \and
+\inferlift 		{\red {\next {\exv q}} {\next {\exv y}}} {q \text{~not a variable}} \and
 \infersteptwo 	{\red {\prev e} {\letin q y {\prev {e'}}}} {\liftsub{}} \and
 \inferlift		{\red 	{\pio e} 
 						{\pio {e'}}} 											

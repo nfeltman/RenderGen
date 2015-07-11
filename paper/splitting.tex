@@ -8,7 +8,7 @@
 \begin{abstrsyn}
 
 The goal of a stage splitting translation 
-is to a send program $\mathcal P$ in a multistage language
+is to send a program $\mathcal P$ in a multistage language
 to an equivalent form $\mathcal P'$ where the stages are seperated at the top level.
 By equivalent, we mean that $\mathcal P$ and $\mathcal P'$ should produce 
 the same answer under their respective semantics.
@@ -88,9 +88,9 @@ which essentially states that any single step is correct,
 and whose proof will concern the rest of this section.
 After invocation of that new lemma, we can derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 
-In order to prove that \ref{lem:twoCorrect},
+In order to prove \ref{lem:twoCorrect},
 we will need to state analogous version for steps at \bbonem,
-since the various kinds multistage term in \lang\ are mutually dependent.
+since the various kinds of multistage term in \lang\ are mutually dependent.
 Thus, this section proceeds by covering the definition of splitting at \bbonem, 
 starting with the value form at that world.
 
@@ -114,7 +114,7 @@ unit values.
 \begin{lstlisting}
 1`((), (3`gr{`1`injL 7`3`}`,()))`
 \end{lstlisting}
-Finally, partial value splitting drops \texttt{gr} annotations yielding:
+Finally, partial value splitting drops \texttt{gr} annotations, yielding:
 \begin{lstlisting}
 1`((), (injL 7,()))`
 \end{lstlisting}

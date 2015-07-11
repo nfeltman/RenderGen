@@ -81,12 +81,12 @@ fine-grained control over specialization by requiring explicit
 While simple forms of frequency reduction include standard compiler
 optimizations such as loop hoisting and common subexpression
 elimination, J{\o}rring and Scherlis proposed the more general
-transformation of {\em splitting} a program into multiple passes
+transformation of {\em splitting} a program into multiple subfunctions
 (called pass separation in \,\cite{JS86-staging}). In our example,
-splitting transforms the function $f$ into two passes $f_1$ and $f_2$
+splitting transforms the function $f$ into two others $f_1$ and $f_2$
 such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
-evaluating the first pass on $x$, and using the result $z$ to evaluate
-the second pass on each $y_i$.
+evaluating the first function on $x$, and using the result $z$ to evaluate
+the second function on each $y_i$.
 %
 \begin{lstlisting}
 fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ = 
@@ -99,7 +99,7 @@ metaprogramming) is that the former can be performed without access to
 the first argument $x$; $F_\textrm{multipass}$ works for any $x$,
 while $F_v$ is defined only for $x=v$.  Therefore, unlike partial
 evaluation, splitting is a static program transformation
-(``metastatic'' in parial evaluation terms) and does not require
+(``metastatic'' in partial evaluation terms) and does not require
 dynamic code generation.
 
 % Note that unlike precomputation, frequency reduction does not require
@@ -110,34 +110,25 @@ dynamic code generation.
 Prior work on partial evaluation and metaprogramming has demonstrated
 automatic application of these techniques on higher order functional
 languages. In contrast, automatic splitting transforms have been
-limited to simple languages that do not support recursion or
-first-class
-functions\,\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. In
-this paper, we extend this work by presenting a splitting algorithm
-for a typed lambda calculus.
+limited to simple languages\,\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. 
 
-As our starting point, we consider an explicitly-two-staged, typed
-lambda calculus \lang\ in the style of Davies\,\cite{davies96}, with a
-$\fut$ modality denoting computation in a later stage
-(\ref{sec:semantics}). We then present a splitting algorithm that
-transforms \lang\ program into two passes corresponding to the stages
-of computation in that program (\ref{sec:splitting}). These passes are
-monostaged programs, expressed in a conventional functional language.
+In this paper, we present a splitting algorithm for \lang, 
+a two-staged typed lambda calculus in the style of Davies\,\cite{davies96},
+with support for recursion and first-class functions.
+Like Davies, \lang\ uses a $\fut$ modality to denote computation in the second stage,
+but to aid splitting we also add a $\curr$ modality to denote purely first-stage computations. 
+The dynamic semantics (\ref{sec:semantics}) of \lang\ are that of Davies, 
+modified to provide an eager behavior between stages, which is more intuitive in the context of splitting.
+We then prove the correctness of our splitting algorithm (\ref{sec:splitting}) for \lang\ with respect to the semantics.
+Finally, we discuss our implementation of this splitting algorithm
+(\ref{sec:implementation}) and demonstrate its power and behavior
+for a number of staged programs ranging from straight-line arithmetic
+operations to recursive and higher-order functions (\ref{sec:examples}).
 
-The most interesting case involves splitting a recursive mixed-stage
-function (like $f$ in the example). This yields a first pass function
-$f_1$ which computes from its first-stage argument $x$ a
-\emph{boundary} data structure encoding the interstage communication
-in $f(x,-)$. When $f$ recurs on $x$, this boundary structure itself
-has a recursive type.  The second pass is a function $f_2$ which takes
-the boundary data structure $f_1(x)$ and a second-stage argument
-$y_i$, and completes the computation $f(x,y_i)$, traversing the
-boundary structure in light of the particular argument $y_i$.
-
-We have implemented this splitting algorithm
-(\ref{sec:implementation}) and applied it to a number of staged
-programs (\ref{sec:examples}) ranging from straight-line arithmetic
-operations to recursive and higher-order functions. In the case of the
-quickselect algorithm, which we discuss next, the split code is in
-fact asymptotically faster over many $y_i$.
+We demonstrate that splitting a recursive mixed-stage $f$
+yields an $f_1$ which computes a recursive data structure
+and an $f_2$ which traverses that structure
+in light of information available at the second stage.
+In the case of the quickselect algorithm, which we discuss next, 
+the split code executes asymptotically faster than a unstaged evaluation of $f$.
 

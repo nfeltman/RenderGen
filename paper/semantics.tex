@@ -125,7 +125,8 @@ A ground value $u$ comprises only units, injections, tuples, and functions, wher
 Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a beta reduction or marks a value.
 It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
-This strong requirement ensures that second-stage computations are not duplicated when partial values are substituted for variable.
+This strong requirement ensures that second-stage computations are not duplicated 
+when partial values are substituted for a variable.
 This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
 Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
@@ -144,15 +145,15 @@ to a temporary variable $y$, and substituting that variable instead:
 \end{lstlisting}
 This behavior is implemented by the $\lift e {e'}$ judgement, called a \emph{hoisting step}.
 These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
-In essence, the rules for hoisting steps operate by ``bubbling up'' a subtitution to the innermost containing \prev,
+In essence, the rules for hoisting steps operate by ``bubbling up'' a substitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
 \footnote{Because a top-level program is a term at \bbtwo, this {\tt prev} always exists.
 Otherwise, the semantics would need a mechanism to accumulate the bindings that hoisting steps create.}
 
 \subsection{Type Safety}
 
-The statics and dynamics of \lang\ are related by a type safety theorems
-in figure \ref{fig:typeSafety}, again annotated by world.
+The statics and dynamics of \lang\ are related by the type safety theorems
+in \ref{fig:typeSafety}, again annotated by world.
 In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
 
