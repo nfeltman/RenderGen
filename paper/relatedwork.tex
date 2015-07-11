@@ -13,27 +13,27 @@ available statically and perform them at that earlier time. Dynamic
 algorithms, partial evaluation, and incremental computation are all
 examples of precomputation techniques.
 %
-The idea behind frequency
-reduction is to identify computations that are performed multiple
-times and pull them ahead so that they can be performed once and used
-later as needed.  Dynamic programming, loop hoisting, and pass
-separation (presented here) are all examples of frequency reduction
-techniques.
+The idea behind frequency reduction is to identify computations that
+are performed multiple times and pull them ahead so that they can be
+performed once and used later as needed.  Dynamic programming, loop
+hoisting, and splitting (presented here) are all examples of frequency
+reduction techniques.
 
 \paragraph{Precomputation techniques.}
-Perhaps one of the most studied examples of precomputation is
-partial evaluation.  Partial evaluation distinguishes between static
-(compile-time) and dynamic (runtime) stages. Given a program and values 
-for all static inputs, partial evaluation generates a specialized program by
+Perhaps one of the most studied examples of precomputation is partial
+evaluation, which distinguishes between static (compile-time) and
+dynamic (runtime) stages. Given a program and values for all static
+inputs, partial evaluation generates a specialized program by
 performing computations that depend only on the static
 inputs~\cite{jones96}.  The roots of partial evaluation go back to
-Kleene's $s$-$m$-$n$ theorem~\cite{Kleene52}.
+Kleene's $s$-$m$-$n$ theorem~\cite{Kleene52},
 %Kleene did not intend to improve efficiency, however.  Lombardi
 %appears to be the first person to use the term in his work on
 %incremental computation~\cite{Lombardi67}.
-There has since been an enormous body of work on partial evaluation,
+%There has since been an enormous body of work on partial evaluation,
 and we refer the reader to the book by Jones, Gommard, and Sestoft for
-a comprehensive discussion of work until the early 90's~\cite{JGS93}.
+a comprehensive discussion of partial evaluation work until the early
+90's~\cite{JGS93}.
 
 Early approaches to partial evaluation can be viewed as operating in
 two stages: binding time analysis and program specialization.  For a
@@ -46,17 +46,29 @@ operates on many different dynamic arguments.  This approach has been
 applied to construct partial evaluators for a number of languages such
 as Scheme~\cite{OB91-Similix,Consel88-Schism}.
 
-\emph{Program bifurcation}\,\cite{DeNiel91} (also called \emph{binding time separation}\,\cite{Mogensen89a})
-is a metastatic staging transformations
-used as a preprocessing step to simplify the specialization phase of self-applied partial evaluators. 
-Bifurcation is similar to stage splitting in that it factors the input program
-into two versions based on the stages of the input.
-However, in bifurcation there is no building of data structures to be use in the resumer;
-instead, the second stage version of the code also has 
-access to the first stage inputs and just recomputes whatever it needs.
-That difference aside, the grammar-based binding-time specifications used in bifurcation
-were capable of describing data structures with purely-static, purely-dynamic, and mixed stage content,
-much like the type system of \lang.
+In an attempt to reduce the complexity of algorithms for
+specialization used in self-applicable partial evaluators, researchers
+explored the use of staging transformations that, similar to
+splitting, partition an input program into two programs: one that
+produces static outputs from static inputs, and a second that produces
+dynamic outputs from both static and dynamic inputs.  These metastatic
+transformations, referred to as \emph{program
+  bifurcation}\,\cite{DeNiel91} or as \emph{binding time
+  separation}\,\cite{Mogensen89a}), were successfully applied to
+functional languages that supported
+recursion\,\cite{DeNiel91}. However, unlike splitting, where the goal
+is to emit code where first stage results are computed once and then
+reused in multiple invocations of second stage execution, program
+bifurcation only serves as a preprocessing step for the subsequent
+specialization phase of partial evaluation. The second function
+emitted by program bifurcation has access to the first stage inputs
+and recomputes first stage computations it needs. (As noted by
+Knoblock and Ruf\,\cite{knoblock96}, it may be possible to modify the
+program bifurcation algorithm to cache and reuse the intermediate
+results, but this was never attempted.) The grammar-based binding-time
+specifications used in program bifurcation were capable of describing
+data structures with purely-static, purely-dynamic, and mixed stage
+content, much like the type system of \lang.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance was difficult to
@@ -64,17 +76,13 @@ predict. This led to investigations based on type systems for making
 the stage of computations explicit in
 programs~\cite{GJ91-lambda,NN92-twolevel} and writing ``metaprograms''
 that, when evaluated at a stage, yield a new program to be evaluated
-at the next stage.
-%J{\o}rring and
-%Scherlis describe the idea of meta programming as one of the three possible approaches to
-%taking advantage of staging~\cite{JS86-staging}.
-Davies~\cite{davies96} presented a
-logical construction of binding-time type systems by deriving a type
-system via the Curry-Howard correspondence applied to temporal logic.
-Davies and Pfenning proposed a new type system for staged computation
-based on a particular fragment of modal logic~\cite{DP01-modal}. The
-work on MetaML extended type-based techniques to a full-scale language
-by developing a statically typed programming language based on ML that
+at the next stage.  Davies~\cite{davies96} presented a logical
+construction of binding-time type systems by deriving a type system
+via the Curry-Howard correspondence applied to temporal logic.  Davies
+and Pfenning proposed a new type system for staged computation based
+on a particular fragment of modal logic~\cite{DP01-modal}. The work on
+MetaML extended type-based techniques to a full-scale language by
+developing a statically typed programming language based on ML that
 enables the programmer to express programs with multiple
 stages~\cite{Taha97,taha-thesis-99}.  MetaML's type system is similar
 to Davies~\cite{davies96} but extends it in several important ways.
@@ -122,77 +130,18 @@ programs. Their work also treats all computations guarded by
 second-stage conditionals as second-stage computations, which would
 prevent optimization (via splitting) of programs such as quickselect.
 
-Splitting algorithms have also been a topic of interest in programming
-systems for computer graphics, where, to achieve high performance,
-programs are typically manually separated into components by frequency
-of execution corresponding to support graphics hardware pipeline
-stages. The software engineering challenges of modifying multiple
-per-stage programs have led to suggestions of writing graphics
-programs in an explicitly-staged programming
-language\,\cite{Proudfoot:2001,Foley:2011,He:2014}, and deferring the
-task of pass separation to the compiler. However, all prior efforts,
-like that of Knoblock and Ruf\,\cite{knoblock96} have been limited to
-simple, imperative languages.
-
-
-%% Online and offline.  Both approaches have their merits but online
-%% partial evaluation can be too slow and if stopped lead to an
-%% inefficient residual.  Offline partial evaluation is faster.  Also,
-%% full self-application has only been achieved by offline partial
-%% evaluation.
-
-
-%% Weaknesses of partial evaluation include~\cite{GJ05}:
-%% 1) speedups linear in the subject programs run time (excuse moi?)
-
-%% 2) good speedups require close knowledge of the program and some
-%% binding-time improvements.
-
-%% 3) result of specialization can be hard to predict as it can lead to
-%% slowdown, code explosion, and non-termination at specialization time.
-
-
-%% \paragraph{Meta programming}
-
-%% What happens when we try to write quickselect as a meta program? 
-
-
-%% \ur{Umut: I am starting a paragraph on termination.  we might need to expand
-%%   on this.}
-%% \paragraph{Termination.}
-
-%% There are two reasons for non-termination: infinite loops and
-%% execution of errorneous code.  The splitting algorithm can cause the
-%% first.  But can it also cause the second? (If all computations really
-%% depend on stage 1 code, then would it be possible to for example see
-%% something like 1/0?  i think so but only if there is a meta dependency
-%% between the data in two stages?)
-
-
-%% Is in possible for the residual program to not terminate (unexpectedly)? 
-
-%% Termination analysis in partial evaluation: see paper~\cite{AH96,GJ05}.
-
-%% Based on Glenstrup and Jones (pp. 1154, 1155), a partial evaluator
-%% should be complete. That is every computation depending on the static
-%% input should be reduced to a value (during specialization).
-%% Unfortunately, completeness is difficult to achieve if we also require
-%% that the specialization is always terminating.
-
-%% One problem with their description is that it is not clear which
-%% termination problem they are talking about termination of the residual
-%% or the specializer. 
-
-%% Nontermination during specialization: 
-%% consider code
-
-%% double x = doubleplus (x,0) 
-
-%% doubleplus (u,v) = if u <= 0 then v else doubleplus (u-1,v+2)
-
-%% this can lead to non-termination if v is considered static.  
-
-%% Is this a problem for us? 
+As noted in \ref{sec:graphics}, splitting algorithms have also been a
+topic of interest in programming systems for computer graphics, where,
+to achieve high performance, programs are manually separated into
+components by frequency of execution corresponding to graphics
+hardware pipeline stages. The software engineering challenges of
+modifying multiple per-stage programs have led to suggestions of
+writing graphics programs in an explicitly-staged programming
+language\,\cite{Proudfoot:2001,Foley:2011,He:2014} and deferring the
+task of pass separation to the compiler. However, all prior splitting
+efforts in computer graphics, like that of Knoblock and
+Ruf\,\cite{knoblock96} have been limited to simple, imperative
+languages.
 
 
 
