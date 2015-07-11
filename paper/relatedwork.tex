@@ -46,26 +46,27 @@ operates on many different dynamic arguments.  This approach has been
 applied to construct partial evaluators for a number of languages such
 as Scheme~\cite{OB91-Similix,Consel88-Schism}.
 
-In an attempt to reduce the complexity of algorithms for
-specialization used in self-applicable partial evaluators, researchers
-explored the use of staging transformations that, similar to
-splitting, partition an input program into two programs: one that
-produces static outputs from static inputs, and a second that produces
-dynamic outputs from both static and dynamic inputs.  These metastatic
-transformations, referred to as \emph{program
-  bifurcation}\,\cite{DeNiel91} or as \emph{binding time
-  separation}\,\cite{Mogensen89a}), were successfully applied to
-functional languages that supported
-recursion\,\cite{DeNiel91}. However, unlike splitting, where the goal
-is to emit code where first stage results are computed once and then
-reused in multiple invocations of second stage execution, program
-bifurcation only serves as a preprocessing step for the subsequent
-specialization phase of partial evaluation. The second function
-emitted by program bifurcation has access to the first stage inputs
-and recomputes first stage computations it needs. (As noted by
-Knoblock and Ruf\,\cite{knoblock96}, it may be possible to modify the
-program bifurcation algorithm to cache and reuse the intermediate
-results, but this was never attempted.) The grammar-based binding-time
+In an attempt to reduce the complexity of the specialization phase of
+self-applicable partial evaluators, researchers explored the use of
+staging transformations that, similar to splitting, partition an input
+program into two programs: one that produces static outputs from
+static inputs, and a second that produces dynamic outputs from both
+static and dynamic inputs.  These metastatic transformations, referred
+to as \emph{program bifurcation}\,\cite{DeNiel91} or as \emph{binding
+  time separation}\,\cite{Mogensen89a}), serve as a preprocessing step
+to specialization and were successfully applied to functional
+languages that supported recursion\,\cite{DeNiel91}. However, unlike
+splitting, where the goal is to emit code where first stage results
+are computed once and then reused in multiple invocations of second
+stage execution, the second function produced by program bifurcation
+does not use the results of the first; Instead,
+%only serves as a preprocessing step for the subsequent
+%specialization phase of partial evaluation.
+it has access to the first stage inputs and recomputes all required
+first stage computations. (As noted by Knoblock and
+Ruf\,\cite{knoblock96}, it may be possible to modify the program
+bifurcation algorithm to cache and reuse the intermediate results, but
+this was never attempted.) The grammar-based binding-time
 specifications used in program bifurcation were capable of describing
 data structures with purely-static, purely-dynamic, and mixed stage
 content, much like the type system of \lang.
