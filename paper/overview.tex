@@ -13,7 +13,7 @@ algorithm~\cite{Hoare:1961}, which given a list \texttt{l} and a rank
 \texttt{k}, returns the element of \texttt{l} with rank \texttt{k}.
 As implemented in an ML-like language in \ref{fig:qs-unstaged},
 \texttt{qs} partitions \texttt{l} using the first element as
-a pivot, and then recurs on one of the two resulting sides, depending on
+a pivot and then recurs on one of the two resulting sides, depending on
 the relationship of \texttt{k} to the size \texttt{i} of the first half, in
 order to find the desired element.  
 If the index is out of range, a default value of \texttt{0} is returned.
@@ -36,12 +36,12 @@ between these calls to \texttt{qs}. In particular, the comparisons performed by
 \texttt{partition} are made by each call to \texttt{qs}.
 
 A first cut at a solution might be to, in a first pass, sort \texttt{l} into
-\texttt{s}, and then in a second pass, perform lookups in \texttt{s}.
+\texttt{s} and then in a second pass, perform lookups in \texttt{s}.
 Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since
 \texttt{s} is a list, leading to no improvement in efficiency.  
 
 A more sophisticated solution is to, in a first pass, construct a binary search
-tree out of \texttt{l}, and in a second pass, simply look for the \texttt{k}th
+tree out of \texttt{l} and in a second pass, simply look for the \texttt{k}th
 leftmost element of that tree. To do this efficiently requires one more
 innovation---augmenting the tree by storing at each node the size of its left
 subtree. This approach has (expected) runtime $\Theta(n\log{n} + m\log{n})$, a
@@ -108,7 +108,7 @@ behind our splitting algorithm, applied to \texttt{qss}.
 Splitting \texttt{qss} yields a two-pass program that creates a
 probabilistically balanced, augmented binary search tree (which is isomorphic to
 a treap data structure~\cite{SeidelAr96}) as an intermediate data structure. In
-particular, its first pass (\texttt{qs1}) constructs such a binary search tree,
+particular, its first pass (\texttt{qs1}) constructs such a binary search tree
 and its second pass (\texttt{qs2}) traverses the tree, using the embedded size
 information to find the element of the desired rank.
 %
@@ -140,7 +140,7 @@ whose keys are the pivots.
 
 Our splitting algorithm simultaneously scans \texttt{qss} for second-stage
 computations, gathering them into \texttt{qs2}. This pass is given the boundary
-data structure and the rank \texttt{k}, and finishes the computation. Now that
+data structure and the rank \texttt{k}, and it finishes the computation. Now that
 \texttt{k} is known, the conditional on \texttt{compare k i} can be evaluated,
 choosing which recursive call of \texttt{qss} is actually relevant for this
 \texttt{k}. Since the boundary data structure contains the first-stage data for

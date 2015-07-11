@@ -131,7 +131,7 @@ This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite
 Whereas those semantics interpret values of type $\fut A$ to mean ``code of type $A$ that can be executed in the future,''
 ours interprets $\fut A$ to mean ``a reference to a value that will be accessible in the future.''
 This contrast stems from differing goals: metaprogramming explicitly intends to model code manipulating code,
-whereas our applications feel more natural with a eager interpretation of {\tt next}.
+whereas our applications feel more natural with an eager interpretation of {\tt next}.
 One consequence of the stronger requirement on partial values is that a new kind of step is necessary to put terms into that form.
 To illustrate, consider:
 \begin{lstlisting}
@@ -160,11 +160,11 @@ representing the second stage binders under which we are evaluating.
 
 \subsection{Evaluating Staged Programs}
 
-The multistage function \texttt{qss} from \ref{sec:overview} has a
-type fitting the pattern \mbox{$A\to \fut (B \to C)$} at \bbonem.%
+Multistage functions, such as \texttt{qss} from \ref{sec:overview},
+can be represented as terms with a type fitting the pattern \mbox{$A\to \fut (B \to C)$} at \bbonem.%
 \footnote{We can rewrite \texttt{qss} in this curried form, or apply a
 higher-order currying function.} 
-To apply this function to arguments $\colmix a A$ and $\coltwo b B$, simply
+To apply such a function $f$ to arguments $\colmix a A$ and $\coltwo b B$, simply
 evaluate the program:
 \begin{lstlisting}
 2`prev{`1`f a`2`} b`
@@ -174,15 +174,15 @@ We can also directly observe the reuse of first-stage computations across
 multiple second-stage computations. To run many order statistics queries
 $\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
 \begin{lstlisting}
-2`let val qs = prev{`1`qss `3`gr{`1`[7,4,2,5,9,...,3]`3`}`2`}`
+2`let fun qs k = 
+      prev{`1`qss (`3`gr{`1`[7,4,2,5,9,...,3]`3`}`1`,next{`2`k`1`})2`}`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
-\TODO what?
 To see that the partial application of \texttt{qss} is only evaluated once,
 observe that after the first stage of evaluation, the residual has the form:
 \begin{lstlisting}
-2`let val y = ...`
-2`    val qs = y`
+2`let fun qs k = 
+	  let val y = ... in y
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
-where $y$ is bound to a function containing no first-stage redexes.
+where $y$ is bound to a large nest of case statements open on $k$.
