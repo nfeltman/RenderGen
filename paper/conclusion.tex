@@ -1,18 +1,23 @@
+%!TEX root = paper.tex
+
 \section{Conclusion}
 
-This paper provides a formal presentation of an algorithm for
-statically translating programs written in a two-stage lambda calculus
-into multi-pass programs, which evaluate as two monostage programs in
-two dependent passes.  
+This paper presents a splitting algorithm for \lang, 
+a two-staged typed lambda calculus with support for recursion and first-class functions.
+The type system of \lang\ uses three worlds \bbonem, \bbonep, and \bbtwo\ to classify code by its stage,
+with the modalities $\fut$ and $\curr$ providing internalizations 
+of second-stage code and ground first-stage code to the mixed world.
+We present a dynamic semantics that evaluates terms in two passes
+and provides an eager interpretation of {\tt next} via hoisting steps.
+We prove the correctness of our splitting algorithm against the dynamic semantics,
+and implement this proof in Twelf.
+Finally, we discuss our implementation of \lang\ and its splitting algorithm
+and analyze their behavior for a number of staged programs,
+including those with higher-order and recursive functions.
 
-\TODO THEOREMS THEOREMS THEOREMS
-
-In addition, we are interested in exploring the behavior of splitting
-for a broader set of examples as well as investigating how ideas from
-\lang\ and its splitting algorithm can be integrated into existing
-practical systems such as staged programming systems for computer
-graphics pipelines.  On the more conceptual side, it would be
-interesting to consider the extension of our splitting techniques to
-richer source languages that include mutation, parallel constructs,
-and more than two stages.
-
+Looking forward, we are interested in investigating the behavior of splitting 
+in the presence of richer language features such as mutation, polymorphism,
+parallel constructs, and more than two stages.
+Also while we have proven the dynamic correctness of our splitting algorithm,
+we do not yet have a characterization of the types of the output
+or of the cost behavior of output terms.
