@@ -33,42 +33,34 @@ between these calls to \texttt{qs}. In particular, the comparisons performed by
 \texttt{partition} depend only on \texttt{l}, although different calls to
 \texttt{partition} are made by each call to \texttt{qs}.
 
-A first cut at a solution might be to, in a first pass, sort \texttt{l} into
-\texttt{s} and then in a second pass, perform lookups in \texttt{s}.
+A first cut at a solution might be to first sort \texttt{l} into
+\texttt{s} and then perform lookups in \texttt{s}.
 Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since
 \texttt{s} is a list, leading to no improvement in efficiency.  
 
-A more sophisticated solution is to, in a first pass, construct a binary search
-tree out of \texttt{l} and in a second pass, simply look for the \texttt{k}th
+A more sophisticated solution is to construct a binary search
+tree out of \texttt{l} and then simply look for the \texttt{k}th
 leftmost element of that tree. To do this efficiently requires one more
 innovation---augmenting the tree by storing at each node the size of its left
 subtree. This approach has (expected) runtime $\Theta(n\log{n} + m\log{n})$, a
 nearly linear-time improvement in $m$.
 
-In both cases, we replace our simple solution with a two-pass algorithm which
+In both cases, we replace our simple solution with a two-part algorithm which
 first processes the input into a lookup data structure, and then subsequently
 performs fast lookups. Improving algorithms in this way is highly non-trivial,
 as it requires reasoning about intricate algorithmic concerns, and implementing
 more complex algorithms and data structures.  
 
 In this paper, we present a splitting algorithm which automatically transforms
-staged programs into multi-pass programs. In certain cases, this algorithm even
+staged programs into multi-part programs. In certain cases, this algorithm even
 improves input algorithms in the way described above!
-
-%Such transformations, called pass-separation by J{\o}rring and
-%Scherlis are commonly employed.  For example, as briefly mentioned in
-%\ref{sec:intro}, modern graphics software is written exactly in this
-%way.  Unfortunately, as the example illustrates, multipass programs
-%are naturally complex.  
 
 \subsection{Staging}
 
 %The example itself is also implemented in our implementation.
 
 The idea behind staged programming is to use staging annotations---in our case,
-guided by types---to indicate the stage of each subterm. We consider a
-language \lang\ with two modal worlds representing the two stages, and a third
-{\em ground} world of unstaged terms.
+guided by types---to indicate the stage of each subterm. 
 
 In \ref{fig:qs-staged} we show a staged version of \texttt{qs}, called
 \texttt{qss}, where first-stage code is colored red, and second-stage blue. In
@@ -90,7 +82,8 @@ Our type system ensures that the staging annotations in \texttt{qss} are
 consistent, in the sense that computations marked as first-stage cannot depend
 on ones marked as second-stage.
 
-The process of automatically adding staging annotations to unstaged code has been
+The process of automatically adding staging annotations to unstaged code,
+called \emph{binding time analysis}, has been
 the subject of extensive research (\ref{sec:related}). In this paper, we do not
 consider this problem, instead assuming that the annotations already exist.
 In the case of \texttt{qss}, we have specifically chosen annotations which
@@ -103,11 +96,11 @@ maximize the work performed in the first stage.
 In the rest of this section, we present a high-level overview of the main ideas
 behind our splitting algorithm, applied to \texttt{qss}.
 %
-Splitting \texttt{qss} yields a two-pass program that creates a
+Splitting \texttt{qss} yields a two-part program that creates a
 probabilistically balanced, augmented binary search tree (which is isomorphic to
 a treap data structure~\cite{SeidelAr96}) as an intermediate data structure. In
-particular, its first pass (\texttt{qs1}) constructs such a binary search tree
-and its second pass (\texttt{qs2}) traverses the tree, using the embedded size
+particular, its first part (\texttt{qs1}) constructs such a binary search tree
+and its second part (\texttt{qs2}) traverses the tree, using the embedded size
 information to find the element of the desired rank.
 %
 The code for \texttt{qs1} and \texttt{qs2} is in \ref{fig:qs-split}.
@@ -118,8 +111,8 @@ The code for \texttt{qs1} and \texttt{qs2} is in \ref{fig:qs-split}.
 %trees, but it is able to derive them from the input program.
 
 Our splitting algorithm scans \texttt{qss} for first-stage computations,
-gathering them into \texttt{qs1}. Given \texttt{l}, this pass performs these
-computations and places the information needed by the subsequent pass into a
+gathering them into \texttt{qs1}. Given \texttt{l}, this function performs these
+computations and places the information needed by the subsequent function into a
 boundary data structure.
 %
 In particular, \texttt{qs1} performs all recursive calls and evaluates all
@@ -137,7 +130,7 @@ The final result is a binary search tree augmented with size information, and
 whose keys are the pivots.
 
 Our splitting algorithm simultaneously scans \texttt{qss} for second-stage
-computations, gathering them into \texttt{qs2}. This pass is given the boundary
+computations, gathering them into \texttt{qs2}. This function is given the boundary
 data structure and the rank \texttt{k}, and it finishes the computation. Now that
 \texttt{k} is known, the conditional on \texttt{compare k i} can be evaluated,
 choosing which recursive call of \texttt{qss} is actually relevant for this

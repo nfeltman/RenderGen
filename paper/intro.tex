@@ -44,7 +44,7 @@ transformations, such as the one described above, as forms of {\em
 reduction, one identifies and hoists computations that are performed
 multiple times, in order to compute them only once. To perform
 precomputation, one identifies computations that can be performed in
-advance, and does so---for example, at compile time if the relevant
+advance and does so---for example, at compile time if the relevant
 inputs are statically known.
 
 One common precomputation technique is partial
@@ -86,7 +86,7 @@ transformation of {\em splitting} a program into multiple subfunctions
 (called pass separation in \,\cite{JS86-staging}). In our example,
 splitting transforms the function $f$ into two others $f_1$ and $f_2$
 such that $f(x,y_i) = f_2(f_1(x),y_i)$. Then we evaluate $F$ by
-evaluating the first function on $x$, and using the result $z$ to evaluate
+evaluating $f_1$ on $x$, and using the result $z$ to evaluate
 the second function on each $y_i$.
 %
 \begin{lstlisting}
@@ -110,8 +110,8 @@ dynamic code generation.
 
 Prior work on partial evaluation and metaprogramming has demonstrated
 automatic application of these techniques on higher order functional
-languages. In contrast, automatic splitting transforms have been
-limited to simple languages\,\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. 
+languages. In contrast, automatic splitting transformations have been
+limited to simpler languages\,\cite{knoblock96,Proudfoot:2001,Foley:2011,He:2014}. 
 
 In this paper, we present a splitting algorithm for \lang, 
 a two-staged typed lambda calculus in the style of Davies\,\cite{davies96},
@@ -126,10 +126,10 @@ Finally, we discuss our implementation of this splitting algorithm
 for a number of staged programs ranging from straight-line arithmetic
 operations to recursive and higher-order functions (\ref{sec:examples}).
 
-We demonstrate that splitting a recursive mixed-stage $f$
+We also demonstrate that splitting a recursive mixed-stage $f$
 yields an $f_1$ which computes a recursive data structure
 and an $f_2$ which traverses that structure
 in light of information available at the second stage.
 In the case of the quickselect algorithm, which we discuss next, 
-the split code executes asymptotically faster than a unstaged evaluation of $f$.
+the split code executes asymptotically faster than an unstaged evaluation of $f$.
 

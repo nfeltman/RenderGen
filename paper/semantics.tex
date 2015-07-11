@@ -97,21 +97,24 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \input{figures/dynamics-overview}
 
 The central tenet of a staged language
-is that first stage code should be evaluated entirely before second stage code.
+is that first-stage code should be evaluated entirely before second-stage code.
 Accordingly, our dynamics operates in two passes.
 The first pass takes an input top-level program $\coltwo e A$
 and reduces all of its first-stage (worlds \bbonem\ and \bbonep) subterms in place,
 eventually resulting in a residual $\exv q$.
 The second pass further reduces this residual.
-Since a residual $q$ is monostage by definition, this second pass is standard unstaged evaluation
+Since $q$ is monostage by definition, this second pass is standard unstaged evaluation
 and is not described in further detail in this paper.
 Moreover, for the purposes of these dynamics, we consider a top level program to always be typed at world \bbtwo.
 
 Since $\coltwo e A$ may be constructed out of terms at other worlds, 
 our dynamics requires notions of values and steps that are specialized to each world.
+The rules for all parts of first-pass evaluation are given in \ref{fig:diaSemantics}.
+In this and later figures, we extensively use an $\mathcal{S}[\text{-}]$ construction
+to indicate a \emph{shallow} evaluation context which looks a single level deep.
 
-\paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgement \mbox{$\steptwo e {e'}$}.
-Since first pass evaluation should not reduce stage two terms, this judgement does nothing but traverse $e$ to find \prev\ blocks, under which it performs in-place reductions.
+\paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgment \mbox{$\steptwo e {e'}$}.
+Since first pass evaluation should not reduce stage two terms, this judgment does nothing but traverse $e$ to find \prev\ blocks, under which it performs in-place reductions.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
 To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
@@ -122,7 +125,7 @@ where it either performs a beta reduction (reduction rules) or marks the term as
 A ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
 
 \paragraph{World \bbonem.}
-Like its ground counterpart, the \bbonem\ step judgement, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a beta reduction or marks a value.
+Like its ground counterpart, the \bbonem\ step judgment, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a beta reduction or marks a value.
 It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
 This strong requirement ensures that second-stage computations are not duplicated 
@@ -143,7 +146,7 @@ to a temporary variable $y$, and substituting that variable instead:
 \begin{lstlisting} 
 2`let val y = e in prev{`1`[next{`2`y`1`}/x]e'`2`}`
 \end{lstlisting}
-This behavior is implemented by the $\lift e {e'}$ judgement, called a \emph{hoisting step}.
+This behavior is implemented by the $\lift e {e'}$ judgment, called a \emph{hoisting step}.
 These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
 In essence, the rules for hoisting steps operate by ``bubbling up'' a substitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
@@ -156,7 +159,8 @@ The statics and dynamics of \lang\ are related by the type safety theorems
 in \ref{fig:typeSafety}, again annotated by world.
 In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
-
+Note how the progress theorem for world \bbonem\ states that every well-typed term must take 
+either a standard step or a hoisting step.
 
 \subsection{Evaluating Staged Programs}
 

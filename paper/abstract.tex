@@ -14,13 +14,13 @@ splitting algorithm for an explicitly-two-stage, typed lambda
 calculus \lang\ with a $\fut$ modality denoting computation at a later
 stage, and a $\curr$ modality noting purely first stage code.  Most
 notably, the algorithm splits mixed-stage recursive and higher-order
-functions.  We have proven the dynamic correctness of our splitting
+functions.  We prove the dynamic correctness of our splitting
 algorithm with respect to a partial-evaluation semantics, and
-mechanized this proof in Twelf. We have also implemented the algorithm
+mechanize this proof in Twelf. We also implement the algorithm
 in a prototype compiler, and demonstrate that the ability to split
 programs in a language featuring recursion and higher-order features
 enables non-trivial algorithmic transformations that asymptotically
-improve code efficiency by nearly a linear factor, and also
+improve code efficiency by nearly a linear factor and also
 facilitates modular expression of staged programs.
 
 % todo: static transformation carried out prior to any of the programs
