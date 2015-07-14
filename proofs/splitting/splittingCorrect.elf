@@ -18,20 +18,20 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 
 - : scG (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dval2)))
 	(splg-exv Dsplg1) _
-	(ms-pi1-r _)
+	(ms-beta beta-pi1 _)
 	(splg-pi1 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi1 mred-exv)
 	<- splgv-total Dof2 Dval2 Dsplg2.
 - : scG (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dval1 _)))
 	(splg-exv Dsplg2) _
-	(ms-pi2-r _)
+	(ms-beta beta-pi2 _)
 	(splg-pi2 (splg-exv (splgv-tup Dsplg1 Dsplg2))) 
 	(mred-pi2 mred-exv)
 	<- splgv-total Dof1 Dval1 Dsplg1.
 - : scG (of^-app (of^-exv (of^-lam _ DofM)) (of^-exv DofE)) (form^app-c (form^exv (form^lam1 DcompM _)) (form^exv DvalE))
 	(Dsplg3 : splitG (M _ E) I')
 	(Dred3 : mred I' _)
-	(ms-app-r _ : mstep worG (app (exv (lam M)) (exv E)) (M _ E))
+	(ms-beta beta-app _ : mstep worG (app (exv (lam M)) (exv E)) (M _ E))
 	(splg-app (splg-exv (splgv-lam DsplM)) (splg-exv DsplE)) 
 	(mred-app Dred3' mred-exv mred-exv)
 	<- splgv-total DofE DvalE (DsplE : splitGv E I)
@@ -39,12 +39,12 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- splitG-eval-resp Dsplg3 (DsplM _ _ (splgv-lam DsplM) E I DsplE : splitG (M _ E) (N _ I)) Dred3 Dred3'.
 - : scG (of^-unrl (of^-exv (of^-roll _ Dof))) (form^unrl-c (form^exv (form^roll-n Dval)))
 	(splg-exv Dsplg) _
-	(ms-unrl-r _)
+	(ms-beta beta-unrl _)
 	(splg-unrl (splg-exv (splgv-roll Dsplg))) 
 	(mred-unrl mred-exv).
 
 - : scG (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj1-n DvalE _)) DcompM DcompN)
-	Dsplg3 Dred3 (ms-case-r1 _)
+	Dsplg3 Dred3 (ms-beta beta-case1 _)
 	(splg-case (splg-exv (splgv-inj1 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj1 Dred3') mred-exv)
 	<- splgv-total DofE DvalE DsplE
@@ -53,7 +53,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE) Dred3 Dred3'.
 
 - : scG (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj2-n DvalE _)) DcompM DcompN)
-	Dsplg3 Dred3 (ms-case-r2 _)
+	Dsplg3 Dred3 (ms-beta beta-case2 _)
 	(splg-case (splg-exv (splgv-inj2 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj2 Dred3') mred-exv)
 	<- splgv-total DofE DvalE DsplE
@@ -309,7 +309,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 
 - : sc1 (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dcomp2)))
 	(spl1-exv Dspl1) (mred-exv)
-	(ms-pi1-r _)
+	(ms-beta beta-pi1 _)
 	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
 		(mred-tup (mred-pi1 mred-exv) mred-exv) 
@@ -320,7 +320,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 
 - : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dcomp1 _)))
 	(spl1-exv Dspl2) (mred-exv)
-	(ms-pi2-r _)
+	(ms-beta beta-pi2 _)
 	(spl1-pi2 (spl1-exv (splv-tup Dspl1 Dspl2)))
 	(mred-lett 
 		(mred-tup (mred-pi2 mred-exv) mred-exv) 
@@ -334,7 +334,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 	Dspl Dred 
 	(conv-tup conv-tupzz (conv-roll Dconv)) Dconv
 	Deqv
-	<- step/unique Dstep (ms-app-r fsw-wor1) (Deq : eq-term V (M (lam M) E))
+	<- step/unique Dstep (ms-beta beta-app fsw-wor1) (Deq : eq-term V (M (lam M) E))
 	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
 	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
 
@@ -398,7 +398,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 		eq-term_ (DeqR' B3) Deqv.
 
 - : sc1 _ _ (spl1-exv Dspl) mred-exv
-	(ms-unrl-r _)
+	(ms-beta beta-unrl _)
 	(spl1-unrl (spl1-exv (splv-roll Dspl)))
 	(mred-lett (mred-tup (mred-unrl mred-exv) mred-exv) mred-exv)
 	conv-ztup conv-ztup reqv-id.

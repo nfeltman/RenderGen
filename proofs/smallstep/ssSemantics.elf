@@ -91,18 +91,9 @@ ms-bcompat	: mstep wor2 (F M) (F M')
 			<- {x:term} variable x -> mstep wor2 (M x) (M' x).}%
 
 %% M STEP - REDUCTION RULES
-ms-pi1-r	: mstep W (pi1 (exv (tup E1 E2))) (exv E1)
-				<- first-stage-wor W.
-ms-pi2-r	: mstep W (pi2 (exv (tup E1 E2))) (exv E2)
-				<- first-stage-wor W.
-ms-unrl-r	: mstep W (unrl (exv (roll E))) (exv E)
-				<- first-stage-wor W.
-ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M (lam M) E)
-				<- first-stage-wor W.
-ms-case-r1	: mstep W (case (exv (inj1 E)) M N) (M E)
-				<- first-stage-wor W.
-ms-case-r2	: mstep W (case (exv (inj2 E)) M N) (N E)
-				<- first-stage-wor W.
+ms-beta	: 	mstep W E E'
+				<- first-stage-wor W
+				<- beta E E'.
 %{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%
 
 			

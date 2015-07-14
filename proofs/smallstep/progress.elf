@@ -52,8 +52,8 @@ prog/pi1 : dos W E -> of^ E (prod T1 T2) W -> form^ E comp1 W -> dos W (pi1 E) -
 %mode prog/pi1 +Ddos +Dof +Dform -Ddos'.
 - : prog/pi1 (dos-mstep Dstep) _ _ (dos-mstep (ms-pi1-s Dstep)).
 - : prog/pi1 (dos-lstep Dstep) _ _ (dos-lstep (ls-pi1-s Dstep)).
-- : prog/pi1 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi1-r fsw-wor1)).
-- : prog/pi1 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi1-r fsw-worG)).
+- : prog/pi1 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-pi1 fsw-wor1)).
+- : prog/pi1 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-pi1 fsw-worG)).
 - : prog/pi1 dos-done (of^-exv _) (form^exv _) (dos-mstep ms-pi1-d).
 %worlds (von-block) (prog/pi1 _ _ _ _).
 %total (Ddos) (prog/pi1 Ddos _ _ _).
@@ -62,8 +62,8 @@ prog/pi2 : dos W E -> of^ E (prod T1 T2) W -> form^ E comp1 W -> dos W (pi2 E) -
 %mode prog/pi2 +Ddos +Dof +Dform -Ddos'.
 - : prog/pi2 (dos-mstep Dstep) _ _ (dos-mstep (ms-pi2-s Dstep)).
 - : prog/pi2 (dos-lstep Dstep) _ _ (dos-lstep (ls-pi2-s Dstep)).
-- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi2-r fsw-wor1)).
-- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-pi2-r fsw-worG)).
+- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-pi2 fsw-wor1)).
+- : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-pi2 fsw-worG)).
 - : prog/pi2 dos-done (of^-exv _) (form^exv _) (dos-mstep ms-pi2-d).
 %worlds (von-block) (prog/pi2 _ _ _ _).
 %total (Ddos) (prog/pi2 Ddos _ _ _).
@@ -85,8 +85,8 @@ prog/inj2 : dos W E -> ground-wor W -> dos W (inj2 E) -> type.
 prog/case-1G : dos worG E -> of^ (case E M N) _ worG -> form^ E comp1 worG -> mstep worG (case E M N) _ -> type.
 %mode prog/case-1G +Dvos +Dof +Dform -Dvos'.
 - : prog/case-1G (dos-mstep Dstep) _ _ (ms-case-s1 Dstep).
-- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) (ms-case-r1 fsw-worG).
-- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) (ms-case-r2 fsw-worG).
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) (ms-beta beta-case1 fsw-worG).
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) (ms-beta beta-case2 fsw-worG).
 %worlds (von-block) (prog/case-1G _ _ _ _).
 %total (Dvos) (prog/case-1G Dvos _ _ _).
 
@@ -111,8 +111,8 @@ prog/unrl : dos W E -> of^ E (rec F) W -> form^ E comp1 W -> dos W (unrl E) -> t
 %mode prog/unrl +Ddos +Dof +Dcomp -Ddos'.
 - : prog/unrl (dos-lstep Dstep) _ _ (dos-lstep (ls-unrl-s Dstep)).
 - : prog/unrl (dos-mstep Dstep) _ _ (dos-mstep (ms-unrl-s Dstep)).
-- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-unrl-r fsw-wor1)).
-- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-unrl-r fsw-worG)).
+- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-unrl fsw-wor1)).
+- : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep (ms-beta beta-unrl fsw-worG)).
 - : prog/unrl dos-done (of^-exv _) (form^exv _) (dos-mstep ms-unrl-d).
 %worlds (von-block) (prog/unrl _ _ _ _).
 %total (Ddos) (prog/unrl Ddos _ _ _).
@@ -127,11 +127,11 @@ prog/lam : ({f}{x} dos wor2 (M f x)) -> dos wor2 (lam M) -> type.
 
 prog/app/help : {E2} of^ E1 (arr T1 T2) W -> form^ E1 norm1 W -> dos W (app (exv E1) (exv E2)) -> type.
 %mode prog/app/help +Dof +Dform +E2 -Ddos'.
-- : prog/app/help _ _ _ (dos-mstep (ms-app-r fsw-wor1)).
-- : prog/app/help _ _ _ (dos-mstep (ms-app-r fsw-worG)).
+- : prog/app/help _ _ _ (dos-mstep (ms-beta beta-app fsw-wor1)).
+- : prog/app/help _ _ _ (dos-mstep (ms-beta beta-app fsw-worG)).
 - : prog/app/help _ _ _ (dos-mstep ms-app-d).
 %% following case can't fire, just here to get coverage checker to behave
-- : prog/app/help _ _ (form^lam1 _ _) (dos-mstep (ms-app-r fsw-wor1)).
+- : prog/app/help _ _ (form^lam1 _ _) (dos-mstep (ms-beta beta-app fsw-wor1)).
 %worlds (von-block) (prog/app/help _ _ _ _).
 %total (Ddos) (prog/app/help _ Ddos _ _).
 
