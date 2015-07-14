@@ -33,12 +33,12 @@ cc-let : compc ([x] let x M).
 mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 
 %% DONE MARKING RULES
-ms-tup-d 	: mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
+ms-tup-d 	: mstep wor2 (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
 ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
 ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
-ms-inj1-d 	: mstep W (inj1 (exv E)) (exv (inj1 E)).
-ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)).
-ms-roll-d 	: mstep W (roll (exv E)) (exv (roll E)).
+ms-inj1-d 	: mstep wor2 (inj1 (exv E)) (exv (inj1 E)).
+ms-inj2-d 	: mstep wor2 (inj2 (exv E)) (exv (inj2 E)).
+ms-roll-d 	: mstep wor2 (roll (exv E)) (exv (roll E)).
 ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
 ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).
 ms-lam-d 	: mstep wor2 (lam ([f][x] exv (M f x))) (exv (lam M)).

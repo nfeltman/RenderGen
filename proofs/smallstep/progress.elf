@@ -43,6 +43,8 @@ prog/tup : dos W E1 -> dos W E2 -> dos W (tup E1 E2) -> type.
 - : prog/tup (dos-lstep Dstep) _ (dos-lstep (ls-tup-s1 Dstep)).
 - : prog/tup dos-done (dos-mstep Dstep) (dos-mstep (ms-tup-s2 Dstep)).
 - : prog/tup dos-done (dos-lstep Dstep) (dos-lstep (ls-tup-s2 Dstep)).
+- : prog/tup dos-done dos-done (dos-mstep (ms-beta beta-tup fsw-worG)).
+- : prog/tup dos-done dos-done (dos-mstep (ms-beta beta-tup fsw-wor1)).
 - : prog/tup dos-done dos-done (dos-mstep ms-tup-d).
 %worlds (von-block) (prog/tup _ _ _).
 %total (Ddos) (prog/tup Ddos _ _).
@@ -72,6 +74,8 @@ prog/inj1 : dos W E -> dos W (inj1 E) -> type.
 %mode prog/inj1 +Ddos -Ddos'.
 - : prog/inj1 (dos-lstep Dstep) (dos-lstep (ls-inj1-s Dstep)).
 - : prog/inj1 (dos-mstep Dstep) (dos-mstep (ms-inj1-s Dstep)).
+- : prog/inj1 dos-done (dos-mstep (ms-beta beta-inj1 fsw-wor1)).
+- : prog/inj1 dos-done (dos-mstep (ms-beta beta-inj1 fsw-worG)).
 - : prog/inj1 dos-done (dos-mstep ms-inj1-d).
 %worlds (von-block) (prog/inj1 _ _).
 %total (Ddos) (prog/inj1 Ddos _).
@@ -80,6 +84,8 @@ prog/inj2 : dos W E -> dos W (inj2 E) -> type.
 %mode prog/inj2 +Ddos -Ddos'.
 - : prog/inj2 (dos-lstep Dstep) (dos-lstep (ls-inj2-s Dstep)).
 - : prog/inj2 (dos-mstep Dstep) (dos-mstep (ms-inj2-s Dstep)).
+- : prog/inj2 dos-done (dos-mstep (ms-beta beta-inj2 fsw-wor1)).
+- : prog/inj2 dos-done (dos-mstep (ms-beta beta-inj2 fsw-worG)).
 - : prog/inj2 dos-done (dos-mstep ms-inj2-d).
 %worlds (von-block) (prog/inj2 _ _).
 %total (Ddos) (prog/inj2 Ddos _).
@@ -105,6 +111,8 @@ prog/roll : dos W E -> dos W (roll E) -> type.
 %mode prog/roll +Ddos -Ddos'.
 - : prog/roll (dos-lstep Dstep) (dos-lstep (ls-roll-s Dstep)).
 - : prog/roll (dos-mstep Dstep) (dos-mstep (ms-roll-s Dstep)).
+- : prog/roll dos-done (dos-mstep (ms-beta beta-roll fsw-wor1)).
+- : prog/roll dos-done (dos-mstep (ms-beta beta-roll fsw-worG)).
 - : prog/roll dos-done (dos-mstep ms-roll-d).
 %worlds (von-block) (prog/roll _ _).
 %total (Ddos) (prog/roll Ddos _).
