@@ -36,8 +36,8 @@ mstep : wor -> term L -> term L -> type. %name mstep Dmstep.
 ms-tup-d 	: mstep W (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
 ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
 ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
-ms-inj1-d 	: mstep W (inj1 (exv E)) (exv (inj1 E)) <- ground-wor W.
-ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)) <- ground-wor W.
+ms-inj1-d 	: mstep W (inj1 (exv E)) (exv (inj1 E)).
+ms-inj2-d 	: mstep W (inj2 (exv E)) (exv (inj2 E)).
 ms-roll-d 	: mstep W (roll (exv E)) (exv (roll E)).
 ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
 ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).
@@ -106,6 +106,10 @@ ls-tup-s2	: lstep (tup (exv E1) E2) Q ([x] tup (exv E1) (E2' x))
 ls-pi1-s	: lstep (pi1 E) Q ([x] pi1 (E' x))
 			<- lstep E Q E'.
 ls-pi2-s	: lstep (pi2 E) Q ([x] pi2 (E' x))
+			<- lstep E Q E'.
+ls-inj1-s	: lstep (inj1 E) Q ([x] inj1 (E' x))
+			<- lstep E Q E'.
+ls-inj2-s	: lstep (inj2 E) Q ([x] inj2 (E' x))
 			<- lstep E Q E'.
 ls-roll-s	: lstep (roll E) Q ([x] roll (E' x))
 			<- lstep E Q E'.

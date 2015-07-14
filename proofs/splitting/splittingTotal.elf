@@ -79,9 +79,9 @@ splr-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 	<- splr-total Dof Dres Dsplr.
 - : splr-total (of^-pi2 Dof) (form^pi2-n2 Dres) (splr-pi2 Dsplr)
 	<- splr-total Dof Dres Dsplr.
-- : splr-total (of^-inj1 _ Dof _) (form^inj1-n Dres _) (splr-inj1 Dsplr)
+- : splr-total (of^-inj1 _ Dof) (form^inj1-n Dres) (splr-inj1 Dsplr)
 	<- splr-total Dof Dres Dsplr.
-- : splr-total (of^-inj2 _ Dof _) (form^inj2-n Dres _) (splr-inj2 Dsplr)
+- : splr-total (of^-inj2 _ Dof) (form^inj2-n Dres) (splr-inj2 Dsplr)
 	<- splr-total Dof Dres Dsplr.
 - : splr-total (of^-roll _ Dof) (form^roll-n Dres) (splr-roll Dsplr)
 	<- splr-total Dof Dres Dsplr.
@@ -136,9 +136,9 @@ splg-total/branch2 :
 - : splgv-total (of^-tup Dof1 Dof2) (form^tup-n Dval1 Dval2) (splgv-tup Dsplg1 Dsplg2)
 	<- splgv-total Dof1 Dval1 Dsplg1
 	<- splgv-total Dof2 Dval2 Dsplg2.
-- : splgv-total (of^-inj1 _ Dof _) (form^inj1-n Dcomp _) (splgv-inj1 Dsplg)
+- : splgv-total (of^-inj1 _ Dof) (form^inj1-n Dcomp) (splgv-inj1 Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
-- : splgv-total (of^-inj2 _ Dof _) (form^inj2-n Dcomp _) (splgv-inj2 Dsplg)
+- : splgv-total (of^-inj2 _ Dof) (form^inj2-n Dcomp) (splgv-inj2 Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
 - : splgv-total (of^-roll _ Dof) (form^roll-n Dcomp) (splgv-roll Dsplg)
 	<- splgv-total Dof Dcomp Dsplg.
@@ -152,9 +152,9 @@ splg-total/branch2 :
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-pi2 Dof) (form^pi2-c Dcomp) (splg-pi2 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
-- : splg-total (of^-inj1 _ Dof _) (form^inj1-c Dcomp _) (splg-inj1 Dsplg)
+- : splg-total (of^-inj1 _ Dof) (form^inj1-c Dcomp) (splg-inj1 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
-- : splg-total (of^-inj2 _ Dof _) (form^inj2-c Dcomp _) (splg-inj2 Dsplg)
+- : splg-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (splg-inj2 Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-roll _ Dof) (form^roll-c Dcomp) (splg-roll Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
@@ -190,6 +190,10 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 - : splv-total of^-ztup _ splv-ztup.
 - : splv-total (of^-next Dof) (form^next-n Dcomp) (splv-next Dsplr)
 	<- splvar2-total Dof Dcomp Dsplr.
+- : splv-total (of^-inj1 _ Dof) (form^inj1-n Dcomp) (splv-inj1 Dspl)
+	<- splv-total Dof Dcomp Dspl.
+- : splv-total (of^-inj2 _ Dof) (form^inj2-n Dcomp) (splv-inj2 Dspl)
+	<- splv-total Dof Dcomp Dspl.
 - : splv-total (of^-roll _ Dof) (form^roll-n Dcomp) (splv-roll Dspl)
 	<- splv-total Dof Dcomp Dspl.
 - : splv-total (of^-tup Dof1 Dof2) (form^tup-n Dcomp1 Dcomp2) (splv-tup Dspl1 Dspl2)
@@ -227,6 +231,10 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- spl1-total Dof Dcomp Dspl.
 - : spl1-total (of^-pi2 Dof) (form^pi2-c Dcomp) (spl1-pi2 Dspl)
 	<- spl1-total Dof Dcomp Dspl.
+- : spl1-total (of^-inj1 _ Dof) (form^inj1-c Dcomp) (spl1-inj1 Dspl)
+	<- spl1-total Dof Dcomp Dspl.
+- : spl1-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (spl1-inj2 Dspl)
+	<- spl1-total Dof Dcomp Dspl.
 - : spl1-total (of^-roll _ Dof) (form^roll-c Dcomp) (spl1-roll Dspl)
 	<- spl1-total Dof Dcomp Dspl.
 - : spl1-total (of^-unrl Dof) (form^unrl-c Dcomp) (spl1-unrl Dspl)
@@ -255,9 +263,9 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- spl2-total Dof Dcomp Dspl.
 - : spl2-total (of^-pi2 Dof) (form^pi2-c Dcomp) (spl2-pi2 Dspl)
 	<- spl2-total Dof Dcomp Dspl.
-- : spl2-total (of^-inj1 _ Dof _) (form^inj1-c Dcomp _) (spl2-inj1 Dspl)
+- : spl2-total (of^-inj1 _ Dof) (form^inj1-c Dcomp) (spl2-inj1 Dspl)
 	<- spl2-total Dof Dcomp Dspl.
-- : spl2-total (of^-inj2 _ Dof _) (form^inj2-c Dcomp _) (spl2-inj2 Dspl)
+- : spl2-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (spl2-inj2 Dspl)
 	<- spl2-total Dof Dcomp Dspl.
 - : spl2-total (of^-case DofE DofM DofN _) (form^case-c2 DcompE DcompM DcompN) (spl2-case DsplrE DsplM DsplN)
 	<- spl2-total DofE DcompE DsplrE

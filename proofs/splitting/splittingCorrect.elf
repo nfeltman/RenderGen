@@ -43,7 +43,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(splg-unrl (splg-exv (splgv-roll Dsplg))) 
 	(mred-unrl mred-exv).
 
-- : scG (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj1-n DvalE _)) DcompM DcompN)
+- : scG (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN _) (form^case-cG (form^exv (form^inj1-n DvalE)) DcompM DcompN)
 	Dsplg3 Dred3 (ms-beta beta-case1 _)
 	(splg-case (splg-exv (splgv-inj1 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj1 Dred3') mred-exv)
@@ -52,7 +52,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- splg-total/branch DofN DcompN DsplN
 	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE) Dred3 Dred3'.
 
-- : scG (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj2-n DvalE _)) DcompM DcompN)
+- : scG (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN _) (form^case-cG (form^exv (form^inj2-n DvalE)) DcompM DcompN)
 	Dsplg3 Dred3 (ms-beta beta-case2 _)
 	(splg-case (splg-exv (splgv-inj2 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj2 Dred3') mred-exv)
@@ -64,8 +64,8 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 - : scG _ _	(splg-exv (splgv-tup Dsplg1 Dsplg2)) mred-exv 
 	ms-tup-d 
 	(splg-tup (splg-exv Dsplg1) (splg-exv Dsplg2)) (mred-tup mred-exv mred-exv).
-- : scG _ _ (splg-exv (splgv-inj1 Dsplg)) mred-exv (ms-inj1-d _) (splg-inj1 (splg-exv Dsplg)) (mred-inj1 mred-exv).
-- : scG _ _ (splg-exv (splgv-inj2 Dsplg)) mred-exv (ms-inj2-d _) (splg-inj2 (splg-exv Dsplg)) (mred-inj2 mred-exv).
+- : scG _ _ (splg-exv (splgv-inj1 Dsplg)) mred-exv ms-inj1-d (splg-inj1 (splg-exv Dsplg)) (mred-inj1 mred-exv).
+- : scG _ _ (splg-exv (splgv-inj2 Dsplg)) mred-exv ms-inj2-d (splg-inj2 (splg-exv Dsplg)) (mred-inj2 mred-exv).
 - : scG _ _ (splg-exv (splgv-roll Dsplg)) mred-exv ms-roll-d (splg-roll (splg-exv Dsplg)) (mred-roll mred-exv).
 - : scG (of^-tup Dof _) (form^tup-c Dcomp _)
 		(splg-tup Dsplg' DsplgB) (mred-tup Dred' DredB) 
@@ -87,12 +87,12 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 		(ms-pi2-s Dstep) 
 		(splg-pi2 Dsplg) (mred-pi2 Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-inj1 Dwf Dof _) (form^inj1-c Dcomp _) 
+- : scG (of^-inj1 Dwf Dof) (form^inj1-c Dcomp) 
 		(splg-inj1 Dsplg') (mred-inj1 Dred') 
 		(ms-inj1-s Dstep) 
 		(splg-inj1 Dsplg) (mred-inj1 Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-inj2 Dwf Dof _) (form^inj2-c Dcomp _) 
+- : scG (of^-inj2 Dwf Dof) (form^inj2-c Dcomp) 
 		(splg-inj2 Dsplg') (mred-inj2 Dred') 
 		(ms-inj2-s Dstep) 
 		(splg-inj2 Dsplg) (mred-inj2 Dred)
@@ -174,6 +174,12 @@ lc : split1 E C R ->
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
 - : lc (spl1-pi2 Dspl) DsplQ ([x][x2][s] spl1-pi2 (Dspl' x x2 s)) (ls-pi2-s Dstep) Deq' ([l] reqv-pi2-s (Deqv l) ;; reqv-lift-pi2)
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+- : lc (spl1-inj1 Dspl) DsplQ  ([x][x2][s] spl1-inj1 (Dspl' x x2 s)) (ls-inj1-s Dstep) Deq' Deqv
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+- : lc (spl1-inj2 Dspl) DsplQ  ([x][x2][s] spl1-inj2 (Dspl' x x2 s)) (ls-inj2-s Dstep) Deq' Deqv
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
 - : lc (spl1-roll Dspl) DsplQ  ([x][x2][s] spl1-roll (Dspl' x x2 s)) (ls-roll-s Dstep) Deq' Deqv
@@ -288,6 +294,55 @@ sc1/app-r : of^ (app (exv (lam M)) (exv E)) A wor1 ->
 %worlds (correctness-block) (sc1/app-r _ _ _ _ _ _ _ _).
 %total (D) (sc1/app-r D _ _ _ _ _ _ _).
 
+%% SPLITTING CORRECTNESS FOR BETA RULES
+sc1/beta : of^ E A wor1 -> form^ E comp1 wor1 -> 
+	split1 E' C' R' -> mred C' (tup I B') -> 
+	beta E E' -> 
+	split1 E C R -> mred C (tup I B) -> 
+	lang-convert B lang2 B2 -> lang-convert B' lang2 B2' -> 
+	reqv (R B2) (R' B2') -> type.
+%mode sc1/beta +Dof +Dcomp +Dspl' +Dred' +Dstep -Dspl -Dred -Dconv -Dconv' -Deqv.
+
+- : sc1/beta (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dcomp2)))
+	(spl1-exv Dspl1) (mred-exv)
+	beta-pi1
+	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))
+	(mred-lett 
+		(mred-tup (mred-pi1 mred-exv) mred-exv) 
+		mred-exv)
+	conv-ztup conv-ztup
+	reqv-pi1-r
+	<- splv-total Dof2 Dcomp2 Dspl2.
+
+- : sc1/beta (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dcomp1 _)))
+	(spl1-exv Dspl2) (mred-exv)
+	beta-pi2
+	(spl1-pi2 (spl1-exv (splv-tup Dspl1 Dspl2)))
+	(mred-lett 
+		(mred-tup (mred-pi2 mred-exv) mred-exv) 
+		mred-exv)
+	conv-ztup conv-ztup
+	reqv-pi2-r
+	<- splv-total Dof1 Dcomp1 Dspl1.
+
+- : sc1/beta Dof Dcomp Dspl' Dred'
+	(Dstep : beta (app (exv (lam M)) (exv E)) V) 
+	Dspl Dred 
+	(conv-tup conv-tupzz (conv-roll Dconv)) Dconv
+	Deqv
+	<- beta/unique Dstep beta-app (Deq : eq-term V (M (lam M) E))
+	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
+	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
+
+- : sc1/beta _ _ (spl1-exv Dspl) mred-exv
+	beta-unrl
+	(spl1-unrl (spl1-exv (splv-roll Dspl)))
+	(mred-lett (mred-tup (mred-unrl mred-exv) mred-exv) mred-exv)
+	conv-ztup conv-ztup reqv-id.
+
+%worlds (correctness-block) (sc1/beta _ _ _ _ _ _ _ _ _ _).
+%total (D1) (sc1/beta _ _ _ _ D1 _ _ _ _ _).
+
 %% SPLITTING CORRECTNESS
 sc1 : of^ E A wor1 -> form^ E comp1 wor1 -> 
 	split1 E' C' R' -> mred C' (tup I B') -> 
@@ -307,36 +362,8 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 
 %% STAGE ONE REDUCTION RULES
 
-- : sc1 (of^-pi1 (of^-exv (of^-tup _ Dof2))) (form^pi1-c (form^exv (form^tup-n _ Dcomp2)))
-	(spl1-exv Dspl1) (mred-exv)
-	(ms-beta beta-pi1 _)
-	(spl1-pi1 (spl1-exv (splv-tup Dspl1 Dspl2)))
-	(mred-lett 
-		(mred-tup (mred-pi1 mred-exv) mred-exv) 
-		mred-exv)
-	conv-ztup conv-ztup
-	reqv-pi1-r
-	<- splv-total Dof2 Dcomp2 Dspl2.
-
-- : sc1 (of^-pi2 (of^-exv (of^-tup Dof1 _))) (form^pi2-c (form^exv (form^tup-n Dcomp1 _)))
-	(spl1-exv Dspl2) (mred-exv)
-	(ms-beta beta-pi2 _)
-	(spl1-pi2 (spl1-exv (splv-tup Dspl1 Dspl2)))
-	(mred-lett 
-		(mred-tup (mred-pi2 mred-exv) mred-exv) 
-		mred-exv)
-	conv-ztup conv-ztup
-	reqv-pi2-r
-	<- splv-total Dof1 Dcomp1 Dspl1.
-
-- : sc1 Dof Dcomp Dspl' Dred'
-	(Dstep : mstep wor1 (app (exv (lam M)) (exv E)) V) 
-	Dspl Dred 
-	(conv-tup conv-tupzz (conv-roll Dconv)) Dconv
-	Deqv
-	<- step/unique Dstep (ms-beta beta-app fsw-wor1) (Deq : eq-term V (M (lam M) E))
-	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
-	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
+- : sc1 DofE DcompE DsplE' DredC' (ms-beta Dstep _) DsplE DredC DconvB DconvB' Deqv
+	<- sc1/beta DofE DcompE DsplE' DredC' Dstep DsplE DredC DconvB DconvB' Deqv.
 
 - : sc2 Dof Dcomp
 		(spl2-exv (splr-var Dsplr)) mred-exv
@@ -361,7 +388,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
 
-- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj1 _ DofV _))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj1-n DvalE _))) DcompM DcompN)
+- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj1 _ DofV))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj1-n DvalE))) DcompM DcompN)
 	(Dspl : split1 _ _ R2') Dred
 	ms-caseg-r1
 	(spl1-caseg (spl1-exv (splv-grnd (splgv-inj1 DsplV))) DsplM DsplN)
@@ -379,7 +406,7 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 			(R2 B2)) 
 		eq-term_ (DeqR' B2) Deqv.
 
-- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj2 _ DofV _))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj2-n DvalE _))) DcompM DcompN)
+- : sc1 (of^-caseg (of^-exv (of^-grnd (of^-inj2 _ DofV))) DofM DofN) (form^caseg (form^exv (form^grnd (form^inj2-n DvalE))) DcompM DcompN)
 	(Dspl : split1 _ _ R3') Dred
 	ms-caseg-r2
 	(spl1-caseg (spl1-exv (splv-grnd (splgv-inj2 DsplV))) DsplM DsplN)
@@ -397,11 +424,6 @@ sc2 : of^ E A wor2 -> form^ E comp1 wor2 ->
 			(R3 B3)) 
 		eq-term_ (DeqR' B3) Deqv.
 
-- : sc1 _ _ (spl1-exv Dspl) mred-exv
-	(ms-beta beta-unrl _)
-	(spl1-unrl (spl1-exv (splv-roll Dspl)))
-	(mred-lett (mred-tup (mred-unrl mred-exv) mred-exv) mred-exv)
-	conv-ztup conv-ztup reqv-id.
 
 
 invert/exv--resp/tup : 
@@ -430,6 +452,31 @@ invert/exv--resp/tup :
 			(exv (tup Q1 Q2))
 		)
 		<- mred-invert/exv-tup Dred' (DredI : mred (exv (tup I1 I2)) I) _
+		<- invert/exv--resp/tup DredI mred-exv DredM
+		<- lang-convert_12-total B' Dconv'.
+
+
+- : sc1 (of^-inj1 _ (of^-exv Dof)) (form^inj1-c (form^exv Dcomp))
+		(spl1-exv (splv-inj1 (Dsplv : splitval V I1 Q)))
+		(Dred' : mred (exv (tup (inj1 I1) ztup)) (tup I B'))
+		(ms-inj1-d : mstep wor1 (inj1 (exv V)) (exv (inj1 V)))
+		(spl1-inj1 (spl1-exv Dsplv))
+		(mred-lett DredM mred-exv : mred _ (tup I ztup))
+		conv-ztup Dconv'
+		reqv-id
+		<- mred-invert/exv-tup Dred' (DredI : mred (exv (inj1 I1)) I) _
+		<- invert/exv--resp/tup DredI mred-exv DredM
+		<- lang-convert_12-total B' Dconv'.
+
+- : sc1 (of^-inj2 _ (of^-exv Dof)) (form^inj2-c (form^exv Dcomp))
+		(spl1-exv (splv-inj2 (Dsplv : splitval V I1 Q)))
+		(Dred' : mred (exv (tup (inj2 I1) ztup)) (tup I B'))
+		(ms-inj2-d : mstep wor1 (inj2 (exv V)) (exv (inj2 V)))
+		(spl1-inj2 (spl1-exv Dsplv))
+		(mred-lett DredM mred-exv : mred _ (tup I ztup))
+		conv-ztup Dconv'
+		reqv-id
+		<- mred-invert/exv-tup Dred' (DredI : mred (exv (inj2 I1)) I) _
 		<- invert/exv--resp/tup DredI mred-exv DredM
 		<- lang-convert_12-total B' Dconv'.
 
@@ -550,6 +597,32 @@ invert/exv--resp/tup :
 		(mred-lett mred-exv (DredC' : mred C' (tup I B'))) 
 		(ms-roll-s Dstep)
 		(spl1-roll Dspl)
+		(mred-lett mred-exv DredC)
+		Dconv1 Dconv1' Deqv
+	<- sc1 Dof Dcomp Dspl' DredC' Dstep 
+		(Dspl : split1 E C R) 
+		(DredC : mred C (tup I B)) 
+		(Dconv1 : lang-convert B lang2 BB) (Dconv1' : lang-convert B' lang2 BB')
+		(Deqv : reqv (R BB) (R' BB')).
+
+- : sc1 (of^-inj1 _ Dof) (form^inj1-c Dcomp)
+		(spl1-inj1 (Dspl' : split1 E' C' R')) 
+		(mred-lett mred-exv (DredC' : mred C' (tup I B'))) 
+		(ms-inj1-s Dstep)
+		(spl1-inj1 Dspl)
+		(mred-lett mred-exv DredC)
+		Dconv1 Dconv1' Deqv
+	<- sc1 Dof Dcomp Dspl' DredC' Dstep 
+		(Dspl : split1 E C R) 
+		(DredC : mred C (tup I B)) 
+		(Dconv1 : lang-convert B lang2 BB) (Dconv1' : lang-convert B' lang2 BB')
+		(Deqv : reqv (R BB) (R' BB')).
+
+- : sc1 (of^-inj2 _ Dof) (form^inj2-c Dcomp)
+		(spl1-inj2 (Dspl' : split1 E' C' R')) 
+		(mred-lett mred-exv (DredC' : mred C' (tup I B'))) 
+		(ms-inj2-s Dstep)
+		(spl1-inj2 Dspl)
 		(mred-lett mred-exv DredC)
 		Dconv1 Dconv1' Deqv
 	<- sc1 Dof Dcomp Dspl' DredC' Dstep 
@@ -755,10 +828,10 @@ sc1/case-s :
 		ms-pi2-d
 		(spl2-pi2 (spl2-exv Dsplr)) mred-exv conv-ztup conv-ztup reqv-id.
 - : sc2 _ _ (spl2-exv (splr-inj1 Dsplr)) mred-exv
-		(ms-inj1-d _)
+		ms-inj1-d
 		(spl2-inj1 (spl2-exv Dsplr)) mred-exv conv-ztup conv-ztup reqv-id.
 - : sc2 _ _ (spl2-exv (splr-inj2 Dsplr)) mred-exv
-		(ms-inj2-d _)
+		ms-inj2-d
 		(spl2-inj2 (spl2-exv Dsplr)) mred-exv conv-ztup conv-ztup reqv-id.
 - : sc2 _ _ (spl2-exv (splr-roll Dsplr)) mred-exv
 		ms-roll-d
@@ -884,10 +957,10 @@ sc2/branch2 :
 - : sc2 (of^-pi2 Dof) (form^pi2-c Dcomp) (spl2-pi2 Dspl') Dred' (ms-pi2-s Dstep) 
 		(spl2-pi2 Dspl) Dred Dconv Dconv' (reqv-pi2-s Deqv)
 	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Deqv.
-- : sc2 (of^-inj1 _ Dof _) (form^inj1-c Dcomp _) (spl2-inj1 Dspl') Dred' (ms-inj1-s Dstep) 
+- : sc2 (of^-inj1 _ Dof) (form^inj1-c Dcomp) (spl2-inj1 Dspl') Dred' (ms-inj1-s Dstep) 
 		(spl2-inj1 Dspl) Dred Dconv Dconv' (reqv-inj1-s Deqv)
 	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Deqv.
-- : sc2 (of^-inj2 _ Dof _) (form^inj2-c Dcomp _) (spl2-inj2 Dspl') Dred' (ms-inj2-s Dstep) 
+- : sc2 (of^-inj2 _ Dof) (form^inj2-c Dcomp) (spl2-inj2 Dspl') Dred' (ms-inj2-s Dstep) 
 		(spl2-inj2 Dspl) Dred Dconv Dconv' (reqv-inj2-s Deqv)
 	<- sc2 Dof Dcomp Dspl' Dred' Dstep Dspl Dred Dconv Dconv' Deqv.
 - : sc2 (of^-roll _ Dof) (form^roll-c Dcomp) (spl2-roll Dspl') Dred' (ms-roll-s Dstep) 

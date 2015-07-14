@@ -104,6 +104,10 @@ splv-tup 	: splitval (tup E1 E2) (tup I1 I2) (tup Q1 Q2)
 			<- splitval E1 I1 Q1.
 splv-roll 	: splitval (roll E) (roll I) Q
 			<- splitval E I Q.
+splv-inj1 	: splitval (inj1 E) (inj1 I) Q
+			<- splitval E I Q.
+splv-inj2 	: splitval (inj2 E) (inj2 I) Q
+			<- splitval E I Q.
 splv-lam	: splitval (lam M) 
 				(lam ([f][x] lett (C f x) ([y][z] exv (tup y (roll z))))) 
 				(lam ([f][xl] lett (exv xl) ([x][l] let (unrl (exv l)) ([ul] R f x ul))))
@@ -123,6 +127,10 @@ spl1-pi1	: split1 (pi1 E) (lett C ([y] [z] tup (pi1 (exv y)) (exv z))) ([l] pi1 
 spl1-pi2	: split1 (pi2 E) (lett C ([y] [z] tup (pi2 (exv y)) (exv z))) ([l] pi2 (R l))
 			<- split1 E C R.
 spl1-roll	: split1 (roll E) (lett C ([y] [z] exv (tup (roll y) z))) R
+			<- split1 E C R.
+spl1-inj1	: split1 (inj1 E) (lett C ([y] [z] exv (tup (inj1 y) z))) R
+			<- split1 E C R.
+spl1-inj2	: split1 (inj2 E) (lett C ([y] [z] exv (tup (inj2 y) z))) R
 			<- split1 E C R.
 spl1-unrl	: split1 (unrl E) (lett C ([y] [z] tup (unrl (exv y)) (exv z))) R
 			<- split1 E C R.

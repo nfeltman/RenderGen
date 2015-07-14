@@ -24,7 +24,6 @@ ty^wf-prod	: ty^wf (prod A B) W
 				<- ty^wf B W
 				<- ty^wf A W.
 ty^wf-sum	: ty^wf (sum A B) W
-				<- ground-wor W
 				<- ty^wf B W
 				<- ty^wf A W.
 ty^wf-arr	: ty^wf (arr A B) W
@@ -52,11 +51,9 @@ of^-pi1		: of^ (pi1 E) A W
 of^-pi2		: of^ (pi2 E) B W
 				<- of^ E (prod A B) W.
 of^-inj1	: of^ (inj1 E) (sum A T) W
-				<- ground-wor W
 				<- of^ E A W
 				<- ty^wf T W.
 of^-inj2	: of^ (inj2 E) (sum T B) W
-				<- ground-wor W
 				<- of^ E B W
 				<- ty^wf T W.
 of^-case 	: of^ (case E M N) C W
@@ -121,12 +118,12 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
 - : of^-wf (of^-pi2 Dof) DwfB
 	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
-- : of^-wf (of^-inj1 DwfB Dof W) (ty^wf-sum DwfA DwfB W)
+- : of^-wf (of^-inj1 DwfB Dof) (ty^wf-sum DwfA DwfB)
 	<- of^-wf Dof DwfA.
-- : of^-wf (of^-inj2 DwfA Dof W) (ty^wf-sum DwfA DwfB W)
+- : of^-wf (of^-inj2 DwfA Dof) (ty^wf-sum DwfA DwfB)
 	<- of^-wf Dof DwfB.
 - : of^-wf (of^-case DofE DofM _ _) Dwf2
-	<- of^-wf DofE (ty^wf-sum Dwf1 _ _)
+	<- of^-wf DofE (ty^wf-sum Dwf1 _)
 	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-roll Dwf Dof) (ty^wf-rec Dwf)
 	<- of^-wf Dof _.
@@ -154,7 +151,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf DofE (ty^wf-curr DwfE)
 	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
 - : of^-wf (of^-caseg DofE DofM DofN) DwfM
-	<- of^-wf DofE (ty^wf-curr (ty^wf-sum DwfE _ _))
+	<- of^-wf DofE (ty^wf-curr (ty^wf-sum DwfE _))
 	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
 %block var-of^-wf : 
 	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W}
@@ -172,7 +169,7 @@ wor2^mono : ty^wf A wor2 -> ty-wf A -> type.
 - : wor2^mono (ty^wf-arr Dwf1 Dwf2) (ty-wf-arr Dwf1' Dwf2')
 	<- wor2^mono Dwf1 Dwf1'
 	<- wor2^mono Dwf2 Dwf2'.
-- : wor2^mono (ty^wf-sum Dwf1 Dwf2 _) (ty-wf-sum Dwf1' Dwf2')
+- : wor2^mono (ty^wf-sum Dwf1 Dwf2) (ty-wf-sum Dwf1' Dwf2')
 	<- wor2^mono Dwf1 Dwf1'
 	<- wor2^mono Dwf2 Dwf2'.
 - : wor2^mono (ty^wf-rec DwfF) (ty-wf-rec DwfF')
@@ -224,16 +221,12 @@ form^tup-n : form^ (tup E1 E2) norm1 W
 			<- form^ E2 norm1 W
 			<- form^ E1 norm1 W.
 form^inj1-c : form^ (inj1 E) comp1 W
-			<- ground-wor W
 			<- form^ E comp1 W.
 form^inj2-c : form^ (inj2 E) comp1 W
-			<- ground-wor W
 			<- form^ E comp1 W.
 form^inj1-n : form^ (inj1 E) norm1 W
-			<- ground-wor W
 			<- form^ E norm1 W.
 form^inj2-n : form^ (inj2 E) norm1 W
-			<- ground-wor W
 			<- form^ E norm1 W.
 form^roll-c : form^ (roll E) comp1 W
 			<- form^ E comp1 W.
