@@ -1,0 +1,9 @@
+
+beta :  term L -> term L -> type.
+
+beta-pi1	: beta (pi1 (exv (tup E1 E2))) (exv E1).
+beta-pi2	: beta (pi2 (exv (tup E1 E2))) (exv E2).
+beta-unrl	: beta (unrl (exv (roll E))) (exv E).
+beta-app	: beta (app (exv (lam M)) (exv E)) (M (lam M) E).
+beta-case	: beta (case (exv (inj1 E)) M N) (M E).
+beta-case	: beta (case (exv (inj2 E)) M N) (N E).

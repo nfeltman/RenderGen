@@ -103,8 +103,8 @@ mstep-pres-ty : mstep W E E' -> of^ E T W -> of^ E' T W -> type.
 %{- : mstep-pres-ty (ms-fix-r W) 
 		(of^-fix (ty^wf-arr DwfA DwfB) DofM : of^ _ _ Wor) 
 		(of^-exv (of^-lam DwfA ([x][ofx] of^-let (of^-fix (ty^wf-arr DwfA DwfB) DofM) ([f][off] DofM f off x ofx)))).}%
-- : mstep-pres-ty ms-case-r1 (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (DofM E DofE).
-- : mstep-pres-ty ms-case-r2 (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (DofN E DofE).
+- : mstep-pres-ty (ms-case-r1 W) (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (DofM E DofE).
+- : mstep-pres-ty (ms-case-r2 W) (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (DofN E DofE).
 - : mstep-pres-ty ms-caseg-r1 (of^-caseg (of^-exv (of^-grnd (of^-inj1 _ DofE _))) DofM DofN) (DofM E DofE).
 - : mstep-pres-ty ms-caseg-r2 (of^-caseg (of^-exv (of^-grnd (of^-inj2 _ DofE _))) DofM DofN) (DofN E DofE).
 - : mstep-pres-ty ms-prev-r (of^-prev (of^-exv (of^-next Dof))) (of^-exv (of^-exv Dof)).
@@ -217,8 +217,8 @@ mstep-pres-norm : mstep W E E' -> form^ E comp1 W -> form^ E' comp1 W -> type.
 - : mstep-pres-norm (ms-pi2-r _) (form^pi2-c (form^exv (form^tup-n _ Dof))) (form^exv Dof).
 - : mstep-pres-norm (ms-unrl-r _) (form^unrl-c (form^exv (form^roll-n Dof))) (form^exv Dof).
 - : mstep-pres-norm (ms-app-r _) (form^app-c (form^exv (form^lam1 DofM W)) (form^exv DofE)) (DofM (lam M) (form^lam1 DofM W) E DofE).
-- : mstep-pres-norm ms-case-r1 (form^case-cG (form^exv (form^inj1-n DofE _)) DofM DofN) (DofM E DofE).
-- : mstep-pres-norm ms-case-r2 (form^case-cG (form^exv (form^inj2-n DofE _)) DofM DofN) (DofN E DofE).
+- : mstep-pres-norm (ms-case-r1 _) (form^case-cG (form^exv (form^inj1-n DofE _)) DofM DofN) (DofM E DofE).
+- : mstep-pres-norm (ms-case-r2 _) (form^case-cG (form^exv (form^inj2-n DofE _)) DofM DofN) (DofN E DofE).
 - : mstep-pres-norm ms-caseg-r1 (form^caseg (form^exv (form^grnd (form^inj1-n DofE _))) DofM DofN) (DofM E DofE).
 - : mstep-pres-norm ms-caseg-r2 (form^caseg (form^exv (form^grnd (form^inj2-n DofE _))) DofM DofN) (DofN E DofE).
 - : mstep-pres-norm ms-prev-r (form^prev (form^exv (form^next-n Dof))) (form^exv (form^var2 Dof)).

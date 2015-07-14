@@ -90,8 +90,8 @@ step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
 - : step/unique (ms-pi2-r _) (ms-pi2-r _) eq-term_.
 - : step/unique (ms-unrl-r _) (ms-unrl-r _) eq-term_.
 - : step/unique (ms-app-r _) (ms-app-r _) eq-term_.
-- : step/unique ms-case-r1 ms-case-r1 eq-term_.
-- : step/unique ms-case-r2 ms-case-r2 eq-term_.
+- : step/unique (ms-case-r1 _) (ms-case-r1 _) eq-term_.
+- : step/unique (ms-case-r2 _) (ms-case-r2 _) eq-term_.
 - : step/unique ms-letg-r ms-letg-r eq-term_.
 - : step/unique ms-caseg-r1 ms-caseg-r1 eq-term_.
 - : step/unique ms-caseg-r2 ms-caseg-r2 eq-term_.

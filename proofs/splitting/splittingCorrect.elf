@@ -44,7 +44,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(mred-unrl mred-exv).
 
 - : scG (of^-case (of^-exv (of^-inj1 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj1-n DvalE _)) DcompM DcompN)
-	Dsplg3 Dred3 ms-case-r1
+	Dsplg3 Dred3 (ms-case-r1 _)
 	(splg-case (splg-exv (splgv-inj1 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj1 Dred3') mred-exv)
 	<- splgv-total DofE DvalE DsplE
@@ -53,7 +53,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE) Dred3 Dred3'.
 
 - : scG (of^-case (of^-exv (of^-inj2 _ DofE _)) DofM DofN _) (form^case-cG (form^exv (form^inj2-n DvalE _)) DcompM DcompN)
-	Dsplg3 Dred3 ms-case-r2
+	Dsplg3 Dred3 (ms-case-r2 _)
 	(splg-case (splg-exv (splgv-inj2 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj2 Dred3') mred-exv)
 	<- splgv-total DofE DvalE DsplE

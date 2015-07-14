@@ -85,8 +85,8 @@ prog/inj2 : dos W E -> ground-wor W -> dos W (inj2 E) -> type.
 prog/case-1G : dos worG E -> of^ (case E M N) _ worG -> form^ E comp1 worG -> mstep worG (case E M N) _ -> type.
 %mode prog/case-1G +Dvos +Dof +Dform -Dvos'.
 - : prog/case-1G (dos-mstep Dstep) _ _ (ms-case-s1 Dstep).
-- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) ms-case-r1.
-- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) ms-case-r2.
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj1 _ _ _)) _ _ _) (form^exv _) (ms-case-r1 fsw-worG).
+- : prog/case-1G dos-done (of^-case (of^-exv (of^-inj2 _ _ _)) _ _ _) (form^exv _) (ms-case-r2 fsw-worG).
 %worlds (von-block) (prog/case-1G _ _ _ _).
 %total (Dvos) (prog/case-1G Dvos _ _ _).
 

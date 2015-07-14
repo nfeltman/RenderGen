@@ -99,10 +99,10 @@ ms-unrl-r	: mstep W (unrl (exv (roll E))) (exv E)
 				<- first-stage-wor W.
 ms-app-r	: mstep W (app (exv (lam M)) (exv E)) (M (lam M) E)
 				<- first-stage-wor W.
-%{ms-fix-r	: mstep W (fix M) (exv (lam ([x] let (fix M) ([f] M f x))))
-				<- first-stage-wor W.}%
-ms-case-r1	: mstep worG (case (exv (inj1 E)) M N) (M E).
-ms-case-r2	: mstep worG (case (exv (inj2 E)) M N) (N E).
+ms-case-r1	: mstep W (case (exv (inj1 E)) M N) (M E)
+				<- first-stage-wor W.
+ms-case-r2	: mstep W (case (exv (inj2 E)) M N) (N E)
+				<- first-stage-wor W.
 %{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%
 
 			
