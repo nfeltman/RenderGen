@@ -32,6 +32,11 @@ of-inj1	: {B} of (inj1 E) (sum A B)
 			<- of E A.
 of-inj2	: {A} of (inj2 E) (sum A B)
 			<- of E B.
+of-roll	: of (roll E) (rec F)
+				<- of E (F (rec F))
+				<- {a} ty-wf a -> ty-wf (F a).
+of-unrl	: of (unrl E) (F (rec F))
+				<- of E (rec F).
 of-case : of (case E M N) C
 			<- ({x} of x B -> of (N x) C)
 			<- ({x} of x A -> of (M x) C)
@@ -79,6 +84,10 @@ of-strengthen/of : ({x} of x A -> of E B) -> of E B -> type.
 - : of-strengthen/of ([x][ofx] of-pi1 (Dof x ofx)) (of-pi1 Dof')
 	<- of-strengthen/of Dof Dof'.
 - : of-strengthen/of ([x][ofx] of-pi2 (Dof x ofx)) (of-pi2 Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-roll T (Dof x ofx)) (of-roll T Dof')
+	<- of-strengthen/of Dof Dof'.
+- : of-strengthen/of ([x][ofx] of-unrl (Dof x ofx)) (of-unrl Dof')
 	<- of-strengthen/of Dof Dof'.
 - : of-strengthen/of ([x][ofx] of-inj1 T (Dof x ofx)) (of-inj1 T Dof')
 	<- of-strengthen/of Dof Dof'.

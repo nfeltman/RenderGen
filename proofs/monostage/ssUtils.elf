@@ -83,7 +83,7 @@ conf\eq : eq-term A B -> conf A B -> type.
 
 %% BIGSTEP
 step** : term L -> term L -> type.
-step**_ : step* E V -> val V -> step** E V.
+step**_ : step* E (exv V) -> step** E V.
 
 %% STEP EQUALITY
 dup-step** : {A : step** E V} {A : step** E V} type.
@@ -109,33 +109,29 @@ false\step** : false -> {E} {V} step** E V -> type.
 
 
 %% BIGSTEP IS UNIQUE
-step**-unique_ : step* E V -> val V -> step* E V' -> val V' -> eq-term V V' -> type.
-%mode step**-unique_ +Dpath +Dval +Dpath' +Dval' -Deq.
-- : step**-unique_ step*-id _ step*-id _ eq-term_.
-- : step**-unique_ (step*-step Dstep Dpath) Dval (step*-step Dstep' Dpath') Dval' DeqV
+step**-unique_ : step* E (exv V) -> step* E (exv V') -> eq-term V V' -> type.
+%mode step**-unique_ +Dpath +Dpath' -Deq.
+- : step**-unique_ step*-id step*-id eq-term_.
+- : step**-unique_ (step*-step Dstep Dpath) (step*-step Dstep' Dpath') DeqV
 	<- step-unique Dstep' Dstep Deq
 	<- step*/resp Dpath' Deq eq-term_ Dpath''
-	<- step**-unique_ Dpath Dval Dpath'' Dval' DeqV.
-- : step**-unique_ step*-id Dval (step*-step Dstep _) _ Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step**-unique_ (step*-step Dstep _) _ step*-id Dval Deq
-	<- excl-val-step Dstep Dval Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-%worlds () (step**-unique_ _ _ _ _ _).
-%total (D) (step**-unique_ D _ _ _ _).
+	<- step**-unique_ Dpath Dpath'' DeqV.
+%worlds () (step**-unique_ _ _ _).
+%total (D) (step**-unique_ D _ _).
 
 step**-unique : step** E V -> step** E V' -> eq-term V V' -> type.
 %mode step**-unique +Dred +Dred' -Deq.
-- : step**-unique (step**_ Dpath Dval) (step**_ Dpath' Dval') Deq
-	<- step**-unique_ Dpath Dval Dpath' Dval' Deq.
+- : step**-unique (step**_ Dpath) (step**_ Dpath') Deq
+	<- step**-unique_ Dpath Dpath' Deq.
 %worlds () (step**-unique _ _ _).
 %total {} (step**-unique _ _ _).
+
+%{
 
 %% BIGSTEP RESULTS EVAL TO THEMSELF ITSELF
 step**-term : step** E V -> step** V V -> type.
 %mode step**-term +Dred -Dred'.
-- : step**-term (step**_ Dpath Dval) (step**_ step*-id Dval).
+- : step**-term (step**_ Dpath) (step**_ step*-id).
 %worlds () (step**-term _ _).
 %total {} (step**-term _ _).
 
@@ -191,3 +187,5 @@ step**-invert-pi1 :  step** (pi1 E) V1 -> step** E (tup V1 V2) -> type.
 	<- step**-invert-pi1_ Dpath Dval Dpath' Dval'.
 %worlds () (step**-invert-pi1 _ _).
 %total (D) (step**-invert-pi1 D _).
+
+}%
