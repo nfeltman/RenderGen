@@ -9,10 +9,6 @@ ss-beta 	: beta E E' -> step E E'.
 ss-let-r	: step (let (exv E) M) (M E).
 ss-lett-r	: step (lett (exv (tup E1 E2)) M) (M E1 E2).
 
-ss-tup-s1	: step (tup E1 E2) (tup E1' E2)
-			<- step E1 E1'.
-ss-tup-s2	: step (tup (exv E1) E2) (tup (exv E1) E2')
-			<- step E2 E2'.
 ss-cont-s	: step E0 (F E')
 			<- eq-term E0 (F E)
 			<- step E E'
@@ -43,9 +39,9 @@ ss-pres-ty : of E T -> step E E' -> of E' T -> type.
 - : ss-pres-ty (of-inj1 T (of-exv Dof)) (ss-beta beta-inj1) (of-exv (of-inj1 T Dof)).
 - : ss-pres-ty (of-inj2 T (of-exv Dof)) (ss-beta beta-inj2) (of-exv (of-inj2 T Dof)).
 - : ss-pres-ty (of-roll T (of-exv Dof)) (ss-beta beta-roll) (of-exv (of-roll T Dof)).
-- : ss-pres-ty (of-tup Dof1 Dof2) (ss-tup-s1 Dstep) (of-tup Dof1' Dof2)
+- : ss-pres-ty (of-tup Dof1 Dof2) (ss-cont-s (cont-tup1 _) Dstep _) (of-tup Dof1' Dof2)
 	<- ss-pres-ty Dof1 Dstep Dof1'.
-- : ss-pres-ty (of-tup Dof1 Dof2) (ss-tup-s2 Dstep) (of-tup Dof1 Dof2')
+- : ss-pres-ty (of-tup Dof1 Dof2) (ss-cont-s (cont-tup2 _) Dstep _) (of-tup Dof1 Dof2')
 	<- ss-pres-ty Dof2 Dstep Dof2'. 
 - : ss-pres-ty (of-pi1 Dof) (ss-cont-s cont-pi1 Dstep _) (of-pi1 Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
@@ -88,9 +84,9 @@ ss-pres-norm : form E comp -> step E E' -> form E' comp -> type.
 - : ss-pres-norm (form-inj2 (form-exv Dval)) (ss-beta beta-inj2) (form-exv (form-inj2 Dval)).
 - : ss-pres-norm (form-roll (form-exv Dval)) (ss-beta beta-roll) (form-exv (form-roll Dval)).
 
-- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-tup-s1 Dstep) (form-tup Dcomp1' Dcomp2)
+- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-cont-s (cont-tup1 _) Dstep _) (form-tup Dcomp1' Dcomp2)
 	<- ss-pres-norm Dcomp1 Dstep Dcomp1'.
-- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-tup-s2 Dstep) (form-tup Dcomp1 Dcomp2')
+- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-cont-s (cont-tup2 _) Dstep _) (form-tup Dcomp1 Dcomp2')
 	<- ss-pres-norm Dcomp2 Dstep Dcomp2'. 
 - : ss-pres-norm (form-pi1 Dcomp) (ss-cont-s cont-pi1 Dstep _) (form-pi1 Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
@@ -125,8 +121,8 @@ vos-step : step E E' -> vos E.
 %% PROGRESS LEMMAS
 ss-prog/tup : vos E1 -> vos E2 -> step (tup E1 E2) _ -> type.
 %mode ss-prog/tup +Dvos1 +Dvos2 -Dvos.
-- : ss-prog/tup (vos-step Dstep) _ (ss-tup-s1 Dstep).
-- : ss-prog/tup vos-val (vos-step Dstep) (ss-tup-s2 Dstep).
+- : ss-prog/tup (vos-step Dstep) _ (ss-cont-s (cont-tup1 E2) Dstep eq-term_).
+- : ss-prog/tup vos-val (vos-step Dstep) (ss-cont-s (cont-tup2 E1) Dstep eq-term_).
 - : ss-prog/tup vos-val vos-val (ss-beta beta-tup).
 %worlds () (ss-prog/tup _ _ _).
 %total (Dvos) (ss-prog/tup Dvos _ _).
@@ -260,12 +256,13 @@ excl-exv-step : step (exv E) E' -> false -> type.
 step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 %mode step-unique +Dstep1 +Dstep2 -Deq.
 %% contradiction cases
-- : step-unique (ss-tup-s1 Dstep) _ Deq
+- : step-unique (ss-cont-s (cont-tup2 V) Dstep _) (ss-cont-s (cont-tup1 E2) _ _) Deq
 	<- excl-exv-step Dstep Dfalse
 	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-tup-s2 Dstep) _ Deq
+- : step-unique (ss-cont-s (cont-tup1 E2) _ _) (ss-cont-s (cont-tup2 V) Dstep _) Deq
 	<- excl-exv-step Dstep Dfalse
 	<- false\eq-term Dfalse _ _ Deq.
+
 - : step-unique (ss-cont-s _ Dstep _) (ss-beta _) Deq
 	<- excl-exv-step Dstep Dfalse
 	<- false\eq-term Dfalse _ _ Deq.
@@ -285,12 +282,6 @@ step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 	<- excl-exv-step Dstep Dfalse
 	<- false\eq-term Dfalse _ _ Deq.
 
-- : step-unique _ (ss-tup-s1 Dstep) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique _ (ss-tup-s2 Dstep) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
 - : step-unique (ss-beta _) (ss-cont-s _ Dstep _) Deq
 	<- excl-exv-step Dstep Dfalse
 	<- false\eq-term Dfalse _ _ Deq.
@@ -316,12 +307,6 @@ step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
 %%- : step-unique (ss-cont-s cont-pi1 Dstep) (ss-beta beta-pi1) eq-term_.
 - : step-unique ss-let-r ss-let-r eq-term_.
 - : step-unique ss-lett-r ss-lett-r eq-term_.
-- : step-unique (ss-tup-s1 Dstep) (ss-tup-s1 Dstep') Deq'
-	<- step-unique Dstep Dstep' Deq
-	<- eq-cong2 tup Deq eq-term_ Deq'.
-- : step-unique (ss-tup-s2 Dstep) (ss-tup-s2 Dstep') Deq'
-	<- step-unique Dstep Dstep' Deq
-	<- eq-cong2 tup eq-term_ Deq Deq'.
 - : step-unique (ss-cont-s (Dcont : cont F) Dstep eq-term_) (ss-cont-s (Dcont' : cont F) Dstep' eq-term_) Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong F Deq Deq'.

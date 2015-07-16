@@ -50,7 +50,6 @@ reqv-lift-in-lett = ([deqv] (reqv-lett-s2 deqv) ;; reqv-lift-lett4)
 reqv-lett-p = ([deqv] reqv-lett-r ;; deqv ;; reqv-sym (reqv-lett-r)) 
 	: reqv (M Q1 Q2) (M' Q1' Q2') -> reqv (lett (exv (tup Q1 Q2)) M) (lett (exv (tup Q1' Q2')) M').
 
-
 %% RESIDUAL EQUIVALENCE RESPECTS TERM EQUALITY
 reqv-resp : reqv E V -> eq-term E E' -> eq-term V V' -> reqv E' V' -> type.
 %mode reqv-resp +Dred +DeqE +Didty -Dred'.

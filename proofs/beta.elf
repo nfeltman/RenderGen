@@ -36,6 +36,8 @@ cont-inj1 : cont inj1.
 cont-inj2 : cont inj2.
 cont-roll : cont roll.
 cont-unrl : cont unrl.
+cont-tup1 : {E} cont ([x] tup x E).
+cont-tup2 : {V} cont ([x] tup (exv V) x).
 
 
 excl-exv-cont : cont F -> eq-term (exv E') (F E) -> false -> type.
