@@ -112,6 +112,12 @@ false\step** : false -> {E} {V} step** E V -> type.
 step**-unique_ : step* E (exv V) -> step* E (exv V') -> eq-term V V' -> type.
 %mode step**-unique_ +Dpath +Dpath' -Deq.
 - : step**-unique_ step*-id step*-id eq-term_.
+- : step**-unique_ step*-id (step*-step Dstep _) Deq
+	<- excl-exv-step Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step**-unique_ (step*-step Dstep _) step*-id Deq
+	<- excl-exv-step Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
 - : step**-unique_ (step*-step Dstep Dpath) (step*-step Dstep' Dpath') DeqV
 	<- step-unique Dstep' Dstep Deq
 	<- step*/resp Dpath' Deq eq-term_ Dpath''

@@ -16,8 +16,34 @@ beta-roll	: beta (roll (exv V)) (exv (roll V)).
 %worlds (term-block) (beta _ _).
 %unique beta +E -1E'.
 
+excl-exv-beta : beta (exv E) E' -> false -> type.
+%mode excl-exv-beta +Dstep -Dfalse.
+%worlds () (excl-exv-beta _ _).
+%total (Dstep) (excl-exv-beta Dstep _).
+
+
 beta/unique : beta E E1 -> beta E E2 -> eq-term E1 E2 -> type.
 %mode beta/unique +Dstep1 +Dstep2 -Deq.
 - : beta/unique _ _ eq-term_.
 %worlds (term-block) (beta/unique _ _ _).
 %total D (beta/unique D _ _).
+
+
+cont 	: (term L -> term L) -> type.
+cont-pi1 : cont pi1.
+cont-pi2 : cont pi2.
+cont-inj1 : cont inj1.
+cont-inj2 : cont inj2.
+cont-roll : cont roll.
+cont-unrl : cont unrl.
+
+
+excl-exv-cont : cont F -> eq-term (exv E') (F E) -> false -> type.
+%mode excl-exv-cont +Dcont +Deq -Dfalse.
+%worlds () (excl-exv-cont _ _ _).
+%total (Dstep) (excl-exv-cont Dstep _ _).
+%{
+excl-exv-cont : cont ([x] exv (F x)) -> false -> type.
+%mode excl-exv-cont +Dcont -Dfalse.
+%worlds () (excl-exv-cont _ _).
+%total (Dstep) (excl-exv-cont Dstep _).}%

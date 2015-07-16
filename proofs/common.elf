@@ -1,2 +1,2 @@
-false : type.
+false : type. %name false Dfalse.
 %freeze false.
