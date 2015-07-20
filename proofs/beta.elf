@@ -18,6 +18,13 @@ beta-roll	: beta (roll (exv V)) (exv (roll V)).
 %worlds (term-block) (beta _ _).
 %unique beta +E -1E'.
 
+
+beta-resp : beta E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> beta E1' E2' -> type.
+%mode beta-resp +D1 +D2 +D3 -D3.
+- : beta-resp Dbeta eq-term_ eq-term_ Dbeta.
+%worlds (term-block) (beta-resp _ _ _ _).
+%total {} (beta-resp _ _ _ _).
+
 excl-exv-beta : beta (exv E) E' -> false -> type.
 %mode excl-exv-beta +Dstep -Dfalse.
 %worlds () (excl-exv-beta _ _).
@@ -46,13 +53,34 @@ cont-let : cont ([x] let x B).
 cont-lett : cont ([x] lett x B).
 cont-case : cont ([x] case x B1 B2).
 
+beta-cont\eq-exv : cont F -> beta (F E) _ -> eq-term E (exv V) -> type.
+%mode beta-cont\eq-exv +Dcont +Dbeta -Deq.
+- : beta-cont\eq-exv _ _ eq-term_.
+%worlds () (beta-cont\eq-exv _ _ _).
+%total (Dstep) (beta-cont\eq-exv Dstep _ _).
 
 excl-exv-cont : cont F -> eq-term (exv E') (F E) -> false -> type.
 %mode excl-exv-cont +Dcont +Deq -Dfalse.
 %worlds () (excl-exv-cont _ _ _).
 %total (Dstep) (excl-exv-cont Dstep _ _).
+
 %{
 excl-exv-cont : cont ([x] exv (F x)) -> false -> type.
 %mode excl-exv-cont +Dcont -Dfalse.
 %worlds () (excl-exv-cont _ _).
 %total (Dstep) (excl-exv-cont Dstep _).}%
+
+eq-or-val : (term L -> term L) -> (term L -> term L) -> term L -> term L -> type.
+eov-val1 : eq-or-val F F' (exv V) E.
+eov-val2 : eq-or-val F F' E (exv V).
+eov-eq : eq-or-val F F E E.
+
+cont-eq\eq-or-val : cont F -> cont F' -> eq-term (F E) (F' E') -> eq-or-val F F' E E' -> type.
+%mode cont-eq\eq-or-val +Dcont +Dcont' +Deq -Deov.
+- : cont-eq\eq-or-val _ _ _ eov-eq.
+- : cont-eq\eq-or-val (cont-tup1 _) (cont-tup2 _) _ eov-val1.
+- : cont-eq\eq-or-val (cont-tup2 _) (cont-tup1 _) _ eov-val2.
+- : cont-eq\eq-or-val (cont-app1 _) (cont-app2 _) _ eov-val1.
+- : cont-eq\eq-or-val (cont-app2 _) (cont-app1 _) _ eov-val2.
+%worlds () (cont-eq\eq-or-val _ _ _ _).
+%total {} (cont-eq\eq-or-val _ _ _ _).

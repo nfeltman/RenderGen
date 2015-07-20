@@ -9,95 +9,131 @@ ss-cont-s	: step E0 (F E')
 			<- eq-term E0 (F E)
 			<- step E E'
 			<- cont F.
-			
+
+
+step-resp : step E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> step E1' E2' -> type.
+%mode step-resp +D1 +D2 +D3 -D3.
+- : step-resp Dstep eq-term_ eq-term_ Dstep.
+%worlds (term-block) (step-resp _ _ _ _).
+%total {} (step-resp _ _ _ _).
+
+%% BETA PRESERVATION
+ss-beta-pres-ty : of E T -> beta E E' -> of E' T -> type.
+%mode ss-beta-pres-ty +Dstep +Dof -Dof'.
+- : ss-beta-pres-ty (of-pi1 (of-exv (of-tup Dof _))) beta-pi1 (of-exv Dof).
+- : ss-beta-pres-ty (of-pi2 (of-exv (of-tup _ Dof))) beta-pi2 (of-exv Dof).
+- : ss-beta-pres-ty (of-unrl (of-exv (of-roll _ Dof))) beta-unrl (of-exv Dof).
+- : ss-beta-pres-ty (of-case (of-exv (of-inj1 _ DofV)) DofM _) beta-case1 (DofM V DofV).
+- : ss-beta-pres-ty (of-case (of-exv (of-inj2 _ DofV)) _ DofN) beta-case2 (DofN V DofV).
+- : ss-beta-pres-ty (of-app (of-exv (of-lam Dwf DofM)) (of-exv DofE)) beta-app (DofM (lam M) (of-lam Dwf DofM) E DofE).
+- : ss-beta-pres-ty (of-let (of-exv DofE) DofM) beta-let (DofM E DofE).
+- : ss-beta-pres-ty (of-lett (of-exv (of-tup DofE1 DofE2)) DofM) beta-lett (DofM E1 DofE1 E2 DofE2).
+- : ss-beta-pres-ty (of-tup (of-exv Dof1) (of-exv Dof2)) beta-tup (of-exv (of-tup Dof1 Dof2)).
+- : ss-beta-pres-ty (of-inj1 T (of-exv Dof)) beta-inj1 (of-exv (of-inj1 T Dof)).
+- : ss-beta-pres-ty (of-inj2 T (of-exv Dof)) beta-inj2 (of-exv (of-inj2 T Dof)).
+- : ss-beta-pres-ty (of-roll T (of-exv Dof)) beta-roll (of-exv (of-roll T Dof)).
+%worlds () (ss-beta-pres-ty _ _ _).
+%total (Dstep) (ss-beta-pres-ty Dstep _ _).
+
 %% PRESERVATION
 ss-pres-ty : of E T -> step E E' -> of E' T -> type.
-%mode ss-pres-ty +Dstep +Dof -Dof'.
-- : ss-pres-ty (of-pi1 (of-exv (of-tup Dof _))) (ss-beta beta-pi1) (of-exv Dof).
-- : ss-pres-ty (of-pi2 (of-exv (of-tup _ Dof))) (ss-beta beta-pi2) (of-exv Dof).
-- : ss-pres-ty (of-unrl (of-exv (of-roll _ Dof))) (ss-beta beta-unrl) (of-exv Dof).
-- : ss-pres-ty (of-case (of-exv (of-inj1 _ DofV)) DofM _) (ss-beta beta-case1) (DofM V DofV).
-- : ss-pres-ty (of-case (of-exv (of-inj2 _ DofV)) _ DofN) (ss-beta beta-case2) (DofN V DofV).
-- : ss-pres-ty (of-app (of-exv (of-lam Dwf DofM)) (of-exv DofE)) (ss-beta beta-app) (DofM (lam M) (of-lam Dwf DofM) E DofE).
-- : ss-pres-ty (of-let (of-exv DofE) DofM) (ss-beta beta-let) (DofM E DofE).
-- : ss-pres-ty (of-lett (of-exv (of-tup DofE1 DofE2)) DofM) (ss-beta beta-lett) (DofM E1 DofE1 E2 DofE2).
-- : ss-pres-ty (of-tup (of-exv Dof1) (of-exv Dof2)) (ss-beta beta-tup) (of-exv (of-tup Dof1 Dof2)).
-- : ss-pres-ty (of-inj1 T (of-exv Dof)) (ss-beta beta-inj1) (of-exv (of-inj1 T Dof)).
-- : ss-pres-ty (of-inj2 T (of-exv Dof)) (ss-beta beta-inj2) (of-exv (of-inj2 T Dof)).
-- : ss-pres-ty (of-roll T (of-exv Dof)) (ss-beta beta-roll) (of-exv (of-roll T Dof)).
-- : ss-pres-ty (of-tup Dof1 Dof2) (ss-cont-s (cont-tup1 _) Dstep _) (of-tup Dof1' Dof2)
+ss-compat-pres-ty : of (F E) T -> step E E' -> cont F -> of (F E') T -> type.
+%mode ss-pres-ty +Dof +Dstep -Dof'.
+%mode ss-compat-pres-ty +Dof +Dstep +Dcont -Dof'.
+- : ss-compat-pres-ty (of-tup Dof1 Dof2) Dstep (cont-tup1 _) (of-tup Dof1' Dof2)
 	<- ss-pres-ty Dof1 Dstep Dof1'.
-- : ss-pres-ty (of-tup Dof1 Dof2) (ss-cont-s (cont-tup2 _) Dstep _) (of-tup Dof1 Dof2')
+- : ss-compat-pres-ty (of-tup Dof1 Dof2) Dstep (cont-tup2 _) (of-tup Dof1 Dof2')
 	<- ss-pres-ty Dof2 Dstep Dof2'. 
-- : ss-pres-ty (of-pi1 Dof) (ss-cont-s cont-pi1 Dstep _) (of-pi1 Dof')
+- : ss-compat-pres-ty (of-pi1 Dof) Dstep cont-pi1 (of-pi1 Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-pi2 Dof) (ss-cont-s cont-pi2 Dstep _) (of-pi2 Dof')
+- : ss-compat-pres-ty (of-pi2 Dof) Dstep cont-pi2 (of-pi2 Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-roll T Dof) (ss-cont-s cont-roll Dstep _) (of-roll T Dof')
+- : ss-compat-pres-ty (of-roll T Dof) Dstep cont-roll (of-roll T Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-unrl Dof) (ss-cont-s cont-unrl Dstep _) (of-unrl Dof')
+- : ss-compat-pres-ty (of-unrl Dof) Dstep cont-unrl (of-unrl Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-inj1 T Dof) (ss-cont-s cont-inj1 Dstep _) (of-inj1 T Dof')
+- : ss-compat-pres-ty (of-inj1 T Dof) Dstep cont-inj1 (of-inj1 T Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-inj2 T Dof) (ss-cont-s cont-inj2 Dstep _) (of-inj2 T Dof')
+- : ss-compat-pres-ty (of-inj2 T Dof) Dstep cont-inj2 (of-inj2 T Dof')
 	<- ss-pres-ty Dof Dstep Dof'.
-- : ss-pres-ty (of-case DofE DofM DofN) (ss-cont-s cont-case Dstep _) (of-case DofE' DofM DofN) 
+- : ss-compat-pres-ty (of-case DofE DofM DofN) Dstep cont-case (of-case DofE' DofM DofN) 
 	<- ss-pres-ty DofE Dstep DofE'.
-- : ss-pres-ty (of-app Dof1 Dof2) (ss-cont-s (cont-app1 _) Dstep _) (of-app Dof1' Dof2)
+- : ss-compat-pres-ty (of-app Dof1 Dof2) Dstep (cont-app1 _) (of-app Dof1' Dof2)
 	<- ss-pres-ty Dof1 Dstep Dof1'.
-- : ss-pres-ty (of-app Dof1 Dof2) (ss-cont-s (cont-app2 _) Dstep _) (of-app Dof1 Dof2')
+- : ss-compat-pres-ty (of-app Dof1 Dof2) Dstep (cont-app2 _) (of-app Dof1 Dof2')
 	<- ss-pres-ty Dof2 Dstep Dof2'.
-- : ss-pres-ty (of-let DofE DofM) (ss-cont-s cont-let Dstep _) (of-let DofE' DofM) 
+- : ss-compat-pres-ty (of-let DofE DofM) Dstep cont-let (of-let DofE' DofM) 
 	<- ss-pres-ty DofE Dstep DofE'.
-- : ss-pres-ty (of-lett DofE DofM) (ss-cont-s cont-lett Dstep _) (of-lett DofE' DofM) 
+- : ss-compat-pres-ty (of-lett DofE DofM) Dstep cont-lett (of-lett DofE' DofM) 
 	<- ss-pres-ty DofE Dstep DofE'.
-%worlds () (ss-pres-ty _ _ _).
-%total (Dstep) (ss-pres-ty Dstep _ _).
+
+- : ss-pres-ty Dof (ss-beta Dbeta) Dof'
+	<- ss-beta-pres-ty Dof Dbeta Dof'.
+- : ss-pres-ty Dof (ss-cont-s Dcont Dstep _) Dof'
+	<- ss-compat-pres-ty Dof Dstep Dcont Dof'.
+%worlds () (ss-pres-ty _ _ _) (ss-compat-pres-ty _ _ _ _).
+%total (Dstep1 Dstep2) 
+	(ss-pres-ty _ Dstep2 _)
+	(ss-compat-pres-ty _ Dstep1 _ _) .
+
+
+ss-beta-pres-norm : form E comp -> beta E E' -> form E' comp -> type.
+%mode ss-beta-pres-norm +Dof +Dstep -Dof'.
+- : ss-beta-pres-norm (form-pi1 (form-exv (form-tup Dval _))) beta-pi1 (form-exv Dval).
+- : ss-beta-pres-norm (form-pi2 (form-exv (form-tup _ Dval))) beta-pi2 (form-exv Dval).
+- : ss-beta-pres-norm (form-unrl (form-exv (form-roll Dval))) beta-unrl (form-exv Dval).
+- : ss-beta-pres-norm (form-case (form-exv (form-inj1 DvalV)) DcompM _) beta-case1 (DcompM V DvalV).
+- : ss-beta-pres-norm (form-case (form-exv (form-inj2 DvalV)) _ DcompN) beta-case2 (DcompN V DvalV).
+- : ss-beta-pres-norm (form-app (form-exv (form-lam DcompM)) (form-exv DvalE)) beta-app (DcompM (lam M) (form-lam DcompM) E DvalE).
+- : ss-beta-pres-norm (form-let (form-exv DvalE) DcompM) beta-let (DcompM E DvalE).
+- : ss-beta-pres-norm (form-lett (form-exv (form-tup DcompE1 DcompE2)) DcompM) beta-lett (DcompM E1 DcompE1 E2 DcompE2).
+
+- : ss-beta-pres-norm (form-tup (form-exv Dval1) (form-exv Dval2)) beta-tup (form-exv (form-tup Dval1 Dval2)).
+- : ss-beta-pres-norm (form-inj1 (form-exv Dval)) beta-inj1 (form-exv (form-inj1 Dval)).
+- : ss-beta-pres-norm (form-inj2 (form-exv Dval)) beta-inj2 (form-exv (form-inj2 Dval)).
+- : ss-beta-pres-norm (form-roll (form-exv Dval)) beta-roll (form-exv (form-roll Dval)).
+%worlds () (ss-beta-pres-norm _ _ _).
+%total (Dstep) (ss-beta-pres-norm Dstep _ _).
 
 ss-pres-norm : form E comp -> step E E' -> form E' comp -> type.
+ss-compat-pres-norm : form (F E) comp -> step E E' -> cont F -> form (F E') comp -> type.
 %mode ss-pres-norm +Dof +Dstep -Dof'.
-- : ss-pres-norm (form-pi1 (form-exv (form-tup Dval _))) (ss-beta beta-pi1) (form-exv Dval).
-- : ss-pres-norm (form-pi2 (form-exv (form-tup _ Dval))) (ss-beta beta-pi2) (form-exv Dval).
-- : ss-pres-norm (form-unrl (form-exv (form-roll Dval))) (ss-beta beta-unrl) (form-exv Dval).
-- : ss-pres-norm (form-case (form-exv (form-inj1 DvalV)) DcompM _) (ss-beta beta-case1) (DcompM V DvalV).
-- : ss-pres-norm (form-case (form-exv (form-inj2 DvalV)) _ DcompN) (ss-beta beta-case2) (DcompN V DvalV).
-- : ss-pres-norm (form-app (form-exv (form-lam DcompM)) (form-exv DvalE)) (ss-beta beta-app) (DcompM (lam M) (form-lam DcompM) E DvalE).
-- : ss-pres-norm (form-let (form-exv DvalE) DcompM) (ss-beta beta-let) (DcompM E DvalE).
-- : ss-pres-norm (form-lett (form-exv (form-tup DcompE1 DcompE2)) DcompM) (ss-beta beta-lett) (DcompM E1 DcompE1 E2 DcompE2).
-
-- : ss-pres-norm (form-tup (form-exv Dval1) (form-exv Dval2)) (ss-beta beta-tup) (form-exv (form-tup Dval1 Dval2)).
-- : ss-pres-norm (form-inj1 (form-exv Dval)) (ss-beta beta-inj1) (form-exv (form-inj1 Dval)).
-- : ss-pres-norm (form-inj2 (form-exv Dval)) (ss-beta beta-inj2) (form-exv (form-inj2 Dval)).
-- : ss-pres-norm (form-roll (form-exv Dval)) (ss-beta beta-roll) (form-exv (form-roll Dval)).
-
-- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-cont-s (cont-tup1 _) Dstep _) (form-tup Dcomp1' Dcomp2)
+%mode ss-compat-pres-norm +Dof +Dstep +Dcont -Dof'.	
+- : ss-compat-pres-norm (form-tup Dcomp1 Dcomp2) Dstep (cont-tup1 _) (form-tup Dcomp1' Dcomp2)
 	<- ss-pres-norm Dcomp1 Dstep Dcomp1'.
-- : ss-pres-norm (form-tup Dcomp1 Dcomp2) (ss-cont-s (cont-tup2 _) Dstep _) (form-tup Dcomp1 Dcomp2')
+- : ss-compat-pres-norm (form-tup Dcomp1 Dcomp2) Dstep (cont-tup2 _) (form-tup Dcomp1 Dcomp2')
 	<- ss-pres-norm Dcomp2 Dstep Dcomp2'. 
-- : ss-pres-norm (form-pi1 Dcomp) (ss-cont-s cont-pi1 Dstep _) (form-pi1 Dcomp')
+- : ss-compat-pres-norm (form-pi1 Dcomp) Dstep cont-pi1 (form-pi1 Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-pi2 Dcomp) (ss-cont-s cont-pi2 Dstep _) (form-pi2 Dcomp')
+- : ss-compat-pres-norm (form-pi2 Dcomp) Dstep cont-pi2 (form-pi2 Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-roll Dcomp) (ss-cont-s cont-roll Dstep _) (form-roll Dcomp')
+- : ss-compat-pres-norm (form-roll Dcomp) Dstep cont-roll (form-roll Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-unrl Dcomp) (ss-cont-s cont-unrl Dstep _) (form-unrl Dcomp')
+- : ss-compat-pres-norm (form-unrl Dcomp) Dstep cont-unrl (form-unrl Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-inj1 Dcomp) (ss-cont-s cont-inj1 Dstep _) (form-inj1 Dcomp')
+- : ss-compat-pres-norm (form-inj1 Dcomp) Dstep cont-inj1 (form-inj1 Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-inj2 Dcomp) (ss-cont-s cont-inj2 Dstep _) (form-inj2 Dcomp')
+- : ss-compat-pres-norm (form-inj2 Dcomp) Dstep cont-inj2 (form-inj2 Dcomp')
 	<- ss-pres-norm Dcomp Dstep Dcomp'.
-- : ss-pres-norm (form-case DcompE DcompM DcompN) (ss-cont-s cont-case Dstep _) (form-case DcompE' DcompM DcompN) 
+- : ss-compat-pres-norm (form-case DcompE DcompM DcompN) Dstep cont-case (form-case DcompE' DcompM DcompN) 
 	<- ss-pres-norm DcompE Dstep DcompE'.
-- : ss-pres-norm (form-app Dcomp1 Dcomp2) (ss-cont-s (cont-app1 _) Dstep _) (form-app Dcomp1' Dcomp2)
+- : ss-compat-pres-norm (form-app Dcomp1 Dcomp2) Dstep (cont-app1 _) (form-app Dcomp1' Dcomp2)
 	<- ss-pres-norm Dcomp1 Dstep Dcomp1'.
-- : ss-pres-norm (form-app Dcomp1 Dcomp2) (ss-cont-s (cont-app2 _) Dstep _) (form-app Dcomp1 Dcomp2')
+- : ss-compat-pres-norm (form-app Dcomp1 Dcomp2) Dstep (cont-app2 _) (form-app Dcomp1 Dcomp2')
 	<- ss-pres-norm Dcomp2 Dstep Dcomp2'.
-- : ss-pres-norm (form-let DcompE DcompM) (ss-cont-s cont-let Dstep _) (form-let DcompE' DcompM) 
+- : ss-compat-pres-norm (form-let DcompE DcompM) Dstep cont-let (form-let DcompE' DcompM) 
 	<- ss-pres-norm DcompE Dstep DcompE'.
-- : ss-pres-norm (form-lett DcompE DcompM) (ss-cont-s cont-lett Dstep _) (form-lett DcompE' DcompM) 
+- : ss-compat-pres-norm (form-lett DcompE DcompM) Dstep cont-lett (form-lett DcompE' DcompM) 
 	<- ss-pres-norm DcompE Dstep DcompE'.
-%worlds () (ss-pres-norm _ _ _).
-%total (Dstep) (ss-pres-norm Dstep _ _).
+
+- : ss-pres-norm Dcomp (ss-beta Dbeta) Dcomp'
+	<- ss-beta-pres-norm Dcomp Dbeta Dcomp'.
+- : ss-pres-norm Dcomp (ss-cont-s Dcont Dstep _) Dcomp'
+	<- ss-compat-pres-norm Dcomp Dstep Dcont Dcomp'.
+%worlds () (ss-pres-norm _ _ _) (ss-compat-pres-norm _ _ _ _).
+%total (Dstep1 Dstep2) 
+	(ss-pres-norm _ Dstep1 _)
+	(ss-compat-pres-norm _ Dstep2 _ _).
 
 %% VALUE-OR-STEP JUDGEMENT
 vos : term L -> type.
@@ -237,39 +273,45 @@ excl-exv-step : step (exv E) E' -> false -> type.
 %worlds () (excl-exv-step _ _).
 %total (Dstep) (excl-exv-step Dstep _).
 
-
 %% DETERMINISM
-step-unique : step E E1 -> step E E2 -> eq-term E1 E2 -> type.
+step-unique : {s1 : step E E1} {s2 : step E E2} eq-term E1 E2 -> type.
+step-compat-unique : step E1 E1' -> step E2 E2' -> eq-or-val F1 F2 E1 E2 -> eq-term (F1 E1') (F2 E2') -> type.
 %mode step-unique +Dstep1 +Dstep2 -Deq.
+%mode step-compat-unique +Dstep1 +Dstep2 +Deov -Deq.
+
 %% contradiction cases
-- : step-unique (ss-cont-s (cont-tup2 V) _ _) (ss-cont-s (cont-tup1 E2) Dstep _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-cont-s (cont-tup1 E2) Dstep _) (ss-cont-s (cont-tup2 V) _ _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-cont-s (cont-app2 V) _ _) (ss-cont-s (cont-app1 E2) Dstep _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-- : step-unique (ss-cont-s (cont-app1 E2) Dstep _) (ss-cont-s (cont-app2 V) _ _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-
-- : step-unique (ss-cont-s _ Dstep _) (ss-beta _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-
-- : step-unique (ss-beta _) (ss-cont-s _ Dstep _) Deq
-	<- excl-exv-step Dstep Dfalse
-	<- false\eq-term Dfalse _ _ Deq.
-
-%% all reduction cases
-- : step-unique (ss-beta Dbeta) (ss-beta Dbeta') eq-term_.
-
-%% all substep cases
-- : step-unique (ss-cont-s (Dcont : cont F) Dstep eq-term_) (ss-cont-s (Dcont' : cont F) Dstep' eq-term_) Deq'
+- : step-compat-unique Dstep Dstep' (eov-eq : eq-or-val F F E E) Deq'
 	<- step-unique Dstep Dstep' Deq
 	<- eq-cong F Deq Deq'.
+- : step-compat-unique Dstep _ eov-val1 Deq
+	<- excl-exv-step Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step-compat-unique _ Dstep eov-val2 Deq
+	<- excl-exv-step Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
 
-%worlds () (step-unique _ _ _).
-%total (Dstep) (step-unique Dstep _ _).
+- : step-unique (ss-cont-s (Dcont : cont F) (Dstep : step E E') (Deq : eq-term E0 (F E))) (ss-beta (Dbeta : beta E0 _)) Deq''
+	<- beta-resp Dbeta Deq eq-term_ Dbeta'
+	<- beta-cont\eq-exv Dcont Dbeta' (Deq' : eq-term E (exv V))
+	<- step-resp Dstep Deq' eq-term_ Dstep'
+	<- excl-exv-step Dstep' Dfalse
+	<- false\eq-term Dfalse _ _ Deq''.
+
+- : step-unique (ss-beta (Dbeta : beta E0 _)) (ss-cont-s (Dcont : cont F) (Dstep : step E E') (Deq : eq-term E0 (F E))) Deq''
+	<- beta-resp Dbeta Deq eq-term_ Dbeta'
+	<- beta-cont\eq-exv Dcont Dbeta' (Deq' : eq-term E (exv V))
+	<- step-resp Dstep Deq' eq-term_ Dstep'
+	<- excl-exv-step Dstep' Dfalse
+	<- false\eq-term Dfalse _ _ Deq''.
+
+- : step-unique (ss-beta Dbeta) (ss-beta Dbeta') eq-term_.
+
+- : step-unique (ss-cont-s Dcont Dstep _) (ss-cont-s Dcont' Dstep' Deq') DeqFE
+	<- eq-term-trans eq-term_ Deq' Deq3
+	<- cont-eq\eq-or-val Dcont Dcont' Deq3 Deov
+	<- step-compat-unique Dstep Dstep' Deov DeqFE.
+
+%worlds () (step-unique _ _ _) (step-compat-unique _ _ _ _).
+%total (Dstep1 Dstep2) 
+	(step-unique Dstep1 _ _) 
+	(step-compat-unique Dstep2 _ _ _).
