@@ -87,7 +87,7 @@ splr-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 	<- splr-total Dof Dres Dsplr.
 - : splr-total (of^-unrl Dof) (form^unrl-n2 Dres) (splr-unrl Dsplr)
 	<- splr-total Dof Dres Dsplr.
-- : splr-total (of^-case DofE DofM DofN _) (form^case-n2 DresE DresM DresN) (splr-case DsplrE DsplrM DsplrN)
+- : splr-total (of^-case DofE DofM DofN) (form^case-n2 DresE DresM DresN) (splr-case DsplrE DsplrM DsplrN)
 	<- splr-total DofE DresE DsplrE
 	<- splr-total/branch DofM DresM DsplrM
 	<- splr-total/branch DofN DresN DsplrN.
@@ -160,7 +160,7 @@ splg-total/branch2 :
 	<- splg-total Dof Dcomp Dsplg.
 - : splg-total (of^-unrl Dof) (form^unrl-c Dcomp) (splg-unrl Dsplg)
 	<- splg-total Dof Dcomp Dsplg.
-- : splg-total (of^-case DofE DofM DofN _) (form^case-cG DcompE DcompM DcompN) (splg-case DsplgE DsplgM DsplgN)
+- : splg-total (of^-case DofE DofM DofN) (form^case-c DcompE DcompM DcompN _) (splg-case DsplgE DsplgM DsplgN)
 	<- splg-total DofE DcompE DsplgE
 	<- splg-total/branch DofM DcompM DsplgM
 	<- splg-total/branch DofN DcompN DsplgN.
@@ -267,7 +267,7 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- spl2-total Dof Dcomp Dspl.
 - : spl2-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (spl2-inj2 Dspl)
 	<- spl2-total Dof Dcomp Dspl.
-- : spl2-total (of^-case DofE DofM DofN _) (form^case-c2 DcompE DcompM DcompN) (spl2-case DsplrE DsplM DsplN)
+- : spl2-total (of^-case DofE DofM DofN) (form^case-c2 DcompE DcompM DcompN) (spl2-case DsplrE DsplM DsplN)
 	<- spl2-total DofE DcompE DsplrE
 	<- spl2-total/branch DofM DcompM DsplM
 	<- spl2-total/branch DofN DcompN DsplN.

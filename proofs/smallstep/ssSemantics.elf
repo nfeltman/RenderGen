@@ -110,6 +110,8 @@ ls-inj1-s	: lstep (inj1 E) Q ([x] inj1 (E' x))
 			<- lstep E Q E'.
 ls-inj2-s	: lstep (inj2 E) Q ([x] inj2 (E' x))
 			<- lstep E Q E'.
+ls-case-s1	: lstep (case E M N) Q ([x] case (E' x) M N)
+			<- lstep E Q E'.
 ls-roll-s	: lstep (roll E) Q ([x] roll (E' x))
 			<- lstep E Q E'.
 ls-unrl-s	: lstep (unrl E) Q ([x] unrl (E' x))

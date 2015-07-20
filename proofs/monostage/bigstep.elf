@@ -67,6 +67,10 @@ mred/case-pres :
 	<- mred-pres Dred DofE Dcomp DofV Dval.
 - : mred-pres (mred-inj2 Dred) (of-inj2 Dwf DofE) (form-inj2 Dcomp) (of-inj2 Dwf DofV) (form-inj2 Dval)
 	<- mred-pres Dred DofE Dcomp DofV Dval.
+- : mred-pres (mred-roll Dred) (of-roll Dwf DofE) (form-roll Dcomp) (of-roll Dwf DofV) (form-roll Dval)
+	<- mred-pres Dred DofE Dcomp DofV Dval.
+- : mred-pres (mred-unrl Dred) (of-unrl DofE) (form-unrl Dcomp) DofV Dval
+	<- mred-pres Dred DofE Dcomp (of-roll _ DofV) (form-roll Dval).
 - : mred-pres (mred-case DredMN DredE) 
 		(of-case DofE DofM DofN) 
 		(form-case DcompE DcompM DcompN)

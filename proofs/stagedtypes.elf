@@ -57,7 +57,6 @@ of^-inj2	: of^ (inj2 E) (sum T B) W
 				<- of^ E B W
 				<- ty^wf T W.
 of^-case 	: of^ (case E M N) C W
-				<- ground-wor W
 				<- ({x} of^ x B W -> of^ (N x) C W)
 				<- ({x} of^ x A W -> of^ (M x) C W)
 				<- of^ E (sum A B) W.	
@@ -122,7 +121,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- of^-wf Dof DwfA.
 - : of^-wf (of^-inj2 DwfA Dof) (ty^wf-sum DwfA DwfB)
 	<- of^-wf Dof DwfB.
-- : of^-wf (of^-case DofE DofM _ _) Dwf2
+- : of^-wf (of^-case DofE DofM _) Dwf2
 	<- of^-wf DofE (ty^wf-sum Dwf1 _)
 	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-roll Dwf Dof) (ty^wf-rec Dwf)
@@ -246,10 +245,11 @@ form^unrl-c : form^ (unrl E) comp1 W
 form^app-c  : form^ (app E1 E2) comp1 W
 			<- form^ E2 comp1 W
 			<- form^ E1 comp1 W.
-form^case-cG : form^ (case E M N) comp1 worG
-			<- ({x} form^ x norm1 worG -> form^ (N x) comp1 worG)
-			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 worG)
-			<- form^ E comp1 worG.
+form^case-c : form^ (case E M N) comp1 W
+			<- first-stage-wor W
+			<- ({x} form^ x norm1 W -> form^ (N x) comp1 W)
+			<- ({x} form^ x norm1 W -> form^ (M x) comp1 W)
+			<- form^ E comp1 W.
 form^case-c2 : form^ (case E M N) comp1 wor2
 			<- ({x} form^ x vars2 wor2 -> form^ (N x) comp1 wor2)
 			<- ({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2)

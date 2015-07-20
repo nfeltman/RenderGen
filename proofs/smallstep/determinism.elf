@@ -27,6 +27,8 @@ excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-inj2-s Dstep) (ls-inj2-s Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-case-s1 Dstep) (ls-case-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s1 Dstep) (ls-app-s1 Dstep') Dfalse
 	<- excl-mstep-lstep Dstep Dstep' Dfalse.
 - : excl-mstep-lstep (ms-app-s2 Dstep) (ls-app-s2 Dstep') Dfalse
@@ -71,6 +73,9 @@ lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (
 - : lstep/unique (ls-inj2-s Dstep) (ls-inj2-s Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong inj2 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-case-s1 Dstep) (ls-case-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/case (DeqE x) ([x] eq-term_) ([x] eq-term_) (DeqE' x).
 - : lstep/unique (ls-roll-s Dstep) (ls-roll-s Dstep') DeqQ DeqE'
 	<- lstep/unique Dstep Dstep' DeqQ DeqE
 	<- {x} eq-cong roll (DeqE x) (DeqE' x).

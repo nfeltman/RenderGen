@@ -7,6 +7,8 @@ beta-unrl	: beta (unrl (exv (roll E))) (exv E).
 beta-app	: beta (app (exv (lam M)) (exv E)) (M (lam M) E).
 beta-case1	: beta (case (exv (inj1 E)) M N) (M E).
 beta-case2	: beta (case (exv (inj2 E)) M N) (N E).
+beta-let	: beta (let (exv V) M) (M V).
+beta-lett	: beta (lett (exv (tup V1 V2)) M) (M V1 V2).
 
 beta-tup	: beta (tup (exv V1) (exv V2)) (exv (tup V1 V2)).
 beta-inj1	: beta (inj1 (exv V)) (exv (inj1 V)).
@@ -38,6 +40,11 @@ cont-roll : cont roll.
 cont-unrl : cont unrl.
 cont-tup1 : {E} cont ([x] tup x E).
 cont-tup2 : {V} cont ([x] tup (exv V) x).
+cont-app1 : {E} cont ([x] app x E).
+cont-app2 : {V} cont ([x] app (exv V) x).
+cont-let : cont ([x] let x B).
+cont-lett : cont ([x] lett x B).
+cont-case : cont ([x] case x B1 B2).
 
 
 excl-exv-cont : cont F -> eq-term (exv E') (F E) -> false -> type.
