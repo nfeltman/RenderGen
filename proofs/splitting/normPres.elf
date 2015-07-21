@@ -132,6 +132,10 @@ spl1-npres/branchG :
 	({x}{x1} splitGv x x1 -> split1 (E x) (C x1) R) -> 
 	({x1} form x1 norm -> form (C x1) comp) -> ({l} form l norm -> form (R l) comp) -> type.
 %mode spl1-npres/branchG +Dspl -DcompP -DcompR.
+spl1-npres/branch : 
+	({x}{x1}{x2} splitval x x1 x2 -> split1 (E x) (C x1) (R x2)) -> 
+	({x1} form x1 norm -> form (C x1) comp) -> ({l} form l norm -> {x2} form x2 norm -> form (R l x2) comp) -> type.
+%mode spl1-npres/branch +Dspl -DcompP -DcompR.
 
 %% BRANCHES
 
@@ -141,6 +145,9 @@ spl1-npres/branchG :
 - : spl1-npres/branchG Dspl (Dcomp1 ztup) (Dcomp2 ztup ztup form-ztup)
 	<- {x}{x1}{s}{vx1} splGv-npres s vx1 -> 
 		spl1-npres (Dspl x x1 s) (Dcomp1 x x1 vx1) (Dcomp2 x x1 vx1).
+- : spl1-npres/branch Dspl (Dcomp1 ztup ztup form-ztup) (Dcomp2 ztup ztup form-ztup)
+	<- {x}{x1}{x2}{s}{vx1}{vx2} splv-npres s vx1 vx2 -> 
+		spl1-npres (Dspl x x1 x2 s) (Dcomp1 x x2 vx2 x1 vx1) (Dcomp2 x x1 vx1 x2 vx2).
 
 %% NOT BRANCHES
 
@@ -181,16 +188,26 @@ spl1-npres/branchG :
 		(form-lett Dcomp1 ([_][y1][_][z1] (form-tup (form-pi2 (form-exv y1)) (form-exv z1))))
 		([l][vl] form-pi2 (Dcomp2 l vl))
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
-- : spl1-npres (spl1-roll Dspl) 
-		(form-lett Dcomp1 ([_][y1][_][z1] form-exv (form-tup (form-roll y1) z1)))
-		Dcomp2
-	<- spl1-npres Dspl Dcomp1 Dcomp2.
 - : spl1-npres (spl1-inj1 Dspl) 
 		(form-lett Dcomp1 ([_][y1][_][z1] form-exv (form-tup (form-inj1 y1) z1)))
 		Dcomp2
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
 - : spl1-npres (spl1-inj2 Dspl) 
 		(form-lett Dcomp1 ([_][y1][_][z1] form-exv (form-tup (form-inj2 y1) z1)))
+		Dcomp2
+	<- spl1-npres Dspl Dcomp1 Dcomp2.
+- : spl1-npres (spl1-case DsplE DsplM DsplN) 
+		(form-lett DcompE1 ([_][x23][_][z1]
+			form-case (form-exv x23)
+			([x][vx] (form-lett (DcompM1 x vx) ([_][y][_][z2] (form-exv (form-tup y (form-tup z1 (form-inj1 z2)))))))
+			([x][vx] (form-lett (DcompN1 x vx) ([_][y][_][z3] (form-exv (form-tup y (form-tup z1 (form-inj2 z3)))))))
+		))
+		([_][l] form-lett (form-exv l) ([l1][vl1][_][l23] form-let (DcompE2 l1 vl1) ([z][vz] (form-case (form-exv l23) (DcompM2 z vz) (DcompN2 z vz)))))
+	<- spl1-npres DsplE DcompE1 DcompE2
+	<- spl1-npres/branch DsplM DcompM1 DcompM2
+	<- spl1-npres/branch DsplN DcompN1 DcompN2.
+- : spl1-npres (spl1-roll Dspl) 
+		(form-lett Dcomp1 ([_][y1][_][z1] form-exv (form-tup (form-roll y1) z1)))
 		Dcomp2
 	<- spl1-npres Dspl Dcomp1 Dcomp2.
 - : spl1-npres (spl1-unrl Dspl) 
@@ -274,12 +291,14 @@ spl1-npres/branchG :
 %worlds (splitting-npres-block) 
 	(splv-npres _ _ _) 
 	(spl1-npres _ _ _) 
+	(spl1-npres/branch _ _ _)
 	(spl1-npres/branchG _ _ _)
 	(spl2-npres _ _ _) 
 	(spl2-npres/branch _ _ _).
-%total (D1 D2 D3 D4 D5) 
+%total (D1 D2 D3 D4 D5 D6) 
 	(splv-npres D1 _ _) 
 	(spl1-npres D2 _ _) 
-	(spl1-npres/branchG D3 _ _)
-	(spl2-npres D4 _ _) 
-	(spl2-npres/branch D5 _ _). 
+	(spl1-npres/branch D3 _ _)
+	(spl1-npres/branchG D4 _ _)
+	(spl2-npres D5 _ _) 
+	(spl2-npres/branch D6 _ _). 
