@@ -155,6 +155,16 @@ spl1-letg	: split1 (letg E M)
 					([l] lett (exv l) ([l1] [l2] let (R1 l1) ([_] R2 l2)))
 			<- ({x}{x1} splitGv x x1 -> split1 (M x) (C2 x1) R2)
 			<- split1 E C1 R1.
+spl1-case	: split1 (case E M N) 
+					(lett C1 ([x] [z1] 
+						case (exv x)
+						([xx] lett (C2 xx) ([y] [z2] exv (tup y (tup z1 (inj1 z2)))))
+						([xx] lett (C3 xx) ([y] [z3] exv (tup y (tup z1 (inj2 z3)))))
+					))
+					([l] lett (exv l) ([l1] [l23] let (R1 l1) ([z] case (exv l23) (R2 z) (R3 z))))
+			<- ({x}{x1}{x2} splitval x x1 x2 -> split1 (N x) (C3 x1) (R3 x2))
+			<- ({x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (C2 x1) (R2 x2))
+			<- split1 E C1 R1.
 spl1-caseg	: split1 (caseg E M N) 
 					(lett C1 ([x] [z1] 
 						case (exv x)

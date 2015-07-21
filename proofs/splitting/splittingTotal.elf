@@ -185,6 +185,9 @@ spl2-total/branch : ({x} of^ x B wor2 -> of^ (E x) A wor2) -> ({x} form^ x vars2
 spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm1 worG -> form^ (E x) comp1 wor1) -> 
 	({x}{x1} splitGv x x1 -> split1 (E x) (C x1) R) -> type.
 %mode spl1-total/branchG +Dof +Dcomp -Dspl.
+spl1-total/branch : ({x} of^ x B wor1 -> of^ (E x) A wor1) -> ({x} form^ x norm1 wor1 -> form^ (E x) comp1 wor1) -> 
+	({x}{x1}{x2} splitval x x1 x2 -> split1 (E x) (C x1) (R x2)) -> type.
+%mode spl1-total/branch +Dof +Dcomp -Dspl.
 
 %% SPLITTING VALUES IS TOTAL
 - : splv-total of^-ztup _ splv-ztup.
@@ -222,6 +225,12 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- ({l} lang-indep2 neq-lang_02 neq-lang_12 (R l) ([x][x1] DeqR x x1 l ))
 	<- ({x}{x1}{s} split1-resp (Dspl x x1 s) eq-term_ (DeqC x x1) (DeqR x x1) (Dspl' x x1 s)).
 
+- : spl1-total/branch Dof Dcomp Dspl'
+	<- ({x}{x1}{x2} {dof} {vx} {dspl} splv-total dof vx dspl ->
+		spl1-total (Dof x dof) (Dcomp x vx) (Dspl x x1 x2 dspl : split1 (E x) (C x1 x x2) ([l] R l x2 x x1)))
+	<- ({x1} lang-indep2 neq-lang_01 neq-lang_21 (C x1) ([x][x2] DeqC x x1 x2))
+	<- ({l}{x2} lang-indep2 neq-lang_02 neq-lang_12 (R l x2) ([x][x1] DeqR x x1 x2 l))
+	<- ({x}{x1}{x2}{s} split1-resp (Dspl x x1 x2 s) eq-term_ (DeqC x x1 x2) (DeqR x x1 x2) (Dspl' x x1 x2 s)).
 
 %% MAIN PROOF OF TOTALITY
 - : spl1-total (of^-tup Dof1 Dof2) (form^tup-c Dcomp1 Dcomp2) (spl1-tup Dspl1 Dspl2)
@@ -235,6 +244,10 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 	<- spl1-total Dof Dcomp Dspl.
 - : spl1-total (of^-inj2 _ Dof) (form^inj2-c Dcomp) (spl1-inj2 Dspl)
 	<- spl1-total Dof Dcomp Dspl.
+- : spl1-total (of^-case DofE DofM DofN) (form^case-c DcompE DcompM DcompN _) (spl1-case DsplrE DsplM DsplN)
+	<- spl1-total DofE DcompE DsplrE
+	<- spl1-total/branch DofM DcompM DsplM
+	<- spl1-total/branch DofN DcompN DsplN.
 - : spl1-total (of^-roll _ Dof) (form^roll-c Dcomp) (spl1-roll Dspl)
 	<- spl1-total Dof Dcomp Dspl.
 - : spl1-total (of^-unrl Dof) (form^unrl-c Dcomp) (spl1-unrl Dspl)
@@ -296,12 +309,14 @@ spl1-total/branchG : ({x} of^ x B worG -> of^ (E x) A wor1) -> ({x} form^ x norm
 %worlds (total-block) 
 	(spl1-total _ _ _) 
 	(spl1-total/branchG _ _ _) 
+	(spl1-total/branch _ _ _) 
 	(spl2-total _ _ _) 
 	(spl2-total/branch _ _ _) 
 	(splv-total _ _ _).
-%total (D1 D2 D3 D4 D5) 
+%total (D1 D2 D3 D4 D5 D6) 
 	(spl1-total D1 _ _) 
 	(spl1-total/branchG D2 _ _) 
-	(spl2-total D3 _ _) 
-	(spl2-total/branch D4 _ _) 
-	(splv-total D5 _ _).
+	(spl1-total/branch D3 _ _) 
+	(spl2-total D4 _ _) 
+	(spl2-total/branch D5 _ _) 
+	(splv-total D6 _ _).
