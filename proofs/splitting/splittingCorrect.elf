@@ -136,10 +136,10 @@ split1-unique/strengthen :
 %total {} (split1-unique/strengthen _ _ _ _).
 
 split1-unique/strengthen/branch : 
-	({y}{y1}{y2} splitval y y1 y2 -> split1 (E y) (C y1) (R y2)) -> 
-	({x}{x2} splitvar2 x x2 -> {y}{y1}{y2} splitval y y1 y2 -> split1 (E y) (C' y1) ([l] R' l x2 y2)) -> 
-	({y1} eq-term (C y1) (C' y1)) -> 
-	({l}{y2}{x2} eq-term (R y2 l) (R' l x2 y2)) -> type.
+	({x}{x1}{x2} splitval x x1 x2 -> split1 (E x) (C x1) (R x2)) -> 
+	({y}{y2} splitvar2 y y2 -> {x}{x1}{x2} splitval x x1 x2 -> split1 (E x) (C' x1) ([l] R' l y2 x2)) -> 
+	({x1} eq-term (C x1) (C' x1)) -> 
+	({l}{x2}{y2} eq-term (R x2 l) (R' l y2 x2)) -> type.
 %mode split1-unique/strengthen/branch +DsplE +DsplE' -Deq1 -Deq2.
 - : split1-unique/strengthen/branch Dspl Dspl' (DeqC ztup ztup ztup ztup) (DeqR ztup ztup ztup)
 	<- ({x}{x2}{s}{y}{y1}{y2}{ys} split1-unique (Dspl y y1 y2 ys) (Dspl' x x2 s y y1 y2 ys) (DeqC x x2 y y2 y1) ([l] DeqR x y y1 l y2 x2)).
@@ -192,12 +192,18 @@ lc : split1 E C R ->
 - : lc (spl1-inj2 Dspl) DsplQ  ([x][x2][s] spl1-inj2 (Dspl' x x2 s)) (ls-inj2-s Dstep) Deq' Deqv
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
-- : lc (spl1-case Dspl DsplM DsplN) DsplQ 
-		([x][x2][s] spl1-case (Dspl' x x2 s) (DsplM' x x2 s) (DsplN' x x2 s)) 
+- : 
+	{Dstep : lstep E Q E'}
+	{Dspl  : split1 E C R}
+	{Dspl' : {y}{y2} splitvar2 y y2 -> split1 (E' y) C' (R' y2)}
+	{DsplM  : {x}{x1}{x2} splitval x x1 x2 -> split1 (M x) (CM x1) (RM x2)}
+
+	lc (spl1-case Dspl DsplM DsplN) DsplQ 
+		([y][y2][sy] spl1-case (Dspl' y y2 sy) (DsplM' y y2 sy) (DsplN' y y2 sy)) 
 		(ls-case-s1 Dstep) 
 		Deq' 
 		([l] reqv-lift-in-lett 
-			([l1][l23] reqv-lift-let DeqvMN))
+			([l1][l23] reqv-let-s (Deqv l1) ([_] reqv-id) ;; reqv-lift-let ([z][y] DeqvMN l23 z y)))
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- split1-unique/strengthen/branch DsplM DsplM' DeqM DeqvM
 	<- split1-unique/strengthen/branch DsplN DsplN' DeqN DeqvN
@@ -205,10 +211,10 @@ lc : split1 E C R ->
 	<- ({z}{x} eq-cong/lett (DeqN x) ([_][_] eq-term_) (DeqN' z x))
 	<- ({x}{z} eq-cong/case eq-term_ (DeqM' z) (DeqN' z) (DeqMN x z))
 	<- eq-cong/lett Deq DeqMN Deq'
-	<- ({l}{z} eq-cong/case eq-term_ (DeqvM l z) (DeqvN l z) (DeqvMN l z)).
+	<- ({z}{l23}{y} eq-cong/case eq-term_ ([x] DeqvM z x y) ([x] DeqvN z x y) (DeqvMN l23 z y)).
 
 
-					([l] lett (exv l) ([l1] [l23] let (R1 l1) ([z] case (exv l23) (R2 z) (R3 z))))
+				%%	([l] lett (exv l) ([l1] [l23] let (R1 l1) ([z] case (exv l23) (R2 z) (R3 z))))
 
 - : lc (spl1-roll Dspl) DsplQ  ([x][x2][s] spl1-roll (Dspl' x x2 s)) (ls-roll-s Dstep) Deq' Deqv
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv

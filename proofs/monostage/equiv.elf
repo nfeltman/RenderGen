@@ -35,14 +35,14 @@ reqv-lett-s2 : ({l1}{l2} reqv (M l1 l2) (M' l1 l2)) -> reqv (lett E M) (lett E M
 reqv-lift-base : reqv Q (let Q ([x] (exv x))).
 reqv-lift-pi1 : reqv (pi1 (let Q M)) (let Q ([x] (pi1 (M x)))).
 reqv-lift-pi2 : reqv (pi2 (let Q M)) (let Q ([x] (pi2 (M x)))).
-reqv-lift-tup1 : ({x} eq-term E (E' x)) -> reqv (tup (let Q M) E) (let Q ([x] (tup (M x) (E' x)))).
-reqv-lift-tup2 : ({x} eq-term (exv E) (exv (E' x))) -> reqv (tup (exv E) (let Q M)) (let Q ([x] (tup (exv (E' x)) (M x)))).
-reqv-lift-app1 : ({x} eq-term E (E' x)) -> reqv (app (let Q M) E) (let Q ([x] (app (M x) (E' x)))).
-reqv-lift-app2 : ({x} eq-term (exv E) (exv (E' x))) ->  reqv (app (exv E) (let Q M)) (let Q ([x] (app (exv (E' x)) (M x)))).
-reqv-lift-chain : ({x} eq-term E (E' x)) -> reqv (let (let Q M) ([_] E)) (let Q ([x] let (M x) ([_] E' x))).
-reqv-lift-let : ({y}{x} eq-term (E y) (E' x y)) -> reqv (let (let Q M) E) (let Q ([x] let (M x) (E' x))).
-reqv-lift-case : ({y}{x} eq-term (B1 y) (B1' x y)) -> ({y}{x} eq-term (B2 y) (B2' x y)) -> 
-			reqv (case (let Q M) B1 B2) (let Q ([x] case (M x) (B1' x) (B2' x))).
+reqv-lift-tup1 : ({y} eq-term E (E' y)) -> reqv (tup (let Q M) E) (let Q ([y] (tup (M y) (E' y)))).
+reqv-lift-tup2 : ({y} eq-term (exv E) (exv (E' y))) -> reqv (tup (exv E) (let Q M)) (let Q ([y] (tup (exv (E' y)) (M y)))).
+reqv-lift-app1 : ({y} eq-term E (E' y)) -> reqv (app (let Q M) E) (let Q ([y] (app (M y) (E' y)))).
+reqv-lift-app2 : ({y} eq-term (exv E) (exv (E' y))) ->  reqv (app (exv E) (let Q M)) (let Q ([y] (app (exv (E' y)) (M y)))).
+reqv-lift-chain : ({y} eq-term E (E' y)) -> reqv (let (let Q M) ([_] E)) (let Q ([y] let (M y) ([_] E' y))).
+reqv-lift-let : ({x}{y} eq-term (E x) (E' y x)) -> reqv (let (let Q M) E) (let Q ([y] let (M y) (E' y))).
+reqv-lift-case : ({x}{y} eq-term (B1 x) (B1' y x)) -> ({x}{y} eq-term (B2 x) (B2' y x)) -> 
+			reqv (case (let Q M) B1 B2) (let Q ([y] case (M y) (B1' y) (B2' y))).
 
 reqv-lift-lett4 : reqv (lett (exv E) ([x][y] let Q ([z] M z x y))) (let Q ([z] lett (exv E) (M z))).
 
