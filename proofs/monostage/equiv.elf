@@ -40,6 +40,7 @@ reqv-lift-tup2 : ({x} eq-term (exv E) (exv (E' x))) -> reqv (tup (exv E) (let Q 
 reqv-lift-app1 : ({x} eq-term E (E' x)) -> reqv (app (let Q M) E) (let Q ([x] (app (M x) (E' x)))).
 reqv-lift-app2 : ({x} eq-term (exv E) (exv (E' x))) ->  reqv (app (exv E) (let Q M)) (let Q ([x] (app (exv (E' x)) (M x)))).
 reqv-lift-chain : ({x} eq-term E (E' x)) -> reqv (let (let Q M) ([_] E)) (let Q ([x] let (M x) ([_] E' x))).
+reqv-lift-let : ({y}{x} eq-term (E y) (E' x y)) -> reqv (let (let Q M) E) (let Q ([x] let (M x) (E' x))).
 reqv-lift-case : ({y}{x} eq-term (B1 y) (B1' x y)) -> ({y}{x} eq-term (B2 y) (B2' x y)) -> 
 			reqv (case (let Q M) B1 B2) (let Q ([x] case (M x) (B1' x) (B2' x))).
 

@@ -43,7 +43,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	(splg-unrl (splg-exv (splgv-roll Dsplg))) 
 	(mred-unrl mred-exv).
 
-- : scG (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN _) (form^case-cG (form^exv (form^inj1-n DvalE)) DcompM DcompN)
+- : scG (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj1-n DvalE)) DcompM DcompN _)
 	Dsplg3 Dred3 (ms-beta beta-case1 _)
 	(splg-case (splg-exv (splgv-inj1 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj1 Dred3') mred-exv)
@@ -52,7 +52,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 	<- splg-total/branch DofN DcompN DsplN
 	<- splitG-eval-resp Dsplg3 (DsplM E I DsplE) Dred3 Dred3'.
 
-- : scG (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN _) (form^case-cG (form^exv (form^inj2-n DvalE)) DcompM DcompN)
+- : scG (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj2-n DvalE)) DcompM DcompN _)
 	Dsplg3 Dred3 (ms-beta beta-case2 _)
 	(splg-case (splg-exv (splgv-inj2 DsplE)) DsplM DsplN) 
 	(mred-case (mred/case-inj2 Dred3') mred-exv)
@@ -96,7 +96,7 @@ scG : of^ E A worG -> form^ E comp1 worG -> splitG E' I' -> mred I' V -> mstep w
 		(ms-inj2-s Dstep) 
 		(splg-inj2 Dsplg) (mred-inj2 Dred)
 	<- scG Dof Dcomp Dsplg' Dred' Dstep Dsplg Dred.
-- : scG (of^-case Dof _ _ _) (form^case-cG Dcomp _ _) 
+- : scG (of^-case Dof _ _) (form^case-c Dcomp _ _ _) 
 		(splg-case Dsplg' DsplgM DsplgN) (mred-case DredMN Dred') 
 		(ms-case-s1 Dstep) 
 		(splg-case Dsplg DsplgM DsplgN) (mred-case DredMN Dred)
@@ -134,6 +134,17 @@ split1-unique/strengthen :
 	<- ({x}{x2}{s} split1-unique Dspl (Dspl' x x2 s) (DeqC x x2) ([l] DeqR x l x2)).
 %worlds (splitting-block) (split1-unique/strengthen _ _ _ _).
 %total {} (split1-unique/strengthen _ _ _ _).
+
+split1-unique/strengthen/branch : 
+	({y}{y1}{y2} splitval y y1 y2 -> split1 (E y) (C y1) (R y2)) -> 
+	({x}{x2} splitvar2 x x2 -> {y}{y1}{y2} splitval y y1 y2 -> split1 (E y) (C' y1) ([l] R' l x2 y2)) -> 
+	({y1} eq-term (C y1) (C' y1)) -> 
+	({l}{y2}{x2} eq-term (R y2 l) (R' l x2 y2)) -> type.
+%mode split1-unique/strengthen/branch +DsplE +DsplE' -Deq1 -Deq2.
+- : split1-unique/strengthen/branch Dspl Dspl' (DeqC ztup ztup ztup ztup) (DeqR ztup ztup ztup)
+	<- ({x}{x2}{s}{y}{y1}{y2}{ys} split1-unique (Dspl y y1 y2 ys) (Dspl' x x2 s y y1 y2 ys) (DeqC x x2 y y2 y1) ([l] DeqR x y y1 l y2 x2)).
+%worlds (splitting-block) (split1-unique/strengthen/branch _ _ _ _).
+%total {} (split1-unique/strengthen/branch _ _ _ _).
 
 split1-unique/strengthen/branchG : 
 	({y}{y1} splitGv y y1 -> split1 (E y) (C y1) R) -> 
@@ -181,6 +192,24 @@ lc : split1 E C R ->
 - : lc (spl1-inj2 Dspl) DsplQ  ([x][x2][s] spl1-inj2 (Dspl' x x2 s)) (ls-inj2-s Dstep) Deq' Deqv
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+- : lc (spl1-case Dspl DsplM DsplN) DsplQ 
+		([x][x2][s] spl1-case (Dspl' x x2 s) (DsplM' x x2 s) (DsplN' x x2 s)) 
+		(ls-case-s1 Dstep) 
+		Deq' 
+		([l] reqv-lift-in-lett 
+			([l1][l23] reqv-lift-let DeqvMN))
+	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
+	<- split1-unique/strengthen/branch DsplM DsplM' DeqM DeqvM
+	<- split1-unique/strengthen/branch DsplN DsplN' DeqN DeqvN
+	<- ({z}{x} eq-cong/lett (DeqM x) ([_][_] eq-term_) (DeqM' z x))
+	<- ({z}{x} eq-cong/lett (DeqN x) ([_][_] eq-term_) (DeqN' z x))
+	<- ({x}{z} eq-cong/case eq-term_ (DeqM' z) (DeqN' z) (DeqMN x z))
+	<- eq-cong/lett Deq DeqMN Deq'
+	<- ({l}{z} eq-cong/case eq-term_ (DeqvM l z) (DeqvN l z) (DeqvMN l z)).
+
+
+					([l] lett (exv l) ([l1] [l23] let (R1 l1) ([z] case (exv l23) (R2 z) (R3 z))))
+
 - : lc (spl1-roll Dspl) DsplQ  ([x][x2][s] spl1-roll (Dspl' x x2 s)) (ls-roll-s Dstep) Deq' Deqv
 	<- lc Dspl DsplQ Dspl' Dstep Deq Deqv
 	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
