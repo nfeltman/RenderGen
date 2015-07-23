@@ -406,13 +406,11 @@ sc1/beta : of^ E A wor1 -> form^ E comp1 wor1 ->
 	<- splv-total Dof1 Dcomp1 Dspl1.
 
 - : sc1/beta Dof Dcomp Dspl' Dred'
-	(Dstep : beta (app (exv (lam M)) (exv E)) V) 
+	(beta-app) 
 	Dspl Dred 
 	(conv-tup conv-tupzz (conv-roll Dconv)) Dconv
 	Deqv
-	<- beta/unique Dstep beta-app (Deq : eq-term V (M (lam M) E))
-	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
-	<- sc1/app-r Dof Dcomp Dspl'' Dred' Dspl Dred Dconv Deqv.
+	<- sc1/app-r Dof Dcomp Dspl' Dred' Dspl Dred Dconv Deqv.
 
 - : sc1/beta _ _ (spl1-exv Dspl) mred-exv
 	beta-unrl
@@ -422,27 +420,23 @@ sc1/beta : of^ E A wor1 -> form^ E comp1 wor1 ->
 
 - : sc1/beta (of^-case (of^-exv (of^-inj1 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj1-n DvalE)) DcompM DcompN _)
 	Dspl' Dred'
-	(Dstep : beta (case (exv (inj1 E)) M N) ME)
+	beta-case1
 	(spl1-case (spl1-exv (splv-inj1 DsplE)) DsplM DsplN)
 	(mred-lett (mred-case (mred/case-inj1 (mred-lett mred-exv Dred)) mred-exv) mred-exv)
 	(conv-tup conv-ztup (conv-inj1 Dconv)) Dconv 
 	(reqv-lett-r ;; reqv-let-r ;; reqv-case-r1 ;; Deqv)
-	<- beta/unique Dstep beta-case1 (Deq : eq-term ME (M E))
-	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
 	<- spl1-total/branch DofN DcompN DsplN
-	<- sc1/branch DofM DcompM DofE DvalE Dspl'' Dred' DsplM DsplE Dred Dconv Deqv.
+	<- sc1/branch DofM DcompM DofE DvalE Dspl' Dred' DsplM DsplE Dred Dconv Deqv.
 
 - : sc1/beta (of^-case (of^-exv (of^-inj2 _ DofE)) DofM DofN) (form^case-c (form^exv (form^inj2-n DvalE)) DcompM DcompN _)
 	Dspl' Dred'
-	(Dstep : beta (case (exv (inj2 E)) M N) NE)
+	beta-case2
 	(spl1-case (spl1-exv (splv-inj2 DsplE)) DsplM DsplN)
 	(mred-lett (mred-case (mred/case-inj2 (mred-lett mred-exv Dred)) mred-exv) mred-exv)
 	(conv-tup conv-ztup (conv-inj2 Dconv)) Dconv 
 	(reqv-lett-r ;; reqv-let-r ;; reqv-case-r2 ;; Deqv)
-	<- beta/unique Dstep beta-case2 (Deq : eq-term NE (N E))
-	<- split1-resp Dspl' Deq eq-term_ ([x] eq-term_) Dspl''
 	<- spl1-total/branch DofM DcompM DsplM
-	<- sc1/branch DofN DcompN DofE DvalE Dspl'' Dred' DsplN DsplE Dred Dconv Deqv.
+	<- sc1/branch DofN DcompN DofE DvalE Dspl' Dred' DsplN DsplE Dred Dconv Deqv.
 
 - : sc1/beta (of^-inj1 _ (of^-exv Dof)) (form^inj1-c (form^exv Dcomp))
 		(spl1-exv (splv-inj1 (Dsplv : splitval V I1 Q)))
