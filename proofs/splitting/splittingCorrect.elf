@@ -885,6 +885,32 @@ sc1/case-s :
 	<- lang-convert_12-total B23 (Dconv23 : lang-convert B23 lang2 BB23)
 	<- conv-resp (conv-tup Dconv1' Dconv23) Deq eq-term_ Dconv'.
 
+- : sc1 (of^-case Dof1 _ _) (form^case-c Dcomp1 _ _ _)
+		(spl1-case (Dspl1' : split1 E' C1' R1') Dspl2 Dspl3)
+		(mred-lett 
+			(mred-case 
+				(DredC23' : mred/case
+					V1
+					([xx] lett (C2 xx) ([y] [z2] exv (tup y (tup B1' (inj1 z2)))))
+					([xx] lett (C3 xx) ([y] [z3] exv (tup y (tup B1' (inj2 z3)))))
+					(tup I' B'))
+				(DredI1 : mred (exv I1) V1)
+			)
+			(DredC1' : mred C1' (tup I1 B1')))
+		(ms-case-s1 Dstep)
+		(spl1-case Dspl1 Dspl2 Dspl3)
+		(mred-lett (mred-case DredC23 DredI1) DredC1)
+		(conv-tup Dconv1 Dconv23) Dconv'
+		(reqv-lett-p (reqv-let-s Deqv ([x] reqv-id)))
+	<- sc1 Dof1 Dcomp1 Dspl1' DredC1' Dstep 
+		(Dspl1 : split1 _ C1 R1) 
+		(DredC1 : mred C1 (tup I1 B1)) 
+		(Dconv1 : lang-convert B1 lang2 BB1) (Dconv1' : lang-convert B1' lang2 BB1')
+		(Deqv : reqv (R1 BB1) (R1' BB1'))
+	<- sc1/case-s DredC23' _ (Deq : eq-term (tup B1' B23) B') DredC23
+	<- lang-convert_12-total B23 (Dconv23 : lang-convert B23 lang2 BB23)
+	<- conv-resp (conv-tup Dconv1' Dconv23) Deq eq-term_ Dconv'.
+
 %% STAGE TWO DONENESS MARKING
 - : sc2 _ _ (spl2-exv (splr-tup Dsplr1 Dsplr2)) mred-exv
 		ms-tup-d
