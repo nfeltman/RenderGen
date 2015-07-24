@@ -70,32 +70,32 @@ eq-term_ : eq-term E E.
 %% FALSE YIELDS ANY EQUALITY
 false\eq-term : false -> {E} {E'} eq-term E E' -> type.
 %mode false\eq-term +E +E' +Dfalse -Deq.
-%worlds (term-block) (false\eq-term _ _ _ _).
+%worlds (general-term-block) (false\eq-term _ _ _ _).
 %total {} (false\eq-term _ _ _ _).
 
 eq-term-sym : eq-term A B -> eq-term B A -> type.
 %mode eq-term-sym +D1 -D2.
 - : eq-term-sym eq-term_ eq-term_.
-%worlds (term-block) (eq-term-sym _ _).
+%worlds (general-term-block) (eq-term-sym _ _).
 %total {} (eq-term-sym _ _).
 
 eq-term-trans : eq-term A B -> eq-term B C -> eq-term A C -> type.
 %mode eq-term-trans +D1 +D2 -D3.
 - : eq-term-trans eq-term_ eq-term_ eq-term_.
-%worlds (term-block) (eq-term-trans _ _ _).
+%worlds (general-term-block) (eq-term-trans _ _ _).
 %total {} (eq-term-trans _ _ _).
 
 %% TERM EQUALITY IS A CONGRUENCE
 eq-cong/lam : ({x}{y} eq-term (M x y) (M' x y)) -> eq-term (lam M) (lam M') -> type.
 %mode eq-cong/lam +Deq -Deq'.
 - : eq-cong/lam ([x][y] eq-term_) eq-term_.
-%worlds (term-block) (eq-cong/lam _ _).
+%worlds (general-term-block) (eq-cong/lam _ _).
 %total {} (eq-cong/lam _ _).
 
 eq-cong/fix : ({x} eq-term (M x) (M' x)) -> eq-term (fix M) (fix M') -> type.
 %mode eq-cong/fix +Deq -Deq'.
 - : eq-cong/fix ([x] eq-term_) eq-term_.
-%worlds (term-block) (eq-cong/fix _ _).
+%worlds (general-term-block) (eq-cong/fix _ _).
 %total {} (eq-cong/fix _ _).
 
 eq-cong/case : eq-term E E' -> 
@@ -104,7 +104,7 @@ eq-cong/case : eq-term E E' ->
         eq-term (case E M N) (case E' M' N') -> type.
 %mode eq-cong/case +Deq +Deq1 +Deq2 -Deq'.
 - : eq-cong/case eq-term_ ([x] eq-term_) ([x] eq-term_) eq-term_.
-%worlds (term-block) (eq-cong/case _ _ _ _).
+%worlds (general-term-block) (eq-cong/case _ _ _ _).
 %total {} (eq-cong/case _ _ _ _).
 
 eq-cong/caseg : eq-term E E' -> 
@@ -113,7 +113,7 @@ eq-cong/caseg : eq-term E E' ->
         eq-term (caseg E M N) (caseg E' M' N') -> type.
 %mode eq-cong/caseg +Deq +Deq1 +Deq2 -Deq'.
 - : eq-cong/caseg eq-term_ ([x] eq-term_) ([x] eq-term_) eq-term_.
-%worlds (term-block) (eq-cong/caseg _ _ _ _).
+%worlds (general-term-block) (eq-cong/caseg _ _ _ _).
 %total {} (eq-cong/caseg _ _ _ _).
 
 eq-cong/1 : {F : (term L -> term L) -> term L} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
@@ -125,19 +125,19 @@ eq-cong/1 : {F : (term L -> term L) -> term L} ({x} eq-term (M x) (M' x)) -> eq-
 eq-cong/let : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (let E1 E2) (let E1' E2') -> type.
 %mode eq-cong/let +Deq +E -Deq'.
 - : eq-cong/let eq-term_ _ eq-term_.
-%worlds (term-block) (eq-cong/let _ _ _).
+%worlds (general-term-block) (eq-cong/let _ _ _).
 %total {} (eq-cong/let _ _ _).
 
 eq-cong/letg : eq-term E1 E1' -> ({x} eq-term (E2 x) (E2' x)) -> eq-term (letg E1 E2) (letg E1' E2') -> type.
 %mode eq-cong/letg +Deq +E -Deq'.
 - : eq-cong/letg eq-term_ _ eq-term_.
-%worlds (term-block) (eq-cong/letg _ _ _).
+%worlds (general-term-block) (eq-cong/letg _ _ _).
 %total {} (eq-cong/letg _ _ _).
 
 eq-cong/lett : eq-term E1 E1' -> ({x}{y} eq-term (E2 x y) (E2' x y)) -> eq-term (lett E1 E2) (lett E1' E2') -> type.
 %mode eq-cong/lett +Deq +E -Deq'.
 - : eq-cong/lett eq-term_ _ eq-term_.
-%worlds (term-block) (eq-cong/lett _ _ _).
+%worlds (general-term-block) (eq-cong/lett _ _ _).
 %total {} (eq-cong/lett _ _ _).
 
 eq-cong : {F : term L -> term L} eq-term E E' -> eq-term (F E) (F E') -> type.
@@ -149,7 +149,7 @@ eq-cong : {F : term L -> term L} eq-term E E' -> eq-term (F E) (F E') -> type.
 eq-cong2 : {F : term L -> term L -> term L} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
 %mode eq-cong2 +F +Deq1 +De2 -Deq'.
 - : eq-cong2 _ eq-term_ eq-term_ eq-term_.
-%worlds (term-block) (eq-cong2 _ _ _ _).
+%worlds (general-term-block) (eq-cong2 _ _ _ _).
 %total {} (eq-cong2 _ _ _ _).
 
 eq-cong-hole : ({x:term L} eq-term (M x : term L) (M' x)) ->  eq-term E E' -> eq-term (M E) (M' E') -> type.
@@ -178,16 +178,28 @@ eq-cong/1/1 : {F : (term L -> term L) -> (term L -> term L) -> term L}
 
 %% TERM EQUALITY IS WHATEVER THE OPPOSITE OF A CONGRUENCE IS
 
+eq-gnoc/pi1 : eq-term (pi1 E) (pi1 E') -> eq-term E E' ->  type.
+%mode eq-gnoc/pi1 +Deq -Deq'.
+- : eq-gnoc/pi1 eq-term_ eq-term_.
+%worlds (general-term-block) (eq-gnoc/pi1 _ _).
+%total {} (eq-gnoc/pi1 _ _).
+
+eq-gnoc : {F : term L -> term L} eq-term (F E) (F E') -> eq-term E E' ->  type.
+%mode eq-gnoc +F +Deq -Deq'.
+- : eq-gnoc F (eq-term_ : eq-term (F E) (F E)) eq-term_.
+%worlds (general-term-block) (eq-gnoc _ _ _).
+%total {} (eq-gnoc _ _ _).
+
 eq-gnoc/tup : eq-term (tup E1 E2) (tup E1' E2') -> eq-term E1 E1' -> eq-term E2 E2' ->  type.
 %mode eq-gnoc/tup +Deq1 -De2 -Deq'.
 - : eq-gnoc/tup eq-term_ eq-term_ eq-term_.
-%worlds (term-block) (eq-gnoc/tup _ _ _).
+%worlds (general-term-block) (eq-gnoc/tup _ _ _).
 %total {} (eq-gnoc/tup _ _ _).
 
 eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x}{y} eq-term (M x y) (M' x y)) -> type.
 %mode eq-gnoc/lam +Deq1 -Deq'.
 - : eq-gnoc/lam eq-term_ ([x][y] eq-term_).
-%worlds (term-block) (eq-gnoc/lam _ _).
+%worlds (general-term-block) (eq-gnoc/lam _ _).
 %total {} (eq-gnoc/lam _ _).
 
 
@@ -349,66 +361,174 @@ lang-indep4 :
 %worlds (term-block) (lang-indep4 _ _ _ _ _ _).
 %total (D) (lang-indep4 _ _ _ _ D _).
 
-%{
-convert-hole : {M : ({L1} term L1) -> {L2} term L2} {N : {L} term L -> term L} ({x : {L'} term L'}{L} eq-term (M x L) (N L (x L))) -> type.
-%mode convert-hole +M -N -Deq.
+specialize-eq-branch : {M : term lang1 -> term lang1} ({x : {l : lang} term l} eq-term (M (x lang1)) (G (x lang1))) -> ({x : term lang1} eq-term (M x) (G x)) -> type.
+%mode specialize-eq-branch +M +Deq -Deq'.
 
-- : convert-hole ([xf] M) ([l][x] M l) ([xf][l] eq-term_).
-- : convert-hole ([xf][l] pi1 (M xf l)) ([l][x] pi1 (N l x)) Deq'
-    <- convert-hole M N Deq
-    <- {xf : {L'} term L'}{l : lang} eq-cong pi1 (Deq xf l) (Deq' xf l).
-- : convert-hole ([xf][l] pi2 (M xf l)) ([l][x] pi2 (N l x)) Deq'
-    <- convert-hole M N Deq
-    <- {xf : {L'} term L'}{l : lang} eq-cong pi2 (Deq xf l) (Deq' xf l).
+- : specialize-eq-branch ([x] x) _ ([x] eq-term_).
+- : specialize-eq-branch ([x] ztup) _ ([x] eq-term_).
+- : specialize-eq-branch ([x] pi1 (E x)) Deq' DeqG'
+    <- ({x} eq-gnoc/pi1 (Deq' x) (Deq x))
+    <- specialize-eq-branch E Deq DeqG
+    <- ({x} eq-cong pi1 (DeqG x) (DeqG' x)).
+- : specialize-eq-branch ([x] pi2 (E x)) Deq' DeqG'
+    <- ({x} eq-gnoc/pi2 (Deq' x) (Deq x))
+    <- specialize-eq-branch E Deq DeqG
+    <- ({x} eq-cong pi2 (DeqG x) (DeqG' x)).
 
-- : convert-hole ([xf][l] lam ([y : term l] M y xf l)) ([l][x] lam ([y] N l x y)) Deq'
-    <- ({y : {L'} term L'} convert-hole ([xf][l] M (y l) xf l) ([l][x] N* l x y) ([xf][l] Deq xf l y))
-    <- ({l}{x:term l} convert-hole (N* l x) (N l x) )
-    <- {xf : {L'} term L'}{l : lang} eq-cong/lam (Deq xf l) (Deq' xf l).
+%worlds () (specialize-eq-branch _ _ _).
+%total (D) (specialize-eq-branch D _ _).
 
-%worlds () (convert-hole _ _ _).
-%total (D) (convert-hole D _ _).
 
-lang-convert_12-total : {E : term lang1} {F : {L} term L} eq-term E (F lang1) -> type.
-%mode lang-convert_12-total +E -F -Deq.
-- : lang-convert_12-total ztup ([l] ztup) eq-term_.
-- : lang-convert_12-total (tup E1 E2) ([l] tup (F1 l) (F2 l)) Deq
-    <- lang-convert_12-total E1 F1 Deq1
-    <- lang-convert_12-total E2 F2 Deq2
-    <- eq-cong2 tup Deq1 Deq2 Deq.
-- : lang-convert_12-total (pi1 E) ([l] pi1 (F l)) Deq'
-    <- lang-convert_12-total E F Deq
+
+
+specialize-hole : {M : ({l} term l) -> term L} {N : term L -> term L} ({x : {l} term l} eq-term (M x) (N (x L))) -> type.
+%mode specialize-hole +M -N -Deq.
+specialize-hole/branch : {M : ({l} term l) -> term L -> term L} {N : term L -> term L -> term L} ({x : {l} term l}{y} eq-term (M x y) (N (x L) y)) -> type.
+%mode specialize-hole/branch +M -N -Deq.
+specialize-hole/branch2 : {M : ({l} term l) -> term L -> term L -> term L} {N : term L -> term L -> term L -> term L} ({x : {l} term l}{y}{z} eq-term (M x y z) (N (x L) y z)) -> type.
+%mode specialize-hole/branch2 +M -N -Deq.
+
+- : specialize-hole/branch M N Deq
+    <- {y} specialize-hole ([x] M x y) ([x] N x y) ([x] Deq x y).
+- : specialize-hole/branch2 M N Deq
+    <- {y}{z} specialize-hole ([x] M x y z) ([x] N x y z) ([x] Deq x y z).
+
+- : specialize-hole ([xf] xf L) ([x] x) ([xf] eq-term_).
+- : specialize-hole ([xf] E) ([x] E) ([xf] eq-term_).
+- : specialize-hole ([xf] pi1 (M xf)) ([x] pi1 (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong pi1 (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] pi2 (M xf)) ([x] pi2 (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong pi2 (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] inj1 (M xf)) ([x] inj1 (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong inj1 (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] inj2 (M xf)) ([x] inj2 (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong inj2 (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] roll (M xf)) ([x] roll (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong roll (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] unrl (M xf)) ([x] unrl (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong unrl (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] next (M xf)) ([x] next (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong next (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] prev (M xf)) ([x] prev (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong prev (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] grnd (M xf)) ([x] grnd (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong grnd (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] exv (M xf)) ([x] exv (N x)) Deq'
+    <- specialize-hole M N Deq
+    <- {xf} eq-cong exv (Deq xf) (Deq' xf).
+
+- : specialize-hole ([xf] tup (M1 xf) (M2 xf)) ([x] tup (N1 x) (N2 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole M2 N2 Deq2
+    <- {xf} eq-cong2 tup (Deq1 xf) (Deq2 xf) (Deq' xf).
+- : specialize-hole ([xf] app (M1 xf) (M2 xf)) ([x] app (N1 x) (N2 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole M2 N2 Deq2
+    <- {xf} eq-cong2 app (Deq1 xf) (Deq2 xf) (Deq' xf).
+
+- : specialize-hole ([xf] fix (M xf)) ([x] fix (N x)) Deq'
+    <- specialize-hole/branch M N Deq
+    <- {xf} eq-cong/fix (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] let (M1 xf) (M2 xf)) ([x] let (N1 x) (N2 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole/branch M2 N2 Deq2
+    <- {xf} eq-cong/let (Deq1 xf) (Deq2 xf) (Deq' xf).
+- : specialize-hole ([xf] letg (M1 xf) (M2 xf)) ([x] letg (N1 x) (N2 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole/branch M2 N2 Deq2
+    <- {xf} eq-cong/letg (Deq1 xf) (Deq2 xf) (Deq' xf).
+- : specialize-hole ([xf] case (M1 xf) (M2 xf) (M3 xf)) ([x] case (N1 x) (N2 x) (N3 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole/branch M2 N2 Deq2
+    <- specialize-hole/branch M3 N3 Deq3
+    <- {xf} eq-cong/case (Deq1 xf) (Deq2 xf) (Deq3 xf) (Deq' xf).
+- : specialize-hole ([xf] caseg (M1 xf) (M2 xf) (M3 xf)) ([x] caseg (N1 x) (N2 x) (N3 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole/branch M2 N2 Deq2
+    <- specialize-hole/branch M3 N3 Deq3
+    <- {xf} eq-cong/caseg (Deq1 xf) (Deq2 xf) (Deq3 xf) (Deq' xf).
+
+- : specialize-hole ([xf] lam (M xf)) ([x] lam (N x)) Deq'
+    <- specialize-hole/branch2 M N Deq
+    <- {xf} eq-cong/lam (Deq xf) (Deq' xf).
+- : specialize-hole ([xf] lett (M1 xf) (M2 xf)) ([x] lett (N1 x) (N2 x)) Deq'
+    <- specialize-hole M1 N1 Deq1
+    <- specialize-hole/branch2 M2 N2 Deq2
+    <- {xf} eq-cong/lett (Deq1 xf) (Deq2 xf) (Deq' xf).
+%worlds (general-term-block) (specialize-hole _ _ _) (specialize-hole/branch _ _ _) (specialize-hole/branch2 _ _ _).
+%total (D E F) (specialize-hole D _ _) (specialize-hole/branch E _ _) (specialize-hole/branch2 F _ _).
+
+generalize : {E : term lang1} {F : {l} term l} eq-term E (F lang1) -> type.
+%mode generalize +E -F -Deq.
+generalize/branch : {M : term lang1 -> term lang1} {F : {l} term l -> term l} ({x} eq-term (M x) (F lang1 x)) -> type.
+%mode generalize/branch +E -F -Deq.
+
+- : {M : term lang1 -> term lang1} {F : {l} ({l2} term l2) -> term l} {G : {l} term l -> term l} 
+    {DeqMF : {xf : {l} term l} eq-term (M (xf lang1)) (F lang1 xf)} 
+    {DeqFG : {l}{xf : {l2} term l2} eq-term (F l xf) (G l (xf l))} 
+    {DeqMG : {xf : {l} term l} eq-term (M (xf lang1)) (G lang1 (xf lang1))}
+    generalize/branch M G _
+    <- ({xf : {l} term l} generalize (xf lang1) xf eq-term_ ->
+        generalize (M (xf lang1)) ([l] F l xf) (DeqMF xf : eq-term (M (xf lang1)) (F lang1 xf)))
+    <- ({l} specialize-hole (F l) (G l) ([x] DeqFG l x))
+    <- {xf} eq-term-trans (DeqMF xf) (DeqFG lang1 xf) (DeqMG xf).
+
+- : generalize ztup ([l] ztup) eq-term_.
+- : generalize (pi1 E) ([l] pi1 (F l)) Deq'
+    <- generalize E F Deq
     <- eq-cong pi1 Deq Deq'.
-- : lang-convert_12-total (pi2 E) ([l] pi2 (F l)) Deq'
-    <- lang-convert_12-total E F Deq
+- : generalize (pi2 E) ([l] pi2 (F l)) Deq'
+    <- generalize E F Deq
     <- eq-cong pi2 Deq Deq'.
-- : lang-convert_12-total (lam M) ([l] lam ([x : term l] MF l ))
-    <- {xf : {L'} term L'} {L : lang} lang-convert_12-total (xf lang1) xf eq-term_ -> 
-      lang-convert_12-total (M (xf lang1)) ([l] MF (xf l)) (Deq xf).
-- : lang-convert_12-total (app E1 E2) (conv-gen2 ([l] app) Dconv1' Dconv2')
-    <- lang-convert_12-total E2 Dconv2'
-    <- lang-convert_12-total E1 Dconv1'.
-- : lang-convert_12-total (let E M) (conv-let Dconv' DconvM)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
-        lang-convert_12-total (M x) (DconvM x x2 convx))
-    <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (lett E M) (conv-lett Dconv' DconvM)
-    <- ({x}{x2}{convx : lang-convert x x2} lang-convert_12-total x convx -> 
-       {y}{y2}{convy : lang-convert y y2} lang-convert_12-total y convy ->  
-       lang-convert_12-total (M x y) (DconvM x x2 convx y y2 convy))
-    <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (next E) (conv-gen1 ([l] next) Dconv')
-    <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (prev E) (conv-gen1 ([l] prev) Dconv')
-    <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (grnd E) (conv-gen1 ([l] grnd) Dconv')
-    <- lang-convert_12-total E Dconv'.
-- : lang-convert_12-total (exv E) (conv-gen1 ([l] exv) Dconv')
-    <- lang-convert_12-total E Dconv'.
-%block convert-total-block : block {x1 : term lang1} {x2 : term lang2} {Dconv : lang-convert x1 x2} {_ : lang-convert_12-total x1 Dconv}.
-%worlds (convert-total-block) (lang-convert_12-total _ _ _).
-%total (D) (lang-convert_12-total D _ _).
-}%
+- : generalize (inj1 E) ([l] inj1 (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong inj1 Deq Deq'.
+- : generalize (inj2 E) ([l] inj2 (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong inj2 Deq Deq'.
+- : generalize (roll E) ([l] roll (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong roll Deq Deq'.
+- : generalize (unrl E) ([l] unrl (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong unrl Deq Deq'.
+- : generalize (prev E) ([l] prev (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong prev Deq Deq'.
+- : generalize (next E) ([l] next (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong next Deq Deq'.
+- : generalize (grnd E) ([l] grnd (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong grnd Deq Deq'.
+- : generalize (prev E) ([l] prev (F l)) Deq'
+    <- generalize E F Deq
+    <- eq-cong prev Deq Deq'.
+- : generalize (tup E1 E2) ([l] tup (F1 l) (F2 l)) Deq
+    <- generalize E1 F1 Deq1
+    <- generalize E2 F2 Deq2
+    <- eq-cong2 tup Deq1 Deq2 Deq.
+- : generalize (app E1 E2) ([l] app (F1 l) (F2 l)) Deq
+    <- generalize E1 F1 Deq1
+    <- generalize E2 F2 Deq2
+    <- eq-cong2 app Deq1 Deq2 Deq.
+- : generalize (let E M) ([l] let (F1 l) (F2 l)) Deq'
+    <- generalize E F1 Deq1
+    <- generalize/branch M F2 Deq2
+    <- eq-cong/let Deq1 Deq2 Deq'.
+%%block convert-total-block : block {x1 : term lang1} {x2 : term lang2} {Dconv : lang-convert x1 x2} {_ : generalize x1 Dconv}.
+%worlds () (generalize _ _ _) (generalize/branch _ _ _).
+%total (D E) (generalize D _ _) (generalize/branch E _ _).
+
 
 
 %% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
