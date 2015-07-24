@@ -1,0 +1,20 @@
+
+
+big=small/beta : mred E' V -> beta E E' -> mred E V -> type.
+%mode big=small/beta +Dred' +Dbeta -Dred.
+
+- : big=small/beta _ beta-pi1 (mred-pi1 mred-exv).
+- : big=small/beta _ beta-pi2 (mred-pi2 mred-exv).
+- : big=small/beta _ beta-unrl (mred-unrl mred-exv).
+- : big=small/beta Dred beta-app (mred-app Dred mred-exv mred-exv).
+- : big=small/beta Dred beta-case1 (mred-case (mred/case-inj1 Dred) mred-exv).
+- : big=small/beta Dred beta-case2 (mred-case (mred/case-inj2 Dred) mred-exv).
+- : big=small/beta Dred beta-let (mred-let Dred mred-exv).
+- : big=small/beta Dred beta-lett (mred-lett Dred mred-exv).
+- : big=small/beta _ beta-tup (mred-tup mred-exv mred-exv).
+- : big=small/beta _ beta-inj1 (mred-inj1 mred-exv).
+- : big=small/beta _ beta-inj2 (mred-inj2 mred-exv).
+- : big=small/beta _ beta-roll (mred-roll mred-exv).
+
+%worlds () (big=small/beta _ _ _).
+%total (Dstep) (big=small/beta Dstep _ _).
