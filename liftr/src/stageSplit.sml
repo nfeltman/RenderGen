@@ -17,7 +17,8 @@ fun a ` b = a b
 val PPtuple = LambdaPSF.P o S.Ptuple
 val PPvar = LambdaPSF.P o S.Pvar
 
-fun convertMonoPattern (Lambda12.PM p) = LambdaPSF.P ` S.mapPattern convertMonoPattern p
+fun convertMonoPattern (Lambda12.P p) = LambdaPSF.P ` S.mapPattern convertMonoPattern p
+  | convertMonoPattern _ = raise InvariantViolation
 fun splitPattern1 (Lambda12.P p) = LambdaPSF.P ` S.mapPattern splitPattern1 p
   | splitPattern1 (Lambda12.Pmono p) = convertMonoPattern p
   | splitPattern1 (Lambda12.Pnext p) = LambdaPSF.P (S.Ptuple [])
@@ -176,7 +177,7 @@ exception Oops
 val coerce1 = coerce
 
 (* assume here that the expression already type-checks *)
-fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 = 
+fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 = 
 	let
 		val (t,exp) = Typecheck12.Checker1.typeCheckSpecial gamma stageSplit1 exp
 		fun split (a,b) = b
@@ -341,17 +342,19 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		  NoPrec1 (e,r) => NoPrec1 (e, r)
 		| WithPrec1 (e, (x, r)) => WithPrec1 (e, (x, r)) )
 	end
-  | stageSplit1 gamma (E1next e) =
+  | stageSplit1 gamma (L12stage expr) =
+  	case expr of
+	  E1next e =>
 		let
 			val (t,res) = stageSplit2 gamma e
 		in
-			(T1fut t,
+			(Tfut t,
 			case res of
 			  NoPrec2 r => NoPrec1 (Eunit, r)
 			| WithPrec2 (p,b) => WithPrec1 (Splittable ([], Eunit, p),b)
 			)
 		end
-  | stageSplit1 gamma (E1hold e) =
+	| E1hold e =>
 		let
 			val (link, pi) = freshPi ()
 			val (t,res) = (stageSplit1 gamma e)
@@ -363,32 +366,33 @@ fun stageSplit1 gamma (E1 exp) : type1 * stage1Part splitResult1 =
 		in
 			(Typecheck12.handleHold t,splitAnswer)
 		end
-  | stageSplit1 gamma (E1mono e) = 
+	| E1mono e => 
 		let
-			fun promotePattern (PM p) = LambdaPSF.P ` S.mapPattern promotePattern p
-			fun promoteToPSF (EM e) = E(S.mapExpr promoteToPSF (fn _ => ()) promotePattern e)
+			fun promoteToPSF (L12core e) = E(S.mapExpr promoteToPSF (fn _ => ()) convertMonoPattern e)
+			  | promoteToPSF (L12stage _) = raise InvariantViolation
 			val ty = Typecheck12.typeCheckM gamma e
 		in
-			(T1now ty, NoPrec1(promoteToPSF e, Eunit))
+			(Tnow ty, NoPrec1(promoteToPSF e, Eunit))
 		end
-  | stageSplit1 gamma (E1pushPrim e) = 
+	| E1pushPrim e => 
 		let
 			val (t, res) = stageSplit1 gamma e
-			val newT = Typecheck12.TypeFeatures1.makeprim ` Typecheck12.TypeFeatures2.unprim ` Typecheck12.unnow ` t
+			val newT = Typecheck12.TypeFeatures1.makeprim ` Typecheck12.TypeFeatures1.unprim ` Typecheck12.unnow ` t
 		in 
 			(newT, res)
 		end
-  | stageSplit1 gamma (E1pushSum e) = 
+	| E1pushSum e => 
 		let
 			val (t, res) = stageSplit1 gamma e
-			val newT = Typecheck12.TypeFeatures1.makesum ` map T1now ` Typecheck12.TypeFeatures2.unsum ` Typecheck12.unnow ` t
+			val newT = Typecheck12.TypeFeatures1.makesum ` map Tnow ` Typecheck12.TypeFeatures1.unsum ` Typecheck12.unnow ` t
 		in
 			(newT, res)
 		end
+	| E2prev _ => raise InvariantViolation
 
-and stageSplit2 gamma (E2 exp) : type2 * splitResult2 = 
+and stageSplit2 gamma (L12core exp) : type12 * splitResult2 = 
 	let
-		val (t,exp2) = Typecheck12.Checker2.typeCheckSpecial gamma stageSplit2 exp
+		val (t,exp2) = Typecheck12.Checker1.typeCheckSpecial gamma stageSplit2 exp
 		fun split (a,b) = b
 		fun merge1 (NoPrec2 r) f = NoPrec2 (f r)
 		  | merge1 (WithPrec2 (c,(l,r))) f = WithPrec2 (c,(l,f r))
@@ -419,13 +423,12 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 			| many => case unzip many of (ps,ls) => WithPrec2 (Etuple ps, (PPtuple ls, f rs)) )
 		
 		fun mergeList results f = finalize f (foldr h ([],[]) results)
-		fun promotePattern (PM p) = LambdaPSF.P ` S.mapPattern promotePattern p
 	in
 		(t,
 		case exp2 of 
 		  S.Fvar v => NoPrec2 (Evar v)
 		| S.SEdata (DataFrag.EprimVal p) => NoPrec2 (Eprim p)
-		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (promotePattern x,r)))
+		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertMonoPattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
 		| S.SEprod (BranchlessFrag.Etuple es) => mergeList (map split es) Etuple
 		| S.SEprod (BranchlessFrag.Epi (i, e)) => merge1 (split e) (fn r => Epi (i, r))
@@ -434,23 +437,23 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 		| S.SEdata (DataFrag.Ecase (e,bs)) => 
 			let
 				val (xs, es) = unzip bs
-				val xs = map promotePattern xs
+				val xs = map convertMonoPattern xs
 				fun f (r::rs) = Ecase (r, zip id xs rs Oops)
 				  | f [] = raise Oops
 			in
 				mergeList (map split (e :: es)) f
 			end
 		| S.SEdata (DataFrag.Ebinop (bo,e1,e2)) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
-		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(promotePattern x,b)))
+		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertMonoPattern x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
-		| S.Ffix (_,_,(x,e)) => merge1 (split e) (fn r => Efix ((),(),(promotePattern x,r)))
+		| S.Ffix (_,_,(x,e)) => merge1 (split e) (fn r => Efix ((),(),(convertMonoPattern x,r)))
 		| S.SEdata (DataFrag.Eerror t) => NoPrec2 (Eerror ())
 		)
 	end
-  | stageSplit2 gamma (E2prev e) = 
+  | stageSplit2 gamma (L12stage (E2prev e)) = 
 		let
-			val (t,res) = stageSplit1 gamma e: type1 * stage1Part splitResult1
+			val (t,res) = stageSplit1 gamma e: type12 * stage1Part splitResult1
 		in
 		(Typecheck12.unfut t,
 		case res of
@@ -459,6 +462,7 @@ and stageSplit2 gamma (E2 exp) : type2 * splitResult2 =
 		| WithPrec1 (Opaque c, lr) => WithPrec2 (Epi (1, c),lr)
 		)
 		end
+  | stageSplit2 gamma (L12stage _) = raise InvariantViolation
 end
 end
 end

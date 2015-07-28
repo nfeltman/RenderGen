@@ -87,25 +87,21 @@ fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex =
 	end
 	
 structure S = Lambda12
-fun convertPatternM G (S.PM p) = convertSourcePatternv convertPatternM G p
 fun convertPattern12 G (S.P p) = convertSourcePatternv convertPattern12 G p
-  | convertPattern12 G (S.Pmono p) = let val (p,G) = convertPatternM G p in (Pbrace ("mono", p), G) end
-  | convertPattern12 G (S.Pnext p) = let val (p,G) = convertPatternM G p in (Pbrace ("next", p), G) end
-fun convertTyStage1 (S.T1 t) = convertSourceTypes convertTyStage1 t
-  | convertTyStage1 (S.T1fut t) = EprimApp("$", convertTyStage2 t)
-  | convertTyStage1 (S.T1now t) = EprimApp("^", convertTyStage2 t)
-and convertTyStage2 (S.T2 t) = convertSourceTypes convertTyStage2 t
-fun convertStage1v G (S.E1 e) = convertSource G convertStage1v convertTyStage1 convertPattern12 e
-  | convertStage1v G (S.E1mono e) = EbraceApp("mono", convertStageMv G e)
-  | convertStage1v G (S.E1next e) = EbraceApp("next", convertStage2v G e)
-  | convertStage1v G (S.E1hold e) = EprimApp("holdInt", convertStage1v G e)
-  | convertStage1v G (S.E1pushPrim e) = EprimApp("push", convertStage1v G e)
-  | convertStage1v G (S.E1pushSum e) = EprimApp("pushS", convertStage1v G e)
-and convertStage2v G (S.E2 e) = convertSource G convertStage2v convertTyStage2 convertPatternM e
-  | convertStage2v G (S.E2prev e) = EbraceApp("prev", convertStage1v G e)
-and convertStageMv G (S.EM e) = convertSource G convertStageMv convertTyStage2 convertPatternM e
+  | convertPattern12 G (S.Pmono p) = let val (p,G) = convertPattern12 G p in (Pbrace ("mono", p), G) end
+  | convertPattern12 G (S.Pnext p) = let val (p,G) = convertPattern12 G p in (Pbrace ("next", p), G) end
+fun convertTyStage12 (S.Tcore t) = convertSourceTypes convertTyStage12 t
+  | convertTyStage12 (S.Tfut t) = EprimApp("$", convertTyStage12 t)
+  | convertTyStage12 (S.Tnow t) = EprimApp("^", convertTyStage12 t)
+fun convertStage1v G (S.L12core e) = convertSource G convertStage1v convertTyStage12 convertPattern12 e
+  | convertStage1v G (S.L12stage (S.E1mono e)) = EbraceApp("mono", convertStage1v G e)
+  | convertStage1v G (S.L12stage (S.E1next e)) = EbraceApp("next", convertStage1v G e)
+  | convertStage1v G (S.L12stage (S.E1hold e)) = EprimApp("holdInt", convertStage1v G e)
+  | convertStage1v G (S.L12stage (S.E1pushPrim e)) = EprimApp("push", convertStage1v G e)
+  | convertStage1v G (S.L12stage (S.E1pushSum e)) = EprimApp("pushS", convertStage1v G e)
+  | convertStage1v G (S.L12stage (S.E2prev e)) = EbraceApp("prev", convertStage1v G e)
   
-fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") convertPatternM e
+fun convertDiagv G (DiagonalSemantics.E e) = convertSource G convertDiagv (fn _ => Eatom "_") convertPattern12 e
 
 fun convertPatternPSF G (LambdaPSF.P p) = convertSourcePatternv convertPatternPSF G p
 fun convertPSFv G (LambdaPSF.E e) = convertSource G convertPSFv (fn () => Eatom "_") convertPatternPSF e
@@ -127,8 +123,7 @@ fun convertPSFBranch (x,e) =
 		(p,convertPSFv G e) 
 	end
 
-val convertStage1 = convertStage1v (NumDict.empty, MainDict.empty)
-val convertStage2 = convertStage2v (NumDict.empty, MainDict.empty)
+val convertL12 = convertStage1v (NumDict.empty, MainDict.empty)
 val convertDiag = convertDiagv (NumDict.empty, MainDict.empty)
 val convertPSF = convertPSFv (NumDict.empty, MainDict.empty)
 

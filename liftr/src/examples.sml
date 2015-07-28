@@ -9,12 +9,12 @@ open ErasureSemantics
 structure Comp = ValueComparison
 
 datatype progSource = Literal | FileName
-datatype testLevel = NONE | SAME | EXACT of value1
-val ansI = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vint
-val ansNI = EXACT o V1next o VM o ValuesBase.VFprim o Prims.Vint
-val ansB = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vbool
-val ansNB = EXACT o V1next o VM o ValuesBase.VFprim o Prims.Vbool
-val ansS = EXACT o V1mono o VM o ValuesBase.VFprim o Prims.Vstr
+datatype testLevel = NONE | SAME | EXACT of value
+val ansI = EXACT o V1mono o V1 o ValuesBase.VFprim o Prims.Vint
+val ansNI = EXACT o V1next o V1 o ValuesBase.VFprim o Prims.Vint
+val ansB = EXACT o V1mono o V1 o ValuesBase.VFprim o Prims.Vbool
+val ansNB = EXACT o V1next o V1 o ValuesBase.VFprim o Prims.Vbool
+val ansS = EXACT o V1mono o V1 o ValuesBase.VFprim o Prims.Vstr
 
 infixr 9 `
 fun a ` b = a b
@@ -93,7 +93,7 @@ fun testProgram verbose name programType p t =
 	let
 		val _ = Variable.reset ()
 		val emit = if verbose >= 1 then print else (fn _ => ())
-		val debug = if verbose >= 1 then print else (fn _ => ())
+		val debug = if verbose >= 2 then print else (fn _ => ())
 	(*	fun printTerm e = (((PrettyPrinter.printTerm debug) o (PrettyPrinter.resolvePrioTerm 3) o PrintPSF.convertTerm) e; debug "\n") *)
 		fun printTerm e = (PrettyPrinter.printExp debug e; debug "\n")
 		
@@ -107,23 +107,23 @@ fun testProgram verbose name programType p t =
 			| FileName => L12Parser.parseFile ("examples/"^p^".L12")
 		
 		(* Stage Propegating *)
-		val propegated = PropStage.prop1 parsed
+		val propegated = PropStage.prop parsed
 			handle PropStage.Cont.UnboundVar s => (emit "Unbound Variable: "; emit s; raise Problem)
 	
 		(* Printing Input *)
 		val _ = debug "\n\n";
-		val _ = printTerm (PrintPSF.convertStage1 propegated);
+		val _ = printTerm (PrintPSF.convertL12 propegated);
 		val _ = debug "~~~~~~~~~~~\n";
 		
 		(* Typechecking *)
 		val ty1 = Typecheck12.typeCheck1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
-			handle Typecheck12.MyContext.Base.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
+			handle Typecheck12.MyContext.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
 		
 		(* Splitting *)
 		val (ty2, res) = StageSplit.stageSplit1 Typecheck12.emptyContext propegated
 			handle TypeError s => (emit "Type Error: "; emit s; raise Problem)
-			handle Typecheck12.MyContext.Base.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
+			handle Typecheck12.MyContext.UnboundVar s => (emit "Unbound Variable: "; emit (Variable.toString s); raise Problem)
 		val (split1, (l,split2)) = StageSplit.coerce1 res
 		
 		(* Printing Split Results *)
@@ -137,7 +137,7 @@ fun testProgram verbose name programType p t =
 		
 		(* Erasure Semantics *)
 		val _ = debug "Running erasure semantics.\n";
-		val valErasure = ErasureSemantics.eval1 MainDict.empty propegated
+		val valErasure = ErasureSemantics.eval MainDict.empty propegated
 				
 		(* Diagonal Semantics *)
 		val _ = debug "Running diagonal semantics, part 1.\n"

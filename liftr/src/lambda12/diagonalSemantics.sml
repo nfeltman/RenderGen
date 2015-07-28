@@ -18,7 +18,7 @@ fun comp1 f (g, h) = (f o g, h)
 in
 
 (* second stage values/expressions *)
-datatype expr	= E of (expr,var,patternM * expr,unit) exprF
+datatype expr	= E of (expr,var,pattern12 * expr,unit) exprF
 datatype valueMono = VM of (valueMono,valueMono) valueF
 
 (* first stage values *)
@@ -49,9 +49,13 @@ fun ext1helper (gNow,gNext) x t = (Contexts1.C1.extend gNow x t, gNext)
 fun ext1 g (P p) t = foldPattern (ext1helper, ext1, untuple o unV1, Stuck) g p t
   | ext1 (gNow,gNext) (Pmono p) t = (ext2 gNow p (unmono t), gNext)
   | ext1 (gNow,gNext) (Pnext p) t = (gNow, fn r => gNext ` E ` Flet (E ` Fvar (unhat t),(p,r)))
-and ext2 g (PM p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, Stuck) g p t
+and ext2 g (P p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, Stuck) g p t
+  | ext2 g _ _ = raise Stuck
 
-fun eval1 env (E1 exp) = 
+fun evalM env (L12core exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) exp
+  | evalM _ (L12stage _) = raise Stuck
+
+fun eval1 env (L12core exp) = 
 	let
 		val (eval,V,unV) = (eval1 env, V1, unV1)
 		fun evalBranchClean v (x,e) = 
@@ -111,35 +115,39 @@ fun eval1 env (E1 exp) =
 		| Funroll e => map2 (unroll o unV) (eval e)
 		| SEdata (DataFrag.Eerror _) => raise Stuck
 	end
-  | eval1 env (E1next e) = 
+  | eval1 env (L12stage expr) = 
+  	case expr of
+	  E1next e => 
 		let
 			val y = Variable.newvar "y" 
 		in 
-			(fn r => E ` Flet (trace2 env e,(PM (Pvar y),r)), V1hat y) 
+			(fn r => E ` Flet (trace2 env e,(P (Pvar y),r)), V1hat y) 
 		end
-  | eval1 env (E1hold e) =
+	| E1hold e =>
 		let
 			val (g,v) = eval1 env e
 			val y = Variable.newvar "y" 
 		in
-			(fn r=> g ` E ` Flet (E ` SEdata ` DataFrag.EprimVal ` unprimV ` unVM ` unmono v, (PM (Pvar y), r)), V1hat y)
+			(fn r=> g ` E ` Flet (E ` SEdata ` DataFrag.EprimVal ` unprimV ` unVM ` unmono v, (P (Pvar y), r)), V1hat y)
 		end
-  | eval1 env (E1mono e) = (id, V1mono ` evalM env e)
-  | eval1 env (E1pushPrim e) = map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
-  | eval1 env (E1pushSum e) = 
+	| E1mono e => (id, V1mono ` evalM env e)
+	| E1pushPrim e => map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)
+	| E1pushSum e => 
 		let 
 			val (g,(i,v)) = map2 (uninj o unVM o unmono) (eval1 env e)
 		in
 			(g, V1 (VFinj (i, V1mono v)))
 		end
+	| E2prev _ => raise Stuck
 		
-and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) exp
-and trace2 env (E2 exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
-  | trace2 env (E2prev e) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
+and trace2 env (L12core exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
+  | trace2 env (L12stage (E2prev e)) = (op `) ` map2 (E o Fvar o unhat) ` eval1 env e
+  | trace2 env (L12stage _) = raise Stuck
   
 structure Context2 = BasicContext (MainDict) (type t = valueMono) 
 
-fun ext g (PM p) t = foldPattern (Context2.extend, ext, ValuesM.untuple, Stuck) g p t
+fun ext g (P p) t = foldPattern (Context2.extend, ext, ValuesM.untuple, Stuck) g p t
+  | ext _ _ _ = raise Stuck
 
 structure Evaluator2 = Evaluator (type t = valueMono) (ValuesM)
 

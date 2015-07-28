@@ -9,15 +9,13 @@ open SourceLang
 structure V = ValuesBase
 in
 
-datatype valueMono	= VM of (valueMono,valueMono) V.valueF
-datatype value1	= V1 of (value1,value1) V.valueF
-				| V1next of valueMono
-				| V1mono of valueMono
+datatype value	= V1 of (value,value) V.valueF
+				| V1next of value
+				| V1mono of value
 
-structure Values = TripleContext (MainDict) (type t1 = value1) (type t2 = valueMono) (type t3 = valueMono)
-structure TC = ProjectTripleContext (Values)
+structure Values = BasicContext (MainDict) (type t = value)
 
-fun holdGeneral (V1mono (VM (V.VFprim i))) = V1next (VM (V.VFprim i))
+fun holdGeneral (V1mono (V1 (V.VFprim i))) = V1next (V1 (V.VFprim i))
   | holdGeneral _ = raise Stuck
 
 fun V1unwrap (V1 v) = v
@@ -28,42 +26,32 @@ fun unmono (V1mono v) = v
   | unmono _ = raise Stuck
   
 structure Values1 = EmbedValues (struct
-	type v = value1
-	type f = value1
+	type v = value
+	type f = value
 	val outof = V1unwrap
 	val into = V1
 end)
-structure ValuesMono = EmbedValues (struct
-	type v = valueMono
-	type f = valueMono
-	fun outof (VM v) = v
-	val into = VM
-end)
 
-structure Evaluator1 = Evaluator (type t = value1) (Values1)
-structure EvaluatorM = Evaluator (type t = valueMono) (ValuesMono)
+structure Evaluator1 = Evaluator (type t = value) (Values1)
 
-fun ext1 g (P p) t = foldPattern (TC.C1.extend, ext1, Values1.untuple, Stuck) g p t
-  | ext1 g (Pmono p) t = ext3 g p (unmono t)
-  | ext1 g (Pnext p) t = ext2 g p (unnext t)
-and ext2 g (PM p) t = foldPattern (TC.C2.extend, ext2, ValuesMono.untuple, Stuck) g p t
-and ext3 g (PM p) t = foldPattern (TC.C3.extend, ext3, ValuesMono.untuple, Stuck) g p t
+fun ext g (P p) t = foldPattern (Values.extend, ext, Values1.untuple, Stuck) g p t
+  | ext g (Pmono p) t = ext g p (unmono t)
+  | ext g (Pnext p) t = ext g p (unnext t)
 
-fun eval1 env (E1 exp) = Evaluator1.evalF env eval1 (ext1,TC.C1.lookup) exp
-  | eval1 env (E1next e) = V1next (eval2 env e)
-  | eval1 env (E1hold e) = holdGeneral (eval1 env e)
-  | eval1 env (E1mono e) = V1mono (evalM env e)
-  | eval1 env (E1pushPrim e) = Values1.makeprim (ValuesMono.unprim (unmono (eval1 env e)))
-  | eval1 env (E1pushSum e) = 
+fun eval env (L12core exp) = Evaluator1.evalF env eval (ext,Values.lookup) exp
+  | eval env (L12stage exp) = 
+  	case exp of
+	  E1next e => V1next (eval env e)
+  	| E1hold e => holdGeneral (eval env e)
+  	| E1mono e => V1mono (eval env e)
+  	| E1pushPrim e => Values1.makeprim (Values1.unprim (unmono (eval env e)))
+  	| E1pushSum e => 
 		let 
-			val (i,v) = ValuesMono.uninj (unmono (eval1 env e))
+			val (i,v) = Values1.uninj (unmono (eval env e))
 		in
 			Values1.makeinj (i, V1mono v)
 		end
-		
-and evalM env (EM exp) = EvaluatorM.evalF env evalM (ext3,TC.C3.lookup) exp
-and eval2 env (E2 exp) = EvaluatorM.evalF env eval2 (ext2,TC.C2.lookup) exp
-  | eval2 env (E2prev e) = unnext (eval1 env e)
+  	| E2prev e => unnext (eval env e)
 
 end
 end

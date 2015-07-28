@@ -23,6 +23,16 @@ in
 
 exception ConversionError
 
+fun convertValue v = 
+		case v of 
+		  E.V1 (VFprim i) => Vprim i
+		| E.V1 (VFroll v) => Vroll (convertValue v)
+		| E.V1 (VFtuple vs) => Vtuple (map convertValue vs)
+		| E.V1 (VFinj (side,v)) => Vinj (side, convertValue v)
+		| E.V1 (VFlam _) => raise ConversionError
+		| E.V1next _ => raise ConversionError
+		| E.V1mono _ => raise ConversionError
+
 fun splitErasureValue1 v = 
 		case v of 
 		  E.V1 (VFprim v) => (Vprim v, Vtuple [])
@@ -36,24 +46,9 @@ fun splitErasureValue1 v =
 			(case splitErasureValue1 v of 
 			(u,w) => (Vinj (side,u), w))
 		| E.V1 (VFlam _) => raise ConversionError
-		| E.V1next v => (Vtuple[], splitErasureValue2 v)
-		| E.V1mono v => (splitErasureValueM v, Vtuple[])
+		| E.V1next v => (Vtuple[], convertValue v)
+		| E.V1mono v => (convertValue v, Vtuple[])
 
-and splitErasureValueM v = 
-		case v of 
-		  E.VM (VFprim i) => Vprim i
-		| E.VM (VFroll v) => Vroll (splitErasureValueM v)
-		| E.VM (VFtuple vs) => Vtuple (map splitErasureValueM vs)
-		| E.VM (VFinj (side,v)) => Vinj (side, splitErasureValueM v)
-		| E.VM (VFlam _) => raise ConversionError
-		
-and splitErasureValue2 v = 
-		case v of 
-		  E.VM (VFprim i) => Vprim i
-		| E.VM (VFroll v) => Vroll (splitErasureValue2 v)
-		| E.VM (VFtuple vs) => Vtuple (map splitErasureValue2 vs)
-		| E.VM (VFinj (side,v)) => Vinj (side, splitErasureValue2 v)
-		| E.VM (VFlam _) => raise ConversionError
 		
 fun splitDiagValue1 v = 
 		case v of 

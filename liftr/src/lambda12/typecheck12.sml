@@ -12,35 +12,23 @@ open SourceLang
 open Lambda12
 open TypesBase
 
-fun Tunwrap (T1 t) = t
-  | Tunwrap _ = raise (TypeError "expected non-stage type")
-
-fun t2eq (T2 t1) (T2 t2) = teq t2eq t1 t2
-fun t1eq (T1 t1) (T1 t2) = teq t1eq t1 t2
-  | t1eq (T1fut t) (T1fut u) = (t2eq t u)
-  | t1eq (T1now t) (T1now u) = (t2eq t u)
+fun t1eq (Tcore t1) (Tcore t2) = teq t1eq t1 t2
+  | t1eq (Tfut t) (Tfut u) = (t1eq t u)
+  | t1eq (Tnow t) (Tnow u) = (t1eq t u)
   | t1eq _ _ = false
 
-fun lift2 n (T2 t) = T2 (TypeSubst.liftTy lift2 n t)
-fun lift1 n (T1 t) = T1 (TypeSubst.liftTy lift1 n t)
-  | lift1 n (T1fut t) = T1fut (lift2 n t)
-  | lift1 n (T1now t) = T1now (lift2 n t)
+fun lift1 n (Tcore t) = Tcore (TypeSubst.liftTy lift1 n t)
+  | lift1 n (Tfut t) = Tfut (lift1 n t)
+  | lift1 n (Tnow t) = Tnow (lift1 n t)
 
-fun subst2 n (v : type2) (T2 t) = TypeSubst.substTy subst2 lift2 T2 n v t
-fun subst1 n (v : type1) (T1 t) = TypeSubst.substTy subst1 lift1 T1 n v t
-  | subst1 n (_ : type1) (T1fut t) = T1fut t
-  | subst1 n (_ : type1) (T1now t) = T1now t
+fun subst1 n (v) (Tcore t) = TypeSubst.substTy subst1 lift1 Tcore n v t
+  | subst1 n (_) (Tfut t) = Tfut t
+  | subst1 n (_) (Tnow t) = Tnow t
 
 structure TS1 : TypeSystem = 
 struct
-	type ty = type1
+	type ty = type12
 	val teq = t1eq
-	fun toString t = "????"
-end
-structure TS2 : TypeSystem = 
-struct
-	type ty = type2
-	val teq = t2eq
 	fun toString t = "????"
 end
 
@@ -49,74 +37,55 @@ fun mapboth f (a,b) = (f a, f b)
 
 in
 	
-fun unfut (T1fut t) = t
+fun unfut (Tfut t) = t
   | unfut _ = raise (TypeError "expected $")
-fun unnow (T1now t) = t
+fun unnow (Tnow t) = t
   | unnow _ = raise (TypeError "expected ^")
 
 structure TypeFeatures1 = EmbedTypes(struct 
-	type u = type1 
-	val into = T1 
-	val outof = Tunwrap 
+	type u = type12
+	val into = Tcore
+	fun outof (Tcore t) = t
+	  | outof _ = raise (TypeError "expected core type")
 	val subst = subst1 0
 end)
-structure TypeFeatures2 = EmbedTypes(struct 
-	type u = type2 
-	val into = T2 
-	fun outof (T2 t) = t 
-	val subst = subst2 0
-end)
 
-structure MyContext = TripleContext (MainDict) (type t1=type1) (type t2=type2) (type t3=type2)
-structure Projections = ProjectTripleContext (MyContext)
+structure MyContext = BasicContext (MainDict) (type t=type12)
 
-structure Pattern3 = 
-struct
-	type p = patternM
-	type c = Projections.C3.cont
-	type t = type2
-	fun fold g (PM p) v = foldPattern (Projections.C3.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
-end
-structure Pattern2 = 
-struct
-	type p = patternM
-	type c = Projections.C2.cont
-	type t = type2
-	fun fold g (PM p) v = foldPattern (Projections.C2.extend, fold, TypeFeatures2.unprod, TypeError "pattern") g p v
-end
 structure Pattern1 = 
 struct
 	type p = pattern12
-	type c = Projections.C1.cont
-	type t = type1
-	fun fold g (P p) v = foldPattern (Projections.C1.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
-	  | fold g (Pmono p) v = Pattern3.fold g p (unnow v)
-	  | fold g (Pnext p) v = Pattern2.fold g p (unfut v)
+	type c = MyContext.cont
+	type t = type12
+	fun fold g (P p) v = foldPattern (MyContext.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
+	  | fold g (Pmono p) v = fold g p (unnow v)
+	  | fold g (Pnext p) v = fold g p (unfut v)
 end
 
 
-fun handleHold (T1now (T2 (TFprim t))) = T1fut (T2 (TFprim t))
+fun handleHold (Tnow (Tcore (TFprim t))) = Tfut (Tcore (TFprim t))
   | handleHold _ = raise (TypeError "expected ^prim")
 
-fun promoteType (T2 t) = T1 (mapType promoteType t)
+structure Checker1 = TypeChecker (TS1) (TypeFeatures1) (MyContext) (Pattern1)
 
-structure Checker1 = TypeChecker (TS1) (TypeFeatures1) (Projections.C1) (Pattern1)
-structure Checker2 = TypeChecker (TS2) (TypeFeatures2) (Projections.C2) (Pattern2)
-structure CheckerM = TypeChecker (TS2) (TypeFeatures2) (Projections.C3) (Pattern3)
+fun typeCheckM gamma (L12core e) = Checker1.typeCheck gamma typeCheckM e
+  | typeCheckM gamma (L12stage _) = raise (TypeError "world violation: staging feature at 1g")
 
-fun typeCheckM gamma (EM e) = CheckerM.typeCheck gamma typeCheckM e
-
-fun typeCheck1 gamma (E1 exp) = Checker1.typeCheck gamma typeCheck1 exp
-  | typeCheck1 gamma (E1next e) = T1fut (typeCheck2 gamma e)
-  | typeCheck1 gamma (E1hold e) = handleHold (typeCheck1 gamma e)
-  | typeCheck1 gamma (E1mono e) = T1now (typeCheckM gamma e)
-  | typeCheck1 gamma (E1pushPrim e) = TypeFeatures1.makeprim ` TypeFeatures2.unprim ` unnow ` typeCheck1 gamma e
-  | typeCheck1 gamma (E1pushSum e) = TypeFeatures1.makesum ` map T1now ` TypeFeatures2.unsum ` unnow ` typeCheck1 gamma e
+fun typeCheck1 gamma (L12core exp) = Checker1.typeCheck gamma typeCheck1 exp
+  | typeCheck1 gamma (L12stage exp) = 
+  	case exp of
+	  (E1next e) => Tfut (typeCheck2 gamma e)
+	| (E1hold e) => handleHold (typeCheck1 gamma e)
+	| (E1mono e) => Tnow (typeCheckM gamma e)
+	| (E1pushPrim e) => TypeFeatures1.makeprim ` TypeFeatures1.unprim ` unnow ` typeCheck1 gamma e
+	| (E1pushSum e) => TypeFeatures1.makesum ` map Tnow ` TypeFeatures1.unsum ` unnow ` typeCheck1 gamma e
+	| (E2prev _) => raise (TypeError "world violation: prev at 1M")
 	
-and typeCheck2 gamma (E2 exp) = Checker2.typeCheck gamma typeCheck2 exp
-  | typeCheck2 gamma (E2prev e) = unfut (typeCheck1 gamma e)
+and typeCheck2 gamma (L12core exp) = Checker1.typeCheck gamma typeCheck2 exp
+  | typeCheck2 gamma (L12stage (E2prev e)) = unfut (typeCheck1 gamma e)
+  | typeCheck2 gamma (L12stage _) = raise (TypeError "world violation: staging feature at 2")
   
-val emptyContext = MyContext.Base.empty
+val emptyContext = MyContext.empty
 
 end
 end

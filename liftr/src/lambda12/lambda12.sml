@@ -2,27 +2,21 @@
 structure Lambda12 = 
 struct
 
-datatype type1	= T1 of type1 TypesBase.typeF
-				| T1fut of type2
-				| T1now of type2
+datatype type12	= Tcore of type12 TypesBase.typeF
+				| Tfut of type12
+				| Tnow of type12
 
-and type2		= T2 of type2 TypesBase.typeF
-
-datatype patternM = PM of (LangCommon.var, patternM) SourceLang.pattern
 datatype pattern12	= P of (LangCommon.var, pattern12) SourceLang.pattern
-					| Pmono of patternM
-					| Pnext of patternM
+					| Pmono of pattern12
+					| Pnext of pattern12
 
-datatype expr1	= E1 of (expr1,LangCommon.var,pattern12 * expr1,type1) SourceLang.exprF
-				| E1next of expr2
-				| E1hold of expr1
-				| E1mono of exprM
-				| E1pushPrim of expr1
-				| E1pushSum of expr1
-
-and expr2		= E2 of (expr2,LangCommon.var,patternM * expr2,type2) SourceLang.exprF
-				| E2prev of expr1
-
-and exprM		= EM of (exprM,LangCommon.var,patternM * exprM,type2) SourceLang.exprF
+datatype expr12	= L12core of (expr12,LangCommon.var,pattern12 * expr12,type12) SourceLang.exprF
+				| L12stage of stage
+and 	stage	= E1next of expr12
+				| E1hold of expr12
+				| E1mono of expr12
+				| E1pushPrim of expr12
+				| E1pushSum of expr12
+				| E2prev of expr12
 
 end

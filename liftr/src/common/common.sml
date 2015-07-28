@@ -8,6 +8,7 @@ structure MainDict = ListDict (type var = var)
 exception TypeError of string
 exception ParseError
 exception Stuck
+exception InvariantViolation
 
 fun id x = x
 
