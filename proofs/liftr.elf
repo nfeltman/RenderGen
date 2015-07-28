@@ -184,11 +184,12 @@ eq-gnoc/pi1 : eq-term (pi1 E) (pi1 E') -> eq-term E E' ->  type.
 %worlds (general-term-block) (eq-gnoc/pi1 _ _).
 %total {} (eq-gnoc/pi1 _ _).
 
+%{
 eq-gnoc : {F : term L -> term L} eq-term (F E) (F E') -> eq-term E E' ->  type.
 %mode eq-gnoc +F +Deq -Deq'.
 - : eq-gnoc F (eq-term_ : eq-term (F E) (F E)) eq-term_.
 %worlds (general-term-block) (eq-gnoc _ _ _).
-%total {} (eq-gnoc _ _ _).
+%total {} (eq-gnoc _ _ _).}%
 
 eq-gnoc/tup : eq-term (tup E1 E2) (tup E1' E2') -> eq-term E1 E1' -> eq-term E2 E2' ->  type.
 %mode eq-gnoc/tup +Deq1 -De2 -Deq'.
@@ -361,6 +362,8 @@ lang-indep4 :
 %worlds (term-block) (lang-indep4 _ _ _ _ _ _).
 %total (D) (lang-indep4 _ _ _ _ D _).
 
+
+%{
 specialize-eq-branch : {M : term lang1 -> term lang1} ({x : {l : lang} term l} eq-term (M (x lang1)) (G (x lang1))) -> ({x : term lang1} eq-term (M x) (G x)) -> type.
 %mode specialize-eq-branch +M +Deq -Deq'.
 
@@ -528,7 +531,7 @@ generalize/branch : {M : term lang1 -> term lang1} {F : {l} term l -> term l} ({
 %%block convert-total-block : block {x1 : term lang1} {x2 : term lang2} {Dconv : lang-convert x1 x2} {_ : generalize x1 Dconv}.
 %worlds () (generalize _ _ _) (generalize/branch _ _ _).
 %total (D E) (generalize D _ _) (generalize/branch E _ _).
-
+}%
 
 
 %% TERMS CANNOT DEPEND ON TERMS OF A DIFFERENT LANGUAGE
