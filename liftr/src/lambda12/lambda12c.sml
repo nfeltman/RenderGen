@@ -24,9 +24,14 @@ datatype expr	= Estandard of (expr,string,patt * expr,ty) S.exprF
 				| Ehold of expr
 				| EpushPrim of expr
 				| EpushSum of expr
-				| Eletty of stage * string * ty * expr
-				| Eletdata of stage * string * (string * ty option) list * expr
-				| Eletr of stage * string * ty * ty * (patt * expr) * expr
+				| Eletdecs of decl list * expr
+and 	decl 	= Dval of patt * expr
+				| Dfun of string * ty * (patt * expr)
+				| Dty of string * ty
+				| Ddata of string * (string * ty option) list
+				| Drec of string * ty * ty * (patt * expr)
+				| Dnext of decl list
+				| Dmono of decl list
 
 fun trim s = substring (s,1,size(s)-2)
 				

@@ -40,31 +40,15 @@ fun bind v e1 e2 = Elet (e1,(var v,e2))
 
 fun stageLet stage (e1,x,e2) = 
   case stage of 
-    C.ThisStage => Elet (e1,(var x,e2))
-  | C.NextStage => Elet (IL1next e1,(IL1Pnext (var x),e2))
-  | C.MonoStage => Elet (IL1mono e1,(IL1Pmono (var x),e2))
+    C.ThisStage => Elet (e1,(x,e2))
+  | C.NextStage => Elet (IL1next e1,(IL1Pnext x,e2))
+  | C.MonoStage => Elet (IL1mono e1,(IL1Pmono x,e2))
 
-fun elabLetRecOld (stage,f,t1,t2,(x,body),e) = 
-	let
-		val tY = C.Tarr(C.Tprod[C.Tvar 0,t1],t2)
-	in
-	stageLet stage
-		(bind "r" 
-			(Elam(C.Tprod [C.Trec tY, t1], (IL1P (Ptuple [var "y", x]), 
-				Elet (Elam (t1,(var "v", Eapp (Eunroll (Evar "y"), Etuple [Evar "y", Evar "v"]))),
-					(var f, body))
-			)))
-			(Elam (t1, (var "v", Eapp(Evar "r", Etuple [Eroll(tY, Evar "r"), Evar "v"]))))
-		,
-    f,e)
-	end
-
-fun elabLetRec (stage,f,t1,t2,(x,body),e) = 
+fun elabLetRec stage (f,t1,t2,(x,body),e) = 
   stageLet stage
-    (Efix (t1, t2, (IL1P (Ptuple [var f, x]), body)), f, e)
+    (Efix (t1, t2, (IL1P (Ptuple [var f, x]), body)), var f, e)
 	
-	
-fun elabDataType (stage,ty,cts,e) = 
+fun elabDataType stage (ty,cts,e) = 
 	let
 		fun nameToZero (C.Tstandard t) = C.Tstandard (mapType nameToZero t)
 		  | nameToZero (C.Tfut t) = C.Tfut t
@@ -90,7 +74,7 @@ fun elabDataType (stage,ty,cts,e) =
 			stage, 
 			ty, 
 			C.Tstandard (TFrec openSumType), 
-			List.foldr (fn ((n,t,p,s),rest) => stageLet stage (buildInjector t p s, n, rest)) e ntpsList
+			List.foldr (fn ((n,t,p,s),rest) => stageLet stage (buildInjector t p s, var n, rest)) e ntpsList
 		)
 	end
 fun id x = x
@@ -102,15 +86,24 @@ fun elabPatt (Lambda12c.P p) = IL1P (mapPattern elabPatt p)
   | elabPatt (Lambda12c.Pnext p) = IL1Pnext (elabPatt p)
 
 fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
-  | elab (C.Eletty (s,x,t,e)) = IL1letty (s,x,t,elab e)
-  | elab (C.Eletr (s,f,t1,t2,(x,ebody),e)) = elabLetRec (s,f,t1,t2,(elabPatt x,elab ebody), elab e)
-  | elab (C.Eletdata (stage,ty,cts,e)) = elabDataType (stage,ty,cts, elab e)
+  | elab (C.Eletdecs (dec,e)) = elabDecs C.ThisStage dec e  
   | elab (C.Eprev e) = IL1prev (elab e)
   | elab (C.Emono e) = IL1mono (elab e)
   | elab (C.Enext e) = IL1next (elab e)
   | elab (C.Ehold e) = IL1hold (elab e)
   | elab (C.EpushPrim e) = IL1pushPrim (elab e)
   | elab (C.EpushSum e) = IL1pushSum (elab e)
+
+and elabDecs s [] e = elab e
+  | elabDecs s (dec :: decs) e = 
+    case dec of
+      C.Dval (x,ebody) => stageLet s (elab ebody, elabPatt x, elabDecs s decs e)
+    | C.Dfun (f,t,(x,ebody)) => stageLet s (Elam (t,(elabPatt x, elab ebody)), var f, elabDecs s decs e)
+    | C.Dty (x,t) => IL1letty (s,x,t,elabDecs s decs e)
+    | C.Drec (f,t1,t2,(x,ebody)) => elabLetRec s (f,t1,t2,(elabPatt x,elab ebody), elabDecs s decs e)
+    | C.Ddata (ty,cts) => elabDataType s (ty,cts, elabDecs s decs e)
+    | C.Dnext decs => elabDecs C.NextStage decs e
+    | C.Dmono decs => elabDecs C.MonoStage decs e
 
 structure Cont = BasicContext (ListDict (type var = string)) (type t = var)
 fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Cont.extend,Variable.newvar) G p in (IL1P p, G) end

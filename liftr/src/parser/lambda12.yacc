@@ -27,9 +27,8 @@ open LangCommon
 	  STRLIT of string | MONO
 %nonterm EXP of expr | AEXP of expr | BEXP of expr |
 	  EXPL of expr list |
-	  DECL of expr -> expr |
-	  DECLL of expr -> expr |
-	  STDEC of stage |
+	  DECL of decl |
+	  DECLL of decl list |
 	  DTARML of (string * ty option) list | DTARM of string * ty option |
 	  MATCH of patt * expr | MATCHL of (patt * expr) list |
 	  BINOP of Prims.binops | 
@@ -84,25 +83,21 @@ open LangCommon
 		  | MONO LBRACE EXP RBRACE										(Emono(EXP))
 		  | FN PATT COLON TY DARROW EXP									(Elam (TY,(PATT,EXP)))
 		  | IF EXP THEN EXP ELSE EXP									(Eif(EXP1,EXP2,EXP3))
-		  | LET DECLL IN EXP											(DECLL EXP)
+		  | LET DECLL IN EXP											(Eletdecs (DECLL, EXP))
 
 	 EXPL : 							([])
 		  | COMMA EXP EXPL				(EXP :: EXPL)
 
-	DECLL : 							(fn e => e)
-		  | DECL DECLL					(DECL o DECLL)
+	DECLL : 							([])
+		  | DECL DECLL					(DECL :: DECLL)
 
-	 DECL : VAL PATT EQ EXP 															(fn e => Elet(EXP,(PATT,e)))
-	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 										(fn e => Elet(Elam(TY,(PATT,EXP)),(Pvar ID, e)))
-	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP								(fn e => Eletr(ThisStage,ID,TY1,TY2,(PATT,EXP),e))
-	 	  | ATSGN STDEC LBRACE REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP RBRACE	(fn e => Eletr(STDEC,ID,TY1,TY2,(PATT,EXP),e))
-		  | TYPE ID EQ TY																(fn e => Eletty (ThisStage,ID,TY,e))
-		  | ATSGN STDEC LBRACE TYPE ID EQ TY RBRACE										(fn e => Eletty (STDEC,ID,TY,e))
-		  | DATA ID EQ DTARML 															(fn e => Eletdata (ThisStage,ID,DTARML,e))
-		  | ATSGN STDEC LBRACE DATA ID EQ DTARML RBRACE									(fn e => Eletdata (STDEC,ID,DTARML,e))
-
-	STDEC : NEXT 						(NextStage)
-		  | MONO						(MonoStage)
+	 DECL : VAL PATT EQ EXP 															(Dval (PATT, EXP))
+	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 										(Dfun (ID,TY,(PATT,EXP)))
+	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP								(Drec (ID,TY1,TY2,(PATT,EXP)))
+		  | TYPE ID EQ TY																(Dty (ID,TY))
+		  | DATA ID EQ DTARML 															(Ddata (ID,DTARML))
+		  | ATSGN NEXT LBRACE DECLL RBRACE												(Dnext DECLL)
+		  | ATSGN MONO LBRACE DECLL RBRACE												(Dmono DECLL)
 
    DTARML : DTARM						([DTARM])
 		  | DTARM BAR DTARML			(DTARM::DTARML)
@@ -122,12 +117,8 @@ open LangCommon
 	PATTL : 							([])
 		  | COMMA PATT PATTL			(PATT :: PATTL)
 
-	   TY : DTY ARROW TY				(Tarr(DTY,TY))
-		  | DTY 						(DTY)
-	  DTY : MU DTY						(Trec DTY)
-		  | CTY							(CTY)
-	  CTY : BTY PLUS BTY				(Tsum(BTY1,BTY2))
-		  | BTY							(BTY)
+	   TY : BTY ARROW TY				(Tarr(BTY,TY))
+		  | BTY 						(BTY)
 	   
 	  BTY : ATY TIMES ATY PRODL			(Tprod (ATY1 :: ATY2 :: PRODL))
 		  | ATY							(ATY)
