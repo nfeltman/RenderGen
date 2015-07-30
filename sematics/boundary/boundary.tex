@@ -13,12 +13,13 @@
 \usepackage{stmaryrd}
 \usepackage{proof}
 \usepackage{mathpartir}
+\usepackage{bbm}
 \usepackage{mathabx}
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage[usenames,dvipsnames]{color}
 
-\title{Boundary Types}
+\title{Typing the Outputs}
 \author{Nico}
 
 \newcommand {\next}{asdlfkj}
@@ -26,6 +27,8 @@
 
 \begin{document}
 \maketitle
+
+\begin{abstrsyn}
 
 \newcommand {\ibksym} {\rotatebox[origin=c]{270}{$\therefore$}}
 \newcommand {\btsym} {\rotatebox[origin=c]{270}{$\triangle$}}
@@ -37,16 +40,23 @@
 \newcommand {\btyw} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}w{#4}}
 \newcommand {\btysub} [2] [] {\bty{e_{#1}:{#2}}{\tau_{#1}}{\sigma_{#1}}}
 
+\section {Intro}
+
+The purpose of this document is to explain an approach to typing the outputs produced by our splitting algorithm.
+As we will see, this will require a dependent type system.
+The dependence comes in two flavors: dependence on the boundary, and dependence in partial value splitting.
+This first flavor has its origin in first-class functions, and the second flavor comes from mixed-stage sums.
+We will focus mostly on dependence on the boundary, and consider mixed-stage sums at the end.
+
 \section{Goals}
 
-The purpose of this document is to explain how to type the boundary produced by our splitting algorithm.
 We'll start with a very simple input language, the boundary of which can be typed in an easy way.
 We'll then start adding features to the language, thereby inducing complexity in the boundary type system.
 
 For the most part, we'll do all of our work with a single new judgement $\btj e A w \tau$, 
 which indicates that the expression $e$ (which has type $A$ at world $w$) has the boundary type $\tau$.
 Ideally, the splitting rules will agree with the boundary type given to us by this judgment.
-That is, if $\btj e A \bbtwo \tau$ and $\splitone{e}{A}{p,l.r}$, 
+That is, if $\btj e A \bbtwo \tau $ and $\splittwo{e}{A}{p}{l}{r}$, 
 then $p:\tau$ and $l:\tau \vdash r:A$ (and a similar relationship at stage \bbone, covered later).
 Mind you, we don't actually bother checking that property in this document.
 
@@ -65,15 +75,15 @@ which also multiplies an int into the boundary type.
 \infer {\btyw {(e_1,e_2)} {A \times B} {\tau_1 \times \tau_2}} 
 	{\btyw {e_1} A {\tau_1} 
 	&\btyw {e_2} B {\tau_2}} \and
-\infer {\btyw {\pio~e} A \tau} 
+\infer {\btyw {\pio e} A \tau} 
 	{\btyw {e} {A \times B} {\tau}} \and
-\infer {\btyw {\pit~e} B \tau} 
+\infer {\btyw {\pit e} B \tau} 
 	{\btyw {e} {A \times B} {\tau}} \and
-\infer {\btyo {\next~e} {\fut A} \tau} 
+\infer {\btyo {\next e} {\fut A} \tau} 
 	{\btyt {e} A {\tau}} \and
-\infer {\btyt {\prev~e} A \tau} 
+\infer {\btyt {\prev e} A \tau} 
 	{\btyo {e} {\fut A} {\tau}} \and
-\infer {\btyt {\pause~e} \rmint {\tau \times \rmint}} 
+\infer {\btyt {\pause e} \rmint {\tau \times \rmint}} 
 	{\btyo e \rmint \tau}
 \end{mathpar}
 
@@ -206,5 +216,5 @@ whereas the internal boundary of $L2$ should be unit.
 % \end{mathpar}
 
 
-
+\end{abstrsyn}
 \end{document}
