@@ -86,7 +86,7 @@ fun elabPatt (Lambda12c.P p) = IL1P (mapPattern elabPatt p)
   | elabPatt (Lambda12c.Pnext p) = IL1Pnext (elabPatt p)
 
 fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
-  | elab (C.Eletdecs (dec,e)) = elabDecs C.ThisStage dec e  
+  | elab (C.Eletdecs (dec,e)) = elabDecs C.ThisStage dec (elab e)
   | elab (C.Eprev e) = IL1prev (elab e)
   | elab (C.Emono e) = IL1mono (elab e)
   | elab (C.Enext e) = IL1next (elab e)
@@ -94,7 +94,7 @@ fun elab (C.Estandard exp) = IL1standard (mapExpr elab id elabPatt exp)
   | elab (C.EpushPrim e) = IL1pushPrim (elab e)
   | elab (C.EpushSum e) = IL1pushSum (elab e)
 
-and elabDecs s [] e = elab e
+and elabDecs s [] e = e
   | elabDecs s (dec :: decs) e = 
     case dec of
       C.Dval (x,ebody) => stageLet s (elab ebody, elabPatt x, elabDecs s decs e)
@@ -102,8 +102,8 @@ and elabDecs s [] e = elab e
     | C.Dty (x,t) => IL1letty (s,x,t,elabDecs s decs e)
     | C.Drec (f,t1,t2,(x,ebody)) => elabLetRec s (f,t1,t2,(elabPatt x,elab ebody), elabDecs s decs e)
     | C.Ddata (ty,cts) => elabDataType s (ty,cts, elabDecs s decs e)
-    | C.Dnext decs => elabDecs C.NextStage decs e
-    | C.Dmono decs => elabDecs C.MonoStage decs e
+    | C.Dnext ndecs => elabDecs C.NextStage ndecs (elabDecs s decs e)
+    | C.Dmono mdecs => elabDecs C.MonoStage mdecs (elabDecs s decs e)
 
 structure Cont = BasicContext (ListDict (type var = string)) (type t = var)
 fun recast G (IL1P p) = let val (p,G) = recastPattern (recast,Cont.extend,Variable.newvar) G p in (IL1P p, G) end

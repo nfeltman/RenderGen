@@ -1,13 +1,10 @@
 let 
 	@next {
 		datatype comp = LT | EQ | GT
-	}
-	val next{compare} = next {
-		fn (i,j) : int * int => if i < j then LT else if i == j then EQ else GT
+		fun compare ((i,j) : int * int) = if i < j then LT else if i == j then EQ else GT
 	}
 	@ mono { 
 		datatype list = Empty | Cons of int * list
-	} @ mono { 
 		rec partition ((p,l) : int*list) : (int*list*list) = 
 			case unroll l of 
 			  _ => (0,Empty, Empty) 
@@ -21,7 +18,7 @@ let
 		  _ => next {0} 
 		| mono{ht} => 
 			let 
-				val mono{(n,left,right)} = mono{partition ht}
+				@mono{val (n,left,right) = partition ht}
 				val next{n} = hold mono{n}
 			in
 			next { 
@@ -31,7 +28,24 @@ let
 				| _ => prev{qs (mono{right},next{(i-n)-1})}
 			}
 
-	val mono{c} = mono{Cons}
-	val testlist = mono{c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
+	@next{
+		datatype list2 = Empty2 | Cons2 of int * list2
+	}
+
+	fun map (f : ^list*$int -> $int) = 
+		fn (l,next{q}) : ^list * $list2 =>
+		next {
+			let	
+				rec m (q : list2) : list2 = 
+					case unroll q of
+					  _ => Empty2
+					| (h,t) => Cons2 (prev{f (l,next{h})}, m t)
+			in m q
+		}
+
+	val qsMany = map qs
+
+	val testlist = mono{let val c = Cons in c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
+	val queries = next{let val c = Cons2 in c(0,c(1,c(2,c(3,c(4,c(5,Empty2))))))}		
 in 
-qs (testlist, next{2})
+qsMany (testlist, queries)
