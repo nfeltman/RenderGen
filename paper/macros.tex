@@ -88,6 +88,8 @@
 
 	\newcommand {\caseof} [3] {\mytt{case(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\tallcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
+	\newcommand {\ifthen} [3] {\mytt{if(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
+	\newcommand {\tallif} [3] {\begin{array}{@{}l@{}} \mytt{if(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
 	\newcommand {\mediumcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}{##3}\mytt{)} \end{array}}
 
 	\newcommand {\rtab}  [2] {\llbracket{##1}\rrbracket{##2}}
@@ -97,8 +99,9 @@
 	\newcommand {\mval}  [2] {\mytt{\{}{##1}\mytt{;}{##2}\mytt{\}}}
 
 	\newcommand {\app} [2] {\mytt{app}\mytt{(}{##1}\mytt{;}{##2}\mytt{)}}
-%%	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
-	\newcommand {\fix} [3] {\mytt{fix}\mytt{(}{##1}\mytt{.}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\lam} [2] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{)}}
+	\newcommand {\fix} [3] {\mytt{fn}\mytt{(}{##1}\mytt{.}{##2}\mytt{.}{##3}\mytt{)}}
+	\newcommand {\letfun} [5] {\mytt{letf}\mytt{(}{##1}\mytt{.}{##2}\mytt{.}{##3}\mytt{;}{##4}\mytt{.}{##5}\mytt{)}}
 	\newcommand {\valprod} [2] {({##1},{##2})}
 	\newcommand {\projbind} [1] {\letin{l_{##1}}{\pi_{##1} l}{r_{##1}}}
 

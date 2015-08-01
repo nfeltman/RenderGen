@@ -18,6 +18,7 @@
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage[usenames,dvipsnames]{color}
+\usepackage{framed}
 
 \title{Typing the Outputs}
 \author{Nico}
@@ -30,11 +31,13 @@
 
 \begin{abstrsyn}
 
+\newcommand {\colfun} [3] {{#1}:>{#2}~\myatsign~{#3}}
+
 \newcommand {\ibksym} {\rotatebox[origin=c]{270}{$\therefore$}}
 \newcommand {\btsym} {\rotatebox[origin=c]{270}{$\triangle$}}
 \newcommand {\ktype} {\rm Type}
 \newcommand {\ibk} [2] {{#1}~\ibksym~{#2}}
-\newcommand {\btj} [4] {{#1}:{#2}~@~{#3}~\btsym~{#4}}
+\newcommand {\btj} [4] {{#1}:{#2}~\myatsign~{#3}~\btsym~{#4}}
 \newcommand {\btyo} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbone{#4}}
 \newcommand {\btyt} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbtwo{#4}}
 \newcommand {\btyw} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}w{#4}}
@@ -43,36 +46,123 @@
 \section {Intro}
 
 The purpose of this document is to explain an approach to typing the outputs produced by our splitting algorithm.
-As we will see, this will require a dependent type system.
-The dependence comes in two flavors: dependence on the boundary, and dependence in partial value splitting.
-This first flavor has its origin in first-class functions, and the second flavor comes from mixed-stage sums.
-We will focus mostly on dependence on the boundary, and consider mixed-stage sums at the end.
+As we will see, this will become somewhat convoluted, eventually requiring a dependent type system.
+In general, the problem of typing the output has two subparts:
+\begin{enumerate}
+\item \textbf{Typing the boundary.}  The most interesting and important contribution of this document is characterizing the 
+\emph{boundary type}, which describes the communication between the two stages.  
+Figuring out the boundary type is a self-contained problem, 
+in that the boundary type of a term depends only on the boundary types of its subterms.
 
-\section{Goals}
+\item \textbf{Typing the rest.}  With a good characterization of the boundary type,
+we can then consider the broader question of assigning types to the outputs of splitting.
+\end{enumerate}
 
-We'll start with a very simple input language, the boundary of which can be typed in an easy way.
-We'll then start adding features to the language, thereby inducing complexity in the boundary type system.
+For the most part, all of the complication lies in typing the boundary.
+Relative to that, the second part is straight-forward 
+(with the exception of mixed-stage sums, which add some details that are independent of the boundary type).
 
-For the most part, we'll do all of our work with a single new judgement $\btj e A w \tau$, 
+Most of the complication in boundary typing arises from two sources: divergence and higher-order functions,
+with the combination of these features introducing even further complexities.
+Accordingly, this document proceeds by first considering a fragment of the language with
+divergence but only first-order recursive functions (Section \ref{sec:firstorder}),
+before considering a language with order functions (Section \ref{sec:higherorder}),
+and the finally putting it all together.
+
+\section{Input Language Fragments}
+
+This section defines a few input language fragments for later reference.
+Those fragments include ``core'' features (\emph{i.e.} simple ones that present no difficulty for any typing system), 
+if expressions, first-order recursive functions, higher-order functions, and finally sum/recursive types.
+The two function fragments will be used exclusively.
+
+\begin{framed}
+\noindent\textbf{Core Features (Base Types, Products, Circles, Let):}
+\begin{mathpar}
+\infertypeswor [\rmunit] 	{\ty {\tup{}}\rmunit}								{\cdot} 																	\and
+\infertypeswor [int]		{\ty {i} \rmint}									{\cdot}																		\and
+\infertypeswor [hold]		{\typestwo {\pause e} \rmint}						{\typesone e \rmint}				 										\and
+\infertypeswor [int]		{\ty {b} \rmbool}									{\cdot}																		\and
+\infertypeswor [hold]		{\typestwo {\pause e} \rmbool}						{\typesone e \rmbool}				 										\and
+\infertypeswor [\times I]	{\ty {\tup{e_1,e_2}}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 												\and
+\infertypeswor [\times E_1]	{\ty {\pio e} A}									{\ty e {A\times B}} 														\and
+\infertypeswor [\times E_2]	{\ty {\pit e} B}									{\ty e {A\times B}} 														\and
+\infertypeswor [\fut I]		{\typesone {\next e}{\fut A}}						{\typestwo e A} 															\and
+\infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\and
+\infertypeswor [\fut E]		{\ty {\letin x {e_1} {e_2}} B}						{\ty {e_1} A & \ty [,\col x A] {e_2} B } 									\and
+\end{mathpar}
+\end{framed}
+
+\begin{framed}
+\noindent\textbf{If Expressions:}
+\begin{mathpar}
+\infertypeswor [+ E]		{\ty {\ifthen{e_1}{e_2}{e_3}} A}					{\ty {e_1}\rmbool & \ty{e_2} A & \ty{e_3} A}
+\end{mathpar}
+\end{framed}
+
+We implement first order recursive functions by introducing a new typing judgement \mbox{$\colfun f {A\to B} w$},
+which says that $f$ is a function from $A$ to $B$ at world $w$.  
+We use a different typing judgement here in order to keep functions and other values distinct.
+We also allow let statements to work for second stage functions 
+(for reasons explained later, first stage function lets can be safely eliminated \emph{a priori} by substitution).
+Note how the only way to derive a function type is to directly declare a function, or to assume it.
+\begin{framed}
+\noindent\textbf{First-Order Recursive Functions:}
+\begin{mathpar}
+\infertypeswor [\to I]		{\Gamma \vdash \colfun {\fix fx{e_1}} {A \to B} w}	{\ty [,\colfun f {A \to B} w,\col x A] {e_1} B} 							\and
+%\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
+\infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\Gamma \vdash \colfun {e_1} {A \to B} w & \ty {e_2} A} 					\and
+\infertypeswor [\fut E]		{\typestwo {\letin x {e_1} {e_2}} B}				{\Gamma \vdash \colfun {e_1} {A \to B} \bbtwo 
+																				&\typestwo [\Gamma,\colfun x {A \to B} \bbtwo] {e_2} B } 					\and
+\end{mathpar}
+\end{framed}
+
+\begin{framed}
+\noindent\textbf{Higher-Order Functions:}
+\begin{mathpar}
+\infertypeswor [\to I]		{\ty {\lam {x}{e}} {A \to B}}						{\ty [,\col x A] e B} 														\and
+%\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
+\infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 										\and
+\end{mathpar}
+\end{framed}
+
+\begin{framed}
+\noindent\textbf{Sums and Recursion:}
+\begin{mathpar}
+\infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A} 																	\and
+\infertypeswor [+ I_2]		{\ty {\inr e} {A + B}}								{\ty e B} 																	\and
+\infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}			{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C}	\and
+\infertypeswor [\mu I]		{\ty {\roll e} {\mu \alpha.\tau}}					{\ty e {[\mualphatau / \alpha]\tau}} 										\and
+\infertypeswor [\mu E]		{\ty {\unroll e} {[\mualphatau / \alpha]\tau}}		{\ty e \mualphatau} 														\and
+\end{mathpar}
+\end{framed}
+
+\section{Values and Computations}
+
+...
+
+\section{First Order Recursive Functions}
+\label{sec:firstorder}
+
+For the most part, we'll do all of our work with a single new judgment \mbox{$\btj e A w \tau$}, 
 which indicates that the expression $e$ (which has type $A$ at world $w$) has the boundary type $\tau$.
-Ideally, the splitting rules will agree with the boundary type given to us by this judgment.
-That is, if $\btj e A \bbtwo \tau $ and $\splittwo{e}{A}{p}{l}{r}$, 
+The goal is for the splitting rule to agree with the boundary type given to us by this judgment.
+That is, if $\btj e A \bbtwo \tau$ and $\splittwo{e}{A}{p}{l}{r}$, 
 then $p:\tau$ and $l:\tau \vdash r:A$ (and a similar relationship at stage \bbone, covered later).
-Mind you, we don't actually bother checking that property in this document.
 
-\section{Straight-line Code}
+\subsection{Straight-line Code}
 
-We first consider an input language which has no functions or divergence.
+Consider an input language which has no functions or divergence.
 At either stage, the boundary type of any expression is 
 just the product of the boundary types of its subexpressions
 (unit in the nullary case).
 The only exception to this pattern is the $\pause$ rule,
-which also multiplies an int into the boundary type.
+which also multiplies an integer into the boundary type.
 
 \begin{mathpar}
 \infer {\btyw i {\rm int}\rmunit} {\cdot} \and
 \infer {\btyw b {\rm bool}\rmunit} {\cdot} \and
-\infer {\btyw {(e_1,e_2)} {A \times B} {\tau_1 \times \tau_2}} 
+\infer {\btyw {\tup{e_1,e_2}} {A \times B} {\tau_1 \times \tau_2}} 
 	{\btyw {e_1} A {\tau_1} 
 	&\btyw {e_2} B {\tau_2}} \and
 \infer {\btyw {\pio e} A \tau} 
@@ -87,60 +177,26 @@ which also multiplies an int into the boundary type.
 	{\btyo e \rmint \tau}
 \end{mathpar}
 
-Finally, we look at the let and var rules.
+Finally, we look at the let rule, which introduces a variable into the context.\footnote{
+Note the use of {\em hypothetical judgments}, 
+wherein the judgements for a variable are given as assumptions at a declaration site rather than a rule for the reference site.
+For now, the use of hypothetical judgments is merely a stylistic difference,
+but it will become important when things get more complicated.}
 
 \begin{mathpar}
-\infer [let] {\btyw {\letin x {e_1} {e_2}} {B} {\tau_1 \times \tau_2}} 
+\infer {\btyw {\letin x {e_1} {e_2}} {B} {\tau_1 \times \tau_2}} 
 	{\btyw {e_1} A {\tau_1} 
-	&\btyw [\Gamma,\btj x A w \rmunit] {e_2} B {\tau_2}} \and
-\infer [var] {\btyw [\Gamma,\btj x A w \rmunit] {x} A \rmunit} {\cdot}
+	&\btyw [\Gamma,\btj x A w \rmunit] {e_2} B {\tau_2}}
 \end{mathpar}
-Notice that we've defined these two rules in a slightly different way than usual.
-Typically, we'd say that whenever some variable $x$ is in the context 
-(because it was put there at a binder site),
-we can form the judgment that $x$ reference sites have a unit boundary.
-Instead what we've done is put the whole boundary type judgment in context at the binding site,
-and then we pull it out of the context at the reference site.
-Strictly speaking, the var rule is merely a special case of the 
-general structural rule stating ``you can use what you assume,'' so we'll omit it from here on out.
 
-This is a pretty common technique  called {\em hypothetical judgments}.
-For now, the use of hypothetical judgments is merely a stylistic difference,
-but it will become important when things get more complicated.
+Notice how variable is introduced with a unit boundary value. 
+This is because.
 
-\section{Adding Functions and Fixed Points}
-
-Lets turn this language to 11.  
-In addition to straight-line code, we'll add \texttt{if}s, functions, and fixed points,
-which the astute reader will notice is enough to make the language Turing-complete.
-Before getting into the rules, consider the following example, 
-where $E$ is some purely stage \bbone\ expression:
-
-\[
-\left(
-\tallif {E}
-	{(\lam x \rmint {\next\{\pause\{x\}+1\})}}
-	{(\lam x \rmint {\next\{\pause\{x\}+\pause\{x*x\}\}})}
-\right ) 5
-\]
-
-What do we expect the boundary type to be for this whole piece of code?
-Well, it depends. 
-If $E$ evaluates to true, then we'd expect the boundary type to be $\rmint$,
-but if $E$ evaluates to false, we'd expect the boundary type to be $\rmint \times \rmint$.
-Ergo, figuring out the boundary type of this piece of code is at least as hard 
-as figuring out what any given expression evaluates to.
-Of course, that's not decidable. Yikes. 
-
-Fortunately for us, that's not really the end of it.  
-Just because we can't know the boundary type of a piece of code doesn't mean we can't say anything.  
-Maybe instead of giving the {\em exact} answer, we can give a list of possibilities.
-
-\section{Adding Just \texttt{if}-Expressions}
+\section{First-Order Recursive Functions}
 
 So to explore what this means, lets dial back the language a bit.  
-In addition to straight-line from before, lets just add \texttt{if} expressions.
-It turns out this is easy to integrate into the existing framework:
+In addition to straight-line from before, lets just add \texttt{if} expressions. 
+It turns out this is easy to integrate into the existing framework: 
 
 \begin{mathpar}
 \infer {\btyo {\ifthen {e_1}{e_2}{e_3}} {A} {\tau_1 \times (\tau_2 + \tau_3)}} 
@@ -153,58 +209,105 @@ It turns out this is easy to integrate into the existing framework:
 	&\btyt {e_3} A {\tau_3}}
 \end{mathpar}
 
-The only particular care we took here was to observe speculation in the stage \bbtwo\ case,
+The only particular care we took here was to observe speculative behavior in the stage \bbtwo\ case,
 which induces a product (whereas stage \bbone\ had a sum).
 We can rewrite the problematic example in our restricted language 
 by distributing the application into the if and applying the lambda in both branches:
 \[
 \tallif {E}
-	{(\next\{\pause\{5\}+1\})}
-	{(\next\{\pause\{5\}+\pause\{5*5\}\})}
+	{\next{\pause{5}+1}}
+	{\next{\pause{5}+\pause{5*5}}}
 \]
 We our new rules, we can say that the boundary type of this expression is
 $\rmunit \times (\rmint + \rmint \times \rmint)$.
-Sure, this isn't the {\em exact} boundary type, 
-but it's as much as we can know without an oracle.
 
-\section{Adding Just Functions}
+\section{Adding Functions and Fixed Points}
+
+To get a taste of why the problem is hard,
+we consider adding lots of features, namely \texttt{if}s, functions, and fixed points.
+The astute reader will notice that these are enough to make the language Turing-complete.
+Before getting into the rules, consider the following example, 
+where $E$ is some purely stage \bbone\ expression:
+
+\[
+\left(
+\tallif {E}
+	{\lam x {\next{\pause{x}+1}}}
+	{\lam x {\next{\pause{x}+\pause{x*x}}}}
+\right ) 5
+\]
+
+What do we expect the eventual boundary value for this whole piece of code to be?
+Well, it depends. 
+If $E$ evaluates to true, then we'd expect the boundary value to be an integer (that is, have type $\rmint$),
+but if $E$ evaluates to false, we'd expect the boundary value to be the tuple of two integers (that is, have type $\rmint \times \rmint$).
+Ergo, the only way to have a boundary type for this whole piece of code is to either,
+\begin{itemize}
+\item figure out what $E$ evaluates, or
+\item use a description for boundary types that mentions both $\rmint$ and $\rmint \times \rmint$, 
+without committing to one.
+\end{itemize}
+
+Of course, since our language is Turing complete, figuring out what $E$ evaluates to is not decidable,
+so we'll go with the second option.
+
+\section{Higher-Order Functions}
+\label{sec:higherorder}
 
 Lets now take a different stab at this, by adding functions to our straight-line code,
 but leaving \texttt{if}s out for now.
 Again, lets consider an example:
 \[
-L1 := (\lam x \rmint {\next\{5\}})
+L1 := \lam x {\next{5}}
 \]
 The boundary type of $L1$ is obviously unit, right?
 After all, lambdas are values, and values have unit boundary.
 So then what about this example:
 \[
-L2 := (\lam x \rmint {\next\{\pause\{x\}+1\}})
+L2 := \lam x {\next{\pause{x}+1}}
 \]
-I'd like to think it's the same story.
+I'd like to think it's the same story: unit boundary.
 But what if we apply a value to these functions?
 Consider
 \[
-(\lam x \rmint {\next\{5\}})~3
+\app {\lam x {\next{5}}} 3
 \]
 versus
 \[
-(\lam x \rmint {\next\{\pause\{x\}+1\}})~3
+\app {\lam x {\next{\pause{x}+1}}} 3
 \]
 The boundary type of the first expression should still be unit 
-(even after substitution it has no $\pause$s),
+(even after substitution it has no {\tt hold}s),
 but the bound type of the second expression should definitely be int.
 
 There's a problem here: $L1$ and $L2$ had the same boundary type before application, but different ones after.
-This suggests that if we want the boundary type to be a compositional property (rather than global),
-then we'll need to keep track of more information.
+This suggests that if we want the boundary type to be a compositional property,
+then we'll need to keep track of more information than we do above.
 
-We do this by making a distinction between the {\em internal} boundary of an expression,
-and its {\em external} boundary.  
-$L1$ and $L2$ have the same external boundary, namely unit,
-but they have different internal boundaries.  
-In particular, the interal boundary of $L1$ should be int (or isomorphic to it), 
-whereas the internal boundary of $L2$ should be unit.
+\subsection{Adding Boundary Annotations}
+
+Our first attempt at a solution will be to add more information to function types in our input language.
+This new information simply tells us what the boundary type will be yielded when the function is applied.
+
+[solution where we write the boundary type above the arrows]
+
+\subsection{Separating Internal and External Boundaries}
+
+There's something unsatisfying about this solution. 
+The type system of the input language was perfectly functional before all this mess about boundary types.
+
+[show how to separate the internal from external boundaries]
+
+\subsection{Higher order funcitons}
+
+[Take the system from the previous section and consider higher-order functions.]
+
+% We do this by making a distinction between the {\em internal} boundary of an expression,
+% and its {\em external} boundary.  
+% $L1$ and $L2$ have the same external boundary, namely unit,
+% but they have different internal boundaries.  
+% In particular, the interal boundary of $L1$ should be int (or isomorphic to it), 
+% whereas the internal boundary of $L2$ should be unit.
 
 % Consider a language with products and functions.  The internal boundary kind is given by:
 
