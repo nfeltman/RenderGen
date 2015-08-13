@@ -103,6 +103,7 @@ The two function fragments will be used exclusively.
 We implement first order recursive functions by introducing a new typing judgement \mbox{$\colfun f {A\to B} w$},
 which says that $f$ is a function from $A$ to $B$ at world $w$.  
 We use a different typing judgement here in order to keep functions and other values distinct.
+That is, the $\to$ connective only ever appears to the right of ``$:>$'', and never to the right of a ``$:$".
 We also allow let statements to work for second stage functions 
 (for reasons explained later, first stage function lets can be safely eliminated \emph{a priori} by substitution).
 Note how the only way to derive a function type is to directly declare a function, or to assume it.
@@ -112,8 +113,8 @@ Note how the only way to derive a function type is to directly declare a functio
 \infertypeswor [\to I]		{\Gamma \vdash \colfun {\fix fx{e_1}} {A \to B} w}	{\ty [,\colfun f {A \to B} w,\col x A] {e_1} B} 							\and
 %\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
 \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\Gamma \vdash \colfun {e_1} {A \to B} w & \ty {e_2} A} 					\and
-\infertypeswor [\fut E]		{\typestwo {\letin x {e_1} {e_2}} B}				{\Gamma \vdash \colfun {e_1} {A \to B} \bbtwo 
-																				&\typestwo [\Gamma,\colfun x {A \to B} \bbtwo] {e_2} B } 					\and
+\infertypeswor [\fut E]		{\typestwo {\letin f {e_1} {e_2}} B}				{\Gamma \vdash \colfun {e_1} {A \to B} \bbtwo 
+																				&\typestwo [\Gamma,\colfun f {A \to B} \bbtwo] {e_2} B } 					\and
 \end{mathpar}
 \end{framed}
 
@@ -139,7 +140,63 @@ Note how the only way to derive a function type is to directly declare a functio
 
 \section{Values and Computations}
 
-...
+It turns out that, for the purposes of splitting, it will be handy to differentiate terms into two classes: 
+\emph{values} which are fully reduced, and \emph{computations} which may have some reduction remaining.
+Importantly, we want to \emph{explicitly note} when subterms of a computation are actually values,
+and so we introduce a new piece of syntax to mark just that inclusion: the underline constructor, written $\exv v$
+where $v$ is a term (more precisely, a value).  
+Note that the type of the underline is just the type of it's contents, which avoids interaction with the type system.
+
+Because staging and the value/computation distinction are both related to reduction, they will interact non-trivially.
+For this reason, we'll first devise a  system for a monostage language, before then considering a staged language.
+
+\subsection{Monostage System}
+
+Priori work has observed the difference between values and computations
+via a syntactic distinction (i.e. saying there are two kinds of terms, value-terms and computation-terms).
+We instead observe the difference judgementally: there's only one kind of term, 
+but there are two judgements ($\valsym$ and $\compsym$) which classify terms as one or the other.
+
+For instance, the aforementioned underline constructor always yields a computation,
+but its contents are a value:
+
+\begin{framed}
+\noindent\textbf{Underlines:}
+\begin{mathpar}
+\infer {\exv v \comp} {v \val} \and
+\infer {\exv v : A} {v : A} 
+\end{mathpar}
+\end{framed}
+
+Int, bool, and unit base terms are always values.  
+Intro forms, (tuples, injections, and rolls) are values so long as all their subterms are.
+
+\begin{framed}
+\noindent\textbf{Standard Values:}
+\begin{mathpar}
+\infer {\Gamma \vdash \tup{} \val}						{\cdot} 											\and
+\infer {\Gamma \vdash i \val}							{\cdot}												\and
+\infer {\Gamma \vdash b \val}							{\cdot}												\and
+\infer {\Gamma \vdash \tup{e_1,e_2} \val}				{\Gamma \vdash e_1 \val & \Gamma \vdash e_2 \val} 	\and
+\infer {\Gamma \vdash \inl e \val}						{\Gamma \vdash e \val} 								\and
+\infer {\Gamma \vdash \inr e \val}						{\Gamma \vdash e \val} 								\and
+\infer {\Gamma \vdash \roll e \val}						{\Gamma \vdash e \val} 										
+\end{mathpar}
+\end{framed}
+
+Inversely, intro forms are also computations whenever all of the subterms are.
+The elim forms, lets, and ifs are always computations.
+Note that because we're studying a call-by-value language, all variables are introduced as values.
+
+\begin{framed}
+\noindent\textbf{Standard Computations:}
+\begin{mathpar}
+\infer {\Gamma \vdash \tup{e_1,e_2} \comp}				{\Gamma \vdash e_1 \comp & \Gamma \vdash e_2 \comp} 	\and
+\infer {\Gamma \vdash \inl e \comp}						{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \inr e \comp}						{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \roll e \comp}					{\Gamma \vdash e \comp} 										
+\end{mathpar}
+\end{framed}
 
 \section{First Order Recursive Functions}
 \label{sec:firstorder}
