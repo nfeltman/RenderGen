@@ -40,7 +40,7 @@
 \newcommand {\ktype} {\rm Type}
 \newcommand {\ibk} [2] {{#1}~\ibksym~{#2}}
 \newcommand {\btj} [4] {{#1}:{#2}~\myatsign~{#3}~\btsym~{#4}}
-\newcommand {\ibtj} [3] {{#1}\colfunsym{#2}~\myatsign~\bbone~\ibtsym~{#3}}
+\newcommand {\ibtj} [3] {{#1}\colfunsym{#2}~\myatsign~\bbone~\hspace{-0.4em}\ibtsym\hspace{-0.2em}~{#3}}
 \newcommand {\btyo} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbone{#4}}
 \newcommand {\btyt} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}\bbtwo{#4}}
 \newcommand {\btyw} [4] [\Gamma] {{#1}\vdash \btj{#2}{#3}w{#4}}
@@ -83,20 +83,21 @@ This section is primarily intended to be a reference.
 \subsection{First-Order Recursive Functions}
 
 We implement first order recursive functions by introducing a new typing judgement \mbox{$f \colfunsym A \to B$},
-which says that $f$ is a function from $A$ to $B$.  
-We use a different typing judgement here in order to keep functions and other values distinct.
-That is, the $\to$ connective only ever appears to the right of ``$:>$'', and never to the right of a ``$:$".
-We also allow let statements to work for functions.
-Note how the only way to derive a function type is to directly declare a function, or to assume it as a variable.
+which says that $f$ is a function from $A$ to $B$.\footnote{We use $f$ for derived functions, and $u$ for variables refering to functions.}  
+Using a different judgement keeps functions and other values distinct.
+That is, the $\to$ connective only ever appears immediately to the right of ``$:>$'', and never to the right of a ``$:$".
+We also add a special {\tt letf} statement for reusing functions within terms.
+
 \begin{framed}
 \noindent\textbf{First-Order Recursive Functions:}
 \begin{mathpar}
-\infertypeswor [\to I]		{\Gamma \vdash {\fix fx{e_1}} \colfunsym {A \to B}}	{\types [\Gamma, f \colfunsym {A \to B},\col x A] {e_1} B} 							\and
-\infertypeswor [\to E]		{\types {\app {e_1}{e_2}} {B}}							{\Gamma \vdash {e_1} \colfunsym {A \to B} & \ty {e_2} A} 					\and
-\infertypeswor [\fut E]		{\types {\letin f {e_1} {e_2}} B}				{\Gamma \vdash {e_1} \colfunsym {A \to B} 
-																			&\types [\Gamma, f \colfunsym {A \to B}] {e_2} B } 					\and
+\infertypeswor [\to I]		{\Gamma \vdash {\fix ux{e}} \colfunsym {A \to B}}	{\types [\Gamma, u \colfunsym {A \to B},\col x A] {e} B} 							\and
+\infertypeswor [\to E]		{\types {\app {f}{e}} {B}}							{\Gamma \vdash {f} \colfunsym {A \to B} & \ty {e} A} 					\and
+\infertypeswor [\fut E]		{\types {\letfin u {f} {e}} C}						{\Gamma \vdash {f} \colfunsym {A \to B} 
+																				&\types [\Gamma, u \colfunsym {A \to B}] e C } 					\and
 \end{mathpar}
 \end{framed}
+The important thing to note here is that functions have only two forms: direct declaration or reference to an assumed variable.
 
 \subsection{Values and Computations}
 
@@ -149,18 +150,21 @@ Note that because we're studying a call-by-value language, all variables are int
 \begin{framed}
 \noindent\textbf{Standard Computations:}
 \begin{mathpar}
-\infer {\Gamma \vdash \tup{e_1,e_2} \comp}				{\Gamma \vdash e_1 \comp & \Gamma \vdash e_2 \comp} 	\and
-\infer {\Gamma \vdash \inl e \comp}						{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \inr e \comp}						{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \roll e \comp}					{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \pio e \comp}						{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \pit e \comp}						{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \unroll e \comp}					{\Gamma \vdash e \comp} 								\and
-\infer {\Gamma \vdash \ifthen{e_1}{e_2}{e_3} \comp}		{\Gamma \vdash e_1 \comp 
-														&\Gamma \vdash e_2 \comp 
-														&\Gamma \vdash e_3 \comp}	\and
-\infer {\Gamma \vdash \letin x {e_1} {e_2} \comp}		{\Gamma \vdash e_1 \comp 
-														& \Gamma, x \val \vdash e_2 \comp } 				
+\infer {\Gamma \vdash \tup{e_1,e_2} \comp}					{\Gamma \vdash e_1 \comp & \Gamma \vdash e_2 \comp} 	\and
+\infer {\Gamma \vdash \inl e \comp}							{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \inr e \comp}							{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \roll e \comp}						{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \pio e \comp}							{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \pit e \comp}							{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \unroll e \comp}						{\Gamma \vdash e \comp} 								\and
+\infer {\Gamma \vdash \letin x {e_1} {e_2} \comp}			{\Gamma \vdash e_1 \comp 
+															& \Gamma, x \val \vdash e_2 \comp } 					\and
+\infer {\Gamma \vdash \ifthen{e_1}{e_2}{e_3} \comp}			{\Gamma \vdash e_1 \comp 
+															&\Gamma \vdash e_2 \comp 
+															&\Gamma \vdash e_3 \comp}								\and
+\infer {\Gamma\vdash\caseof{e_1}{x_2.e_2}{x_3.e_3}\comp}	{\Gamma \vdash e_1 \comp 
+															& \Gamma, x_2 \val \vdash e_2 \comp 
+															& \Gamma, x_3 \val \vdash e_3 \comp } 				
 \end{mathpar}
 \end{framed}
 
@@ -181,7 +185,8 @@ For this reason, first-order functions don't really participate in the value/com
 \begin{framed}
 \noindent\textbf{First-Order Recursive Functions:}
 \begin{mathpar}
-\infer {\Gamma \vdash \app{e_1}{e_2} \comp}	{\Gamma \vdash e_2 \comp}
+\infer {\Gamma \vdash \app{f}{e} \comp}	{\Gamma \vdash e \comp} \and
+\infer {\Gamma \vdash \letfin{u}f{e} \comp}	{\Gamma \vdash e \comp}
 \end{mathpar}
 \end{framed}
 
@@ -211,17 +216,28 @@ The two function fragments will be used exclusively.
 \end{mathpar}
 \end{framed}
 
+The important thing to note when extending the value/computation system to stages is that
+we care about values \emph{with respect to the first pass of evaluation}.
+Thus $e \valt$ essentially means that $e$ is a residual.
+
 \begin{framed}
 \noindent\textbf{Core Feature Values/Computations:}
 \begin{mathpar}
-\infer {\Gamma \vdash \exv e \compo} 					{\Gamma \vdash e \valo} 								\and
-\infer {\Gamma \vdash \tup{} \valo}						{\cdot} 												\and
-\infer {\Gamma \vdash i \valo}							{\cdot}													\and
-\infer {\Gamma \vdash b \valo}							{\cdot}													\and
-\infer {\Gamma \vdash \tup{e_1,e_2} \valo}				{\Gamma \vdash e_1 \valo & \Gamma \vdash e_2 \valo} 	\and
-\infer {\Gamma \vdash \tup{e_1,e_2} \compo}				{\Gamma \vdash e_1 \compo & \Gamma \vdash e_2 \compo} 	\and
-\infer {\Gamma \vdash \pio e \compo}					{\Gamma \vdash e \compo} 								\and
-\infer {\Gamma \vdash \pit e \compo}					{\Gamma \vdash e \compo} 								\and
+\infer {\Gamma \vdash \exv e \compw} 					{\Gamma \vdash e \valw} 								\and
+\infer {\Gamma \vdash \tup{} \valw}						{\cdot} 												\and
+\infer {\Gamma \vdash i \valw}							{\cdot}													\and
+\infer {\Gamma \vdash b \valw}							{\cdot}													\and
+\infer {\Gamma \vdash \tup{e_1,e_2} \valw}				{\Gamma \vdash e_1 \valw & \Gamma \vdash e_2 \valw} 	\and
+\infer {\Gamma \vdash \tup{e_1,e_2} \compw}				{\Gamma \vdash e_1 \compw & \Gamma \vdash e_2 \compw} 	\and
+\infer {\Gamma \vdash \pio e \compw}					{\Gamma \vdash e \compw} 								\and
+\infer {\Gamma \vdash \pit e \compw}					{\Gamma \vdash e \compw} 								\and
+\infer {\Gamma \vdash \letin x{e_1}{e_2} \compw}		{\Gamma \vdash e_1 \compw & \Gamma, x \valw \vdash e_2 \compw} 						\\
+\infer {\Gamma \vdash \next e \valo}					{\Gamma \vdash e \valt} 								\and
+\infer {\Gamma \vdash \next e \compo}					{\Gamma \vdash e \compt} 								\and
+\infer {\Gamma \vdash \prev e \compt}					{\Gamma \vdash e \compo} 								\\
+\infer {\Gamma \vdash \pio e \valt}						{\Gamma \vdash e \valt} 								\and
+\infer {\Gamma \vdash \pit e \valt}						{\Gamma \vdash e \valt} 								\and
+\infer {\Gamma \vdash \letin x{e_1}{e_2} \valt}			{\Gamma \vdash e_1 \valt & \Gamma, x \valt \vdash e_2 \valt} 						
 \end{mathpar}
 \end{framed}
 
@@ -229,27 +245,32 @@ The two function fragments will be used exclusively.
 \noindent\textbf{If Expressions:}
 \begin{mathpar}
 \infertypeswor [+ E]		{\ty {\ifthen{e_1}{e_2}{e_3}} A}	{\ty {e_1}\rmbool & \ty{e_2} A & \ty{e_3} A} \and
-\infer {\Gamma \vdash \ifthen{e_1}{e_2}{e_3} \compo}			{\Gamma \vdash e_1 \compo 
-																&\Gamma \vdash e_2 \compo 
-																&\Gamma \vdash e_3 \compo}
+\infer {\Gamma \vdash \ifthen{e_1}{e_2}{e_3} \compw}			{\Gamma \vdash e_1 \compw 
+																&\Gamma \vdash e_2 \compw 
+																&\Gamma \vdash e_3 \compw} \and
+\infer {\Gamma \vdash \ifthen{e_1}{e_2}{e_3} \valt}				{\Gamma \vdash e_1 \valt 
+																&\Gamma \vdash e_2 \valt 
+																&\Gamma \vdash e_3 \valt}
 \end{mathpar}
 \end{framed}
 
-We implement first order recursive functions by introducing a new typing judgement \mbox{$\colfun f {A\to B} w$},
-which says that $f$ is a function from $A$ to $B$ at world $w$.  
-We use a different typing judgement here in order to keep functions and other values distinct.
-That is, the $\to$ connective only ever appears to the right of ``$:>$'', and never to the right of a ``$:$".
-We also allow let statements to work for second stage functions 
-(for reasons explained later, first stage function lets can be safely eliminated \emph{a priori} by substitution).
-Note how the only way to derive a function type is to directly declare a function, or to assume it.
+
+As in the monostage system, first-stage first-order functions don't participate in the value/computation system.
+Second-stage functions do, however, since we need to mark whether they contain first stage code.
 \begin{framed}
 \noindent\textbf{First-Order Recursive Functions:}
 \begin{mathpar}
-\infertypeswor [\to I]		{\Gamma \vdash \colfun {\fix fx{e_1}} {A \to B} w}	{\ty [,\colfun f {A \to B} w,\col x A] {e_1} B} 							\and
-%\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
-\infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\Gamma \vdash \colfun {e_1} {A \to B} w & \ty {e_2} A} 					\and
-\infertypeswor [\fut E]		{\typestwo {\letin f {e_1} {e_2}} B}				{\Gamma \vdash \colfun {e_1} {A \to B} \bbtwo 
-																				&\typestwo [\Gamma,\colfun f {A \to B} \bbtwo] {e_2} B } 					\and
+\infertypeswor [\to I]		{\Gamma \vdash \colfun {\fix ux{e}} {A \to B} w}	{\ty [,\colfun u {A \to B} w,\col x A] {e} B} 							\and
+%\infertypeswor [fix]		{\ty {\fix uxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
+\infertypeswor [\to E]		{\ty {\app {f}{e}} {B}}								{\Gamma \vdash \colfun f {A \to B} w & \ty e A} 					\and
+\infertypeswor [\fut E]		{\ty {\letfin u f e} B}								{\Gamma \vdash \colfun f {A \to B} w 
+																				&\ty [,\colfun u {A \to B} w] e B } 					\and
+\infer {\Gamma \vdash \fix uxe \valw}											{\Gamma, u \valw, x \valw \vdash e \valw}				\and
+\infer {\Gamma \vdash \fix uxe \compt}											{\Gamma, u \valt, x \valt \vdash e \compt}				\and
+\infer {\Gamma \vdash \app{f}{e} \compw}										{\Gamma \vdash e \compw}								\and
+\infer {\Gamma \vdash \app{f}{e} \valt}											{\Gamma \vdash e \valt}									\and
+\infer {\Gamma \vdash \letfin{u}f{e} \compo}									{\Gamma \vdash e \compo}								\and
+\infer {\Gamma \vdash \letfin{u}f{e} \compt}									{\Gamma, u \compt \vdash e \compt}
 \end{mathpar}
 \end{framed}
 
@@ -257,28 +278,30 @@ Note how the only way to derive a function type is to directly declare a functio
 \noindent\textbf{Higher-Order Functions:}
 \begin{mathpar}
 \infertypeswor [\to I]		{\ty {\lam {x}{e}} {A \to B}}						{\ty [,\col x A] e B} 														\and
-%\infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
+%\infertypeswor [fix]		{\ty {\fix uxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
 \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 										\and
+...
 \end{mathpar}
 \end{framed}
 
 \begin{framed}
 \noindent\textbf{Sums and Recursion:}
 \begin{mathpar}
-\infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A} 																	\and
-\infertypeswor [+ I_2]		{\ty {\inr e} {A + B}}								{\ty e B} 																	\and
-\infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}			{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C}	\and
-\infertypeswor [\mu I]		{\ty {\roll e} {\mu \alpha.\tau}}					{\ty e {[\mualphatau / \alpha]\tau}} 										\and
-\infertypeswor [\mu E]		{\ty {\unroll e} {[\mualphatau / \alpha]\tau}}		{\ty e \mualphatau} 														\and
-\infer {\Gamma \vdash \inl e \valo}						{\Gamma \vdash e \valo} 								\and
-\infer {\Gamma \vdash \inl e \compo}					{\Gamma \vdash e \compo} 								\and
-\infer {\Gamma \vdash \inr e \valo}						{\Gamma \vdash e \valo} 								\and
-\infer {\Gamma \vdash \inr e \compo}					{\Gamma \vdash e \compo} 								\and
-\infer {\Gamma \vdash \roll e \valo}					{\Gamma \vdash e \valo} 								\and
-\infer {\Gamma \vdash \roll e \compo}					{\Gamma \vdash e \compo} 								\and
-\infer {\Gamma \vdash \unroll e \compo}					{\Gamma \vdash e \compo} 								\and
-\infer {\Gamma \vdash \letin x {e_1} {e_2} \compo}		{\Gamma \vdash e_1 \compo 
-														& \Gamma, x \valo \vdash e_2 \compo } 	
+...
+% \infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A} 																	\and
+% \infertypeswor [+ I_2]		{\ty {\inr e} {A + B}}								{\ty e B} 																	\and
+% \infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}			{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C}	\and
+% \infertypeswor [\mu I]		{\ty {\roll e} {\mu \alpha.\tau}}					{\ty e {[\mualphatau / \alpha]\tau}} 										\and
+% \infertypeswor [\mu E]		{\ty {\unroll e} {[\mualphatau / \alpha]\tau}}		{\ty e \mualphatau} 														\and
+% \infer {\Gamma \vdash \inl e \valo}						{\Gamma \vdash e \valo} 								\and
+% \infer {\Gamma \vdash \inl e \compo}					{\Gamma \vdash e \compo} 								\and
+% \infer {\Gamma \vdash \inr e \valo}						{\Gamma \vdash e \valo} 								\and
+% \infer {\Gamma \vdash \inr e \compo}					{\Gamma \vdash e \compo} 								\and
+% \infer {\Gamma \vdash \roll e \valo}					{\Gamma \vdash e \valo} 								\and
+% \infer {\Gamma \vdash \roll e \compo}					{\Gamma \vdash e \compo} 								\and
+% \infer {\Gamma \vdash \unroll e \compo}					{\Gamma \vdash e \compo} 								\and
+% \infer {\Gamma \vdash \letin x {e_1} {e_2} \compo}		{\Gamma \vdash e_1 \compo 
+% 														& \Gamma, x \valo \vdash e_2 \compo } 	
 \end{mathpar}
 \end{framed}
 
@@ -359,15 +382,20 @@ This is called the \emph{internal boundary type} of $g$.
 
 Our system works by associating every function derivation \mbox{$\colfun g {A \to B} \bbone$} with an internal boundary type $\sigma$
 via the judgement $\ibtj g {A \to B} \sigma$.  
-Functions delcared at world $\bbtwo$ do not need internal boundar types.
+Functions declared at world $\bbtwo$ do not need internal boundary types.
 
 \begin{framed}
 \noindent\textbf{First-Order Recursive Function Boundary Types:}
 \begin{mathpar}
-\infer {\btyo {\app {f}{e}} {A} {\tau \times \sigma}} 
+\infer {\ibtyo {\fix uxe} {A \to B} {\mu \alpha.\tau}} 
+	{\btyo [\Gamma, \alpha \wf, \ibtj u {A \to B} {\alpha}] e B {\tau}} \and
+\infer {\btyo {\app {f}{e}} {B} {\tau \times \sigma}} 
 	{\ibtyo {f} {A \to B} {\sigma} 
 	&\btyo {e} A {\tau}} \and
-% \infer {\btyt {\fix fxe} {A} {\tau}} 
+\infer {\btyo {\letin u f e} C \tau}
+	{\ibtyo {f} {A \to B} {\sigma} 
+	&\btyo [\Gamma, \ibtj u {A \to B} \sigma] {e} C {\tau}}
+% \infer {\btyt {\fix uxe} {A} {\tau}} 
 % 	{\btyt {e} A {\tau}} \and
 % \infer {\btyt {\app {f}{e}} {A} {\tau}} 
 % 	{\btyt {e} A {\tau}} \and
@@ -377,7 +405,10 @@ Functions delcared at world $\bbtwo$ do not need internal boundar types.
 \end{mathpar}
 \end{framed}
 
-
+The interesting case here is function. 
+Essentially, this works by inventing a type variable $\alpha$ and using that as the internal boundary type of the recursive function variable $u$.
+This yields a boundary type $\tau$ for the function body which is open on $\alpha$.
+This is then wrapped with a least-fixed-point to yield the internal boundary type for the whole function.
 
 % \section{Adding Functions and Fixed Points}
 
