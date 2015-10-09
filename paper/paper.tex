@@ -1,8 +1,8 @@
-\documentclass[preprint]{sigplanconf}
+\documentclass{llncs}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{amsthm}
+%\usepackage{amsthm}
 \usepackage{stmaryrd}
 \usepackage{proof}
 \usepackage{mathpartir}
@@ -31,15 +31,15 @@
 \captionsetup[subfigure]{subrefformat=simple,labelformat=simple}
 \renewcommand\thesubfigure{(\alph{subfigure})}
 
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem*{theorem*}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{theorem*}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{remark}[theorem]{Remark}
 
 \input{macros}
 \input{macros-ref}
-\input{remarks}
+%\input{remarks}
 
 \definecolor{stageOneColor}{RGB}{120,30,0}
 \definecolor{stageTwoColor}{RGB}{0,0,127}
@@ -75,9 +75,6 @@
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
 
-\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country} 
-\copyrightyear{20yy} 
-\copyrightdata{978-1-nnnn-nnnn-n/yy/mm} 
 %\doi{nnnnnnn.nnnnnnn}
 
 % Uncomment one of the following two, if you are not going for the 
@@ -96,9 +93,6 @@
 \title{Automatically Splitting a Two-Stage Lambda Calculus}
 \subtitle{}
 
-\authorinfo{~}%Nicolas Feltman \and Carlo Angiuli \and Umut A. Acar \and Kayvon Fatahalian}
-           {~}%Carnegie Mellon University}
-           {~}%\{nfeltman,cangiuli,umut,kayvonf\}@cs.cmu.edu}
 
 \maketitle
 
@@ -132,13 +126,13 @@
 \input{relatedwork}
 \input{conclusion}
 
-%\input{umut}
 
 %\acks
 %Acknowledgments, if needed.
 
+\newpage
 \bibliography{paper}
-\bibliographystyle{abbrvnat}
+\bibliographystyle{splncs03}
 
 %% %\vfill\eject\pagebreak
 
