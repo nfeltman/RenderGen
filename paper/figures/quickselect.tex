@@ -1,57 +1,62 @@
 %!TEX root = ../paper.tex
 
-\begin{figure*}[t]
-\begin{subfigure}[t]{0.45\textwidth}
+\begin{figure}[t]
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
+datatype list = Empty 
+              | Cons of int * list
 
-datatype list = Empty | Cons of int * list
 
-fun partition (p, Empty) = (0,Empty, Empty) 
-  | partition (p, Cons (h,t)) = 
-    let val (s,left,right) = partition (p,t) 
-    in if h < p then (s+1,Cons(h,left),right) 
-             else (s,left,Cons(h,right))
+fun part (p, Empty) =(0,Empty,Empty) 
+  | part (p, Cons (h,t)) = 
+    let val (s,le,ri) = part (p,t) 
+    in if h < p 
+       then (s+1,Cons(h,le),ri) 
+       else (s,le,Cons(h,ri))
+
 
 qs: list * int -> int
 fun qs (Empty, k) = 0
   | qs (Cons ht, k) =
-    let val (i,left,right) = partition ht
-    in case compare k i of
-         LT => qs (left, k)
-       | EQ => #1 ht
-       | GT => qs (right, k-i-1)
-       
+    let val (i,le,ri) = part ht in 
+    case compare k i of
+      LT => qs (le, k)
+    | EQ => #1 ht
+    | GT => qs (ri, k-i-1)
+
 \end{lstlisting}
-\caption{Unstaged implementation of quickselect.}
+\caption{Unstaged quickselect.}
 \label{fig:qs-unstaged}
 \end{subfigure}
 \hfill
-\begin{subfigure}[t]{0.55\textwidth}
+\begin{subfigure}{0.5\textwidth}
 \begin{lstlisting} 
 3`atsigngr{`  
-1`datatype list = Empty | Cons of int * list
-
-fun partition (p, Empty) = ...  (* Same as in unstaged *)
-
-
-
+1`datatype list = Empty 
+              | Cons of int * list
+fun part (p, Empty) = ... 
 3`}`
 
 1`qss : ^list * $`2`int`1` -> $`2`int`1`
 fun qss (`3`gr{`1`Empty`3`}`1`,_) = next {`2`0`1`}
   | qss (`3`gr{`1`Cons ht`3`}`1`,next{`2`k`1`}) = 
-    let val `3`gr{`1`(i0,left,right)`3`}`1` = `3`gr{`1`partition ht`3`}`1`
-        val next{`2`i`1`} = hold `3`gr{`1`i0`3`}`1`
-    in next{`2` case compare k i of
-               LT => prev {`1`qss (`3`gr{`1`left`3`}`1`, next{`2`k`1`})`2`}
-             | EQ => prev {`1`hold `3`gr{`1`#1 ht`3`}`2`}
-             | GT => prev {`1`qss (`3`gr{`1`right`3`}`1`, next{`2`k-i-literalone`1`})`2`}`1`}`
+    let 
+      `3`atsigngr{`1`val (i0,le,ri) = part ht`3`}`1`
+      val next{`2`i`1`} = hold `3`gr{`1`i0`3`}`1`
+    in next{`2` 
+    case compare k i of
+      LT => prev {`1`
+            qss (`3`gr{`1`le`3`}`1`, next{`2`k`1`})`2`}
+    | EQ => prev {`1`hold `3`gr{`1`#1 ht`3`}`2`}
+    | GT => prev {`1`
+        qss (`3`gr{`1`ri`3`}`1`, next{`2`k-i-literalone`1`})`2`}
+    `1`}`
 \end{lstlisting}
-\caption{Staged implementation of quickselect in \lang.}
+\caption{Staged quickselect in \lang.}
 
 %\vspace{1.3em}
 \label{fig:qs-staged}
 \end{subfigure}
 \caption{Quickselect: traditional and staged.}
-\end{figure*}
+\end{figure}
 

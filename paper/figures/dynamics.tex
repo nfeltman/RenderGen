@@ -1,6 +1,6 @@
 %!TEX root = ../paper.tex
 
-\begin{figure*}
+\begin{figure}
 \begin{abstrsyn}
 % \begin{mathpar}
 % \fbox{(BS) Evaluation of \bbonem}	\and
@@ -132,7 +132,7 @@
 % \end{mathpar}
 % \hrule
 \begin{mathpar}
-\fbox{Reduction Rules}	\and
+%\fbox{Reduction Rules}	\and
 \inferstepone	{\red {\pio {\exv{\tup{v_1,v_2}}}} {\exv{v_1}}} 										{} \and
 \inferstepone	{\red {\pit {\exv{\tup{v_1,v_2}}}} {\exv{v_2}}} 										{} \and
 \inferstepone	{\red {\app {\exv{\fix fxe}}{\exv v}} {[\fix fxe,v/f,x]e}} 								{} \and
@@ -147,7 +147,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Value Marking Rules}	\and
+%\fbox{Value Marking Rules}	\and
 \inferstepw 	{\red {\tup{\exv {v_1},\exv {v_2}}} {\exv{\tup{v_1,v_2}}}} 								{\cdot} \and
 \inferstepGT 	{\red {\inl{\exv v}} {\exv{\inl v}}} 													{} \and
 \inferstepGT 	{\red {\inr{\exv v}} {\exv{\inr v}}} 													{} \and
@@ -159,7 +159,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Compatibility Rules}	\and
+%\fbox{Compatibility Rules}	\and
 \inferstepw		{\red 	{\scont e}
 						{\scont {e'}}}
 				{\sub {} &
@@ -244,7 +244,7 @@
 \end{mathpar}
 \hrule
 \begin{mathpar}
-\fbox{Hoisting Rules} \and
+%\fbox{Hoisting Rules} \and
 \inferlift 		{\red {\next {\exv q}} {\next {\exv y}}} {q \text{~not a variable}} \and
 \infersteptwo 	{\red {\prev e} {\letin q y {\prev {e'}}}} {\liftsub{}} \and
 \inferlift		{\red 	{\scont e} 
@@ -288,6 +288,6 @@
 \end{abstrsyn}
 \caption{First pass evaluation of \lang\ dynamics.}
 \label{fig:diaSemantics}
-\end{figure*}
+\end{figure}
 
 
