@@ -1,19 +1,30 @@
+%!TEX root = ../paper.tex
+
 \begin{figure}
 \begin{lstlisting}
-1`datatype list = Empty | Cons of int * list
-fun partition (p : int, l : list) = ...`
-
 datatype tree = Leaf
               | Branch of int * int * tree * tree
+
+\end{lstlisting}
+\begin{tabular}{l|l}
+\begin{lstlisting}
+1`datatype list = Empty 
+              | Cons of int * list
+fun part (p : int, l : list) = ...`
 
 1`fun qs1 (l : list) : tree =
   case l of
     Empty => Leaf
   | Cons ht => 
-      let val (left,right,i) = partition ht in
-      Branch (i, #1 ht, qs1 left, qs1 right)`
+      let val (i,le,ri) = part ht in 
+      Branch (i,#1 ht,qs1 le,qs1 ri)`
 
-2`fun qs2 (p : tree, k : int) : int = 
+\end{lstlisting}
+\hspace{1ex}
+&
+\hspace{1ex}
+\begin{lstlisting}
+2`fun qs2 (p : tree, k : int) :int= 
   case p of
     Leaf => 0
   | Branch (i,h,p1,p2) => 
@@ -22,6 +33,7 @@ datatype tree = Leaf
       | EQ => h
       | GT => qs2 (p2,k-i-1)`
 \end{lstlisting}
+\end{tabular}
 \caption{Two-pass implementation of quickselect.}
 \label{fig:qs-split}
 \end{figure}

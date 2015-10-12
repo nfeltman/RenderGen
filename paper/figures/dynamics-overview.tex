@@ -34,21 +34,6 @@
 % $u$ is a value.
 % \end{enumerate}
 
-\begin{theorem} [Progress] \leavevmode
-\label{thm:progress} 
-\begin{itemize} 
-\item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
-\item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
-\item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
-\end{itemize}
-\end{theorem}
-\begin{theorem} [Preservation] \leavevmode
-\label{thm:preservation} 
-\begin{itemize} 
-\item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
-\item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
-\end{itemize}
-\end{theorem}
 
 \end{abstrsyn}
 \caption{Type Safety Theorems.}

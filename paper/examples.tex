@@ -20,12 +20,8 @@ coordinates are first-stage, and the last coordinate is second-stage.
 1`type vec = ^int * ^int * $`2`int`
 
 1`dot : vec * vec -> $int
-fun dot (
-  (3`gr{`1`xliteralone`3`}`1`,`3`gr{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}): vec,
-  (3`gr{`1`xliteraltwo`3`}`1`,`3`gr{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`}): vec) = 
-next{
-  2`prev{`1`hold `3`gr{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)`
-1`}`
+fun dot ((3`gr{`1`xliteralone`3`}`1`,`3`gr{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}),(3`gr{`1`xliteraltwo`3`}`1`,`3`gr{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`})) = 
+  next{ 2`prev{`1`hold `3`gr{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)` 1`}`
 \end{lstlisting}
 %
 The body of \texttt{dot} is a \rmint{} term at world \bbtwo\ containing a
@@ -38,11 +34,8 @@ of the first stage, then multiply and add.
 Our algorithm splits \texttt{dot} into the two functions:
 %
 \begin{lstlisting} 
-1`fun dot1 ((x1,y1,()),(x2,y2,())) 
-  = ((), (x1*x2)+(y1*y2))`
-
-2`fun dot2 ((((),(),z1),((),(),z2)),l) 
-  = l+(z1*z2)`
+1`fun dot1 ((x1,y1,()), (x2,y2,()))    = ((), (x1*x2)+(y1*y2))`
+2`fun dot2 ((((),(),z1),((),(),z2)),l) = l+(z1*z2)`
 \end{lstlisting}
 %
 As expected, \texttt{dot1} returns \texttt{(x1*x2)+(y1*y2)} as the
@@ -128,25 +121,25 @@ second-stage.
 Stage-splitting \texttt{qss} produces:
 %
 \begin{lstlisting} 
-datatype list = Empty | Cons of int * list
 datatype tree = Leaf
               | Branch of int * tree * int * tree
+1`datatype list = Empty | Cons of int * list
 
-1`fun partition ((p,l):int*list) : (int*list*list) = 
+fun part ((p,l):int*list) : (int*list*list) = 
   case l of 
     Empty => (0,Empty, Empty) 
   | Cons (h,t) => 
-      let val (s,left,right) = partition (p,t) in 
+      let val (n,left,right) = part (p,t) in 
       if h<p 
-      then (s+1,Cons(h,left),right) 
-      else (s,left,Cons(h,right))
+      then (n+1,Cons(h,left),right) 
+      else (n,left,Cons(h,right))
 
 fun qs1 (l : list, k : unit) = 
   ((), case l of
     Empty => Leaf
   | Cons (h,t) => 
       Branch (
-        let val (left,right,n) = partition (h,t) in
+        let val (n,left,right) = part (h,t) in
         (n, #2 (qs1 left k), h, #2 (qs1 right k))))`
 
 2`fun qs2 (((), k : int), p : tree) = 

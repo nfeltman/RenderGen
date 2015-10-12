@@ -33,9 +33,7 @@ All represent computations which have no remaining work in the first stage.
 The typing judgment $\typeswor e A$, defined in \ref{fig:statics}, means that
 $e$ has type $A$ at world $w$, in the context $\Gamma$. 
 
-All three worlds contain unit, product, and function types defined in the usual fashion;
-sum and recursive types are provided for worlds \bbonep\ and \bbtwo.
-\footnote{We omit sums and recursive types from \bbonem\ to save space, though we do not believe they would present any unique difficulty.}
+All three worlds contain unit, product, function, sum and recursive types defined in the usual fashion.
 These ``standard'' features can only be constructed from subterms of the same world,
 and variables can only be used at the same world where they were introduced.
 Thus differing worlds (and hence, differing stages of computation) only interact by means
@@ -94,7 +92,6 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \label{sec:dynamics}
 
 \input{figures/dynamics}
-\input{figures/dynamics-overview}
 
 The central tenet of a staged language
 is that first-stage code should be evaluated entirely before second-stage code.
@@ -161,6 +158,25 @@ In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
 Note how the progress theorem for world \bbonem\ states that every well-typed term must take 
 either a standard step or a hoisting step.
+
+\begin{abstrsyn}
+\begin{theorem} [Progress] \leavevmode
+\label{thm:progress} 
+\begin{itemize} 
+\item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
+\item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
+\item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
+\end{itemize}
+\end{theorem}
+\begin{theorem} [Preservation] \leavevmode
+\label{thm:preservation} 
+\begin{itemize} 
+\item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
+\item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
+\end{itemize}
+\end{theorem}
+\end{abstrsyn}
+
 
 \subsection{Evaluating Staged Programs}
 

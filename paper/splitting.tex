@@ -3,14 +3,12 @@
 \section{Splitting Algorithm}
 \label{sec:splitting}
 
-\input{figures/splitting-overview}
-
 \begin{abstrsyn}
 
 The goal of a stage splitting translation 
 is to send a program $\mathcal P$ in a multistage language
 to an equivalent form $\mathcal P'$ where the stages are seperated at the top level.
-By equivalent, we mean that $\mathcal P$ and $\mathcal P'$ should produce 
+More specifically, $\mathcal P$ and $\mathcal P'$ should produce 
 the same answer under their respective semantics.
 
 Since \lang\ has three classes of multistage term, 
@@ -26,8 +24,27 @@ since those classes of term are already monostage by construction.
 The rules of the three splitting judgements are given in \ref{fig:termSplit}.
 Since the rules are simply recursive on the structure of the term, 
 the splitting algorithm runs in linear time on the size of the input program.
-Splitting is defined for all well-typed inputs (\ref{thm:total} in \ref{fig:splittingSummary}), and it produces unique results (\ref{thm:unique}).
+Splitting is defined for all well-typed inputs (\ref{thm:total}), and it produces unique results (\ref{thm:unique}).
 That is, each splitting judgement defines a total function.
+
+\begin{theorem} [Splitting Totality] \leavevmode
+\label{thm:total} 
+\begin{itemize} 
+\item For term $e$, if $\typestwo e A$, then $\splittwo e A p l r$. 
+\item For term $e$, if $\typesone e A$, then $\splitone e A c {l.r}$.
+\item For partial value $v$, if $\typesone v A$, then $v \vsplito \mval i q$.
+\end{itemize}
+\end{theorem}
+
+\begin{theorem} [Splitting Uniqueness] \leavevmode
+\label{thm:unique}
+\begin{itemize} 
+\item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, and $l.r = l'.r'$.
+\item If $\splitone e A p {l.r}$ and $\splitone e A {c'} {l'.r'}$, then $c = c'$, and $l.r = l'.r'$.
+\item If $v \vsplito \mval i q$ and $v \vsplito \mval {i'} {q'}$, then $i = i'$ and $q = q'$.
+\end{itemize}
+\end{theorem}
+
 We prove these theorems by straightforward induction on the typing derivation
 and simultaneous induction on the splitting derivations, respectively.
 
@@ -70,6 +87,12 @@ This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
 and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
 
+\begin{theorem} [End-to-End Correctness]
+\label{thm:allCorrect}
+If $\typestwo [\cdot] e A$, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$, and $\splittwo e A p l r$,
+then $\reduce p b$ and $[b/l]r \equiv q$.
+\end{theorem}
+
 We prove \ref{thm:allCorrect} by induction on the steps of evaluation.  
 In the base case, where $e$ is already a residual of the form $\exv q$, we know
 $\splittwo {\exv q} A {\exv{\tup{}}} \_ q$, so by uniqueness of splitting, 
@@ -86,8 +109,18 @@ All that we now require is $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
 To close this gap we introduce \ref{lem:twoCorrect}, 
 which essentially states that any single step is correct,
 and whose proof will concern the rest of this section.
-After invocation of that new lemma, we can derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 
+\begin{lemma} [Single Step Correctness]
+\label{lem:twoCorrect}
+\begin{itemize} 
+\item If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
+then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
+\item If $e \stepsym \bbonem e'$, $\splitone e A c {l.r}$, $\splitone {e'} A {c'} {l'.r'}$, and $\reduce {c'} {\tup{i,b'}}$,
+then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
+\end{itemize}
+\end{lemma}
+
+After invocation of that new lemma, we can derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
 In order to prove \ref{lem:twoCorrect},
 we will need to state analogous version for steps at \bbonem,
 since the various kinds of multistage term in \lang\ are mutually dependent.
@@ -166,6 +199,11 @@ The correctness of \bbonem\ term splitting with respect to hoisting steps is giv
 Because hoisting steps are nothing but rearrangement of second stage code,
 this lemma can use the strong requirement of identical combined terms.
 
+\begin{lemma} [Hoisting Step Correctness]
+\label{lem:hoistCorrect}
+If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, then $c = c'$, and $l.r \equiv l'.r'$.
+\end{lemma}
+
 \subsection{Example cases.}
 
 In this section, we consider a few exemplar cases 
@@ -185,7 +223,7 @@ This pattern, where the outputs can be directly derived, extends to the {\tt pi2
 
 \paragraph{Reduction of Application.} Let $E = \app {\exv{\fix f x e}} {\exv v}$,
 $E' = [\fix fxe, v/f,x] e$, \\ 
-$I = \fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}$, \\
+$I = \fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}$,
 $Q = \fix f {\tup{x,\roll l}} r$, and \\
 $C = \left[
 \talllet{\tup{y_1,z_1}}{\exv {\tup {I,\tup{}}}}{

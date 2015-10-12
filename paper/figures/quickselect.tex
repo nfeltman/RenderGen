@@ -9,10 +9,10 @@ datatype list = Empty
 
 fun part (p, Empty) =(0,Empty,Empty) 
   | part (p, Cons (h,t)) = 
-    let val (s,le,ri) = part (p,t) 
+    let val (n,le,ri) = part (p,t) 
     in if h < p 
-       then (s+1,Cons(h,le),ri) 
-       else (s,le,Cons(h,ri))
+       then (n+1,Cons(h,le),ri) 
+       else (n,le,Cons(h,ri))
 
 
 qs: list * int -> int

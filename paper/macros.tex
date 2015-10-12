@@ -7,14 +7,14 @@
 
 % core conventions and language names
 \newcommand {\bbone} {\ensuremath{\mathbbmss{1}}}
-\newcommand {\bbonep} {\ensuremath{\mathbbmss{1G}}}
-\newcommand {\bbonem} {\ensuremath{\mathbbmss{1M}}}
+\newcommand {\bbonep} {\ensuremath{\mathbbmss{1\hspace{-0.07em}G}}}
+\newcommand {\bbonem} {\ensuremath{\mathbbmss{1\hspace{-0.1em}M}}}
 \newcommand {\bbtwo} {\ensuremath{\mathbbmss{2}}}
 \newcommand {\lang} {$\lambda^{\bbone\bbtwo}$}
 \newcommand {\rmint} {{\rm int}}
 \newcommand {\rmunit} {{\rm unit}}
 \newcommand {\rmbool} {{\rm bool}}
-\newcommand {\exv}[1]{\underline{#1}}
+\newcommand {\exv}[1]{\underline{\smash{#1}}}
 
 % metatheory
 \newcommand{\wfsym}{\ensuremath{\mathsf{wf}}}
@@ -25,6 +25,7 @@
 \newcommand{\donesym}{\ensuremath{\mathsf{done}}}
 \newcommand{\fvalsym}{\ensuremath{\mathsf{fval}}}
 \newcommand{\cpvalsym}{\ensuremath{\mathsf{cpval}}}
+\newcommand{\evalcontsym}{\ensuremath{\mathsf{ec}}}
 \newcommand{\wf}{\ \wfsym}
 \newcommand{\pval}{\ \pvalsym}
 \newcommand{\res}{\ \ressym}
@@ -32,6 +33,7 @@
 \newcommand{\comp}{\ \compsym}
 \newcommand{\fval}{\ \fvalsym}
 \newcommand{\cpval}{\ \cpvalsym}
+\newcommand{\evalcont}[1]{\ \evalcontsym_{#1}}
 
 % bnf stuff
 \newcommand {\myit} [1]{\operatorname{\it{#1}}}
@@ -92,6 +94,7 @@
 	\newcommand {\ifthen} [3] {\mytt{if(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}
 	\newcommand {\tallif} [3] {\begin{array}{@{}l@{}} \mytt{if(}{##1}\mytt{;}\\~{##2}\mytt{;}\\~{##3}\mytt{)} \end{array}}
 	\newcommand {\mediumcase} [3] {\begin{array}{@{}l@{}} \mytt{case(}{##1}\mytt{;}\\~{##2}\mytt{;}{##3}\mytt{)} \end{array}}
+	\newcommand {\mediumcasep} [3] {\begin{array}{@{}l@{}} \mytt{casep(}{##1}\mytt{;}\\~{##2}\mytt{;}{##3}\mytt{)} \end{array}}
 
 	\newcommand {\rtab}  [2] {\llbracket{##1}\rrbracket{##2}}
 	\newcommand {\caseP} [3] {\mytt{caseg(}{##1}\mytt{;}{##2}\mytt{;}{##3}\mytt{)}}

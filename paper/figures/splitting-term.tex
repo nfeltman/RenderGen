@@ -52,7 +52,7 @@
 										\exv{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}\ttrpar\ttrpar}}
 									\right)}
 									{\tup{l_1,l_2}.\tup{r_1,r_2}}}																	{\sub 1 A & \sub 2 B} \and
-\infersplitone [\to E]			{\splitonetall {\app {e_1}{e_2}}{B}{\left(
+\infersplitone [\to E]			{\splitoneTall {\app {e_1}{e_2}}{B}{\left(
 									\talllet{\tup{y_1,z_1}}{c_1}{
 									\talllet{\tup{y_2,z_2}}{c_2}{
 									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\exv{\tup{y_3,\tup{z_1,z_2,z_3}}}\ttrpar\ttrpar\ttrpar}}}
@@ -92,19 +92,19 @@
 %\infersplittwo [unit]			{\spl {\tup{}} {\rmunit} {\tup{}} {\_}{\tup{}}}												{\cdot} 														\and
 %\infersplittwo [int]			{\spl {i}{\rm int}{\tup{};\_}{i}}															{\cdot} 														\and
 %\infersplittwo [hyp]			{\spl {x}{A}{\tup{}}{\_}{x}}																{\cdot} 														\and
-\infersplitone 					{\spl {\exv q} A {\exv {\tup{}}} {\_. q}} 													{v \vsplito \mval i q} 											\and 
+\infersplitone 					{\spl {\exv q} A {\exv {\tup{}}} {\_. q}} 													{v \vsplito \mval i q} 											\and
+\infersplittwo [\times E_1]		{\spl {\scont e}{A}{p}{l}{\scont r}}														{\sub {} {A\times B} 
+																															& \scont \dash \in \{ 
+																																\pio \dash , 
+																																\pit \dash,
+																																\fix fx \dash 
+																															\}} 				\and  
 \infersplittwo [\to E]			{\spl {\scont{e_1,e_2}}{B}{\tup{p_1,p_2}}{\tup{l_1,l_2}}{\scont{r_1,r_2}}}				{\sub 1 {A \to B} & \sub 2 A
 																															& \scont {\dash, \dash} \in \{ 
 																																\tup {\dash,\dash} , 
 																																\app \dash \dash,
 																																\letin x \dash \dash 
 																															\}}									\and			
-\infersplittwo [\times E_1]		{\spl {\scont e}{A}{p}{l}{\scont r}}														{\sub {} {A\times B} 
-																															& \scont \dash \in \{ 
-																																\pio \dash , 
-																																\pit \dash,
-																																\fix fx \dash 
-																															\}} 				\and \hspace{-0.20in}
 %\infersplittwo [\to I]			{\spl {\lam{x}{e}}{A \to B}{p}{l}{\lam{x}{r}}}												{\sub [\Gamma,\col x A] {} B} 									\and
 %\infersplittwo [\to I]			{\spl {\fix fxe}{A \to B}{p}{l}{\fix fxr}}													{\sub [\Gamma,\col x A] {} B} 									\and
 % \infersplittwo [\to E]			{\spl {\app{e_1}{e_2}}{B}{\tup{p_1,p_2}}{\tup{l_1,l_2}}{\app{r_1}{r_2}}}					{\sub 1 {A \to B} & \sub 2 A}									\and			
@@ -129,7 +129,7 @@
 \infersplitone [\fut I]		{\spl {\next e}{\fut A}{\tup{\tup{},p}}{l.r}}										{\splittwosub {} A} 			\and
 %\infersplittwo [hold]		{\spl {\pause e}{\rmint}{c,\tup{a,l}.\tup{r;a}}}									{\splitonesub {} \rmint}		\and
 \infersplitone				{\spl {\pure e} {\curr A} {\tup{e,\tup{}}}{\_.\tup{}}}								{\cdot}							\and
-\infersplitone				{\splitonetall {\letp x{e_1}{e_2}} {?} 
+\infersplitone				{\splitoneTall {\letp x{e_1}{e_2}} {?} 
 							{\letin {\tup{x,z_1}} {c_1} {
 							 \letin {\tup{y_2,z_2}} {c_2} {\tup{y_2,\tup{z_1,z_2}}}}}
 							 {\tup{l_1,l_2}.\letin{\_}{r_1}{r_2}}}												{\sub 1 ? & \sub 2 ?}			

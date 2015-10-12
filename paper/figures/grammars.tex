@@ -16,17 +16,19 @@
 \text{Worlds}\ \ 
 \world &::= \bbonem \gbar \bbonep \gbar \bbtwo  \\
 %
-\text{Types}\ \ 
-\type_w &::= \text{unit}
- \gbar \type_w \times \type_w \\
-&\gbar \type_w \to \type_w
- \gbar \alpha_w \gbar \mu \alpha_w.\tau_w \\
+\text{\{\bbonem,\bbtwo\}-Types}\ \ 
+\type &::= \text{unit}
+ \gbar \type \times \type
+ \gbar \type \to \type
+ \gbar \alpha \gbar \mu \alpha.\tau 
+ \gbar \tau + \tau \\
  %
-\typeM &::= \fut \typeT \gbar \curr \typeG \\
-%
-\typeG &::= \typeG + \typeG \\
-%
-\typeT &::= \typeT + \typeT \\
+\typeM &::= \text{unit}
+ \gbar \typeM \times \typeM
+ \gbar \typeM \to \typeM
+ \gbar \alpha \gbar \mu \alpha.\typeM 
+ \gbar \fut \tau 
+ \gbar \curr \tau \\
 %
 %\text{Types}\ \ 
 %\type &::= \text{unit}%\gbar\text{int}%~|~\text{bool}
@@ -44,28 +46,28 @@
 %
 \text{Terms}\ \ 
 e_w &::= \app {e_w} {e_w} 
- \gbar \tup{e_w, e_w} \\
-&\gbar \pio {e_w} 
+ \gbar \tup{e_w, e_w}
+ \gbar \pio {e_w} 
  \gbar \pit {e_w} \\
+&\gbar \inl {e_w} \gbar \inr {e_w}
+ \gbar \caseof {e_w}{\var.e_w}{\var.e_w} \\
+&\gbar \roll {e_w} \gbar \unroll {e_w} \\
 \exprM &::= \exv v
  \gbar \next \exprT 
- \gbar \pure \exprG \\
-&\gbar \letp \varG \exprM \exprM \\
+ \gbar \pure \exprG 
+ \gbar \letp \varG \exprM \exprM \\
 &\gbar \caseP \exprM {\varM.\exprM} {\varM.\exprM} \\
-\exprG &::= \exv u
- \gbar \roll \exprG \gbar \unroll \exprG \\
-&\gbar \inl \exprG \gbar \inr \exprG
- \gbar \caseof {\exprG}{\var.\exprG}{\var.\exprG} \\ 
+\exprG &::= \exv u \\ 
 \exprT &::= \exv q
- \gbar \fix \varT \varT \exprT \\
-&\gbar \roll \exprT \gbar \unroll \exprT \\
-&\gbar \inl \exprT \gbar \inr \exprT
- \gbar \caseof {\exprT}{\var.\exprT}{\var.\exprT} \\ 
+ \gbar \fix \varT \varT \exprT \\ 
 \text{Partial Values}\ \ 
 v &::= \varM
  \gbar\tup{}
  \gbar \fix \varM \varM \exprM
  \gbar \tup{v, v} \\
+&\gbar \roll v
+ \gbar \inl v 
+ \gbar \inr v \\
 &\gbar \next y
  \gbar \pure v \\
 \text{Ground Values}\ \ 

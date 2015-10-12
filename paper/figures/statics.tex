@@ -24,30 +24,30 @@
 \fbox {Standard Typing} \and
 \infertypeswor [\rmunit] 	{\ty {\tup{}}\rmunit}								{\cdot} 																	\and
 %\infertypeswor [int]		{\ty {i} \rmint}									{w \in \{\bbonep,\bbtwo\}}													\and
-\infertypeswor [hyp]		{\ty x A}											{\col x A \in \Gamma} 														\and
+%\infertypeswor [hyp]		{\ty x A}											{\col x A \in \Gamma} 														\and
 %\infertypeswor [\to I]		{\ty {\lam {x}{e}} {A \to B}}						{A \istypewor & \ty [,\col x A] e B} 										\and
 \infertypeswor [fix]		{\ty {\fix fxe} {A \to B}}							{\ty [,\col f {A \to B},\col x A] e B} 										\and
 \infertypeswor [\to E]		{\ty {\app {e_1}{e_2}} {B}}							{\ty {e_1} {A \to B} & \ty {e_2} A} 										\and
 \infertypeswor [\times I]	{\ty {\tup{e_1,e_2}}{A\times B}}					{\ty {e_1} A & \ty {e_2} B} 												\and
 \infertypeswor [\times E_1]	{\ty {\pio e} A}									{\ty e {A\times B}} 														\and
 \infertypeswor [\times E_2]	{\ty {\pit e} B}									{\ty e {A\times B}} 														\and
-\infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A & w \in \{\bbonep, \bbtwo\}} 										\and
-\infertypeswor [+ I_2]		{\ty {\inr e} {A + B}}								{\ty e B & w \in \{\bbonep, \bbtwo\}} 										\and
-\infertypeswor [\mu I]		{\ty {\roll e} {\mu \alpha.\tau}}					{\ty e {[\mualphatau / \alpha]\tau} & w \in \{\bbonep, \bbtwo\}} 			\and
-\infertypeswor [\mu E]		{\ty {\unroll e} {[\mualphatau / \alpha]\tau}}		{\ty e \mualphatau & w \in \{\bbonep, \bbtwo\}} 							\and
-\infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}			{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C & w \in \{\bbonep, \bbtwo\}}
+\infertypeswor [+ I_1]		{\ty {\inl e} {A + B}}								{\ty e A} 																	\and
+\infertypeswor [+ I_2]		{\ty {\inr e} {A + B}}								{\ty e B} 																	\and
+\infertypeswor [\mu I]		{\ty {\roll e} {\mu \alpha.\tau}}					{\ty e {[\mualphatau / \alpha]\tau}} 										\and
+\infertypeswor [\mu E]		{\ty {\unroll e} {[\mualphatau / \alpha]\tau}}		{\ty e \mualphatau} 														\and
+\infertypeswor [+ E]		{\ty {\caseof{e_1}{x_2.e_2}{x_3.e_3}} C}			{\ty {e_1}{A+B} & \ty[,\col {x_2} A]{e_2} C & \ty[,\col {x_3} B]{e_3} C}
 \end{mathpar}
 \hrule
 \begin{mathpar}
 \fbox {Staging Features} \and
 %\infertypeswor [hold]		{\typesone {\pause e} {\fut \rmint}}				{\typesone e {\curr \rmint}}		 										\and
+\infertypeswor [\fut I]		{\typesone {\next e}{\fut A}}						{\typestwo e A} 															\and
+\infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\and
+\infertypeswor [\curr I]	{\typesone {\pure e} {\curr A}}						{\typespure e A} 															\and
+\infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colpure x A] {e_2} B} 		\and
 \infertypeswor [+ E]		{\typesone {\caseP{e_1}{x_2.e_2}{x_3.e_3}} C}		{\typesone {e_1}{\curr(A+B)} 
 																				&\typesone[\Gamma,\colmix {x_2} {\curr A}]{e_2} C 
 																				&\typesone[\Gamma,\colmix {x_3} {\curr B}]{e_3} C} 							\and
-\infertypeswor [\fut I]		{\typesone {\next e}{\fut A}}						{\typestwo e A} 															\and \hspace{-0.05in}
-\infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\and \hspace{-0.05in}
-\infertypeswor [\curr I]	{\typesone {\pure e} {\curr A}}						{\typespure e A} 															\and \hspace{-0.05in}
-\infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colpure x A] {e_2} B} 		\and
 %\infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}		{\typesone e {\curr \tup{A+B}}} 											\and
 \end{mathpar}
 % \hrule
