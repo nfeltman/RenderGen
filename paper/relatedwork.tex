@@ -47,11 +47,12 @@ applied to construct partial evaluators for a number of languages such
 as Scheme~\cite{OB91-Similix,Consel88-Schism}.
 
 Researchers have explored other staging transformations that, 
-like splitting, partition an input program into static and dynamic components.  
+like splitting, partition an input two-stage program into two components,
+on corresponding to each stage.  
 In particular, \emph{binding time separation}\,\cite{Mogensen89a} 
 (also called \emph{program bifurcation}\,\cite{DeNiel91})
 has been used as a preprocessor step in partial evaluators,
-allowing more efficient specialization of programs with 
+allowing efficient specialization of programs with 
 mixed-stage data structures without changes to the specializer itself.
 Notably, the grammar-based binding-time specifications used in binding 
 time separation were capable of describing
@@ -60,7 +61,7 @@ content, much like the type system of \lang\
 (though this correspondence is less clear without our addition of 
 \bbonep\ and $\curr$).
 
-That said, unlike splitting, where the goal is to emit code where first stage results
+However unlike splitting, where the goal is to emit code where first stage results
 are computed once and then reused in multiple invocations of second
 stage execution, the second (dynamic) function produced by binding time separation
 does not use the results of the first; instead,
