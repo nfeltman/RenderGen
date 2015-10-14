@@ -106,12 +106,12 @@ and \mbox{$\splittwo e A p l r$}.
 By preservation and totality of splitting, we know $\typestwo [\cdot] {e'} A$ and $\splittwo {e'} A {p'} {l'} {r'}$.
 From here, the inductive hypothesis yields $\reduce {p'} {b'}$ and $[b'/l']r' \equiv q$.
 All that we now require is $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$,
-To close this gap we introduce \ref{lem:twoCorrect}, 
+To close this gap we introduce \ref{lem:stepCorrect}, 
 which essentially states that any single step is correct,
 and whose proof will concern the rest of this section.
 
 \begin{lemma} [Single Step Correctness]
-\label{lem:twoCorrect}
+\label{lem:stepCorrect}
 \begin{itemize} 
 \item If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
 then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
@@ -121,7 +121,7 @@ then $\reduce c {\tup {i,b}}$ and $[b/l]r \equiv [b'/l']r'$.
 \end{lemma}
 
 After invocation of that new lemma, we can derive $[b/l]r \equiv [b'/l']r' \equiv q$ directly.
-In order to prove \ref{lem:twoCorrect},
+In order to prove \ref{lem:stepCorrect},
 we will need to state analogous version for steps at \bbonem,
 since the various kinds of multistage term in \lang\ are mutually dependent.
 Thus, this section proceeds by covering the definition of splitting at \bbonem, 
@@ -186,13 +186,13 @@ such as injection tags.
 
 \subsection{World \bbonem\ Term Splitting}
 
-The correctness of \bbonem\ term splitting with respect to a $\stepsym \bbonem$ step is given in \ref{lem:oneCorrect}.
+The correctness of \bbonem\ term splitting with respect to a $\stepsym \bbonem$ step is given in \ref{lem:stepCorrect}.
 It's very similar to the world \bbtwo\ version, 
 in that the reduction of the first stage part of $e'$ should imply reduction of the first stage part of $e$,
 and that the resulting applied resumers should be equivalent.
 But split forms at \bbonem\ have one more piece of output than those at \bbtwo,
 namely the immediate value $i$.
-\ref{lem:oneCorrect} accounts for this by saying that 
+\ref{lem:stepCorrect} accounts for this by saying that 
 that immediate value must be exactly identical on both sides of the step.
 
 The correctness of \bbonem\ term splitting with respect to hoisting steps is given in \ref{lem:hoistCorrect}.
@@ -207,7 +207,7 @@ If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$,
 \subsection{Example cases.}
 
 In this section, we consider a few exemplar cases 
-from the proofs of \ref{lem:oneCorrect} and \ref{lem:twoCorrect}.
+from the proof of \ref{lem:stepCorrect}.
 The equivalence relation ``$\equiv$'' is defined in \ref{fig:equiv}.
 
 \paragraph{Reduction of {\tt pi1}.}
@@ -249,7 +249,7 @@ $\splittwo {\pio {e'}} A {p'} {l'} {\pio {r'}}$,
 and $\reduce {p'} {b'}$.
 Inversion of the first three yields
 $\steptwo e {e'}$, $\splittwo e A p l r$, and $\splittwo {e'} A {p'} {l'} {r'}$.
-Using \ref{lem:twoCorrect} inductively gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r$.
+Using \ref{lem:stepCorrect} inductively gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r$.
 From this, $[b/l]\pio r \equiv [b'/l']\pio {r}$ can be derived directly.
 This pattern generalizes to all world \bbtwo\ compatibility rules.
 
@@ -262,7 +262,7 @@ and \\ $\reduce {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b'}}
 Inversion of the first three yields 
 $\stepmix e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, 
 and inversion of the reduction yields $\reduce {c'} {\tup{\tup{i,i_2},b'}}$.
-Using \ref{lem:oneCorrect} inductively gives $\reduce c {\tup{\tup{i,i_2},b}}$ and $[b/l]r \equiv [b'/l']r$.
+Using \ref{lem:stepCorrect} inductively gives $\reduce c {\tup{\tup{i,i_2},b}}$ and $[b/l]r \equiv [b'/l']r$.
 From this, we can derive $\reduce {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b}}$ and 
 $[b/l]\pio r \equiv [b'/l']\pio {r}$ directly.
 This pattern generalizes to all world \bbonem\ compatibility rules.

@@ -132,39 +132,46 @@
 % \end{mathpar}
 % \hrule
 
-\begin{tabular}{| l c l | c |} 
-\hline Reduction Rule &&& World \\ \hline 
-$\tup{\exv {v_1},\exv {v_2}}$ 						& $\stepsym w$ & $\exv{\tup{v_1,v_2}}$ 					& all \\
-$\pio {\exv{\tup{v_1,v_2}}}$ 						& $\stepsym w$ & $\exv{v_1}$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
-$\pit {\exv{\tup{v_1,v_2}}}$ 						& $\stepsym w$ & $\exv{v_2}$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
-$\pio{\exv v}$ 										& $\stepsym w$ & $\exv{\pio v}$ 						& $\bbtwo$ \\
-$\pit{\exv v}$ 										& $\stepsym w$ & $\exv{\pit v}$ 						& $\bbtwo$ \\
-$\app {\exv{\fix fxe}}{\exv v}$ 					& $\stepsym w$ & $[\fix {\!f\!}xe,v/f\!,x]e$ 			& $\bbonep,\hspace{-0.1em}\bbonem$ \\
-$\app{\exv {v_1}}{\exv {v_2}}$ 						& $\stepsym w$ & $\exv{\app{v_1}{v_2}}$ 				& $\bbtwo$ \\
-$\inl{\exv v}$ 										& $\stepsym w$ & $\exv{\inl v}$ 						& all \\
-$\inr{\exv v}$ 										& $\stepsym w$ & $\exv{\inr v}$ 						& all \\
-$\caseof {\exv{\inl v}}{x_2.e_2}\cdot$\hspace{-1em}	& $\stepsym w$ & $[v/x_2]e_2$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
-$\caseof {\exv{\inr v}}\cdot{x_3.e_3}$\hspace{-1em}	& $\stepsym w$ & $[v/x_3]e_3$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
-$\caseof {\exv{e_1}}{x_2.\exv{e_2}}{x_3.\exv{e_3}}$ & $\stepsym w$ & $\exv{\caseof{e_1}{x_2.e_2}{x_3.e_3}}$ & $\bbtwo$ \\
-$\next{\exv y}$ 									& $\stepsym w$ & $\exv{\next y}$ 						& $\bbonem$ \\
-$\prev {\exv {\next y}}$ 							& $\stepsym w$ & $\exv y$ 								& $\bbtwo$ \\
-$\pure{\exv v}$ 									& $\stepsym w$ & $\exv{\pure v}$ 						& $\bbonem$ \\
-$\letp x {\exv {\pure v}} e$ 						& $\stepsym w$ & $[v/x]e$ 								& $\bbonem$ \\
-\multicolumn{3}{|l|}{$\caseP {\exv{\pure{\inl v}}}{x_2.e_2}{\cdot} \stepsym w [\pure v/x_2]e_2$} 			& $\bbonem$ \\
-\multicolumn{3}{|l|}{$\caseP {\exv{\pure{\inr v}}}{\cdot}{x_3.e_3} \stepsym w [\pure v/x_3]e_3$}			& $\bbonem$ \\
+\begin{tabular}[t]{| l | l | c |} \hline
+\multicolumn{3}{|c|} {Shallow Reductions, $e \betastepsym w e'$} \\ \hline 
+$e$ &$e'$& $w$ \\ \hline 
+$\tup{\exv {v_1},\exv {v_2}}$ 						& $\exv{\tup{v_1,v_2}}$ 					& all \\
+$\pio {\exv{\tup{v_1,v_2}}}$ 						& $\exv{v_1}$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\pit {\exv{\tup{v_1,v_2}}}$ 						& $\exv{v_2}$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\pio{\exv v}$ 										& $\exv{\pio v}$ 						& $\bbtwo$ \\
+$\pit{\exv v}$ 										& $\exv{\pit v}$ 						& $\bbtwo$ \\
+$\app {\exv{\fix fxe}}{\exv v}$ 					& $[\fix {\!f\!}xe,v/f\!,x]e$ 			& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\app{\exv {v_1}}{\exv {v_2}}$ 						& $\exv{\app{v_1}{v_2}}$ 				& $\bbtwo$ \\
+$\inl{\exv v}$ 										& $\exv{\inl v}$ 						& all \\
+$\inr{\exv v}$ 										& $\exv{\inr v}$ 						& all \\
+$\caseof {\exv{\inl v}}{x_2.e_2}\cdot$\hspace{-1em}	& $[v/x_2]e_2$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\caseof {\exv{\inr v}}\cdot{x_3.e_3}$\hspace{-1em}	& $[v/x_3]e_3$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\roll{\exv v}$ 									& $\exv{\roll v}$ 						& all \\
+$\unroll {\exv {\roll v}}$ 							& $\exv{v}$ 							& $\bbonep,\hspace{-0.1em}\bbonem$ \\
+$\unroll{\exv v}$ 									& $\exv{\unroll v}$ 					& $\bbtwo$ \\
+$\caseof {\exv{e_1}}{x_2.\exv{e_2}}{x_3.\exv{e_3}}$ & $\exv{\caseof{e_1}{x_2.e_2}{x_3.e_3}}$ & $\bbtwo$ \\
+$\next{\exv y}$ 									& $\exv{\next y}$ 						& $\bbonem$ \\
+$\prev {\exv {\next y}}$ 							& $\exv y$ 								& $\bbtwo$ \\
+$\pure{\exv v}$ 									& $\exv{\pure v}$ 						& $\bbonem$ \\
+$\letp x {\exv {\pure v}} e$ 						& $[v/x]e$ 								& $\bbonem$ \\
+$\caseP {\exv{\pure{\inl v}}}{x_2.e_2}{\cdot}$ 		& $[\pure v/x_2]e_2$ 					& $\bbonem$ \\
+$\caseP {\exv{\pure{\inr v}}}{\cdot}{x_3.e_3}$ 		& $[\pure v/x_3]e_3$					& $\bbonem$ \\
 \hline
 \end{tabular}
-\begin{tabular}{|l|c|} \hline
-Context, $\scont \dash$ & World \\ \hline 
+\begin{tabular}[t]{|l|c|} \hline
+\multicolumn{2}{|c|} {Shallow Contexts, $\mathcal{S} \evalcont w$} \\ \hline
+\centering{$\scont \dash$} & $w$ \\ \hline 
 $\tup {\dash ,e}$ 										& all \\
 $\tup {\exv v,\dash }$ 									& all \\
 $\pio \dash$ 											& all \\
-$\pit \dash $ 											& all \\
+$\pit \dash$ 											& all \\
 $\fix fx \dash$ 										& $\bbtwo$ \\
 $\app \dash e$ 											& all \\
 $\app {\exv v} \dash $ 									& all \\
 $\inl \dash $ 											& all \\
 $\inr \dash $ 											& all \\
+$\roll \dash $ 											& all \\
+$\unroll \dash $ 										& all \\
 $\caseof \dash {x_2.e_2}{x_3.e_3}$ 						& all \\
 $\caseof {\exv {v_1}}{x_2.\dash}{x_3.e_3}$				& $\bbtwo$ \\
 $\caseof {\exv {v_1}}{x_2.\exv {v_2}}{x_3.\dash}$		& $\bbtwo$ \\
@@ -273,18 +280,20 @@ $\letp x \dash e$ 										& $\bbonem$ \\
 % \inferstepw		{\stepmix	{\caseP {e_1 }{x_2.e_2}{x_3.e_3}} 
 % 						{\caseP {e'_1}{x_2.e_2}{x_3.e_3}}} 					
 % 				{\stepmix {e_1} {e'_1}} \and
+\inferstepw		{\red e e'}
+				{e \betastepsym w e'} \and \hspace{-0.35cm}
 \inferstepw		{\red 	{\scont e}
 						{\scont {e'}}}
-				{\sub {} & {\mathcal S} \evalcont w} \and
+				{\sub {} & {\mathcal S} \evalcont w} \and \hspace{-0.35cm}
 \inferstepw		{\stepmix	{\pure {e}} 
 							{\pure {e'}}} 					
-				{\steppure e {e'}} \and
+				{\steppure e {e'}} \and \hspace{-0.35cm}
 \inferstepw		{\stepmix	{\next {e}} 
 							{\next {e'}}} 					
-				{\steptwo e {e'}} \and
+				{\steptwo e {e'}} \and \hspace{-0.35cm}
 \inferstepw		{\steptwo	{\prev {e}} 
 							{\prev {e'}}} 					
-				{\stepmix e {e'}} \and
+				{\stepmix e {e'}} \\
 \inferlift 		{\red {\next {\exv q}} {\next {\exv y}}} {q \text{~not a variable}} \and
 \infersteptwo 	{\red {\prev e} {\letin q y {\prev {e'}}}} {\liftsub{}} \and
 \inferlift		{\red 	{\scont e} 
@@ -319,7 +328,9 @@ $\letp x \dash e$ 										& $\bbonem$ \\
 \end{mathpar}
 
 \end{abstrsyn}
-\caption{First pass evaluation of \lang\ dynamics.}
+\caption{First pass evaluation of \lang\ dynamics.  
+%The helper judgements $e \betastepsym w e'$ and $\mathcal{S} \evalcont w$ refer to shallow reduction and contexts.
+}
 \label{fig:diaSemantics}
 \end{figure}
 

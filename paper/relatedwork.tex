@@ -46,30 +46,31 @@ operates on many different dynamic arguments.  This approach has been
 applied to construct partial evaluators for a number of languages such
 as Scheme~\cite{OB91-Similix,Consel88-Schism}.
 
-In an attempt to reduce the complexity of the specialization phase of
-self-applicable partial evaluators, researchers explored the use of
-staging transformations that, much like splitting, partition an input
-program into two programs: one that produces static outputs from
-static inputs, and a second that produces dynamic outputs from both
-static and dynamic inputs.  These metastatic transformations, referred
-to as \emph{program bifurcation}\,\cite{DeNiel91} or as \emph{binding
-  time separation}\,\cite{Mogensen89a}), serve as a preprocessing step
-to specialization and were successfully applied to functional
-languages that supported recursion\,\cite{DeNiel91}. However, unlike
-splitting, where the goal is to emit code where first stage results
+Researchers have explored other staging transformations that, 
+like splitting, partition an input program into static and dynamic components.  
+In particular, \emph{binding time separation}\,\cite{Mogensen89a} 
+(also called \emph{program bifurcation}\,\cite{DeNiel91})
+has been used as a preprocessor step in partial evaluators,
+allowing more efficient specialization of programs with 
+mixed-stage data structures without changes to the specializer itself.
+Notably, the grammar-based binding-time specifications used in binding 
+time separation were capable of describing
+data structures with purely-static, purely-dynamic, and mixed stage
+content, much like the type system of \lang\
+(though this correspondence is less clear without our addition of 
+\bbonep\ and $\curr$).
+
+That said, unlike splitting, where the goal is to emit code where first stage results
 are computed once and then reused in multiple invocations of second
-stage execution, the second function produced by program bifurcation
-does not use the results of the first; Instead,
+stage execution, the second (dynamic) function produced by binding time separation
+does not use the results of the first; instead,
 %only serves as a preprocessing step for the subsequent
 %specialization phase of partial evaluation.
 it has access to the first stage inputs and recomputes all required
-first stage computations. (As noted by Knoblock and
+first stage computations. As noted by Knoblock and
 Ruf\,\cite{knoblock96}, it may be possible to modify the program
 bifurcation algorithm to cache and reuse the intermediate results, but
-this was never attempted.) The grammar-based binding-time
-specifications used in program bifurcation were capable of describing
-data structures with purely-static, purely-dynamic, and mixed stage
-content, much like the type system of \lang.
+this was never attempted.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance was difficult to
