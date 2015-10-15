@@ -17,11 +17,19 @@ The distinction between these two first-stage worlds is necessary for an efficie
 and will be discussed in \ref{sec:needGround}.
 
 The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
-Note that some production rules are parameterized by world.
-Our syntax also distinguishes values from general terms, 
-with the underline term constructor (``$\exv v$'') explicitly noting the inclusion of values into general terms.
-There are three forms of value: \emph{partial values} for \bbonem, \emph{ground values} for \bbonep, and \emph{residuals} for \bbtwo.
-All represent computations which have no remaining work in the first stage.
+To simplify the upcoming translation in \ref{sec:splitting}, 
+we have chosen to statically distinguish between values and general computations,
+using an underline constructor (``$\exv v$'') which explicitly note the parts of a computation that have been reduced to a value.
+\footnote{In this presentation, the value/computation distinction is encoded intrinsically at the syntactic level.
+However, we found it more convenient in the formal Twelf implementation to maintain the distinction with an extrinsic judgement.}
+Moreover, the value/computation distinction interacts non-trivially with the three possible world classifications.
+As a result, we end up with six classes of term in the grammar.
+
+The key feature of all three forms of value is that they have no remaining work in the first stage.
+That is, all of the first-stage portions of a value are fully reduced (except the bodies of first-stage functions).
+In the case of values at \bbonep, which we call \emph{ground values}, this collapses to just the standard notion of values in a monostage language.
+In the case of values at \bbtwo, which we call \emph{residuals}, this collapses to just standard monostage terms.
+Lastly, values at \bbonem\ end up with more of a mixed character, so we call them \emph{partial values}.
 
 \subsection{Statics}
 \label{sec:statics}
