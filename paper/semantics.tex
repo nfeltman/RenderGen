@@ -100,7 +100,7 @@ thereof. This is related to the notion of {\em mobility} in \cite{murphy05} and
 \label{sec:dynamics}
 
 \input{figures/dynamics}
-
+\begin{abstrsyn}
 The central tenet of a staged language
 is that first-stage code should be evaluated entirely before second-stage code.
 Accordingly, our dynamics operates in two passes.
@@ -145,13 +145,16 @@ To illustrate, consider:
 \begin{lstlisting}
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
 \end{lstlisting}
-We could reduce this to $\prev([\next~e/x]e')$, but this may potentially duplicate an
-expensive computation $e$. Instead, we choose to \emph{hoist} $e$ outside, binding it
+We could reduce this to $\prev{[\next e/x]e'}$, but this may potentially duplicate an
+expensive computation $e$ depending on how many times $x$ appears in $e$. 
+Instead, we choose to \emph{hoist} $e$ outside, binding it
 to a temporary variable $y$, and substituting that variable instead:
 \begin{lstlisting} 
 2`let val y = e in prev{`1`[next{`2`y`1`}/x]e'`2`}`
-\end{lstlisting}
+\end{lstlisting}\end{abstrsyn}
 This behavior is implemented by the $\lift e {e'}$ judgment, called a \emph{hoisting step}.
+We read this as saying somewhere within $e$ there was the subterm $q$ which needs to be hoisted out,
+yielding the new term $e'$ which has a new variable $y$ where the $q$ used to be.
 These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
 In essence, the rules for hoisting steps operate by ``bubbling up'' a substitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.

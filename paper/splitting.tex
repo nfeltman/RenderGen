@@ -15,7 +15,7 @@ Since \lang\ has three classes of multistage term,
 our splitting algorithm has three forms: 
 $\splittwo e A p l r$ for \bbtwo-terms, 
 $\splitone e A c {l.r}$ for \bbonem-terms, and 
-$v \vsplito \mval i q$ for partial values.
+\mbox{$v \vsplito \mval i q$} for partial values.
 In each form the output has two parts, corresponding to the
 first-stage ($p$, $c$, and $i$) and second-stage ($l.r$, and $q$) content of the input.
 Note that there's no need to provide forms of splitting for ground terms or residuals,
@@ -476,17 +476,17 @@ Worse, if this \texttt{caseg} appeared in the body of a recursive
 function with no other second-stage computations, splitting would
 generate a resumer with (useless) recursive calls.
 
-An illustrative example is the \texttt{partition} function in the quickselect
-example of \ref{sec:exampleQS}. If \texttt{partition} were defined at \bbonem\
+An illustrative example is the \texttt{part} function in the quickselect
+example of \ref{sec:exampleQS}. If \texttt{part} were defined at \bbonem\
 then (like \texttt{qs}) it would split into two functions
-\texttt{partition1} and \texttt{partition2}, the latter of which recursively
-computes the (trivial) second-stage component of \texttt{partition}'s result.
-Moreover, \texttt{qs2} would call \texttt{partition2}, just as \texttt{qs1}
-calls \texttt{partition1}:
+\texttt{part1} and \texttt{part2}, the latter of which recursively
+computes the (trivial) second-stage component of \texttt{part}'s result.
+Moreover, \texttt{qs2} would call \texttt{part2}, just as \texttt{qs1}
+calls \texttt{part1}:
 \begin{lstlisting}
 2`fun qs2 (p : tree, k : int) : int =
 ... | Branch (i,h,p1,p2) =>
-  let val () = partition2 ((),()) in
+  let val () = part2 ((),()) in
   case compare k i of ...
 \end{lstlisting}
 
@@ -494,9 +494,9 @@ Rather than attempt global optimization of the outputs of splitting,
 we instead leverage the type system to indicate when a term contains
 no second-stage computations by adding a third world \bbonep\ whose
 terms are purely first-stage.  
-Defining \texttt{partition} in this world is 
+Defining \texttt{part} in this world is 
 tantamount to proving it has no second-stage computations,
-allowing splitting to avoid generating the resumer \texttt{partition2}
+allowing splitting to avoid generating the resumer \texttt{part2}
 and calling it from \texttt{qs2}.
 
 Since direct staged term evaluation (\ref{sec:semantics})

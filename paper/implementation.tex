@@ -28,16 +28,16 @@ We allow staging annotations around declarations. For example,
 \begin{lstlisting}
 3`atsigngr{`1`
   datatype list = Empty | Cons of int * list
-  fun partition (...) = ...
+  fun part (...) = ...
 `3`}`1`
 fun qss (...) = ...`
 \end{lstlisting}
-declares the \texttt{list} datatype and \texttt{partition} function at world \bbonep,
+declares the \texttt{list} datatype and \texttt{part} function at world \bbonep,
 by elaborating into:
 \begin{lstlisting}
 1`val 3`gr{`Empty3`}` = 3`gr{`roll (inj ...)3`}`
 val 3`gr{`Cons3`}` = 3`gr{`fn (...) => roll (inj ...)3`}`
-val 3`gr{`partition3`}` = 3`gr{`fn (...) => ...3`}`
+val 3`gr{`part3`}` = 3`gr{`fn (...) => ...3`}`
 val qss = fn (...) => ...`
 \end{lstlisting}
 

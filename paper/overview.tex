@@ -6,8 +6,8 @@
 \begin{abstrsyn}
 
 Suppose that we wish to perform a series of order statistics queries
-on a list \texttt{l}. To this end, we can use the quickselect
-algorithm~\cite{Hoare:1961}, which given a list \texttt{l} and a rank
+on a list~\texttt{l}. To this end, we can use the quickselect
+algorithm~\cite{Hoare:1961}, which given a list~\texttt{l} and a rank
 \texttt{k}, returns the element of \texttt{l} with rank \texttt{k}.
 As implemented in an ML-like language in \ref{fig:qs-unstaged},
 \texttt{qs} partitions \texttt{l} using the first element as
@@ -30,8 +30,8 @@ Unfortunately, this approach requires $O(n \cdot m)$ time.
 
 We can attempt to improve on this algorithm by factoring out computations shared
 between these calls to \texttt{qs}. In particular, the comparisons performed by
-\texttt{partition} depend only on \texttt{l}, although different calls to
-\texttt{partition} are made by each call to \texttt{qs}.
+\texttt{part} depend only on \texttt{l}, although different calls to
+\texttt{part} are made by each call to \texttt{qs}.
 
 A first cut at a solution might be to first sort \texttt{l} into
 \texttt{s} and then perform lookups in \texttt{s}.
@@ -64,7 +64,7 @@ guided by types---to indicate the stage of each subterm.
 
 In \ref{fig:qs-staged} we show a staged version of \texttt{qs}, called
 \texttt{qss}, where first-stage code is colored red, and second-stage blue. In
-\texttt{qss}, we regard the input list \texttt{l} as arriving in the first stage
+\texttt{qss}, we regard the input list~\texttt{l} as arriving in the first stage
 (with type $\curr\mathrm{list}$, a list ``now''), the input rank \texttt{k} as
 arriving in the second stage (with type $\fut\rmint$, an integer in the
 ``future''), and the result as being produced in the second stage (with type
@@ -72,10 +72,12 @@ $\fut\rmint$).
 
 \texttt{qss} is obtained from \texttt{qs} by wrapping certain computations with
 \texttt{prev} and \texttt{next}, signaling transitions between first- and
-second-stage code, and $\texttt{gr}$, signaling ground terms.  
+second-stage code. Additionally, $\texttt{gr}$ (\emph{ground}) annotations 
+mark certain first stage components as being purely first-stage, rather than mixed-stage.
 %
-We also use a function
-\lstinline{1`hold : ^int -> $`2`int`},
+We also use a function 
+\lstinline{1`hold : ^int -> $`2`int`}, 
+\begin{comment}$ this comment block is here for syntax highlighting reasons\end{comment}
 to promote first-stage integers to second-stage integers.
 %
 Our type system ensures that the staging annotations in \texttt{qss} are
@@ -116,7 +118,7 @@ computations and places the information needed by the subsequent function into a
 boundary data structure.
 %
 In particular, \texttt{qs1} performs all recursive calls and evaluates all
-instances of \texttt{partition} (since it depends only on \texttt{l}). It
+instances of \texttt{part} (since it depends only on \texttt{l}). It
 produces a boundary data structure that collects the results from these
 recursive calls, tagged by the branch (\texttt{LT}, \texttt{EQ}, or \texttt{GT})
 in which that call occurred. Since the recursive calls occur in two different
