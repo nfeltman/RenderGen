@@ -119,9 +119,9 @@ In this and later figures, we extensively use an $\mathcal{S}[\text{-}]$ constru
 to indicate a \emph{shallow} evaluation context which looks a single level deep.
 
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgment \mbox{$\steptwo e {e'}$}.
-Since first pass evaluation should not reduce stage two terms, this judgment does nothing but traverse $e$ to find \prev\ blocks, under which it performs in-place reductions.
+Since first pass evaluation should not reduce stage two terms, this judgment does nothing but traverse $e$ to find {\tt prev} blocks, under which it performs in-place reductions.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
-To be a residual, a term must have no first stage subterms (equivalently, no $\prev$s), even within the body of a function or branches of a case.
+To be a residual, a term must have no first stage subterms (equivalently, no {\tt prev}s), even within the body of a function or branches of a case.
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
 
 \paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
@@ -175,16 +175,18 @@ representing the second stage binders under which we are evaluating.
 Note how the progress theorem for world \bbonem\ states that every well-typed term must take 
 either a standard step or a hoisting step.
 \begin{abstrsyn}
-\begin{theorem} [Progress] \leavevmode
+\begin{theorem} [Progress]
 \label{thm:progress} 
+\vspace{-0.75em}
 \begin{itemize} 
 \item If $\typesone e A$, then either $e$ has the form $\exv v$, or $\stepmix e {e'}$, or $\lift e {e'}$.
 \item If $\typespure e A$, then either $e$ has the form $\exv u$, or $\steppure e {e'}$.
 \item If $\typestwo e A$, then either $e$ has the form $\exv q$, or $\steptwo e {e'}$.
 \end{itemize}
 \end{theorem}
-\begin{theorem} [Preservation] \leavevmode
+\begin{theorem} [Preservation]
 \label{thm:preservation} 
+\vspace{-0.75em}
 \begin{itemize} 
 \item If $\typesone e A$ and $\lift e {e'}$, \\
 	then $\typestwo q B$ and \mbox{$\typesone [\Gamma,\coltwo y B] {e'} A$}.

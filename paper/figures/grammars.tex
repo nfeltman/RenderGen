@@ -14,16 +14,16 @@
 \begin{abstrsyn}
 \[\begin{aligned}
 \text{Worlds}\ \ 
-\world &::= \bbonem \gbar \bbonep \gbar \bbtwo  \\
+\world ::=\,& \bbonem \gbar \bbonep \gbar \bbtwo  \\
 %
 \text{\{\bbonem,\bbtwo\}-Types}\ \ 
-\type &::= \text{unit}
+\type ::=\,& \text{unit}
  \gbar \type \times \type
  \gbar \type \to \type
  \gbar \alpha \gbar \mu \alpha.\tau 
  \gbar \tau + \tau \\
  %
-\typeM &::= \text{unit}
+\typeM ::=\,& \text{unit}
  \gbar \typeM \times \typeM
  \gbar \typeM \to \typeM
  \gbar \alpha \gbar \mu \alpha.\typeM 
@@ -31,47 +31,48 @@
  \gbar \curr \tau \\
 %
 %\text{Types}\ \ 
-%\type &::= \text{unit}%\gbar\text{int}%~|~\text{bool}
+%\type ::=\,& \text{unit}%\gbar\text{int}%~|~\text{bool}
 % \gbar \type \times \type
 % \gbar \type + \type \\
-%&\gbar \type \to \type
+%\gbar& \type \to \type
 % \gbar \alpha \gbar \mu \alpha.\tau \\
-%&\gbar \fut \type 
+%\gbar& \fut \type 
 % \gbar \curr \type \\
 %
 \text{Contexts}\ \ 
-\context &::=\emptyC
+\context ::=\,&\emptyC
  \gbar \context, x_w:\tau_w~@~w \\
-%\context &::=\emptyC \gbar \context, \colwor \var \type \\
+%\context ::=\,&\emptyC \gbar \context, \colwor \var \type \\
 %
 \text{Terms}\ \ 
-e_w &::= \app {e_w} {e_w} 
+e_w ::=\,& \app {e_w} {e_w} 
  \gbar \tup{e_w, e_w}
  \gbar \pio {e_w} 
  \gbar \pit {e_w} \\
-&\gbar \inl {e_w} \gbar \inr {e_w}
+\gbar& \inl {e_w} \gbar \inr {e_w}
  \gbar \caseof {e_w}{\var.e_w}{\var.e_w} \\
-&\gbar \roll {e_w} \gbar \unroll {e_w} \\
-\exprM &::= \exv v
+\gbar& \roll {e_w} \gbar \unroll {e_w} \\
+\exprM ::=\,& \exv v
  \gbar \next \exprT 
  \gbar \pure \exprG 
- \gbar \letp \varG \exprM \exprM 
- \gbar \caseP \exprM {\varM.\exprM} {\varM.\exprM} \\
-\exprG &::= \exv u \\ 
-\exprT &::= \exv q
+ \gbar \letp \varG \exprM \exprM \\
+\gbar& \caseP \exprM {\varM.\exprM} {\varM.\exprM} \\
+\exprG ::=\,& \exv u \\ 
+\exprT ::=\,& \exv q
+ \gbar \prev \exprM 
  \gbar \fix \varT \varT \exprT \\ 
 \text{Partial Values}\ \ 
-v &::= \varM
+v ::=\,& \varM
  \gbar\tup{}
  \gbar \fix \varM \varM \exprM
  \gbar \tup{v, v} 
  \gbar \roll v \\
-&\gbar \inl v 
+\gbar& \inl v 
  \gbar \inr v 
  \gbar \next y
  \gbar \pure v \\
 \text{Ground Values}\ \ 
-u &::= \varG
+u ::=\,& \varG
  \gbar\tup{}
  \gbar \fix \varG \varG \exprG
  \gbar \tup{u, u} 
@@ -79,14 +80,14 @@ u &::= \varG
  \gbar \inl u 
  \gbar \inr u \\
 \text{Residuals}\ \ 
-q &::= \varT
+q ::=\,& \varT
  \gbar \tup{}
  \gbar \fix \varT \varT q
  \gbar \app q q 
  \gbar \tup{q, q} 
  \gbar \pio q 
  \gbar \pit q \\
-&\gbar \roll q
+\gbar& \roll q
  \gbar \unroll q
  \gbar \inl q 
  \gbar \inr q

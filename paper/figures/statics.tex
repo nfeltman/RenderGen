@@ -43,17 +43,18 @@
 %\fbox {Staging Features} \and
 %\infertypeswor [hold]		{\typesone {\pause e} {\fut \rmint}}				{\typesone e {\curr \rmint}}		 										\and
 \infertypeswor [\fut I]		{\typesone {\next e}{\fut A}}						{\typestwo e A} 															\and
-\infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\\
+\infertypeswor [\fut E]		{\typestwo {\prev e} A}								{\typesone e {\fut A}} 														\and
 \infertypeswor [\curr I]	{\typesone {\pure e} {\curr A}}						{\typespure e A} 															\and
-\infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\typesone {e_1} {\curr A} & \typesone [\Gamma,\colpure x A] {e_2} B} 		\and
-\infertypeswor [+ E]		{\typesone {\caseP{e_1}{x_2.e_2}{x_3.e_3}} C}		{\begin{array}{r}\\
-																				\typesone {e_1}{\curr(A+B)}
-																				\end{array}
-																				&\begin{array}{r}
+\infertypeswor [\curr E]	{\typesone {\letp x {e_1} {e_2}} B}					{\begin{array}{r}
+																				\typesone {e_1} {\curr A} \\
+																				\typesone [\Gamma,\colpure x A] {e_2} B
+																				\end{array}} 		\and
+\infertypeswor [+ E]		{\typesone {\caseP{e_1}{x_2.e_2}{x_3.e_3}} C}		{\begin{array}{r}
+																				\typesone {e_1}{\curr(A+B)} \\
 																				\typesone[\Gamma,\colmix {x_2} {\curr A}]{e_2} C \\
 																				\typesone[\Gamma,\colmix {x_3} {\curr B}]{e_3} C
 																				\end{array}
-																				} 							
+																				} 										
 %\infertypeswor [lift] 		{\typesone {\lifttag e} {\curr A + \curr B}}		{\typesone e {\curr \tup{A+B}}} 											\and
 \end{mathpar}
 % \hrule

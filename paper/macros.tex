@@ -122,10 +122,10 @@
 \newcommand {\myatsign} {\hspace{-0.2em}\textsc{\textrm{@}}\hspace{-0.2em}}
 
 %judgments
-\newcommand {\coltwo} [2] {{#1}:{#2}~\myatsign~\bbtwo}
-\newcommand {\colmix} [2] {{#1}:{#2}~\myatsign~\bbonem}
-\newcommand {\colpure} [2] {{#1}:{#2}~\myatsign~\bbonep}
-\newcommand {\colwor} [2] {{#1}:{#2}~\myatsign~w}
+\newcommand {\coltwo} [2] {{#1}:\!{#2}~\myatsign~\bbtwo}
+\newcommand {\colmix} [2] {{#1}:\!{#2}~\myatsign~\bbonem}
+\newcommand {\colpure} [2] {{#1}:\!{#2}~\myatsign~\bbonep}
+\newcommand {\colwor} [2] {{#1}:\!{#2}~\myatsign~w}
 \newcommand {\typesone} [3] [\Gamma] { {#1} \vdash \colmix{#2}{#3}}
 \newcommand {\typespure} [3] [\Gamma] { {#1} \vdash \colpure{#2}{#3}}
 \newcommand {\typestwo} [3] [\Gamma] { {#1} \vdash \coltwo{#2}{#3}}
@@ -142,7 +142,6 @@
 \newcommand{\valt}{\ \valsym~\myatsign~\bbtwo}
 \newcommand{\compt}{\ \compsym~\myatsign~\bbtwo}
 
-\newcommand {\typeslangTwo} [3] [\Gamma] {{#1} \vdash_\bbtwo {#2}:{#3}}
 
 \newcommand {\reify} [3] {[{#1};{#2}]\searrow{#3}}
 \newcommand {\erasone} {\Downarrow^e_\bbone}

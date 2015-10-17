@@ -29,6 +29,7 @@ That is, each splitting judgement defines a total function.
 
 \begin{theorem} [Splitting Totality] \leavevmode
 \label{thm:total} 
+\vspace{-0.75em}
 \begin{itemize} 
 \item For term $e$, if $\typestwo e A$, then $\splittwo e A p l r$. 
 \item For term $e$, if $\typesone e A$, then $\splitone e A c {l.r}$.
@@ -38,6 +39,7 @@ That is, each splitting judgement defines a total function.
 
 \begin{theorem} [Splitting Uniqueness] \leavevmode
 \label{thm:unique}
+\vspace{-0.75em}
 \begin{itemize} 
 \item If $\splittwo e A p l r$ and $\splittwo e A {p'} {l'} {r'}$, then $p = p'$, and $l.r = l'.r'$.
 \item If $\splitone e A p {l.r}$ and $\splitone e A {c'} {l'.r'}$, then $c = c'$, and $l.r = l'.r'$.
@@ -112,6 +114,7 @@ and whose proof will concern the rest of this section.
 
 \begin{lemma} [Single Step Correctness]
 \label{lem:stepCorrect}
+\vspace{-0.75em}
 \begin{itemize} 
 \item If $e \stepsym \bbtwo e'$, $\splittwo e A p  l r$, $\splittwo {e'} A {p'} {l'} {r'}$, and $\reduce {p'} {b'}$,
 then $\reduce p b$ and $[b/l]r \equiv [b'/l']r'$.
@@ -204,64 +207,66 @@ this lemma can use the strong requirement of identical combined terms.
 If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, then $c = c'$, and $l.r \equiv l'.r'$.
 \end{lemma}
 
-\subsection{Example cases.}
+\subsection{Example Cases}
 
 In this section, we consider a few exemplar cases 
 from the proof of \ref{lem:stepCorrect}.
 The equivalence relation ``$\equiv$'' is defined in \ref{fig:equiv}.
 
 \paragraph{Reduction of {\tt pi1}.}
-Define $E = \pio {\exv{\tup {v_1,v_2}}}$ and  
-$C = \letin{\tup{y,z}}{\exv{\tup{\tup {i_1,i_2},\tup{}}}}{\tup{\pio {\exv y},\exv z}}$.
+Define 
+$C = \letin{\tup{y,z}}{\exv{\tup{\tup {i_1,i_2},\tup{}}}}{\tup{\pio {\exv y},\exv z}}$ and \\
+\mbox{$E = \pio {\exv{\tup {v_1,v_2}}}$}.
 We are given $\stepmix  E {\exv {v_1}}$,
 $\splitone E A C {l.\pio {\exv {\tup{q_1,q_2}}}}$, and
 $\splitone {\exv {v_1}} A {\exv {\tup{i_1,\tup{}}}} {\_.\exv{q_1}}$,
-and we need to show $\reduce C {\tup {i_1,\tup{}}}$
-and $\pio {\exv {\tup{q_1,q_2}}} \equiv q_1$.
+and we need to show \mbox{$\reduce C {\tup {i_1,\tup{}}}$}
+and \mbox{$\pio {\exv {\tup{q_1,q_2}}} \equiv q_1$}.
 Both of these can be derived directly.
-This pattern, where the outputs can be directly derived, extends to the {\tt pi2} and {\tt prev} reduction rules and all value marking rules.
+This pattern, where the outputs can be directly derived, extends to the {\tt pi2} and {\tt prev} reduction rules and all value promotion rules.
 
-\paragraph{Reduction of Application.} Let $E = \app {\exv{\fix f x e}} {\exv v}$,
-$E' = [\fix fxe, v/f,x] e$, \\ 
-$I = \fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}$,
-$Q = \fix f {\tup{x,\roll l}} r$, and \\
+\paragraph{Reduction of Application.} Let \\
+$\begin{array}{cl}
+E &= \app {\exv{\fix f x e}} {\exv v}, \\
+E' &= [\fix fxe, v/f,x] e, \\ 
+I &= \fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}, \\
+Q &= \fix f {\tup{x,\roll l}} r, \text{and}
+\end{array}$
 $C = \left[
 \talllet{\tup{y_1,z_1}}{\exv {\tup {I,\tup{}}}}{
 \talllet{\tup{y_2,z_2}} {\exv {\tup {i_1,\tup{}}}}{
 \talllet{\tup{y_3,z_3}}{\app{\exv {y_1}}{\exv {y_2}}}{\exv{\tup{y_3,\tup{z_1,z_2,z_3}}}\ttrpar\ttrpar\ttrpar}}}\right]$.
 \\
 We are given $\stepmix E {E'}$,
-$\splitone E A C {\tup{\_,\_,l}.\app{\exv Q}{\exv{\tup{q_1,l}}}}$,
+$\splitone E A C {\tup{\_,\_,l}.\app{\exv Q}{\exv{\tup{q_1,l}}}}$, \\
 $\splitone {E'} A {[I,i_1/f,x]c} {l.[Q,q_1/f,x]r}$,
 and $\reduce {[I,i_1/f,x]c} {\tup{i,b}}$.
-From this, we can directly derive $\reduce C {\tup{i,\tup {\tup{},\tup{},\roll b}}}$
-and $\app{\exv Q}{\exv{\tup{q_1,\roll b}}} \equiv [Q,q_1,b/f,x,l] r$.
+From this, we can derive $\reduce C {\tup{i,\tup {\tup{},\tup{},\roll b}}}$
+and \mbox{$\app{\exv Q}{\exv{\tup{q_1,\roll b}}} \equiv [Q,q_1,b/f,x,l] r$} directly.
 This pattern applies to all of the other reduction rules involving substitution,
 namely those for {\tt caseg}, and {\tt letg}. 
-Observe that, in our formal version of the language, 
-{\tt caseg} is the only construct where information is added to the boundary value.
 
 \paragraph{Compatibility of {\tt pi1} at \bbtwo.}
-We are given 
-$\steptwo {\pio e} {\pio {e'}}$, 
-$\splittwo {\pio e} A p l {\pio r}$, 
+By the case, we are given 
+$\steptwo {\pio e} {\pio {e'}}$, \\
+\mbox{$\splittwo {\pio e} A p l {\pio r}$}, 
 $\splittwo {\pio {e'}} A {p'} {l'} {\pio {r'}}$,
 and $\reduce {p'} {b'}$.
 Inversion of the first three yields
-$\steptwo e {e'}$, $\splittwo e A p l r$, and $\splittwo {e'} A {p'} {l'} {r'}$.
+$\steptwo e {e'}$, $\splittwo e A p l r$, and \mbox{$\splittwo {e'} A {p'} {l'} {r'}$}.
 Using \ref{lem:stepCorrect} inductively gives $\reduce p b$ and $[b/l]r \equiv [b'/l']r$.
-From this, $[b/l]\pio r \equiv [b'/l']\pio {r}$ can be derived directly.
+From this, \mbox{$[b/l]\pio r \equiv [b'/l']\pio {r}$} can be derived directly.
 This pattern generalizes to all world \bbtwo\ compatibility rules.
 
 \paragraph{Compatibility of {\tt pi1} at \bbonem.}
-We are given
-$\stepmix {\pio e} {\pio {e'}}$, 
-$\splitone {\pio e} A {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {l.\pio r}$, \\
-\mbox{$\splitone {\pio {e'}} A {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {l'.\pio {r'}}$},
-and \\ $\reduce {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b'}}$.
+By the case, we are given
+$\stepmix {\pio e} {\pio {e'}}$, \\
+\mbox{$\splitone {\pio e} A {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {l.\pio r}$}, \\
+\mbox{$\splitone {\pio {e'}} A {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {l'.\pio {r'}}$}, and \\
+\mbox{$\reduce {\letin{\tup{y,z}}{c'}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b'}}$}.
 Inversion of the first three yields 
 $\stepmix e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, 
-and inversion of the reduction yields $\reduce {c'} {\tup{\tup{i,i_2},b'}}$.
+and inversion of the reduction yields, for some $i_2$, \mbox{$\reduce {c'} {\tup{\tup{i,i_2},b'}}$}.
 Using \ref{lem:stepCorrect} inductively gives $\reduce c {\tup{\tup{i,i_2},b}}$ and $[b/l]r \equiv [b'/l']r$.
 From this, we can derive $\reduce {\letin{\tup{y,z}}{c}{\tup{\pio {\exv y},\exv z}}} {\tup{i,b}}$ and 
 $[b/l]\pio r \equiv [b'/l']\pio {r}$ directly.
@@ -269,7 +274,7 @@ This pattern generalizes to all world \bbonem\ compatibility rules.
 
 \paragraph{Compatibility of {\tt gr}.}
 We are given 
-$\stepmix {\pure e} {\pure {e'}}$, \\
+$\stepmix {\pure e} {\pure {e'}}$, 
 $\splitone {\pure e} A {\tup {e,\exv {\tup{}}}} {\_.\exv{\tup{}}}$, 
 $\splitone {\pure {e'}} A {\tup {e',\exv {\tup{}}}} {\_.\exv{\tup{}}}$,
 and $\reduce {\tup {e',\exv {\tup{}}}} {\tup{i,\tup{}}}$.

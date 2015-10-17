@@ -236,10 +236,8 @@ of a function that computes the object's albedo (surface color).
 %
 \begin{lstlisting} 
 1`datatype object = ...`
-2`atsignnext{
-  type coord = int * int
-  type color = int
-}`
+2`atsignnext{  type coord = int * int
+        type color = int        }`
 1`type pipeline = object * $`2`coord`1` -> `$2`color`
 
 1`fun shade (refl : pipeline, albedo : pipeline) : pipeline =
@@ -250,6 +248,3 @@ of a function that computes the object's albedo (surface color).
 Whereas prior systems provide combinators like \texttt{par} as
 language features\,\cite{Foley:2011} to support composition, \lang\ is
 powerful enough to define those combinators in-language.
-
-
-

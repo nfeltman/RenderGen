@@ -1,5 +1,6 @@
 \documentclass{llncs}
 
+\usepackage{titlesec}  
 \usepackage{amsmath}
 \usepackage{amssymb}
 %\usepackage{amsthm}
@@ -30,6 +31,9 @@
 
 \captionsetup[subfigure]{subrefformat=simple,labelformat=simple}
 \renewcommand\thesubfigure{(\alph{subfigure})}
+
+\titlespacing*{\paragraph}{0pt}{0.5\baselineskip}{1em}
+\titlespacing*{\subsection}{0pt}{\baselineskip}{0.5\baselineskip}
 
 %\newtheorem{theorem}{Theorem}[section]
 %\newtheorem{theorem*}{Theorem}
@@ -71,6 +75,9 @@
                  {literaltwo}{2}1 % hax
                  {^}{{$\curr$}}1
                  {$}{{$\fut$}}1}
+\begin{comment}$\end{comment}
+\lstset{aboveskip=3pt,belowskip=3pt}
+
 
 \special{papersize=8.5in,11in}
 \setlength{\pdfpageheight}{\paperheight}
