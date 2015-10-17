@@ -21,7 +21,7 @@ first-stage ($p$, $c$, and $i$) and second-stage ($l.r$, and $q$) content of the
 Note that there's no need to provide forms of splitting for ground terms or residuals,
 since those classes of term are already monostage by construction.
 
-The rules of the three splitting judgements are given in \ref{fig:termSplit}.
+The rules of the three splitting judgements are given in \ref{fig:valueSplit,fig:termSplit}.
 Since the rules are simply recursive on the structure of the term, 
 the splitting algorithm runs in linear time on the size of the input program.
 Splitting is defined for all well-typed inputs (\ref{thm:total}), and it produces unique results (\ref{thm:unique}).
@@ -160,7 +160,7 @@ To construct the residual $q$ (corresponding to second-stage computations) parti
 2`(y, ((),y))`
 \end{lstlisting}
 A precise definition of the partial value splitting relation is given in
-\ref{fig:termSplit}.
+\ref{fig:valueSplit}.
 
 In some regards, the exact formulation of partial value splitting is arbitrary.
 For instance, we chose to replace ``holes'' with unit values,
@@ -282,190 +282,12 @@ Inversion of the step and reduction yield \mbox{$\steppure e {e'}$} and $\reduce
 As a simple property of monostage reduction (which $\stepsym \bbonep$ is), we know $\reduce e i$.
 From here, we can derive $\reduce {\tup {e,\exv {\tup{}}}} {\tup{i,\tup{}}}$ and $\exv{\tup {}} \equiv \exv{\tup {}}$ directly.
 
+\end{abstrsyn}
 
+\input{figures/splitting-term}
+\input{figures/splitting-misc}
 
-% \subsection{Term Splitting at \bbonem}
-% \label{sec:split-one}
-
-% Given the definition of masking, we now describe how to split
-% \bbonem\ terms. The algorithm, given in \cref{fig:termSplit}, proceeds
-% recursively on the structure of~$e$. We derive a few cases here.
-
-% \paragraph {Unit.} 
-% As a simple first case, consider splitting the unit value, $\tup{}$
-% which masks to $\mval {\tup{}} {\tup{}}$.
-% %Units trivial contain unit split into more units: $\tup{} \vsplito \mval {\tup{}} {\tup{}}$.
-% Splitting must produce a $c$ and $l.r$ satisfying
-% \[
-% 	\reduce c {\tup{\tup{},b}} \text{ and } [b/l]r \equiv \tup{}
-% \]
-% Our algorithm uses $c=\tup{\tup{},\tup{}}$ and $l.r = \_.\tup{}$.
-% Splitting $\pure{e}$ follows in similar fashion, except the first 
-% component of $c$ now becomes the result of evaluating the \bbonep\ term $e$.
-
-% \paragraph {Injections.}
-% Now consider splitting the non-terminal $\inl {e}$, where $\diaone
-% {e} \xi v$ and $\rtab \xi v \vsplito \mval i q$, and thus:
-% \[
-% 	\splitone e A c {l.r} \text{ and } \reduce c {\tup{i,b}} \text{ and } [b/l]r \equiv q
-% \]
-% Since $\diaone {\inl e} \xi {\inl v}$ and $\rtab \xi {\inl v} \vsplito \mval {\inl i} q$,
-% splitting must produce a $c'$ and $l.r'$ satisfying
-% \[
-% 	\reduce {c'} {\tup{\inl i,b'}} \text{ and } [b'/l]r' \equiv q
-% \]
-% Our algorithm generates a first pass $c'$ that produces the same
-% boundary value as splitting $e$:
-% \[
-% c' = \letin {\tup {x,y}} c {\tup{\inl x, y}}
-% \]
-% Splitting the injection also generates the same resumer as splitting
-% the subterm $e$ (that is, $l.r' = l.r$).
-
-% \paragraph{Tuple.} For an example of splitting terms with more than one argument, consider the tuple $\tup{e_1,e_2}$,
-% where $\diaone {e_k} {\xi_k} {v_k}$ and 
-% $\rtab {\xi_k} {v_k} \vsplito \mval {i_k} {q_k}$ for $k = 1,2$.  
-% Inductively:
-% \[
-% 	\splitone {e_k} A {c_k} {l_k.r_k} \text{ and } \reduce {c_k} {\tup{i_k,b_k}} \text{ and } [b_k/l_k]r_k \equiv q_k
-% \]
-% Since $\diaone {\tup{e_i,e_2}} {\xi_1,\xi_2} {\tup{v_1,v_2}}$ 
-% and $\rtab {\xi_1,\xi_2} {\tup{v_1,v_2}}$ and $\tup{v_1,v_2} \vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}$,
-% splitting generates:
-% \[
-% 	\reduce {c} {\tup{\tup{i_1,i_2},b}} \text{ and } [b/l]r \equiv \tup{q_1,q_2}
-% \]
-% The resulting boundary value is the tuple of the boundary values of
-% the subterms, $b = \tup{b_1,b_2}$.  The value is 
-% constructed using
-% \[
-% c = \letin{\tup{y_1,z_1}}{c_1}{\letin{\tup{y_2,z_2}}{c_2}{\tup{\tup{y_1, y_2},\tup{z_1, z_2}}}}
-% \]
-% and deconstructed in the resumer with a tuple pattern:
-% \[
-% l.r = \tup{l_1,l_2}.\tup{r_1,r_2}
-% \]
-% \paragraph {Case.}
-% Splitting is most complicated at $\caseof {e_1} {x_2.e_2} {x_3.e_3}$ terms because of their divergent control flow.
-% Here we consider only the case where
-% $\diaone {e_1} {\xi_1} {\inl {v_1}}$ and \\ $\rtab {\xi_1} {\inl {v_1}} \vsplito \mval {\inl {i_1}} {q_1}$.
-% (The \texttt{inr} case is analogous.)
-
-% \noindent
-% Inductively,
-% \[
-% 	\splitone {e_1} A {c_1} {l_1.r_1} \text{ and } \reduce {c_1} {\tup{\inl {i_1},b_1}} \text{ and } [b_1/l_1]r_1 \equiv q_1
-% \]
-% Additionally, the first branch evaluates $\diaone {[v_1/x_2]e_2} {\xi_2} {v_2}$
-% and $\rtab {\xi_1,\xi_2} {v_2} \vsplito \mval {i_2} {q_2}$.
-% Therefore:
-% \begin{gather*}
-% 	\splitone {e_2} A {c_2} {l_2.r_2} \text{ and } \reduce {[i_1/x_2]c_2}
-%   {\tup{i_2,b_2}} \\
-% \text{ and } [q_1/x_2][b_2/l_2]r_2 \equiv q_2
-% \end{gather*}
-% (Because $e_2$ is open on $x_2$, $\pipeM{c_2}{l_2}{r_2}$ is also open on $x_2$.
-% When we substitute some $v_1$ for $x_2$ in $e_2$, we must substitute the masks
-% of $v_1$ into $c_2$ and $l_2.r_2$.)
-
-% The entire case evaluates as
-% $\diaone {\caseof {e_1} {x_2.e_2} {x_3.e_3}} {\xi_1,\xi_2} {v_2}$, so splitting should produce 
-% some $c'$ and
-% $l'.r'$ such that 
-% \[
-%   \reduce {c'} {\tup{i_2,b'}} \text{ and }
-%   [b'/l']r' \equiv q_2
-% \]
-% We choose
-% \[
-% c' =
-% {\left(
-% \talllet{\tup{y_1,z_1}}{c_1}{
-% \tallcase{y_1}
-% {x_2.\letin{\tup{y_2,z_2}}{c_2}{\tup{y_2,\tup{z_1,\inl{z_2}}}}}
-% {x_3.\cdots\ttrpar}
-% }\right)}
-% \]
-% \[
-% l'.r' =
-% \tup{l_1,l_b}.\letin{z}{r_1}{\caseof{l_b}{l_2.[z/x_2]{r_2}}{l_3.\cdots}}
-% \]
-% The term $c'$ reduces to
-% $\tup{i_2,\tup{b_1,\inl{b_2}}}$, so 
-% $b' = \tup{b_1,\inl{b_2}}$. Therefore
-% $[b'/l']r'$ reduces to
-% $[[b_1/l_1]r_1/x_2][b_2/l_2]r_2$, exactly the 
-% $[q_1/x_2][b_2/l_2]r_2$ required.
-
-% More intuitively, $c'$ cases on $i_1$ to run the first branch of first-stage
-% code. The boundary value for that branch, $b_2$, is packaged as $\tup {b_1, \inl
-% {b_2}}$. The resumer of the predicate uses $b_1$, and $\inl{b_2}$ signals to run
-% the first branch's resumer. The second branches of $c'$ and $l'.r'$ are
-% similarly constrained by the $\texttt{inr}$ case.
-
-% %Recovering first stage divergence is easy, since for $\splitone {e_1} ? {c_1} {l_1.r_1}$, 
-% %$\reduce {e_1} {\inl {v_1}}$ implies $\reduce {c_1} {\tup{\inl {i_1},b_1}}$.
-
-% \paragraph {Function.} 
-% Function introduction has a $\tup{}$ boundary value, since functions
-% are already fully reduced in our semantics.  However, since the body
-% of a function may itself be multistage, splitting must descend into
-% it.  The first pass generated by splitting produces an $i$ that is a new
-% function formed from the first-stage part of the original body.  The
-% resumer is a new function formed out of the second-stage part of the
-% original body.  It is the responsibility of the application site to
-% save the precomputation of the function body and pass it to the
-% resumer version of the function.
-
-% \subsection{Term Splitting at \bbtwo}
-
-% Because world \bbtwo\ terms in \lang\ reduce to monostage residuals
-% (as opposed to partial values), term splitting at world
-% \bbtwo\ (specified by the $\splittwosym$ relation in
-% \cref{fig:termSplit}) is simpler than that of \bbonem.
-
-% Consider any $n$-ary \bbtwo-term $e = \scriptCapp {e_1 \ttsemi \ldots
-%   \ttsemi e_n}$ (except \texttt{prev}, which is discussed shortly).
-% Note that for any $\diatwo e q$, the residual $q$ must have the form
-% $\scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}$, even if $\mathcal{C}$ is
-% nullary or the $q_i$ have binders.
-% For each $k$, splitting the subterm $e_k$ yields $p_k$ and $l_k.r_k$ where
-% \[
-% 	\reduce {p_k} {b_k} \text{ and } [{b_k}/{l_k}]{r_k} \equiv {q_k}
-% \]
-% Correspondingly, splitting $\scriptCapp {e_1 \ttsemi \ldots \ttsemi e_n}$ generates $p$ and $l.r$ where
-% \[
-% 	\reduce p b \text{ and } [b/l]r \equiv \scriptCapp {q_1 \ttsemi \ldots \ttsemi q_n}
-% \]
-% Our algorithm accomplishes this by using $p = \tup {p_1, \ldots, p_n}$ and
-% $l.r = \tup {l_1, \ldots, l_n}.\scriptCapp {r_1 \ttsemi \ldots \ttsemi r_n}$.
-
-% %Again, this holds even for nullary terms and under binders.
-% In particular, $\caseof{e_1}{x_2.e_2}{x_3.e_3}$ splits into:
-% \[
-% \pipeS {\tup{p_1,p_2,p_3}} {\tup{l_1,l_2,l_3}} {\caseof{r_1}{x_2.r_2}{x_3.r_3}}
-% \]
-% Note how the precomputations of $e_2$ and $e_3$ are pulled out from
-% underneath the binder into a tuple that is always executed in the
-% first stage. This occurs regardless of what branch is eventually
-% executed in the second stage.
-
-% \paragraph{Staging constructs.}
-% Since \texttt{next} and \texttt{prev} do nothing more than convert between 
-% second-stage terms at \bbtwo\ and encapsulated second-stage terms at \bbonem,
-% their splitting rules are relatively simple.
-% Given $\diatwo e q$, splitting yields $p$ and $l.r$ where
-% \[
-% 	\reduce p b \text{ and } [b/l]r \equiv q
-% \]
-% Then for $\diaone {\next {e}} {{\hat y} \mapsto q} {\next {\hat y}}$
-% and\\ $\rtab {{\hat y} \mapsto q} {\next {\hat y}} \vsplito \mval {\tup{}} {\letin {\hat y} q {\hat y}}$, splitting must produce $c'$ and $l'.r'$ where
-% \[
-% 	\reduce {c'} {\tup {\tup{},b'}} \text{ and } [b'/l']r' \equiv \letin {\hat y} q {\hat y}
-% \]
-% Our algorithm chooses $c' = \tup{\tup{},p}$ and $l'.r' = l.r$.
-% Applying this process in reverse yields a splitting rule for $\prev e$ which applies \texttt{pi1} to the combined term of $e$.
-
+\begin{abstrsyn}
 \subsection {Role of World \bbonep}
 \label{sec:needGround}
 
@@ -526,12 +348,10 @@ As a result, the boundary value passed between the two output programs has a (po
 
 This structure can be described with a type; for instance, the staged quickselect yields a binary search tree.
 Indeed, for most of our examples in \ref{sec:examples}, inferring this type is straight-forward. 
-However, we do not yet have a formal characterization of these boundary types that is total for all \lang\ programs.
+However, we do not yet have a formal characterization of these boundary types that is defined for all \lang\ programs.
 \footnote{Observe that in the outputs of splitting we could have ommitted the {\tt roll} tag from functions or 
 replaced $\inl a$ and $\inr b$ with $\tup {0,a}$ and $\tup {1,b}$, and the proof of correctness would still have gone through.
 We chose the tags, however, in order to keep the typed interpretation more natural, even in absence of a formal result.
 }
 \end{abstrsyn}
 
-\input{figures/splitting-term}
-\input{figures/splitting-misc}

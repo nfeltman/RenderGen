@@ -1,7 +1,7 @@
 %!TEX root = ../paper.tex
 
-\begin{figure}
 \begin{abstrsyn}
+\begin{figure}[t]
 \begin{mathpar}
 \infer {x 					\vsplito \mval x x}														{\cdot}												\and
 \infer {\tup{} 				\vsplito \mval {\tup{}} {\tup{}}}										{\cdot}												\and
@@ -18,7 +18,11 @@
 \infer {\fix f x e			\vsplito \mval {\fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}} 
 							{\fix f {\tup{x,\roll l}} r}}											{\splitone e A c {l.r}}								\and
 \end{mathpar}
-\hrule
+\caption{Value splitting rules.}
+\label{fig:valueSplit}
+\end{figure}
+
+\begin{figure}
 \begin{mathpar}
 \infersplitone 					{\spl {\exv v} A {\exv{\tup{i,\tup{}}}} {\_.\exv q}} {v \vsplito \mval i q} \and 
 \infersplitone [common2]		{\spl {\scont e}{A}{\letin{\tup{y,z}}{c}
@@ -49,6 +53,11 @@
 									\talllet{\tup{y_3,z_3}}{\app{y_1}{y_2}}{\exv{\tup{y_3,\tup{z_1,z_2,z_3}}}\ttrpar\ttrpar\ttrpar}}}
 									\right)}
 									{\tup{l_1,l_2,l_3}.\app{\exv {r_1}}{\exv{\tup{r_2,l_3}}}}}										{\sub 1 {A \to B} & \sub 2 A}							\and
+\infersplitone				{\spl {\pure e} {\curr A} {\tup{e,\tup{}}}{\_.\tup{}}}								{\cdot}							\and
+\infersplitone				{\splitoneTall {\letp x{e_1}{e_2}} {?} 
+							{\letin {\tup{x,z_1}} {c_1} {
+							 \letin {\tup{y_2,z_2}} {c_2} {\tup{y_2,\tup{z_1,z_2}}}}}
+							 {\tup{l_1,l_2}.\letin{\_}{r_1}{r_2}}}												{\sub 1 ? & \sub 2 ?}			\and
 \infersplitone [+ E]		{\splitoneTall {\caseP{e_1} {x_2.e_2} {x_3.e_3}}{C}
 								{\left(
 								\talllet{\tup{y_1,z_1}}{c_1}{
@@ -59,12 +68,7 @@
 								{\tup{l_1,l_b}.{\ttlpar r_1 \ttsemi \caseof{\exv{l_b}}{l_2.[\tup{}/x_2]{r_2}}{l_3.[\tup{}/x_3]{r_3}\ttrpar}
 								}}}																									{\sub 1 {A+B} 
 																																	& \sub [\Gamma,\col{x_2} A] 2 C 	
-																																	& \sub [\Gamma,\col{x_3} B] 3 C} 		\\
-\infersplitone				{\spl {\pure e} {\curr A} {\tup{e,\tup{}}}{\_.\tup{}}}								{\cdot}							\and
-\infersplitone				{\splitoneTall {\letp x{e_1}{e_2}} {?} 
-							{\letin {\tup{x,z_1}} {c_1} {
-							 \letin {\tup{y_2,z_2}} {c_2} {\tup{y_2,\tup{z_1,z_2}}}}}
-							 {\tup{l_1,l_2}.\letin{\_}{r_1}{r_2}}}												{\sub 1 ? & \sub 2 ?}			
+																																	& \sub [\Gamma,\col{x_3} B] 3 C} 		
 \end{mathpar}
 \hrule
 \begin{mathpar}
@@ -90,8 +94,8 @@
 								{\tup{p_1,p_2,p_3}}{ \tup{l_1,l_2,l_3}}{\caseof{r_1}{x_2.r_2}{x_3.r_3}}}					{\sub 1 {A+B} & \sub [\Gamma,\col{x_2} A] 2 C 
 																															& \sub [\Gamma,\col{x_3} B] 3 C} 								
 \end{mathpar} 
-\end{abstrsyn}
-\caption{Splitting rules.}
+\caption{Splitting rules for terms at \bbonem\ and \bbtwo.}
 \label{fig:termSplit}
 \end{figure}
+\end{abstrsyn}
 
