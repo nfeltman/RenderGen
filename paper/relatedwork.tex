@@ -72,6 +72,8 @@ first stage computations. As noted by Knoblock and
 Ruf\,\cite{knoblock96}, it may be possible to modify the program
 bifurcation algorithm to cache and reuse the intermediate results, but
 this was never attempted.
+Alternatively, our algorithm could potentially be used as the basis of a general
+bifurcation algorithm in a partial evaluator.
 
 Experience with binding time analysis showed that it can be difficult
 to control, leading to programs whose performance was difficult to
@@ -96,9 +98,9 @@ computations~\cite{NP05-nn}.
 The type-system of \lang\ is closely related to this later line of
 work on metaprogramming and staged computation.  The specific
 extension to the typed lambda calculus that we use here is based on
-the $\fut$ modality of Davies~\cite{DP01-modal}.  Our types differ in
-small ways to account for the specific evaluation model that we
-propose; however, the key difference between our work and this prior
+the $\fut$ modality of Davies~\cite{DP01-modal}.  Our types differ 
+in the restriction to two stages and the addition of $\curr$; 
+however, the key difference between our work and this prior
 work is that we instead focus on the problem of splitting.
 
 Another class of precomputation techniques is incremental computation,
@@ -143,8 +145,16 @@ writing graphics programs in an explicitly-staged programming
 language\,\cite{Proudfoot:2001,Foley:2011,He:2014} and deferring the
 task of pass separation to the compiler. However, all prior splitting
 efforts in computer graphics, like that of Knoblock and
-Ruf\,\cite{knoblock96} have been limited to simple, imperative
+Ruf\,\cite{knoblock96}, have been limited to simple, imperative
 languages.
 
-
-
+\paragraph{Defunctionalization.}
+Defunctionalization \cite{Reynolds72} is a program transformation
+that eliminates high-order functions and replaces them with lower
+order functions that manipulate a data structure encoding the original control flow.
+This operation has similarity to our splitting transformation, 
+which eliminates staging in a program by encoding control flow in a data structure
+passed between the stage one and stage two outputs.
+It would interesting to explore the possibility of a semantics-preserving transformation
+to convert a staged program into a higher-order form,
+and then applying defunctionalization to obtain our results.

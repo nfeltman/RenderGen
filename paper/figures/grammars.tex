@@ -55,8 +55,8 @@ e_w &::= \app {e_w} {e_w}
 \exprM &::= \exv v
  \gbar \next \exprT 
  \gbar \pure \exprG 
- \gbar \letp \varG \exprM \exprM \\
-&\gbar \caseP \exprM {\varM.\exprM} {\varM.\exprM} \\
+ \gbar \letp \varG \exprM \exprM 
+ \gbar \caseP \exprM {\varM.\exprM} {\varM.\exprM} \\
 \exprG &::= \exv u \\ 
 \exprT &::= \exv q
  \gbar \fix \varT \varT \exprT \\ 
@@ -64,31 +64,31 @@ e_w &::= \app {e_w} {e_w}
 v &::= \varM
  \gbar\tup{}
  \gbar \fix \varM \varM \exprM
- \gbar \tup{v, v} \\
-&\gbar \roll v
- \gbar \inl v 
- \gbar \inr v \\
-&\gbar \next y
+ \gbar \tup{v, v} 
+ \gbar \roll v \\
+&\gbar \inl v 
+ \gbar \inr v 
+ \gbar \next y
  \gbar \pure v \\
 \text{Ground Values}\ \ 
 u &::= \varG
  \gbar\tup{}
  \gbar \fix \varG \varG \exprG
- \gbar \tup{u, u} \\
-&\gbar \roll u
+ \gbar \tup{u, u} 
+ \gbar \roll u
  \gbar \inl u 
  \gbar \inr u \\
 \text{Residuals}\ \ 
 q &::= \varT
  \gbar \tup{}
  \gbar \fix \varT \varT q
- \gbar \app q q \\
-&\gbar \tup{q, q} 
+ \gbar \app q q 
+ \gbar \tup{q, q} 
  \gbar \pio q 
  \gbar \pit q \\
 &\gbar \roll q
- \gbar \unroll q\\
-&\gbar \inl q 
+ \gbar \unroll q
+ \gbar \inl q 
  \gbar \inr q
  \gbar \caseof {q}{\varT.q}{\varT.q} \\
 \end{aligned}\]

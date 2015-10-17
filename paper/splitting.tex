@@ -508,6 +508,24 @@ This was similarly observed in prior work seeking to implement self-applicable p
 While this paper assumes that ground annotations already exist in the input,
 it may be possible to use binding-time analysis techniques to automatically insert them.
 Ground is also similar to the validity mechanism in ML5\,\cite{murphy05}.
+
+\subsection{Typing the Boundary Data Structure}
+
+One of the central features of our splitting algorithm is that
+it encodes the control flow behavior of the original 
+staged program into the boundary data structure.
+For instance, the {\tt case} and {\tt caseg} splitting rules 
+put injection tags on the boundary based on which branch was taken,
+and the {\tt fn} rule adds a roll tag to the boundary.
+As a result, the boundary value passed between the two output programs has a (potentially recursive) structure like a tree or list.
+
+This structure can be described with a type; for instance, the staged quickselect yields a binary search tree.
+Indeed, for most of our examples in \ref{sec:examples}, inferring this type is straight-forward. 
+However, we do not yet have a formal characterization of these boundary types that is total for all \lang\ programs.
+\footnote{Observe that in the outputs of splitting we could have ommitted the {\tt roll} tag from functions or 
+replaced $\inl a$ and $\inr b$ with $\tup {0,a}$ and $\tup {1,b}$, and the proof of correctness would still have gone through.
+We chose the tags, however, in order to keep the typed interpretation more natural, even in absence of a formal result.
+}
 \end{abstrsyn}
 
 \input{figures/splitting-term}

@@ -242,11 +242,9 @@ of a function that computes the object's albedo (surface color).
 }`
 1`type pipeline = object * $`2`coord`1` -> `$2`color`
 
-1`fun shade (refl : pipeline,
-           albedo : pipeline) : pipeline =
-  (fn (obj : object, next{2`xy`} : $2`coord`) =>
-       2`prev{`1`refl   (obj,next{2`xy`})`2`}
-     * prev{`1`albedo (obj,next{2`xy`})`2`}`)
+1`fun shade (refl : pipeline, albedo : pipeline) : pipeline =
+  fn (obj : object, next{2`xy`} : $2`coord`) =>
+       2`prev{`1`refl (obj,next{2`xy`})`2`} * prev{`1`albedo (obj,next{2`xy`})`2`}`
 \end{lstlisting}
 %
 Whereas prior systems provide combinators like \texttt{par} as

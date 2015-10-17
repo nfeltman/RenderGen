@@ -11,7 +11,7 @@ we find it helpful for the specification of splitting to differentiate terms int
 A world is essentially a slightly finer classification than a stage.
 Whereas there is only one world, \bbtwo, for second-stage computations,
 there are two worlds corresponding to the first stage:
-\bbonem\ for \emph{mixed} first-stage computations, which may contain second-stage subterms within $\next$ blocks,
+\bbonem\ for \emph{mixed} first-stage computations, which may contain second-stage subterms within {\tt next} blocks,
 and \bbonep\ for \emph{ground} first-stage computations, which may not.
 The distinction between these two first-stage worlds is necessary for an efficient splitting algorithm
 and will be discussed in \ref{sec:needGround}.
@@ -125,14 +125,13 @@ To be a residual, a term must have no first stage subterms (equivalently, no $\p
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
 
 \paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
-Thus, $\steppure e {e'}$ traverses into subterms to to find the left-most unevaluated code (compatibility rules) 
-where it either performs a beta reduction (reduction rules) or marks the term as being evaluated (value marking rules). 
+Thus, $\steppure e {e'}$ traverses into subterms to to find the left-most unevaluated code where it performs a reduction. 
 A ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
 
 \paragraph{World \bbonem.}
-Like its ground counterpart, the \bbonem\ step judgment, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a beta reduction or marks a value.
-It also descends into $\pure$ and $\next$ blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
-The value form for \bbonem, called a partial value, comprises units, tuples, functions, $\pure$ blocks of ground values, and $\next$ blocks containing \emph{only a stage two variable}.
+Like its ground counterpart, the \bbonem\ step judgment, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a reduction.
+It also descends into {\tt gr} and {\tt next} blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
+The value form for \bbonem, called a partial value, comprises units, tuples, functions, {\tt gr} blocks of ground values, and {\tt next} blocks containing \emph{only a stage two variable}.
 This strong requirement ensures that second-stage computations are not duplicated 
 when partial values are substituted for a variable.
 This is a departure from the staged semantics of \cite{taha-thesis-99} and \cite{davies96}.
@@ -146,20 +145,27 @@ To illustrate, consider:
 2`prev{`1`(fn x : $int => e') (next{`2`e`1`})`2`}`
 \end{lstlisting}
 We could reduce this to $\prev{[\next e/x]e'}$, but this may potentially duplicate an
-expensive computation $e$ depending on how many times $x$ appears in $e$. 
+expensive computation $e$ depending on how many times $x$ appears in $e'$. 
 Instead, we choose to \emph{hoist} $e$ outside, binding it
 to a temporary variable $y$, and substituting that variable instead:
 \begin{lstlisting} 
 2`let val y = e in prev{`1`[next{`2`y`1`}/x]e'`2`}`
 \end{lstlisting}\end{abstrsyn}
 This behavior is implemented by the $\lift e {e'}$ judgment, called a \emph{hoisting step}.
-We read this as saying somewhere within $e$ there was the subterm $q$ which needs to be hoisted out,
-yielding the new term $e'$ which has a new variable $y$ where the $q$ used to be.
+We read this as saying that somewhere within $e$ there was a subterm $q$ which needs to be hoisted out,
+yielding the new term $e'$ which has a new variable $y$ where $q$ used to be.
 These steps occur when a \next\ block has contents that are a residual but (to prevent loops) not when those contents are already a variable.
 In essence, the rules for hoisting steps operate by ``bubbling up'' a substitution to the innermost containing \prev,
 where it is reified into a {\tt let} statement.
-\footnote{Because a top-level program is a term at \bbtwo, this {\tt prev} always exists.
+\footnote{Because a program is a term at \bbtwo, this {\tt prev} always exists.
 Otherwise, the semantics would need a mechanism to accumulate the bindings that hoisting steps create.}
+
+Consider the following example, where {\tt P} has type $\curr(\rmunit + \rmunit)$,\begin{lstlisting}
+           1`caseg P of _ => next{`2`0`1`} | _ => next{`2`literalone`1`}`
+\end{lstlisting}
+Depending on what {\tt P} evaluates to in the first stage, whole term will step to either {\tt next\{0\}} or {\tt next\{1\}}.
+In this sense, we can see {\tt case} (at world \bbonem) and {\tt caseg} as the constructs that facilitate
+all cross-stage communication.
 
 \subsection{Type Safety}
 
@@ -168,7 +174,6 @@ In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
 representing the second stage binders under which we are evaluating.
 Note how the progress theorem for world \bbonem\ states that every well-typed term must take 
 either a standard step or a hoisting step.
-
 \begin{abstrsyn}
 \begin{theorem} [Progress] \leavevmode
 \label{thm:progress} 
@@ -181,7 +186,8 @@ either a standard step or a hoisting step.
 \begin{theorem} [Preservation] \leavevmode
 \label{thm:preservation} 
 \begin{itemize} 
-\item If $\typesone e A$ and $\lift e {e'}$, then $\typestwo q B$ and $\typesone [\Gamma,\coltwo y B] {e'} A$.
+\item If $\typesone e A$ and $\lift e {e'}$, \\
+	then $\typestwo q B$ and \mbox{$\typesone [\Gamma,\coltwo y B] {e'} A$}.
 \item If $\typeswor e A$ and $\stepwor e {e'}$, then $\typeswor {e'} A$.
 \end{itemize}
 \end{theorem}
@@ -204,15 +210,13 @@ We can also directly observe the reuse of first-stage computations across
 multiple second-stage computations. To run many order statistics queries
 $\texttt{k1},\dots,\texttt{km}$ on the same list, run the program:
 \begin{lstlisting}
-2`let fun qs k = 
-      prev{`1`qss (`3`gr{`1`[7,4,2,5,9,...,3]`3`}`1`,next{`2`k`1`})2`}`
+2`let fun qs k = prev{`1`qss (`3`gr{`1`[7,4,2,5,9,...,3]`3`}`1`,next{`2`k`1`})2`}`
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
 To see that the partial application of \texttt{qss} is only evaluated once,
 observe that after the first stage of evaluation, the residual has the form:
 \begin{lstlisting}
-2`let fun qs k = 
-	  let val y = ... in y
+2`let fun qs k = (let val y = ... in y)
 2`in (qs k1,...,qs km)`
 \end{lstlisting}
 where $y$ is bound to a large nest of case statements open on $k$.
