@@ -614,6 +614,74 @@ conv-cong/lam : ({x : {L} term L} lang-convert (M (x lang1) : term lang1) (M' (x
 %worlds (term-block) (conv-conglam _ _).
 %total {} (conv-conglam _ _).}%
 
+lang-convert-total : {E : term L1} {L2} {E2 : term L2} lang-convert E L2 E2 -> type.
+%mode lang-convert-total +E +L2 -E' -Dconv.
+- : lang-convert-total ztup _ ztup conv-ztup.
+- : lang-convert-total (tup E1 E2) L (tup E1 E2) (conv-tup Dconv1' Dconv2')
+    <- lang-convert-total E2 L E2 Dconv2'
+    <- lang-convert-total E1 L E1 Dconv1'.
+- : lang-convert-total (pi1 E) L (pi1 E') (conv-pi1 Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (pi2 E) L (pi2 E') (conv-pi2 Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (inj1 E) L (inj1 E') (conv-inj1 Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (inj2 E) L (inj2 E') (conv-inj2 Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (case E M N) L (case E' M' N') (conv-case Dconv' DconvM DconvN)
+    <- ({x}{L2}{x2}{convx : lang-convert x L2 x2} lang-convert-total x L2 x2 convx -> 
+        lang-convert-total (M x) L (M' x2) (DconvM x x2 convx))
+    <- ({x}{L2}{x2}{convx : lang-convert x L2 x2} lang-convert-total x L2 x2 convx -> 
+        lang-convert-total (N x) L (N' x2) (DconvN x x2 convx))
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (roll E) L (roll E') (conv-roll Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (unrl E) L (unrl E') (conv-unrl Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (lam M) L (lam M') (conv-lam DconvM)
+    <- ({f}{f2}{convf : lang-convert f L f2} lang-convert-total f L f2 convf -> 
+        {x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (M f x) L (M' f2 x2) (DconvM f f2 convf x x2 convx)).
+- : lang-convert-total (fix M) L (fix M') (conv-fix DconvM)
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (M x) L (M' x2) (DconvM x x2 convx)).
+- : lang-convert-total (app E1 E2) L (app E1' E2') (conv-app Dconv1' Dconv2')
+    <- lang-convert-total E2 L E2' Dconv2'
+    <- lang-convert-total E1 L E1' Dconv1'.
+- : lang-convert-total (let E M) L (let E' M') (conv-let Dconv DconvM)
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (M x) L (M' x2) (DconvM x x2 convx))
+    <- lang-convert-total E L E' Dconv.
+- : lang-convert-total (lett E M) L (lett E' M') (conv-lett Dconv DconvM)
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+       {y}{y2}{convy : lang-convert y L y2} lang-convert-total y L y2 convy ->  
+       lang-convert-total (M x y) L (M' x2 y2) (DconvM x x2 convx y y2 convy))
+    <- lang-convert-total E L E' Dconv.
+- : lang-convert-total (next E) L (next E') (conv-next Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (prev E) L (prev E') (conv-prev Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (grnd E) L (grnd E') (conv-grnd Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (letg E M) L (letg E' M') (conv-letg Dconv' DconvM)
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (M x) L (M' x2) (DconvM x x2 convx))
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (exv E) L (exv E') (conv-exv Dconv')
+    <- lang-convert-total E L E' Dconv'.
+- : lang-convert-total (caseg E M N) L (caseg E' M' N') (conv-caseg Dconv' DconvM DconvN)
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (M x) L (M' x2) (DconvM x x2 convx))
+    <- ({x}{x2}{convx : lang-convert x L x2} lang-convert-total x L x2 convx -> 
+        lang-convert-total (N x) L (N' x2) (DconvN x x2 convx))
+    <- lang-convert-total E L E' Dconv'.
+%block convert-total-block : some {L1 : lang} block {x1 : term L1} {L2 : lang} {x2 : term L2} {Dconv : lang-convert x1 L2 x2} {_ : lang-convert-total x1 L2 x2 Dconv}.
+%%block convert-total-ignore-block_0 : block {x1 : term lang0}.
+%%block convert-total-ignore-block_2 : block {x2 : term lang2}.
+%%block convert-total-ignore-block = (convert-total-ignore-block_0 | convert-total-ignore-block_2).
+%worlds (convert-total-block) (lang-convert-total _ _ _ _).
+%total (D) (lang-convert-total D _ _ _).
+
 lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) -> type.
 %mode lang-convert_12-total +E -E'.
 - : lang-convert_12-total ztup conv-ztup.
