@@ -9,7 +9,7 @@ dos-lstep	: lstep E Q E' -> dos wor1 E.
 %% VAR-OR-NOT JUDGEMENT
 var-or-not : term -> type. %name var-or-not Dvon.
 von-var : form^ E var wor2 -> var-or-not (exv E).
-von-not : not-variable E -> var-or-not E.
+von-not : not-exv E -> var-or-not E.
 
 
 %% RESIDUALS ARE EITHER VARIABLES OR NOT VARIABLES

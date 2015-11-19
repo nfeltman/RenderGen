@@ -3,20 +3,20 @@
 
 
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
-not-variable : term -> type.
-nv-ztup : not-variable ztup.
-nv-lam  : not-variable (lam _).
-nv-app  : not-variable (app _ _).
-nv-let 	: not-variable (let _ _).
-%{nv-tup  : not-variable (tup _ _).
-nv-pi1  : not-variable (pi1 _).
-nv-pi2  : not-variable (pi2 _).
-nv-fix  : not-variable (fix _).
-nv-inj1 : not-variable (inj1 _).
-nv-inj2 : not-variable (inj2 _).
-nv-roll : not-variable (roll _).
-nv-unrl : not-variable (unrl _).
-nv-case : not-variable (case _ _ _).}%
+not-exv : term -> type.
+nv-ztup : not-exv ztup.
+nv-lam  : not-exv (lam _).
+nv-app  : not-exv (app _ _).
+nv-let 	: not-exv (let _ _).
+%{nv-tup  : not-exv (tup _ _).
+nv-pi1  : not-exv (pi1 _).
+nv-pi2  : not-exv (pi2 _).
+nv-fix  : not-exv (fix _).
+nv-inj1 : not-exv (inj1 _).
+nv-inj2 : not-exv (inj2 _).
+nv-roll : not-exv (roll _).
+nv-unrl : not-exv (unrl _).
+nv-case : not-exv (case _ _ _).}%
 %{
 %% STANDARD COMPATABILITY CONTEXT
 compc : (term -> term) -> type.
@@ -130,7 +130,7 @@ ls-caseg-s1	: lstep (caseg E M N) Q ([x] caseg (E' x) M N)
 			
 %% STAGING FEATURES
 ls-next-r	: lstep (next (exv E)) E ([x] next (exv (exv x)))
-			<- not-variable E.
+			<- not-exv E.
 ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv (exv E)).
 ms-next-s	: mstep wor1 (next E) (next E')
 			<- mstep wor2 E E'.
