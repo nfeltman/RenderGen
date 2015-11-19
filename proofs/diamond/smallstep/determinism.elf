@@ -1,0 +1,205 @@
+%%  USEFUL BLOCKS
+%block det-block = (term-block | term-block).
+
+%% VARIABLE AND NOT VARIABLE ARE EXCLLUSIVE
+excl-var-notvar : not-variable (exv E) -> false -> type.
+%mode excl-var-notvar +Dnotvar -Dfalse.
+%worlds (det-block) (excl-var-notvar _ _).
+%total D (excl-var-notvar D _).
+
+%% MSTEPS AND LSTEPS ARE EXCLUSIVE
+excl-mstep-lstep : mstep wor1 E _ -> lstep E _ _ -> false -> type.
+%mode excl-mstep-lstep +Dstep +Dstep' -Dfalse.
+%% mstep/lstep cases
+- : excl-mstep-lstep (ms-tup-s1 Dstep) (ls-tup-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-tup-s2 Dstep) (ls-tup-s2 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-pi1-s Dstep) (ls-pi1-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-pi2-s Dstep) (ls-pi2-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-unrl-s Dstep) (ls-unrl-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-roll-s Dstep) (ls-roll-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-inj1-s Dstep) (ls-inj1-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-inj2-s Dstep) (ls-inj2-s Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-case-s1 Dstep) (ls-case-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-app-s1 Dstep) (ls-app-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-app-s2 Dstep) (ls-app-s2 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-letg-s1 Dstep) (ls-letg-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep (ms-caseg-s1 Dstep) (ls-caseg-s1 Dstep') Dfalse
+	<- excl-mstep-lstep Dstep Dstep' Dfalse.
+- : excl-mstep-lstep ms-next-d (ls-next-r Dnotvar) Dfalse
+	<- excl-var-notvar Dnotvar Dfalse.
+%worlds (det-block) (excl-mstep-lstep _ _ _).
+%total (D) (excl-mstep-lstep _ D _).
+
+
+%% FALSE YIELDS EQUALITY
+false\eq2 : {E1 : term L -> term L} {E2 : term L -> term L} false -> ({x} eq-term (E1 x) (E2 x)) -> type.
+%mode false\eq2 +E1 +E2 +Dfalse -Deq.
+%worlds (det-block) (false\eq2 _ _ _ _).
+%total {} (false\eq2 _ _ _ _).
+
+
+%% LSTEP IS DETERMINISTIC
+lstep/unique : lstep E Q1 E1 -> lstep E Q2 E2 -> eq-term Q1 Q2 -> ({x} eq-term (E1 x) (E2 x)) -> type.
+%mode lstep/unique +Dlstep1 +Dlstep2 -DeqQ -DeqE.
+- : lstep/unique _ _ eq-term_ ([x] eq-term_).
+%% SUBSTEP RECURSIVE CASES
+- : lstep/unique (ls-tup-s1 Dstep) (ls-tup-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong2 tup (DeqE x) eq-term_ (DeqE' x).
+- : lstep/unique (ls-tup-s2 Dstep) (ls-tup-s2 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong2 tup eq-term_ (DeqE x) (DeqE' x).
+- : lstep/unique (ls-pi1-s Dstep) (ls-pi1-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong pi1 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-pi2-s Dstep) (ls-pi2-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong pi2 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-inj1-s Dstep) (ls-inj1-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong inj1 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-inj2-s Dstep) (ls-inj2-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong inj2 (DeqE x) (DeqE' x).
+- : lstep/unique (ls-case-s1 Dstep) (ls-case-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/case (DeqE x) ([x] eq-term_) ([x] eq-term_) (DeqE' x).
+- : lstep/unique (ls-roll-s Dstep) (ls-roll-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong roll (DeqE x) (DeqE' x).
+- : lstep/unique (ls-unrl-s Dstep) (ls-unrl-s Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong unrl (DeqE x) (DeqE' x).
+- : lstep/unique (ls-app-s1 Dstep) (ls-app-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong2 app (DeqE x) eq-term_ (DeqE' x).
+- : lstep/unique (ls-app-s2 Dstep) (ls-app-s2 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong2 app eq-term_ (DeqE x) (DeqE' x).
+- : lstep/unique (ls-letg-s1 Dstep) (ls-letg-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/letg (DeqE x) ([x] eq-term_) (DeqE' x).
+- : lstep/unique (ls-caseg-s1 Dstep) (ls-caseg-s1 Dstep') DeqQ DeqE'
+	<- lstep/unique Dstep Dstep' DeqQ DeqE
+	<- {x} eq-cong/caseg (DeqE x) ([x] eq-term_) ([x] eq-term_) (DeqE' x).
+%worlds (det-block) (lstep/unique _ _ _ _).
+%total D (lstep/unique D _ _ _).
+
+%% MSTEP IS DETERMINISTIC
+step/unique : mstep W E E1 -> mstep W E E2 -> eq-term E1 E2 -> type.
+%mode step/unique +Dstep1 +Dstep2 -Deq.
+%% REDUCTION AND DONE MARKER RULES
+- : step/unique (ms-beta _ _) (ms-beta _ _) eq-term_.
+- : step/unique ms-letg-r ms-letg-r eq-term_.
+- : step/unique ms-caseg-r1 ms-caseg-r1 eq-term_.
+- : step/unique ms-caseg-r2 ms-caseg-r2 eq-term_.
+%{- : step/unique ms-let-r ms-let-r eq-term_.}%
+- : step/unique ms-prev-r ms-prev-r eq-term_.
+- : step/unique ms-tup-d ms-tup-d eq-term_.
+- : step/unique ms-pi1-d ms-pi1-d eq-term_.
+- : step/unique ms-pi2-d ms-pi2-d eq-term_.
+- : step/unique ms-inj1-d ms-inj1-d eq-term_.
+- : step/unique ms-inj2-d ms-inj2-d eq-term_.
+- : step/unique ms-case-d ms-case-d eq-term_.
+- : step/unique ms-roll-d ms-roll-d eq-term_.
+- : step/unique ms-roll-d ms-roll-d eq-term_.
+- : step/unique ms-unrl-d ms-unrl-d eq-term_.
+- : step/unique ms-lam-d ms-lam-d eq-term_.
+- : step/unique ms-app-d ms-app-d eq-term_.
+- : step/unique ms-let-d ms-let-d eq-term_.
+- : step/unique ms-grnd-d ms-grnd-d eq-term_.
+- : step/unique ms-next-d ms-next-d eq-term_.
+%% SUBSTEP RECURSIVE CASES
+- : step/unique (ms-tup-s1 Dstep1) (ms-tup-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong2 tup Deq eq-term_ Deq'.
+- : step/unique (ms-tup-s2 Dstep1) (ms-tup-s2 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong2 tup eq-term_ Deq Deq'.
+- : step/unique (ms-pi1-s Dstep1) (ms-pi1-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong pi1 Deq Deq'.
+- : step/unique (ms-pi2-s Dstep1) (ms-pi2-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong pi2 Deq Deq'.
+- : step/unique (ms-inj1-s Dstep1) (ms-inj1-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong inj1 Deq Deq'.
+- : step/unique (ms-inj2-s Dstep1) (ms-inj2-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong inj2 Deq Deq'.
+- : step/unique (ms-roll-s Dstep1) (ms-roll-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong roll Deq Deq'.
+- : step/unique (ms-unrl-s Dstep1) (ms-unrl-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong unrl Deq Deq'.
+- : step/unique (ms-case-s1 Dstep1) (ms-case-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/case Deq ([_] eq-term_) ([_] eq-term_) Deq'.
+- : step/unique (ms-case-s2 Dstep1) (ms-case-s2 Dstep2) Deq'
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- eq-cong/case eq-term_ Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-case-s3 Dstep1) (ms-case-s3 Dstep2) Deq'
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- eq-cong/case eq-term_ ([x] eq-term_) Deq Deq'.
+- : step/unique (ms-lam-s Dstep1) (ms-lam-s Dstep2) Deq'
+	<- ({f}{x}	step/unique (Dstep1 f x) (Dstep2 f x) (Deq f x))
+	<- eq-cong/lam Deq Deq'.
+- : step/unique (ms-app-s1 Dstep1) (ms-app-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong2 app Deq eq-term_ Deq'.
+- : step/unique (ms-app-s2 Dstep1) (ms-app-s2 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong2 app eq-term_ Deq Deq'.
+- : step/unique (ms-let-s1 Dstep1) (ms-let-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/let Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-let-s2 Dstep1) (ms-let-s2 Dstep2) Deq'
+	<- ({x}	step/unique (Dstep1 x) (Dstep2 x) (Deq x))
+	<- eq-cong/let eq-term_ Deq Deq'.
+- : step/unique (ms-lett-s1 Dstep1) (ms-lett-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/lett Deq ([x][y] eq-term_) Deq'.
+- : step/unique (ms-next-s Dstep1) (ms-next-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong next Deq Deq'.
+- : step/unique (ms-prev-s Dstep1) (ms-prev-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong prev Deq Deq'.
+- : step/unique (ms-prev-ls Dstep1) (ms-prev-ls Dstep2) Deq
+	<- lstep/unique Dstep1 Dstep2 DeqQ DeqE
+	<- eq-cong exv DeqQ DeqQ'
+	<- ({x} eq-cong prev (DeqE x) (DeqE' x))
+	<- eq-cong/let DeqQ' DeqE' Deq.
+- : step/unique (ms-grnd-s Dstep1) (ms-grnd-s Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong grnd Deq Deq'.
+- : step/unique (ms-letg-s1 Dstep1) (ms-letg-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/letg Deq ([x] eq-term_) Deq'.
+- : step/unique (ms-caseg-s1 Dstep1) (ms-caseg-s1 Dstep2) Deq'
+	<- step/unique Dstep1 Dstep2 Deq
+	<- eq-cong/caseg Deq ([x] eq-term_) ([x] eq-term_) Deq'.
+%% CONTRADICTION CASES
+- : step/unique (ms-prev-ls Dstep) (ms-prev-s Dstep') Deq
+	<- excl-mstep-lstep Dstep' Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+- : step/unique (ms-prev-s Dstep') (ms-prev-ls Dstep) Deq
+	<- excl-mstep-lstep Dstep' Dstep Dfalse
+	<- false\eq-term Dfalse _ _ Deq.
+
+%worlds (det-block) (step/unique _ _ _).
+%total D (step/unique D _ _).

@@ -1,0 +1,159 @@
+%{ monostage.elf }%
+
+
+
+%% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
+not-variable : term -> type.
+nv-ztup : not-variable ztup.
+nv-lam  : not-variable (lam _).
+nv-app  : not-variable (app _ _).
+nv-let 	: not-variable (let _ _).
+%{nv-tup  : not-variable (tup _ _).
+nv-pi1  : not-variable (pi1 _).
+nv-pi2  : not-variable (pi2 _).
+nv-fix  : not-variable (fix _).
+nv-inj1 : not-variable (inj1 _).
+nv-inj2 : not-variable (inj2 _).
+nv-roll : not-variable (roll _).
+nv-unrl : not-variable (unrl _).
+nv-case : not-variable (case _ _ _).}%
+%{
+%% STANDARD COMPATABILITY CONTEXT
+compc : (term -> term) -> type.
+cc-tup1 : compc ([x] tup x E).
+cc-tup2 : compc ([x] tup (exv E) x).
+cc-pi1 : compc pi1.
+cc-pi2 : compc pi2.
+cc-app1 : compc ([x] app x E).
+cc-app2 : compc ([x] app (exv E) x).
+cc-let : compc ([x] let x M).
+%freeze compc.
+}%
+%% MSTEPS
+mstep : wor -> term -> term -> type. %name mstep Dmstep.
+
+%% DONE MARKING RULES
+%{ms-tup-d 	: mstep wor2 (tup (exv E1) (exv E2)) (exv (tup E1 E2)).
+ms-pi1-d 	: mstep wor2 (pi1 (exv E)) (exv (pi1 E)).
+ms-pi2-d 	: mstep wor2 (pi2 (exv E)) (exv (pi2 E)).
+ms-inj1-d 	: mstep wor2 (inj1 (exv E)) (exv (inj1 E)).
+ms-inj2-d 	: mstep wor2 (inj2 (exv E)) (exv (inj2 E)).
+ms-roll-d 	: mstep wor2 (roll (exv E)) (exv (roll E)).
+ms-unrl-d 	: mstep wor2 (unrl (exv E)) (exv (unrl E)).
+ms-case-d 	: mstep wor2 (case (exv E) ([x] exv (M x)) ([x] exv (N x))) (exv (case E M N)).}%
+ms-lam-d 	: mstep wor2 (lam ([f][x] exv (M f x))) (exv (lam M)).
+ms-let-d 	: mstep wor2 (let (exv E) ([x] exv (M x))) (exv (let E M)).
+ms-app-d 	: mstep wor2 (app (exv E1) (exv E2)) (exv (app E1 E2)).
+ms-next-d 	: mstep wor1 (next (exv (exv E))) (exv (next E)).
+
+%% M STEP - SUBSTEP RULES
+%{ms-tup-s1	: mstep W (tup E1 E2) (tup E1' E2)
+			<- mstep W E1 E1'.
+ms-tup-s2	: mstep W (tup (exv E1) E2) (tup (exv E1) E2')
+			<- mstep W E2 E2'.
+ms-pi1-s	: mstep W (pi1 E) (pi1 E')
+			<- mstep W E E'.
+ms-pi2-s	: mstep W (pi2 E) (pi2 E')
+			<- mstep W E E'.
+ms-inj1-s	: mstep W (inj1 E) (inj1 E')
+			<- mstep W E E'.
+ms-inj2-s	: mstep W (inj2 E) (inj2 E')
+			<- mstep W E E'.
+ms-case-s1	: mstep W (case E M N) (case E' M N)
+			<- mstep W E E'.
+ms-case-s2	: mstep wor2 (case (exv E) M N) (case (exv E) M' N)
+			<- {x} mstep wor2 (M x) (M' x).
+ms-case-s3	: mstep wor2 (case (exv E) ([x] exv (M x)) N) (case (exv E) ([x] exv (M x)) N')
+			<- {x} mstep wor2 (N x) (N' x).
+ms-roll-s	: mstep W (roll E) (roll E')
+			<- mstep W E E'.
+ms-unrl-s	: mstep W (unrl E) (unrl E')
+			<- mstep W E E'.
+ms-lett-s1	: mstep W (lett E M) (lett E' M)
+			<- mstep W E E'.}%
+ms-let-s1	: mstep W (let E M) (let E' M)
+			<- mstep W E E'.
+ms-lam-s	: mstep wor2 (lam M) (lam M')
+			<- {f}{x} mstep wor2 (M f x) (M' f x).
+ms-let-s2	: mstep wor2 (let (exv E) M) (let (exv E) M')
+			<- {x} mstep wor2 (M x) (M' x).
+ms-app-s1	: mstep W (app E1 E2) (app E1' E2)
+			<- mstep W E1 E1'.
+ms-app-s2	: mstep W (app (exv E1) E2) (app (exv E1) E2')
+			<- mstep W E2 E2'.
+
+%{ms-compat	: mstep W (F E) (F E')
+			<- compc F
+			<- mstep W E E'.
+ms-bcompat	: mstep wor2 (F M) (F M')
+			<- binder-compc F
+			<- {x:term} variable x -> mstep wor2 (M x) (M' x).}%
+
+%% M STEP - REDUCTION RULES
+ms-beta	: 	mstep wor1 E E'
+				<- beta E E'.
+%{ms-let-r	: mstep wor1 (let (exv E) M) (M E).}%
+
+			
+%% SECOND-STAGE VARIABLE LIFT STEP
+lstep : term -> term -> (term -> term) -> type. %name lstep Dlstep.
+ls-app-s1	: lstep (app E1 E2) Q ([x] app (E1' x) E2)
+			<- lstep E1 Q E1'.
+ls-app-s2	: lstep (app (exv E1) E2) Q ([x] app (exv E1) (E2' x))
+			<- lstep E2 Q E2'.
+%{ls-tup-s1	: lstep (tup E1 E2) Q ([x] tup (E1' x) E2)
+			<- lstep E1 Q E1'.
+ls-tup-s2	: lstep (tup (exv E1) E2) Q ([x] tup (exv E1) (E2' x))
+			<- lstep E2 Q E2'.
+ls-pi1-s	: lstep (pi1 E) Q ([x] pi1 (E' x))
+			<- lstep E Q E'.
+ls-pi2-s	: lstep (pi2 E) Q ([x] pi2 (E' x))
+			<- lstep E Q E'.
+ls-inj1-s	: lstep (inj1 E) Q ([x] inj1 (E' x))
+			<- lstep E Q E'.
+ls-inj2-s	: lstep (inj2 E) Q ([x] inj2 (E' x))
+			<- lstep E Q E'.
+ls-case-s1	: lstep (case E M N) Q ([x] case (E' x) M N)
+			<- lstep E Q E'.
+ls-roll-s	: lstep (roll E) Q ([x] roll (E' x))
+			<- lstep E Q E'.
+ls-unrl-s	: lstep (unrl E) Q ([x] unrl (E' x))
+			<- lstep E Q E'.
+ls-letg-s1	: lstep (letg E M) Q ([x] letg (E' x) M)
+			<- lstep E Q E'.
+ls-caseg-s1	: lstep (caseg E M N) Q ([x] caseg (E' x) M N)
+			<- lstep E Q E'.}%
+%{ls-compat	: lstep (F E) Q ([x] F (E' x))
+			<- compc F
+			<- lstep E Q E'.}%
+
+			
+%% STAGING FEATURES
+ls-next-r	: lstep (next (exv E)) E ([x] next (exv (exv x)))
+			<- not-variable E.
+ms-prev-r	: mstep wor2 (prev (exv (next E))) (exv (exv E)).
+ms-next-s	: mstep wor1 (next E) (next E')
+			<- mstep wor2 E E'.
+ms-prev-s	: mstep wor2 (prev E) (prev E')
+			<- mstep wor1 E E'.
+ms-prev-ls	: mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x)))
+			<- lstep E Q E'.
+%{ms-letg-r	: mstep wor1 (letg (exv (grnd V)) M) (M V).
+ms-caseg-r1	: mstep wor1 (caseg (exv (grnd (inj1 V))) M N) (M V).
+ms-caseg-r2	: mstep wor1 (caseg (exv (grnd (inj2 V))) M N) (N V).
+ms-grnd-d 	: mstep wor1 (grnd (exv E)) (exv (grnd E)).
+ms-grnd-s	: mstep wor1 (grnd E) (grnd E')
+			<- mstep worG E E'.
+ms-letg-s1	: mstep wor1 (letg E M) (letg E' M)
+			<- mstep wor1 E E'.
+ms-caseg-s1	: mstep W (caseg E M N) (caseg E' M N)
+			<- mstep W E E'.}%
+
+%freeze mstep.
+%freeze lstep.
+
+%% PATHS
+
+mstep* : term -> term -> wor -> type.
+mstep*-id : mstep* E E W.
+mstep*-step : mstep W E1 E2 -> mstep* E2 E3 W -> mstep* E1 E3 W.

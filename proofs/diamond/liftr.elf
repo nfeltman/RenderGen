@@ -1,0 +1,171 @@
+%{ liftr.elf }%
+
+%% TYPES
+ty : type. %name ty T.
+fut   : ty -> ty.
+unit	: ty.
+arr   : ty -> ty -> ty.
+%%prod  : ty -> ty -> ty.
+%%sum	  : ty -> ty -> ty.
+%%rec   : (ty -> ty) -> ty.
+%freeze ty.
+
+%% NORMALITY LEVELS
+normality : type. %name normality N.
+norm : normality.
+comp : normality.
+
+%% TERMS
+term : type. %name term E.
+ztup  : term.
+lam   : (term -> term -> term) -> term.
+app   : term -> term -> term.
+let   : term -> (term -> term) -> term.
+next  : term -> term.
+prev  : term -> term.
+exv   : term -> term.
+%{
+tup   : term -> term -> term.
+pi1   : term -> term.
+pi2   : term -> term.
+inj1  : term -> term.
+inj2  : term -> term.
+case  : term -> (term -> term) -> (term -> term) -> term.
+roll  : term -> term.
+unrl  : term -> term.
+lett  : term -> (term -> term -> term) -> term.
+grnd  : term -> term.
+letg  : term -> (term -> term) -> term.
+caseg : term -> (term -> term) -> (term -> term) -> term.
+fix   : (term -> term) -> term.}%
+
+%block term-block : block {x : term}.
+%worlds (term-block) (term).
+%freeze term.
+
+%block general-term-block = (term-block).
+
+%% TERM EQUALITY
+eq-term  : term -> term -> type. %name eq-term Deq.
+eq-term_ : eq-term E E.
+
+%abbrev `eq-term_ = ([x : term] eq-term_ : eq-term E E).
+%abbrev ``eq-term_ = ([x : term][y : term] eq-term_ : eq-term E E).
+
+%% FALSE YIELDS ANY EQUALITY
+false\eq-term : false -> {E} {E'} eq-term E E' -> type.
+%mode false\eq-term +E +E' +Dfalse -Deq.
+%worlds (general-term-block) (false\eq-term _ _ _ _).
+%total {} (false\eq-term _ _ _ _).
+
+eq-term-sym : eq-term A B -> eq-term B A -> type.
+%mode eq-term-sym +D1 -D2.
+- : eq-term-sym eq-term_ eq-term_.
+%worlds (general-term-block) (eq-term-sym _ _).
+%total {} (eq-term-sym _ _).
+
+eq-term-trans : eq-term A B -> eq-term B C -> eq-term A C -> type.
+%mode eq-term-trans +D1 +D2 -D3.
+- : eq-term-trans eq-term_ eq-term_ eq-term_.
+%worlds (general-term-block) (eq-term-trans _ _ _).
+%total {} (eq-term-trans _ _ _).
+
+%% TERM EQUALITY IS A CONGRUENCE
+eq-cong/lam : ({x}{y} eq-term (M x y) (M' x y)) -> eq-term (lam M) (lam M') -> type.
+%mode eq-cong/lam +Deq -Deq'.
+- : eq-cong/lam ([x][y] eq-term_) eq-term_.
+%worlds (general-term-block) (eq-cong/lam _ _).
+%total {} (eq-cong/lam _ _).
+
+eq-cong/1 : {F : (term -> term) -> term} ({x} eq-term (M x) (M' x)) -> eq-term (F M) (F M') -> type.
+%mode eq-cong/1 +F +Deq -Deq'.
+- : eq-cong/1 F ([x] eq-term_) eq-term_.
+%worlds (term-block) (eq-cong/1 _ _ _).
+%total {} (eq-cong/1 _ _ _).
+
+
+eq-cong : {F : term -> term} eq-term E E' -> eq-term (F E) (F E') -> type.
+%mode eq-cong +F +Deq -Deq'.
+- : eq-cong _ eq-term_ eq-term_.
+%worlds (general-term-block) (eq-cong _ _ _).
+%total {} (eq-cong _ _ _).
+
+eq-cong2 : {F : term -> term -> term} eq-term E1 E1' -> eq-term E2 E2' -> eq-term (F E1 E2) (F E1' E2') -> type.
+%mode eq-cong2 +F +Deq1 +De2 -Deq'.
+- : eq-cong2 _ eq-term_ eq-term_ eq-term_.
+%worlds (general-term-block) (eq-cong2 _ _ _ _).
+%total {} (eq-cong2 _ _ _ _).
+
+eq-cong-hole : ({x:term} eq-term (M x : term) (M' x)) ->  eq-term E E' -> eq-term (M E) (M' E') -> type.
+%mode eq-cong-hole +F +Deq -Deq'.
+- : eq-cong-hole ([x] eq-term_) eq-term_ eq-term_.
+%worlds (general-term-block) (eq-cong-hole _ _ _).
+%total {} (eq-cong-hole _ _ _).
+
+eq-cong/0/2 : {F : term -> (term -> term -> term) -> term} 
+  (eq-term E1 E1') -> 
+  ({x}{y} eq-term (E2 x y) (E2' x y)) -> 
+  (eq-term (F E1 E2) (F E1' E2')) -> type.
+%mode eq-cong/0/2 +F +Deq1 +De2 -Deq'.
+- : eq-cong/0/2 _ eq-term_ ([x][y] eq-term_) eq-term_.
+%worlds (term-block) (eq-cong/0/2 _ _ _ _).
+%total {} (eq-cong/0/2 _ _ _ _).
+
+eq-cong/1/1 : {F : (term -> term) -> (term -> term) -> term} 
+  ({x} eq-term (E1 x) (E1' x)) -> 
+  ({y} eq-term (E2 y) (E2' y)) -> 
+  (eq-term (F E1 E2) (F E1' E2')) -> type.
+%mode eq-cong/1/1 +F +Deq1 +De2 -Deq'.
+- : eq-cong/1/1 _ ([x] eq-term_) ([y] eq-term_) eq-term_.
+%worlds (term-block) (eq-cong/1/1 _ _ _ _).
+%total {} (eq-cong/1/1 _ _ _ _).
+
+%% TERM EQUALITY IS WHATEVER THE OPPOSITE OF A CONGRUENCE IS
+
+eq-gnoc/lam : eq-term (lam M) (lam M') -> ({x}{y} eq-term (M x y) (M' x y)) -> type.
+%mode eq-gnoc/lam +Deq1 -Deq'.
+- : eq-gnoc/lam eq-term_ ([x][y] eq-term_).
+%worlds (general-term-block) (eq-gnoc/lam _ _).
+%total {} (eq-gnoc/lam _ _).
+
+
+%% TYPE IDENTITY 
+eq-ty : ty -> ty -> type.
+eq-ty_ : eq-ty T T.
+
+eq-ty-sym : eq-ty A B -> eq-ty B A -> type.
+%mode eq-ty-sym +D1 -D2.
+- : eq-ty-sym eq-ty_ eq-ty_.
+%worlds () (eq-ty-sym _ _).
+%total {} (eq-ty-sym _ _).
+
+eq-ty-cong :
+  {F : ty -> ty -> ty}
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 ->
+  eq-ty (F A1 B1) (F A2 B2) -> type.
+%mode eq-ty-cong +D1 +D2 +F -D3.
+- : eq-ty-cong _ eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-cong _ _ _ _).
+%total {} (eq-ty-cong _ _ _ _).
+
+eq-ty-cong3 :
+  {F : ty -> ty -> ty -> ty}
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 ->
+  eq-ty C1 C2 ->
+  eq-ty (F A1 B1 C1) (F A2 B2 C2) -> type.
+%mode eq-ty-cong3 +D1 +D2 +D3 +F -D3.
+- : eq-ty-cong3 _ eq-ty_ eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-cong3 _ _ _ _ _).
+%total {} (eq-ty-cong3 _ _ _ _ _).
+
+
+eq-ty-inj-arr :
+  eq-ty (arr A1 B1) (arr A2 B2) ->
+  eq-ty A1 A2 ->
+  eq-ty B1 B2 -> type.
+%mode eq-ty-inj-arr +D1 -D2 -D3.
+- : eq-ty-inj-arr eq-ty_ eq-ty_ eq-ty_.
+%worlds () (eq-ty-inj-arr _ _ _).
+%total {} (eq-ty-inj-arr _ _ _).

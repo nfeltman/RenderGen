@@ -1,0 +1,17 @@
+
+
+Use the command "make sources.cfg" at the Twelf Server to check all of the theorems.
+The most important top-level theorems are:
+
+- Preservation of Lambda12 first-pass dynamics (smallstep/preservation.elf).
+- Progress of Lambda12 first-pass dynamics (smallstep/progress.elf).
+- Determinism of Lambda12 first-pass dynamics (smallstep/determinism.elf).
+- Stage 2 end-to-end correctness (splitting/master.elf).
+
+
+A few notes and differences from the theory presented in the paper:
+
+- The "lang-convert" type family (liftr.elf) is a fancy identity relation, it's necessitated by a trick I use to prove strengthening lemmas easily.
+- I don't have patterns in the output language, but I did implement a let-tuple deconstructor called "lett".
+- I keep track of the value/term distinction judgementally using the "form" type families.
+- I have a judgement called residual splitting.  All it does is insert explicit-value markers at unit values and lambdas, because of a slight mismatch in what explicit-value markers means in the input and output languages.

@@ -1,0 +1,111 @@
+%{ ssCorrectness.elf }%
+
+
+var_spl : {E : term} variable E -> split2 E (trivS E) -> type.
+%mode var_spl +E +Dvar -Dspl.
+
+%block spl-block : some {A : ty} block {x:term} {dvar : variable x} {dspl : split2 x (trivS x)} {dvarspl : var_spl x dvar dspl}.
+%worlds (spl-block) (var_spl _ _ _).
+%total (Dvar) (var_spl _ Dvar _).
+
+false : type. %freeze false.
+
+%% PARTIAL VALUES MUST SPLIT TRIVIALLY
+pv-triv : done wor1 E -> split1 E (pipeM _ _) -> false -> type.
+- : pv-triv (done-tup Dval1 _) (spl1-tup appBoth2-pp Dspl1 _) Dfalse
+	<- pv-triv Dval1 Dspl1 Dfalse.
+- : pv-triv (done-tup Dval1 _) (spl1-tup appBoth2-pt Dspl1 _) Dfalse
+	<- pv-triv Dval1 Dspl1 Dfalse.
+- : pv-triv (done-tup _ Dval1) (spl1-tup appBoth2-tp _ Dspl1) Dfalse
+	<- pv-triv Dval1 Dspl1 Dfalse.
+%mode pv-triv +Dval +Dspl -Dtriv.
+%worlds (spl-block) (pv-triv _ _ _).
+%total (Dval) (pv-triv Dval _ _).
+
+%% FALSE YIELDS VALUES
+false\val : {S : seperatedM} false -> pval S -> type.
+%mode false\val +S +Dfalse -Dval.
+%worlds (spl-block) (false\val _ _ _).
+%total {} (false\val _ _ _).
+
+%% PARTIAL VALUES TO PARTIAL VALUES LEMMA
+pv2pv : done wor1 E -> split1 E S -> pval S -> type.
+%mode pv2pv +Dval +Dsplit -Dval'.
+- : pv2pv done-ztup spl1-ztup (pval-s mval-ztup).
+- : pv2pv val-lam (spl1-lam _) (pval-s mval-lam).
+- : pv2pv (done-tup Dval1 Dval2) (spl1-tup appBoth2-tt Dspl1 Dspl2) (pval-s (mval-tup Dmval1 Dmval2))
+	<- pv2pv Dval1 Dspl1 (pval-s Dmval1)
+	<- pv2pv Dval2 Dspl2 (pval-s Dmval2).
+- : pv2pv (done-tup Dval1 _) (spl1-tup appBoth2-pt Dspl1 _) Dval
+	<- pv-triv Dval1 Dspl1 Dfalse
+	<- false\val _ Dfalse Dval.
+- : pv2pv (done-tup _ Dval2) (spl1-tup appBoth2-tp _ Dspl2) Dval
+	<- pv-triv Dval2 Dspl2 Dfalse
+	<- false\val _ Dfalse Dval.
+- : pv2pv (done-tup Dval1 _) (spl1-tup appBoth2-pp Dspl1 _) Dval
+	<- pv-triv Dval1 Dspl1 Dfalse
+	<- false\val _ Dfalse Dval.
+- : pv2pv (val-next Dvar) (spl1-next-t Dspl) (pval-s mval-ztup).
+%worlds (spl-block) (pv2pv _ _ _).
+%total (Dval) (pv2pv Dval _ _).
+
+%% THINGS THAT SPLIT TRIVIALLY CANNOT TAKE STEPS TO THINGS THAT SPLIT NON-TRIVIALLY
+triv-step-triv :  mstep wor1 E E' -> split1 E (trivM _ _) -> split1 E' (pipeM _ _) -> false -> type.
+%mode triv-step-triv +Dspl +DstepE +Dspl' -Dfalse.
+- : triv-step-triv (ms-tup-s1 Dstep) (spl1-tup appBoth2-tt Dspl1 Dspl2) (spl1-tup appBoth2-pt Dspl1' Dspl2') Dfalse
+	<- triv-step-triv Dstep Dspl1 Dspl1' Dfalse.
+- : triv-step-triv (ms-tup-s1 Dstep) (spl1-tup appBoth2-tt Dspl1 Dspl2) (spl1-tup appBoth2-pp Dspl1' Dspl2') Dfalse
+	<- triv-step-triv Dstep Dspl1 Dspl1' Dfalse.
+
+	
+- : triv-step-triv (ms-pi1-s Dstep) (spl1-pi1 appBoth-t Dspl) (spl1-pi1 appBoth-p Dspl') Dfalse
+	<- triv-step-triv Dstep Dspl Dspl' Dfalse.
+- : triv-step-triv (ms-pi2-s Dstep) (spl1-pi2 appBoth-t Dspl) (spl1-pi2 appBoth-p Dspl') Dfalse
+	<- triv-step-triv Dstep Dspl Dspl' Dfalse.
+
+
+sc1 :  mstep wor1 E E' -> split1 E S -> split1 E' S' -> sstepM S S' -> type.
+%mode sc1 +Dspl +DstepE +Dspl' -DstepP.
+
+%{
+- : sc1 (spl1-tup appBoth2-pp Dspl1 Dspl2) (ms-tup-s1 Dstep) (spl1-tup appBoth2-pp Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+}%
+- : sc1 (ms-pi1-s Dstep) (spl1-pi1 appBoth-p Dspl) (spl1-pi1 appBoth-p Dspl') (sstepM-p (ms-lett-s1 Dstep'))
+	<- sc1 Dstep Dspl Dspl' (sstepM-p Dstep').
+- : sc1 (ms-pi1-s Dstep) (spl1-pi1 appBoth-t Dspl) (spl1-pi1 appBoth-t Dspl') (sstepM-t (ms-pi1-s Dstep'))
+	<- sc1 Dstep Dspl Dspl' (sstepM-t Dstep').
+%{
+- : sc1 (spl1-pi2 Dspl) (ms-pi2-s Dstep) (spl1-pi2 Dspl') (ms-lett-s1 Dstep')
+	<- sc1 Dspl Dstep Dspl' Dstep'.
+- : sc1 (spl1-app Dspl1 Dspl2) (ms-app-s1 Dstep) (spl1-app Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.
+}%
+	
+%{- : sc1 (spl1-let Dspl1 Dspl2) (ms-let-s1 Dstep) (spl1-let Dspl1' Dspl2) (ms-lett-s1 Dstep')
+	<- sc1 Dspl1 Dstep Dspl1' Dstep'.}%
+
+%{
+%% M STEP - SUBSTEP RULES
+mstep : wor -> term -> term -> type.
+%mode mstep +W +E -E'.
+ms-tup-s2	: mstep W (tup E1 E2) (tup E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+ms-app-s2	: mstep W (app E1 E2) (app E1 E2')
+			<- done W E1
+			<- mstep W E2 E2'.
+}%
+
+%{
+
+%% M STEP - REDUCTION RULES
+ms-pi1-r	: mstep wor1 (pi1 (tup E1 E2)) E1
+			<- done wor1 (tup E1 E2).
+ms-pi2-r	: mstep wor1 (pi2 (tup E1 E2)) E2
+			<- done wor1 (tup E1 E2).
+ms-app-r	: mstep wor1 (app (lam _ M) E) (M E)
+			<- done wor1 E.
+ms-let-r	: mstep wor1 (let E M) (M E)
+			<- done wor1 E.
+}%

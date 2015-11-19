@@ -1,0 +1,273 @@
+
+%% WORLDS
+wor : type. %name wor W.
+wor1 : wor.
+wor2 : wor.
+
+%% TYPE WELL-FORMED
+ty^wf : ty -> wor -> type.
+%mode ty^wf +T +W.
+ty^wf-unit	: ty^wf unit W.
+ty^wf-arr	: ty^wf (arr A B) W
+				<- ty^wf B W
+				<- ty^wf A W.
+%{ty^wf-prod	: ty^wf (prod A B) W
+				<- ty^wf B W
+				<- ty^wf A W.
+ty^wf-sum	: ty^wf (sum A B) W
+				<- ty^wf B W
+				<- ty^wf A W.
+ty^wf-rec	: ty^wf (rec F) W
+				<- {a} ty^wf a W -> ty^wf (F a) W.}%
+ty^wf-fut	: ty^wf (fut A) wor1
+				<- ty^wf A wor2.
+%block ty^wf-block : some {W : wor} block {a : ty} {_ : ty^wf a W}.
+%worlds (ty^wf-block) (ty^wf _ _).
+
+
+
+%% TYPING JUDGMENT
+of^ : term -> ty -> wor -> type. %name of^ Dof.
+of^-exv 	: of^ (exv V) A W
+				<- of^ V A W.
+of^-ztup	: of^ ztup unit W.
+of^-lam 	: of^ (lam M) (arr A B) W
+				<- ({f} of^ f (arr A B) W -> {x} of^ x A W -> of^ (M f x) B W) 
+				<- ty^wf (arr A B) W.
+of^-next	: of^ (next E) (fut A) wor1
+				<- of^ E A wor2.
+of^-prev	: of^ (prev E) A wor2
+				<- of^ E (fut A) wor1.
+of^-app 	: of^ (app E1 E2) B W
+				<- of^ E2 A W
+				<- of^ E1 (arr A B) W.
+of^-let 	: of^ (let E M) B W
+				<- ({x} of^ x A W -> of^ (M x) B W)
+				<- of^ E A W.	
+%{
+of^-tup		: of^ (tup E1 E2) (prod A B) W
+				<- of^ E2 B W
+				<- of^ E1 A W.
+of^-pi1		: of^ (pi1 E) A W
+				<- of^ E (prod A B) W.
+of^-pi2		: of^ (pi2 E) B W
+				<- of^ E (prod A B) W.
+of^-inj1	: of^ (inj1 E) (sum A T) W
+				<- of^ E A W
+				<- ty^wf T W.
+of^-inj2	: of^ (inj2 E) (sum T B) W
+				<- of^ E B W
+				<- ty^wf T W.
+of^-case 	: of^ (case E M N) C W
+				<- ({x} of^ x B W -> of^ (N x) C W)
+				<- ({x} of^ x A W -> of^ (M x) C W)
+				<- of^ E (sum A B) W.	
+of^-roll	: of^ (roll E) (rec F) W
+				<- of^ E (F (rec F)) W
+				<- {a} ty^wf a W -> ty^wf (F a) W.
+of^-unrl	: of^ (unrl E) (F (rec F)) W
+				<- of^ E (rec F) W.	}%
+
+%block var-of1 : 
+	some {A : ty} {W : wor}
+	block {x:term} {_ : of^ x A W}.
+%block var-of2 : some {A : ty} block {x:term} {_ : of^ x A wor2}.
+%block var-of = (var-of1 | var-of2).
+%worlds (var-of) (of^ _ _ _).
+
+%% OUTPUTS OF TYPING ARE WELL-FORMED
+of^-wf : of^ E T W -> ty^wf T W -> type.
+%mode of^-wf +D1 -D2. 
+- : of^-wf of^-ztup ty^wf-unit.
+- : of^-wf (of^-lam Dwf DofM) Dwf.
+- : of^-wf (of^-app Dof1 Dof2) Dwf
+	<- of^-wf Dof1 (ty^wf-arr _ Dwf). 
+- : of^-wf (of^-exv Dof) Dwf
+	<- of^-wf Dof Dwf.
+- : of^-wf (of^-next Dof) (ty^wf-fut Dwf)
+	<- of^-wf Dof Dwf.
+- : of^-wf (of^-prev Dof) Dwf
+	<- of^-wf Dof (ty^wf-fut Dwf).
+- : of^-wf (of^-let DofE DofM) Dwf2
+	<- of^-wf DofE Dwf1
+	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
+
+%{- : of^-wf (of^-tup Dof1 Dof2) (ty^wf-prod DwfA DwfB)
+	<- of^-wf Dof1 DwfA
+	<- of^-wf Dof2 DwfB.
+- : of^-wf (of^-pi1 Dof) DwfA
+	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
+- : of^-wf (of^-pi2 Dof) DwfB
+	<- of^-wf Dof (ty^wf-prod DwfA DwfB).
+- : of^-wf (of^-inj1 DwfB Dof) (ty^wf-sum DwfA DwfB)
+	<- of^-wf Dof DwfA.
+- : of^-wf (of^-inj2 DwfA Dof) (ty^wf-sum DwfA DwfB)
+	<- of^-wf Dof DwfB.
+- : of^-wf (of^-case DofE DofM _) Dwf2
+	<- of^-wf DofE (ty^wf-sum Dwf1 _)
+	<- ({x} {ofx : of^ x A W} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
+- : of^-wf (of^-roll Dwf Dof) (ty^wf-rec Dwf)
+	<- of^-wf Dof _.
+- : of^-wf (of^-unrl Dof) (DwfF (rec F) (ty^wf-rec DwfF))
+	<- of^-wf Dof (ty^wf-rec DwfF).
+- : of^-wf (of^-grnd Dof) (ty^wf-curr Dwf)
+	<- of^-wf Dof Dwf.
+- : of^-wf (of^-letg DofE DofM) DwfM
+	<- of^-wf DofE (ty^wf-curr DwfE)
+	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
+- : of^-wf (of^-caseg DofE DofM DofN) DwfM
+	<- of^-wf DofE (ty^wf-curr (ty^wf-sum DwfE _))
+	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).}%
+%block var-of^-wf : 
+	some {A : ty} {W : wor} {Dwf : ty^wf A W}
+	block {x:term} {Dof : of^ x A W} {_ : of^-wf Dof Dwf}.
+%worlds (var-of^-wf | term-block) (of^-wf _ _).
+%total D (of^-wf D _).
+
+%% TYPING RESPECTS IDENTITY
+of^-resp : of^ M A W -> eq-ty A B -> of^ M B W -> type.
+%mode of^-resp +D1 +D2 -D3.
+- : of^-resp Dof eq-ty_ Dof.
+%block ofs-block : some {A : ty} {W : wor}  {x : term} block {_ : of^ x A W}.
+%worlds (term-block | ofs-block) (of^-resp _ _ _).
+%total {} (of^-resp _ _ _).
+
+
+
+%% NORMALITY
+normality^ : type. %name normality^ N.
+comp1 : normality^.
+norm1 : normality^.
+nvar : normality^ -> normality^.
+var : normality^.
+
+
+%% NORMALITY WELL-FORMEDNESS
+norm^wf : normality^ -> wor -> type.
+norm^wf-comp1 : norm^wf comp1 wor1.
+norm^wf-norm1 : norm^wf norm1 wor1.
+norm^wf-nvar : norm^wf (nvar N) wor2
+			<- norm^wf N wor1.
+norm^wf-var : norm^wf var wor2.
+
+
+%% FORM JUDGEMENT
+form^ : term -> normality^ -> wor -> type. %name form^ Dform.
+
+form^exv1  : form^ (exv E) comp1 wor1
+			<- form^ E norm1 wor1.
+form^exv2  : form^ (exv E) (nvar comp1) wor2
+			<- form^ E (nvar norm1) wor2.
+form^var  : form^ (exv E) (nvar norm1) wor2
+			<- form^ E var wor2.
+
+form^ztup-1 : form^ ztup norm1 wor1.
+form^ztup-2 : form^ ztup (nvar norm1) wor2.
+form^lam-1 : form^ (lam M) norm1 wor1
+			<- {f} form^ f norm1 wor1 -> {x} form^ x norm1 wor1 -> form^ (M f x) comp1 wor1.
+form^lam-2 : form^ (lam M) (nvar N) wor2
+			<- {f} form^ f var wor2 -> {x} form^ x var wor2 -> form^ (M f x) (nvar N) wor2.
+form^app-1  : form^ (app E1 E2) comp1 wor1
+			<- form^ E2 comp1 wor1
+			<- form^ E1 comp1 wor1.
+form^app-2  : form^ (app E1 E2) (nvar N) wor2
+			<- form^ E2 (nvar N) wor2
+			<- form^ E1 (nvar N) wor2.
+form^next-c : form^ (next E) comp1 wor1
+			<- form^ E (nvar comp1) wor2.
+form^next-n : form^ (next E) norm1 wor1
+			<- form^ E var wor2.
+form^prev  : form^ (prev E) (nvar comp1) wor2
+			<- form^ E comp1 wor1.
+form^let-2  : form^ (let E M) (nvar N) wor2
+			<- ({x} form^ x var wor2 -> form^ (M x) (nvar N) wor2)
+			<- form^ E (nvar N) wor2.
+%{			
+form^tup-c : form^ (tup E1 E2) comp1 W
+			<- form^ E2 comp1 W
+			<- form^ E1 comp1 W.
+form^tup-n : form^ (tup E1 E2) norm1 W
+			<- form^ E2 norm1 W
+			<- form^ E1 norm1 W.
+form^inj1-c : form^ (inj1 E) comp1 W
+			<- form^ E comp1 W.
+form^inj2-c : form^ (inj2 E) comp1 W
+			<- form^ E comp1 W.
+form^inj1-n : form^ (inj1 E) norm1 W
+			<- form^ E norm1 W.
+form^inj2-n : form^ (inj2 E) norm1 W
+			<- form^ E norm1 W.
+form^roll-c : form^ (roll E) comp1 W
+			<- form^ E comp1 W.
+form^roll-n : form^ (roll E) norm1 W
+			<- form^ E norm1 W.
+
+form^pi1-c  : form^ (pi1 E) comp1 W
+			<- form^ E comp1 W.
+form^pi2-c  : form^ (pi2 E) comp1 W
+			<- form^ E comp1 W.
+form^unrl-c : form^ (unrl E) comp1 W
+			<- form^ E comp1 W.
+form^case-c : form^ (case E M N) comp1 W
+			<- first-stage-wor W
+			<- ({x} form^ x norm1 W -> form^ (N x) comp1 W)
+			<- ({x} form^ x norm1 W -> form^ (M x) comp1 W)
+			<- form^ E comp1 W.
+form^case-c2 : form^ (case E M N) comp1 wor2
+			<- ({x} form^ x vars2 wor2 -> form^ (N x) comp1 wor2)
+			<- ({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor2)
+			<- form^ E comp1 wor2.
+form^pi1-n2  : form^ (pi1 E) norm1 wor2
+			<- form^ E norm1 wor2.
+form^pi2-n2  : form^ (pi2 E) norm1 wor2
+			<- form^ E norm1 wor2.
+form^unrl-n2 : form^ (unrl E) norm1 wor2
+			<- form^ E norm1 wor2.
+form^case-n2  : form^ (case E M N) norm1 wor2
+			<- ({x} form^ x vars2 wor2 -> form^ (N x) norm1 wor2)
+			<- ({x} form^ x vars2 wor2 -> form^ (M x) norm1 wor2)
+			<- form^ E norm1 wor2.
+
+
+form^grnd  : form^ (grnd E) N wor1
+			<- form^ E N worG.
+form^letg  : form^ (letg E M) comp1 wor1
+			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 wor1)
+			<- form^ E comp1 wor1.
+form^caseg : form^ (caseg E M N) comp1 wor1
+			<- ({x} form^ x norm1 worG -> form^ (N x) comp1 wor1)
+			<- ({x} form^ x norm1 worG -> form^ (M x) comp1 wor1)
+			<- form^ E comp1 wor1.
+}%
+
+%block form^-block : some {N1} {W} {x : term} block {_ : form^ x N1 W}.
+%block of^-form^-block = (ofs-block | form^-block).
+
+
+
+%% FORM OUTPUTS ARE WELL-FORMED
+form^wf : form^ E T W -> norm^wf T W -> type.
+%mode form^wf +D1 -D2. 
+- : form^wf form^ztup-1 norm^wf-norm1.
+- : form^wf form^ztup-2 (norm^wf-nvar norm^wf-norm1).
+- : form^wf (form^lam-1 _) norm^wf-norm1.
+- : form^wf (form^lam-2 DofM) Dwf
+	<- {f}{fform} form^wf fform norm^wf-var ->
+	   {x}{xform} form^wf xform norm^wf-var ->
+	   form^wf (DofM f fform x xform) Dwf.
+- : form^wf (form^app-1 _ _) norm^wf-comp1. 
+- : form^wf (form^app-2 DofE _) Dwf
+	<- form^wf DofE Dwf.
+- : form^wf (form^exv1 _) norm^wf-comp1.
+- : form^wf (form^exv2 _) (norm^wf-nvar norm^wf-comp1).
+- : form^wf (form^var _) (norm^wf-nvar norm^wf-norm1).
+- : form^wf (form^next-n _) norm^wf-norm1.
+- : form^wf (form^next-c _) norm^wf-comp1.
+- : form^wf (form^prev _) (norm^wf-nvar norm^wf-comp1).
+- : form^wf (form^let-2 DofE DofM) Dwf
+	<- form^wf DofE Dwf.
+%block var-form^wf : 
+	some {N} {W : wor} {Dwf : norm^wf N W}
+	block {x:term} {Dform : form^ x N W} {_ : form^wf Dform Dwf}.
+%worlds (var-form^wf | term-block) (form^wf _ _).
+%total D (form^wf D _).
