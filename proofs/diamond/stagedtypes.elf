@@ -28,7 +28,9 @@ ty^wf-fut	: ty^wf (fut A) wor1
 
 %% TYPING JUDGMENT
 of^ : term -> ty -> wor -> type. %name of^ Dof.
-of^-exv 	: of^ (exv V) A W
+of^-exv1 	: of^ (exv1  V) A W
+				<- of^ V A W.
+of^-exv2 	: of^ (exv2  V) A W
 				<- of^ V A W.
 of^-ztup	: of^ ztup unit W.
 of^-lam 	: of^ (lam M) (arr A B) W
@@ -82,7 +84,9 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 - : of^-wf (of^-lam Dwf DofM) Dwf.
 - : of^-wf (of^-app Dof1 Dof2) Dwf
 	<- of^-wf Dof1 (ty^wf-arr _ Dwf). 
-- : of^-wf (of^-exv Dof) Dwf
+- : of^-wf (of^-exv1 Dof) Dwf
+	<- of^-wf Dof Dwf.
+- : of^-wf (of^-exv2 Dof) Dwf
 	<- of^-wf Dof Dwf.
 - : of^-wf (of^-next Dof) (ty^wf-fut Dwf)
 	<- of^-wf Dof Dwf.
@@ -134,54 +138,63 @@ of^-resp : of^ M A W -> eq-ty A B -> of^ M B W -> type.
 
 
 
-%% NORMALITY
-normality^ : type. %name normality^ N.
-comp1 : normality^.
-norm1 : normality^.
-nvar : normality^ -> normality^.
-var : normality^.
+%% MULTI-NORMALITY
+mnorm : type. %name mnorm N.
+mnorm-z : mnorm.
+mnorm-s : normality -> mnorm -> mnorm.
+
+eq-mnorm : mnorm -> mnorm -> type.
+eq-mnorm_ : eq-mnorm N N.
+
+norm1 = mnorm-s norm mnorm-z.
+comp1 = mnorm-s comp mnorm-z.
+var = mnorm-s norm norm1.
+
+%% MULTI-NORMALITY WELL-FORMEDNESS
+norm^wf : mnorm -> wor -> type.
+norm^wf-1 : norm^wf (mnorm-s N mnorm-z) wor1.
+norm^wf-2 : norm^wf (mnorm-s N M) wor2
+		<- norm^wf M wor1.
 
 
-%% NORMALITY WELL-FORMEDNESS
-norm^wf : normality^ -> wor -> type.
-norm^wf-comp1 : norm^wf comp1 wor1.
-norm^wf-norm1 : norm^wf norm1 wor1.
-norm^wf-nvar : norm^wf (nvar N) wor2
-			<- norm^wf N wor1.
-norm^wf-var : norm^wf var wor2.
-
+%% FULLY-NORMALIZED
+full-norm : wor -> mnorm -> type. %name full-norm Dfn.
+full-norm-1 : full-norm wor1 norm1.
+full-norm-2 : full-norm wor2 var.
+%worlds () (full-norm _ _).
+%unique full-norm +W -1N.
 
 %% FORM JUDGEMENT
-form^ : term -> normality^ -> wor -> type. %name form^ Dform.
+form^ : term -> mnorm -> wor -> type. %name form^ Dform.
 
-form^exv1  : form^ (exv E) comp1 wor1
-			<- form^ E norm1 wor1.
-form^exv2  : form^ (exv E) (nvar comp1) wor2
-			<- form^ E (nvar norm1) wor2.
-form^var  : form^ (exv E) (nvar norm1) wor2
-			<- form^ E var wor2.
+form^exv2 	: form^ (exv2 E) (mnorm-s comp N) wor2
+			<- form^ E (mnorm-s norm N) wor2.
+form^exv1-here 	: form^ (exv1 E) (mnorm-s comp N) wor1
+				<- form^ E (mnorm-s norm N) wor1.
+form^exv1-back : form^ (exv1 E) (mnorm-s N (mnorm-s comp M)) wor2
+			<- form^ E (mnorm-s N (mnorm-s norm M)) wor2.
 
-form^ztup-1 : form^ ztup norm1 wor1.
-form^ztup-2 : form^ ztup (nvar norm1) wor2.
-form^lam-1 : form^ (lam M) norm1 wor1
-			<- {f} form^ f norm1 wor1 -> {x} form^ x norm1 wor1 -> form^ (M f x) comp1 wor1.
-form^lam-2 : form^ (lam M) (nvar N) wor2
-			<- {f} form^ f var wor2 -> {x} form^ x var wor2 -> form^ (M f x) (nvar N) wor2.
-form^app-1  : form^ (app E1 E2) comp1 wor1
-			<- form^ E2 comp1 wor1
-			<- form^ E1 comp1 wor1.
-form^app-2  : form^ (app E1 E2) (nvar N) wor2
-			<- form^ E2 (nvar N) wor2
-			<- form^ E1 (nvar N) wor2.
+form^ztup 	: form^ ztup N W
+			<- full-norm W N.
+
+form^lam-1 : form^ (lam M) (mnorm-s norm N) wor1
+			<- full-norm wor1 FN
+			<- {f} form^ f FN wor1 -> {x} form^ x FN wor1 -> form^ (M f x) (mnorm-s comp N) wor1.
+form^lam-2 : form^ (lam M) (mnorm-s norm N) wor2
+			<- full-norm wor2 FN
+			<- {f} form^ f FN wor2 -> {x} form^ x FN wor2 -> form^ (M f x) (mnorm-s comp N) wor2.
+form^app 	: form^ (app E1 E2) (mnorm-s comp N) W
+			<- form^ E2 (mnorm-s comp N) W
+			<- form^ E1 (mnorm-s comp N) W.
 form^next-c : form^ (next E) comp1 wor1
-			<- form^ E (nvar comp1) wor2.
+			<- form^ E (mnorm-s comp comp1) wor2.
 form^next-n : form^ (next E) norm1 wor1
 			<- form^ E var wor2.
-form^prev  : form^ (prev E) (nvar comp1) wor2
+form^prev  : form^ (prev E) (mnorm-s comp comp1) wor2
 			<- form^ E comp1 wor1.
-form^let-2  : form^ (let E M) (nvar N) wor2
-			<- ({x} form^ x var wor2 -> form^ (M x) (nvar N) wor2)
-			<- form^ E (nvar N) wor2.
+form^let-2  : form^ (let E M) (mnorm-s comp N) wor2
+			<- ({x} form^ x var wor2 -> form^ (M x) (mnorm-s comp N) wor2)
+			<- form^ E (mnorm-s comp N) wor2.
 %{			
 form^tup-c : form^ (tup E1 E2) comp1 W
 			<- form^ E2 comp1 W
@@ -243,27 +256,44 @@ form^caseg : form^ (caseg E M N) comp1 wor1
 %block form^-block : some {N1} {W} {x : term} block {_ : form^ x N1 W}.
 %block of^-form^-block = (ofs-block | form^-block).
 
+%% wellformedness-inversion lemma
 
+form^wf-flip : norm^wf (mnorm-s N M) W -> {N'} norm^wf (mnorm-s N' M) W -> type.
+%mode form^wf-flip +Dcomp +N -Dnorm.
+- : form^wf-flip _ _ norm^wf-1.
+- : form^wf-flip (norm^wf-2 Dwf) _ (norm^wf-2 Dwf).
+%worlds (form^-block | term-block) (form^wf-flip _ _ _).
+%total D (form^wf-flip D _ _).
 
 %% FORM OUTPUTS ARE WELL-FORMED
 form^wf : form^ E T W -> norm^wf T W -> type.
 %mode form^wf +D1 -D2. 
-- : form^wf form^ztup-1 norm^wf-norm1.
-- : form^wf form^ztup-2 (norm^wf-nvar norm^wf-norm1).
-- : form^wf (form^lam-1 _) norm^wf-norm1.
-- : form^wf (form^lam-2 DofM) Dwf
-	<- {f}{fform} form^wf fform norm^wf-var ->
-	   {x}{xform} form^wf xform norm^wf-var ->
-	   form^wf (DofM f fform x xform) Dwf.
-- : form^wf (form^app-1 _ _) norm^wf-comp1. 
-- : form^wf (form^app-2 DofE _) Dwf
-	<- form^wf DofE Dwf.
-- : form^wf (form^exv1 _) norm^wf-comp1.
-- : form^wf (form^exv2 _) (norm^wf-nvar norm^wf-comp1).
-- : form^wf (form^var _) (norm^wf-nvar norm^wf-norm1).
-- : form^wf (form^next-n _) norm^wf-norm1.
-- : form^wf (form^next-c _) norm^wf-comp1.
-- : form^wf (form^prev _) (norm^wf-nvar norm^wf-comp1).
+- : form^wf (form^ztup _) norm^wf-1.
+- : form^wf (form^ztup _) (norm^wf-2 norm^wf-1).
+- : form^wf (form^lam-1 DofM _) Dwf'
+	<- ({f}{fform} form^wf fform norm^wf-1 ->
+	   {x}{xform} form^wf xform norm^wf-1 ->
+	   form^wf (DofM f fform x xform) Dwf)
+	<- form^wf-flip Dwf norm Dwf'.
+- : form^wf (form^lam-2 DofM _) Dwf'
+	<- ({f}{fform} form^wf fform (norm^wf-2 norm^wf-1) ->
+	   {x}{xform} form^wf xform (norm^wf-2 norm^wf-1) ->
+	   form^wf (DofM f fform x xform) Dwf)
+	<- form^wf-flip Dwf norm Dwf'.
+- : form^wf (form^app DofE _) Dwf
+	<- form^wf DofE Dwf. 
+- : form^wf (form^exv2 Dval) Dwf'
+	<- form^wf Dval Dwf
+	<- form^wf-flip Dwf comp Dwf'.
+- : form^wf (form^exv1-here Dval) Dwf'
+	<- form^wf Dval Dwf
+	<- form^wf-flip Dwf comp Dwf'.
+- : form^wf (form^exv1-back Dval) (norm^wf-2 Dwf')
+	<- form^wf Dval (norm^wf-2 Dwf)
+	<- form^wf-flip Dwf comp Dwf'.
+- : form^wf (form^next-n _) norm^wf-1.
+- : form^wf (form^next-c _) norm^wf-1.
+- : form^wf (form^prev _) (norm^wf-2 norm^wf-1).
 - : form^wf (form^let-2 DofE DofM) Dwf
 	<- form^wf DofE Dwf.
 %block var-form^wf : 

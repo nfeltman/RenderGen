@@ -15,6 +15,12 @@ normality : type. %name normality N.
 norm : normality.
 comp : normality.
 
+%%
+depth : type.
+here : depth.
+back : depth.
+%worlds () (depth).
+
 %% TERMS
 term : type. %name term E.
 ztup  : term.
@@ -23,7 +29,8 @@ app   : term -> term -> term.
 let   : term -> (term -> term) -> term.
 next  : term -> term.
 prev  : term -> term.
-exv   : term -> term.
+exv1  : term -> term.
+exv2  : term -> term.
 %{
 tup   : term -> term -> term.
 pi1   : term -> term.

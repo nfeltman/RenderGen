@@ -1,7 +1,7 @@
 
 beta :  term -> term -> type.
 
-beta-app	: beta (app (exv (lam M)) (exv E)) (M (lam M) E).
+beta-app	: beta (app (exv1 (lam M)) (exv1 E)) (M (lam M) E).
 %{beta-pi1	: beta (pi1 (exv (tup E1 E2))) (exv E1).
 beta-pi2	: beta (pi2 (exv (tup E1 E2))) (exv E2).
 beta-unrl	: beta (unrl (exv (roll E))) (exv E).
@@ -25,7 +25,7 @@ beta-resp : beta E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> beta E1' E2' -> ty
 %worlds (term-block) (beta-resp _ _ _ _).
 %total {} (beta-resp _ _ _ _).
 
-excl-exv-beta : beta (exv E) E' -> false -> type.
+excl-exv-beta : beta (exv1 E) E' -> false -> type.
 %mode excl-exv-beta +Dstep -Dfalse.
 %worlds () (excl-exv-beta _ _).
 %total (Dstep) (excl-exv-beta Dstep _).
@@ -40,7 +40,7 @@ beta/unique : beta E E1 -> beta E E2 -> eq-term E1 E2 -> type.
 
 cont 	: (term -> term) -> type.
 cont-app1 : {E} cont ([x] app x E).
-cont-app2 : {V} cont ([x] app (exv V) x).
+cont-app2 : {V} cont ([x] app (exv1 V) x).
 %{cont-pi1 : cont pi1.
 cont-pi2 : cont pi2.
 cont-inj1 : cont inj1.
@@ -53,13 +53,13 @@ cont-let : cont ([x] let x B).
 cont-lett : cont ([x] lett x B).
 cont-case : cont ([x] case x B1 B2).}%
 
-beta-cont\eq-exv : cont F -> beta (F E) _ -> eq-term E (exv V) -> type.
+beta-cont\eq-exv : cont F -> beta (F E) _ -> eq-term E (exv1 V) -> type.
 %mode beta-cont\eq-exv +Dcont +Dbeta -Deq.
 - : beta-cont\eq-exv _ _ eq-term_.
 %worlds () (beta-cont\eq-exv _ _ _).
 %total (Dstep) (beta-cont\eq-exv Dstep _ _).
 
-excl-exv-cont : cont F -> eq-term (exv E') (F E) -> false -> type.
+excl-exv-cont : cont F -> eq-term (exv1 E') (F E) -> false -> type.
 %mode excl-exv-cont +Dcont +Deq -Dfalse.
 %worlds () (excl-exv-cont _ _ _).
 %total (Dstep) (excl-exv-cont Dstep _ _).
@@ -71,8 +71,8 @@ excl-exv-cont : cont ([x] exv (F x)) -> false -> type.
 %total (Dstep) (excl-exv-cont Dstep _).}%
 
 eq-or-val : (term -> term) -> (term -> term) -> term -> term -> type.
-eov-val1 : eq-or-val F F' (exv V) E.
-eov-val2 : eq-or-val F F' E (exv V).
+eov-val1 : eq-or-val F F' (exv1 V) E.
+eov-val2 : eq-or-val F F' E (exv1 V).
 eov-eq : eq-or-val F F E E.
 
 cont-eq\eq-or-val : cont F -> cont F' -> eq-term (F E) (F' E') -> eq-or-val F F' E E' -> type.
