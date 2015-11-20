@@ -266,7 +266,7 @@ prog2 : of^ E T wor2 -> form^ E (mnorm-s N comp1) wor2 -> dos wor2 E -> type.
 - : prog (of^-unrl Dof) (form^unrl-c Dcomp) Ddos'
 	<- prog Dof Dcomp Ddos
 	<- prog/unrl Ddos Dof Dcomp Ddos'.}%
-- : prog2 (of^-lam _ DofM) (form^lam-2 Dcomp Dfn) Ddos'
+- : prog2 (of^-lam _ DofM) (form^lam Dcomp Dfn) Ddos'
 	<- ({f}{off}{vf : form^ f var wor2} 
 		{x}{ofx}{vx} 
 		prog2 (DofM f off x ofx) (Dcomp f vf x vx) (Ddos f x))

@@ -4,13 +4,8 @@
 
 %% SOMETHING IS NOT A VARIABLE (indicates that contents of a next needs to be lifted)
 not-exv : term -> type.
-%%nv-exv1 : not-exv (exv1 _).
-nv-ztup : not-exv ztup.
-nv-lam  : not-exv (lam _).
 nv-app  : not-exv (app _ _).
 nv-let 	: not-exv (let _ _).
-nv-next	: not-exv (next _).
-nv-prev	: not-exv (next _).
 %{nv-tup  : not-exv (tup _ _).
 nv-pi1  : not-exv (pi1 _).
 nv-pi2  : not-exv (pi2 _).

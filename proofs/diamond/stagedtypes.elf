@@ -177,12 +177,9 @@ form^exv1-back : form^ (exv1 E) (mnorm-s N (mnorm-s comp M)) wor2
 form^ztup 	: form^ ztup N W
 			<- full-norm W N.
 
-form^lam-1 : form^ (lam M) (mnorm-s norm N) wor1
-			<- full-norm wor1 FN
-			<- {f} form^ f FN wor1 -> {x} form^ x FN wor1 -> form^ (M f x) (mnorm-s comp N) wor1.
-form^lam-2 : form^ (lam M) (mnorm-s norm N) wor2
-			<- full-norm wor2 FN
-			<- {f} form^ f FN wor2 -> {x} form^ x FN wor2 -> form^ (M f x) (mnorm-s comp N) wor2.
+form^lam : form^ (lam M) (mnorm-s norm N) W
+			<- full-norm W FN
+			<- {f} form^ f FN W -> {x} form^ x FN W -> form^ (M f x) (mnorm-s comp N) W.
 form^app 	: form^ (app E1 E2) (mnorm-s comp N) W
 			<- form^ E2 (mnorm-s comp N) W
 			<- form^ E1 (mnorm-s comp N) W.
@@ -270,12 +267,12 @@ form^wf : form^ E T W -> norm^wf T W -> type.
 %mode form^wf +D1 -D2. 
 - : form^wf (form^ztup _) norm^wf-1.
 - : form^wf (form^ztup _) (norm^wf-2 norm^wf-1).
-- : form^wf (form^lam-1 DofM _) Dwf'
+- : form^wf (form^lam DofM _) Dwf'
 	<- ({f}{fform} form^wf fform norm^wf-1 ->
 	   {x}{xform} form^wf xform norm^wf-1 ->
 	   form^wf (DofM f fform x xform) Dwf)
 	<- form^wf-flip Dwf norm Dwf'.
-- : form^wf (form^lam-2 DofM _) Dwf'
+- : form^wf (form^lam DofM _) Dwf'
 	<- ({f}{fform} form^wf fform (norm^wf-2 norm^wf-1) ->
 	   {x}{xform} form^wf xform (norm^wf-2 norm^wf-1) ->
 	   form^wf (DofM f fform x xform) Dwf)
