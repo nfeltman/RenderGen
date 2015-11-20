@@ -262,23 +262,23 @@ form^wf-flip : norm^wf (mnorm-s N M) W -> {N'} norm^wf (mnorm-s N' M) W -> type.
 %worlds (form^-block | term-block) (form^wf-flip _ _ _).
 %total D (form^wf-flip D _ _).
 
+full-norm-total : {W} full-norm W N -> norm^wf N W -> type.
+%mode full-norm-total +D1 -D2 -D3. 
+- : full-norm-total wor1 full-norm-1 norm^wf-1.
+- : full-norm-total wor2 full-norm-2 (norm^wf-2 norm^wf-1).
+%worlds (form^-block | term-block) (full-norm-total _ _ _).
+%total {} (full-norm-total _ _ _).
+
+full-norm-wf : full-norm W N -> norm^wf N W -> type.
+%mode full-norm-wf +D2 -D3. 
+- : full-norm-wf full-norm-1 norm^wf-1.
+- : full-norm-wf full-norm-2 (norm^wf-2 norm^wf-1).
+%worlds (form^-block | term-block) (full-norm-wf _ _).
+%total {} (full-norm-wf _ _).
+
 %% FORM OUTPUTS ARE WELL-FORMED
 form^wf : form^ E T W -> norm^wf T W -> type.
 %mode form^wf +D1 -D2. 
-- : form^wf (form^ztup _) norm^wf-1.
-- : form^wf (form^ztup _) (norm^wf-2 norm^wf-1).
-- : form^wf (form^lam DofM _) Dwf'
-	<- ({f}{fform} form^wf fform norm^wf-1 ->
-	   {x}{xform} form^wf xform norm^wf-1 ->
-	   form^wf (DofM f fform x xform) Dwf)
-	<- form^wf-flip Dwf norm Dwf'.
-- : form^wf (form^lam DofM _) Dwf'
-	<- ({f}{fform} form^wf fform (norm^wf-2 norm^wf-1) ->
-	   {x}{xform} form^wf xform (norm^wf-2 norm^wf-1) ->
-	   form^wf (DofM f fform x xform) Dwf)
-	<- form^wf-flip Dwf norm Dwf'.
-- : form^wf (form^app DofE _) Dwf
-	<- form^wf DofE Dwf. 
 - : form^wf (form^exv2 Dval) Dwf'
 	<- form^wf Dval Dwf
 	<- form^wf-flip Dwf comp Dwf'.
@@ -288,6 +288,17 @@ form^wf : form^ E T W -> norm^wf T W -> type.
 - : form^wf (form^exv1-back Dval) (norm^wf-2 Dwf')
 	<- form^wf Dval (norm^wf-2 Dwf)
 	<- form^wf-flip Dwf comp Dwf'.
+	
+- : form^wf (form^ztup Dfn) Dwf
+	<- full-norm-wf Dfn Dwf.
+- : form^wf (form^lam DofM Dfn) Dwf'
+	<- full-norm-wf Dfn DwfN
+	<- ({f}{fform} form^wf fform DwfN ->
+	   {x}{xform} form^wf xform DwfN ->
+	   form^wf (DofM f fform x xform) Dwf)
+	<- form^wf-flip Dwf norm Dwf'.
+- : form^wf (form^app DofE _) Dwf
+	<- form^wf DofE Dwf. 
 - : form^wf (form^next-n _) norm^wf-1.
 - : form^wf (form^next-c _) norm^wf-1.
 - : form^wf (form^prev _) (norm^wf-2 norm^wf-1).
