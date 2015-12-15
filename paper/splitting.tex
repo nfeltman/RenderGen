@@ -204,7 +204,10 @@ this lemma can use the strong requirement of identical combined terms.
 
 \begin{lemma} [Hoisting Step Correctness]
 \label{lem:hoistCorrect}
-If $\lift e {e'}$, $\splitone e A c {l.r}$, and $\splitone {e'} A {c'} {l'.r'}$, then $c = c'$, and $l.r \equiv l'.r'$.
+If $\lift e {e'}$, $\splitone e A c {l.r}$, 
+and $\splitone {e'} A {c'} {l'.r'}$, 
+then $c = c'$, 
+and $l.r \equiv l'.\letin y q {r'}$.
 \end{lemma}
 
 \subsection{Example Cases}

@@ -84,7 +84,8 @@ $\curr{\rm list} \times \fut\rmint$ (a purely-first-stage list and a
 second-stage integer) to a $\fut\rmint$ (a second-stage
 computation of an integer).
 
-The example code in this paper makes liberal use of $\rmint$s and various
+The example code in this paper uses an extension of the formalized \lang.
+In particular, it makes liberal use of $\rmint$s and various
 functions on these, as well as a function $\pause$ which takes a $\curr\rmint$
 to a $\fut\rmint$.%
 \footnote{$\pause$ is definable in \lang\ given an inductive definition of
@@ -125,12 +126,13 @@ To be a residual, a term must have no first stage subterms (equivalently, no {\t
 This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
 
 \paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
-Thus, $\steppure e {e'}$ traverses into subterms to to find the left-most unevaluated code where it performs a reduction. 
+Thus, $\steppure e {e'}$ traverses into subterms to find the left-most unevaluated code where it performs a reduction. 
 A ground value $u$ comprises only units, injections, tuples, and functions, where the body of the function may be any ground term.
 
 \paragraph{World \bbonem.}
 Like its ground counterpart, the \bbonem\ step judgment, $\stepmix e {e'}$, finds the left-most unevaluated subterm and performs a reduction.
-It also descends into {\tt gr} and {\tt next} blocks, transitioning into one of the other two steps ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
+It also descends into {\tt gr} and {\tt next} blocks, 
+using one of the other two step judgements ($\stepsym \bbonep$ or $\stepsym \bbtwo$) there. 
 The value form for \bbonem, called a partial value, comprises units, tuples, functions, {\tt gr} blocks of ground values, and {\tt next} blocks containing \emph{only a stage two variable}.
 This strong requirement ensures that second-stage computations are not duplicated 
 when partial values are substituted for a variable.

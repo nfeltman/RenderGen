@@ -15,14 +15,14 @@ fun part (p, Empty) =(0,Empty,Empty)
        else (n,le,Cons(h,ri))
 
 
-qs: list * int -> int
-fun qs (Empty, k) = 0
-  | qs (Cons ht, k) =
+qsel: list * int -> int
+fun qsel (Empty, k) = 0
+  | qsel (Cons ht, k) =
     let val (i,le,ri) = part ht in 
     case compare k i of
-      LT => qs (le, k)
+      LT => qsel (le, k)
     | EQ => #1 ht
-    | GT => qs (ri, k-i-1)
+    | GT => qsel (ri, k-i-1)
 
 \end{lstlisting}
 \caption{Unstaged quickselect.}

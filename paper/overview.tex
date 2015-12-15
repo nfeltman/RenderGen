@@ -42,8 +42,9 @@ A more sophisticated solution is to construct a binary search
 tree out of \texttt{l} and then simply look for the \texttt{k}th
 leftmost element of that tree. To do this efficiently requires one more
 innovation---augmenting the tree by storing at each node the size of its left
-subtree. This approach has (expected) runtime $\Theta(n\log{n} + m\log{n})$, a
-nearly linear-time improvement in $m$.
+subtree. For a sufficiently balanced tree, this approach has 
+(expected) runtime $\Theta(n\log{n} + m\log{n})$, 
+a nearly linear-time improvement in $m$.
 
 In both cases, we replace our simple solution with a two-part algorithm which
 first processes the input into a lookup data structure, and then subsequently
@@ -99,8 +100,8 @@ In the rest of this section, we present a high-level overview of the main ideas
 behind our splitting algorithm, applied to \texttt{qss}.
 %
 Splitting \texttt{qss} yields a two-part program that creates a
-probabilistically balanced, augmented binary search tree (which is isomorphic to
-a treap data structure~\cite{SeidelAr96}) as an intermediate data structure. In
+probabilistically balanced, augmented binary search tree 
+as an intermediate data structure. In
 particular, its first part (\texttt{qs1}) constructs such a binary search tree
 and its second part (\texttt{qs2}) traverses the tree, using the embedded size
 information to find the element of the desired rank.
@@ -138,7 +139,7 @@ data structure and the rank \texttt{k}, and it finishes the computation. Now tha
 choosing which recursive call of \texttt{qss} is actually relevant for this
 \texttt{k}. Since the boundary data structure contains the first-stage data for
 \emph{all} of the recursive calls, performing these comparisons essentially
-walks the tree, using the rank along with the size data \texttt{i} in order to
+walks the tree, using the rank along with the size data \texttt{i} to
 look up the \texttt{k}th leftmost node in the tree.
 
 % \begin{theorem}
