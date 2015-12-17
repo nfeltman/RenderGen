@@ -51,6 +51,12 @@ fun convertSourcePatternv _ (Gnum,Gname) (S.Pvar x) =
 		in
 			(Pvar s, (NumDict.extend Gnum desiredName n, MainDict.extend Gname x s))
 		end
+  | convertSourcePatternv convRec G (S.Proll x) = 
+		let
+			val (p,Gout) = convRec G x
+		in
+			(Pprim ("roll",p), Gout)
+		end
   | convertSourcePatternv convRec G (S.Ptuple xs) = 
 		let
 			fun f (x,(Gin,ps)) = let val (p,Gout) = convRec Gin x in (Gout,p::ps) end
@@ -59,6 +65,7 @@ fun convertSourcePatternv _ (Gnum,Gname) (S.Pvar x) =
 			(Ptuple ps, Gfinal)
 		end
   | convertSourcePatternv _ G S.Punused = (Pvar "_", G)
+
 fun convertSource (Gnum,Gname) convertRec convertTy convertPatt ex = 
 	let
 		val convert = convertRec (Gnum,Gname)

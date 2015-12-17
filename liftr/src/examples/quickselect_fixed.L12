@@ -3,29 +3,29 @@ let
 		datatype comp = LT | EQ | GT
 		fun compare ((i,j) : int * int) = if i < j then LT else if i == j then EQ else GT
 	}
-	@ mono { 
+	@ grnd { 
 		datatype list = Empty | Cons of int * list
-		rec partition ((p,l) : int*list) : (int*list*list) = 
-			case unroll l of 
+		rec partition ((p,roll l) : int*list) -> int * list * list = 
+			case l of 
 			  _ => (0,Empty, Empty) 
 			| (h,t) => 
 				let val (s,left,right) = partition (p,t) in 
 				if h<p then (s+1,Cons(h,left),right) else (s,left,Cons(h,right))
 	}
 
-	rec qs ((mono{l},next{i}) : ^list * $int) : $int = 
-		case pushS mono {unroll l} of 
+	rec qs ((grnd{l},next{i}) : ^list * $int) -> $int = 
+		case pushS grnd {unroll l} of 
 		  _ => next {0} 
-		| mono{ht} => 
+		| grnd{ht} => 
 			let 
-				@mono{val (n,left,right) = partition ht}
-				val next{n} = hold mono{n}
+				@grnd{val (n,left,right) = partition ht}
+				val next{n} = hold grnd{n}
 			in
 			next { 
 				case unroll (compare (i,n)) of
-				  _ => prev{qs (mono{left},next{i})}
-				| _ => prev{hold mono{#1 ht}}
-				| _ => prev{qs (mono{right},next{(i-n)-1})}
+				  _ => prev{qs (grnd{left},next{i})}
+				| _ => prev{hold grnd{#1 ht}}
+				| _ => prev{qs (grnd{right},next{(i-n)-1})}
 			}
 
 	@next{
@@ -36,8 +36,8 @@ let
 		fn (l,next{q}) : ^list * $list2 =>
 		next {
 			let	
-				rec m (q : list2) : list2 = 
-					case unroll q of
+				rec m (roll q : list2) -> list2 = 
+					case q of
 					  _ => Empty2
 					| (h,t) => Cons2 (prev{f (l,next{h})}, m t)
 			in m q
@@ -45,7 +45,7 @@ let
 
 	val qsMany = map qs
 
-	val testlist = mono{let val c = Cons in c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
+	val testlist = grnd{let val c = Cons in c(8,c(2,c(3,c(7,c(4,c(5,Empty))))))}
 	val queries = next{let val c = Cons2 in c(0,c(1,c(2,c(3,c(4,c(5,Empty2))))))}		
 in 
 qsMany (testlist, queries)

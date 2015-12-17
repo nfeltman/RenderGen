@@ -5,6 +5,7 @@ struct
 datatype patt	= Pvar of string
 				| Ptuple of patt list
 				| Pbrace of string * patt 
+				| Pprim of string * patt 
 datatype expr	= Eatom of string
 				| Elam of string * expr * (patt * expr)
 				| Eapp of expr * expr
@@ -43,6 +44,7 @@ end
 				
 fun pat2string (Pvar x) = x
   | pat2string (Ptuple xs) = "("^(String.concatWith "," (map pat2string xs))^")"
+  | pat2string (Pprim (s,x)) = s ^ "(" ^ (pat2string x) ^ ")"
   | pat2string (Pbrace (s,x)) = s ^ "{" ^ (pat2string x) ^ "}"
 fun convertToLayout ex = 
 	let

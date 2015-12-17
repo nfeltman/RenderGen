@@ -34,7 +34,7 @@ end)
 
 structure Evaluator1 = Evaluator (type t = value) (Values1)
 
-fun ext g (P p) t = foldPattern (Values.extend, ext, Values1.untuple, Stuck) g p t
+fun ext g (P p) t = foldPattern (Values.extend, ext, Values1.untuple, Values1.unroll, Stuck) g p t
   | ext g (Pmono p) t = ext g p (unmono t)
   | ext g (Pnext p) t = ext g p (unnext t)
 

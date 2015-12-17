@@ -1,5 +1,12 @@
-let 
-	@mono { val f = 2 }
-	val asfadf = 5
-in 
-asfadf
+
+grnd { 
+let
+	datatype list = Empty | Cons of list
+	fun f (l : list) = 0
+	fun partition (roll lll : list) = 
+		case lll of 
+		  _ => 0
+		| t => f t
+
+in 23
+}

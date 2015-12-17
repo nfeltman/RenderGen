@@ -7,10 +7,10 @@ in
 
 %% binary op evaluators
 
-let fun evalBinop ((op, mono{i1}, mono{i2}) : binop * ^int * ^int) = 
+let fun evalBinop ((op, grnd{i1}, grnd{i2}) : binop * ^int * ^int) = 
 	case unroll op of
-	  plus => mono{i1 + i2}
-	| minus => mono{i1 - i2}
+	  plus => grnd{i1 + i2}
+	| minus => grnd{i1 - i2}
 in
 let fun evalBinop2 ((op, i1, i2) : binop * $int * $int) = 
 	case unroll op of
@@ -22,21 +22,21 @@ in
 %% 2 = arg comes at stage 2
 %% K = continuation passing style
 
-let rec eval1 ((e,a) : iota * ^int) : ^int = 
+let rec eval1 ((e,a) : iota * ^int) -> ^int = 
 	case unroll e of
 	  arg => a
 	| i => i
 	| (op, e1, e2) => evalBinop(op, eval1 (e1,a), eval1 (e2,a))
-	| (e1, e2, e3) => if let val mono{i} = eval1 (e1,a) in push mono{i > 0} then eval1 (e2,a) else eval1 (e3,a)
+	| (e1, e2, e3) => if let val grnd{i} = eval1 (e1,a) in push grnd{i > 0} then eval1 (e2,a) else eval1 (e3,a)
 in
-let rec eval1K ((e,a,k) : iota * ^int * (^int -> ^int)) : ^int = 
+let rec eval1K ((e,a,k) : iota * ^int * (^int -> ^int)) -> ^int = 
 	case unroll e of
 	  arg => k a
 	| i => k i
 	| (op, e1, e2) => eval1K (e1,a, fn i:^int => eval1K (e2,a, fn j:^int => k (evalBinop(op,i,j)))) 
-	| (e1, e2, e3) => eval1K (e1,a, fn mono{i}:^int => if push(mono{i > 0}) then eval1K (e2,a,k) else eval1K (e3,a,k)) 
+	| (e1, e2, e3) => eval1K (e1,a, fn grnd{i}:^int => if push(grnd{i > 0}) then eval1K (e2,a,k) else eval1K (e3,a,k)) 
 in
-let rec eval2 ((e,a) : iota * $int) : $int = 
+let rec eval2 ((e,a) : iota * $int) -> $int = 
 	case unroll e of
 	  arg => a
 	| i => hold i
@@ -49,7 +49,7 @@ let rec eval2 ((e,a) : iota * $int) : $int =
 				prev{eval2 (e3,a)}
 		}
 in
-let rec eval2K ((e,a,k) : iota * $int * ($int -> $int)) : $int = 
+let rec eval2K ((e,a,k) : iota * $int * ($int -> $int)) -> $int = 
 	case unroll e of
 	  arg => k a
 	| i => k (hold i)

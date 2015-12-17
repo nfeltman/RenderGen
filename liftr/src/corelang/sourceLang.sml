@@ -12,6 +12,7 @@ fun a ` b = a b
 in
 datatype ('r,'p) pattern 	= Pvar of 'r
 							| Ptuple of 'p list
+							| Proll of 'p
 							| Punused
 							
 datatype ('e,'r,'b,'t) exprF	= Fvar of 'r
@@ -25,6 +26,7 @@ datatype ('e,'r,'b,'t) exprF	= Fvar of 'r
 								| Funroll of 'e
 
 fun mapPattern _ (Pvar v) = Pvar v
+  | mapPattern f (Proll p) = Proll (f p)
   | mapPattern f (Ptuple ps) = Ptuple (map f ps)
   | mapPattern _ Punused = Punused
 								
@@ -53,7 +55,8 @@ fun collectExpr exp =
 	| Ffix (t1,t2,(x,e)) => [e]
 
 fun recastPattern (_,ext,f) g (Pvar x) = let val y = f x in (Pvar y,ext g x y) end
-  | recastPattern (rpRec,ext,_) g (Ptuple xs) =
+  | recastPattern (rpRec,_,_) g (Proll x) = let val (y,g2) = rpRec g x in (Proll y,g2) end
+  | recastPattern (rpRec,_,_) g (Ptuple xs) =
 		let 
 			fun f (x,(ys,g2)) = 
 				let val (y,g3) = rpRec g2 x in (y::ys,g3) end
@@ -80,10 +83,11 @@ fun replaceVars recRep G (recastPattern,lookup) exp =
 		| Ffix (t1,t2,b) => Ffix (t1,t2, forBranch b)
 	end
 
-fun foldPattern (f,foldRec,unpack,ex) g p t =
+fun foldPattern (f,foldRec,untup,unroll,ex) g p t =
 	let
 		fun fold g (Pvar x) t = f g x t
-		  | fold g (Ptuple xs) t = foldList g xs (unpack t)
+		  | fold g (Ptuple xs) t = foldList g xs (untup t)
+		  | fold g (Proll xs) t = foldRec g xs (unroll t)
 		  | fold g Punused _ = g
 		  
 		and foldList g [] [] = g

@@ -57,7 +57,8 @@ struct
 	type p = pattern12
 	type c = MyContext.cont
 	type t = type12
-	fun fold g (P p) v = foldPattern (MyContext.extend, fold, TypeFeatures1.unprod, TypeError "pattern") g p v
+	fun selfSubst t = TypeFeatures1.subst (TypeFeatures1.makerec t) t
+	fun fold g (P p) v = foldPattern (MyContext.extend, fold, TypeFeatures1.unprod, fn t => selfSubst (TypeFeatures1.unrec t), TypeError "pattern") g p v
 	  | fold g (Pmono p) v = fold g p (unnow v)
 	  | fold g (Pnext p) v = fold g p (unfut v)
 end

@@ -62,6 +62,7 @@ val Ebinop = Estandard o S.SEdata o DataFrag.Ebinop
 
 val Punused = P S.Punused
 val Ptuple = P o S.Ptuple
+val Proll = P o S.Proll
 val Pvar = P o S.Pvar
 end
 	

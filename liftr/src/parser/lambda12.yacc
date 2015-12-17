@@ -93,7 +93,7 @@ open LangCommon
 
 	 DECL : VAL PATT EQ EXP 															(Dval (PATT, EXP))
 	 	  | FUN ID LPAR PATT COLON TY RPAR EQ EXP 										(Dfun (ID,TY,(PATT,EXP)))
-	 	  | REC ID LPAR PATT COLON TY RPAR COLON TY EQ EXP								(Drec (ID,TY1,TY2,(PATT,EXP)))
+	 	  | REC ID LPAR PATT COLON TY RPAR ARROW TY EQ EXP								(Drec (ID,TY1,TY2,(PATT,EXP)))
 		  | TYPE ID EQ TY																(Dty (ID,TY))
 		  | DATA ID EQ DTARML 															(Ddata (ID,DTARML))
 		  | ATSGN NEXT LBRACE DECLL RBRACE												(Dnext DECLL)
@@ -110,7 +110,9 @@ open LangCommon
 
 	 PATT : ID									(Pvar (ID))
 	 	  | USCORE								(Punused)
+		  | LPAR PATT RPAR 						(PATT)
 		  | LPAR PATT COMMA PATT PATTL RPAR 	(Ptuple (PATT1 :: PATT2 :: PATTL))
+		  | ROLL PATT  							(Proll (PATT))
 		  | MONO LBRACE PATT RBRACE 			(Pmono (PATT))
 		  | NEXT LBRACE PATT RBRACE 			(Pnext (PATT))
 

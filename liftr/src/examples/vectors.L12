@@ -3,8 +3,8 @@ let
 	type vec = ^int * ^int * $int
 
 	fun dot ((
-		(mono{x1},mono{y1},next{z1}), 
-		(mono{x2},mono{y2},next{z2})) : vec * vec) = 
-	next{prev{hold mono{(x1*x2) + (y1*y2)}} + (z1*z2)}
+		(grnd{x1},grnd{y1},next{z1}), 
+		(grnd{x2},grnd{y2},next{z2})) : vec * vec) = 
+	next{prev{hold grnd{(x1*x2) + (y1*y2)}} + (z1*z2)}
 in
-dot ((mono{1},mono{2},next{3}),(mono{4},mono{5},next{6}))
+dot ((grnd{1},grnd{2},next{3}),(grnd{4},grnd{5},next{6}))

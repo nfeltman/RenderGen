@@ -1,24 +1,24 @@
-let @ mono {datatype list = Empty | Cons of int * list } in 
-let rec partition (mono{(p,l)} : ^(int*list)) : ^(int*list*list) = 
-	case pushS mono{unroll l} of 
-	  em => mono{(0,Empty, Empty)}
-	| mono{(h,t)} => 
-		let val mono{(s,left,right)} = partition mono{(p,t)} in 
-		if push mono{h<p} 
-		then mono{(s+1,Cons(h,left),right)}
-		else mono{(s,  left,Cons(h,right))} 
+let @ grnd {datatype list = Empty | Cons of int * list } in 
+let rec partition (grnd{(p,l)} : ^(int*list)) -> ^(int*list*list) = 
+	case pushS grnd{unroll l} of 
+	  em => grnd{(0,Empty, Empty)}
+	| grnd{(h,t)} => 
+		let val grnd{(s,left,right)} = partition grnd{(p,t)} in 
+		if push grnd{h<p} 
+		then grnd{(s+1,Cons(h,left),right)}
+		else grnd{(s,  left,Cons(h,right))} 
 in 
-let rec qs ((mono{l},i) : ^list * $int) : $int = 
-	case pushS mono{unroll l} of 
+let rec qs ((grnd{l},i) : ^list * $int) -> $int = 
+	case pushS grnd{unroll l} of 
 	  em => next {0} 
-	| mono{(h,t)} => let val mono{(n,left,right)} = partition mono{(h,t)} in 
+	| grnd{(h,t)} => let val grnd{(n,left,right)} = partition grnd{(h,t)} in 
 		next { 
-			let val n = prev {hold mono{n}} in 
-			if prev{i} < n then prev{qs (mono{left},i)} 
-			else if prev{i} == n then prev{hold mono{h}} 
-			else prev{qs (mono{right},next{(prev{i}-n)-1})}} 
+			let val n = prev {hold grnd{n}} in 
+			if prev{i} < n then prev{qs (grnd{left},i)} 
+			else if prev{i} == n then prev{hold grnd{h}} 
+			else prev{qs (grnd{right},next{(prev{i}-n)-1})}} 
 in 
-let val testlist = mono{
+let val testlist = grnd{
 	let val c = Cons in 
 	c(8,c(2,c(3,c(7,c(4,c(5,Empty)))))) }
 in qs (testlist, next{2})

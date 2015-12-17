@@ -20,7 +20,7 @@ end)
 
 structure EvaluatorPSF = S.Evaluator (type t = value) (Values)
   
-fun extendPattern g (P p) t = S.foldPattern (Context.extend, extendPattern, Values.untuple, Stuck) g p t
+fun extendPattern g (P p) t = S.foldPattern (Context.extend, extendPattern, Values.untuple, Values.unroll, Stuck) g p t
 
 fun evaluate env (E exp) = EvaluatorPSF.evalF env evaluate (extendPattern,Context.lookup) exp
 

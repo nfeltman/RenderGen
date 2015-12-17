@@ -46,10 +46,10 @@ end)
 structure EvaluatorM = Evaluator (type t = valueMono) (ValuesM)
 
 fun ext1helper (gNow,gNext) x t = (Contexts1.C1.extend gNow x t, gNext)
-fun ext1 g (P p) t = foldPattern (ext1helper, ext1, untuple o unV1, Stuck) g p t
+fun ext1 g (P p) t = foldPattern (ext1helper, ext1, untuple o unV1, unroll o unV1 , Stuck) g p t
   | ext1 (gNow,gNext) (Pmono p) t = (ext2 gNow p (unmono t), gNext)
   | ext1 (gNow,gNext) (Pnext p) t = (gNow, fn r => gNext ` E ` Flet (E ` Fvar (unhat t),(p,r)))
-and ext2 g (P p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, Stuck) g p t
+and ext2 g (P p) t = foldPattern (Contexts1.C2.extend, ext2, ValuesM.untuple, ValuesM.unroll, Stuck) g p t
   | ext2 g _ _ = raise Stuck
 
 fun evalM env (L12core exp) = EvaluatorM.evalF env evalM (ext2, Contexts1.C2.lookup) exp
@@ -146,7 +146,7 @@ and trace2 env (L12core exp) = E (mapExpr (trace2 env) (fn _ => ()) id exp)
   
 structure Context2 = BasicContext (MainDict) (type t = valueMono) 
 
-fun ext g (P p) t = foldPattern (Context2.extend, ext, ValuesM.untuple, Stuck) g p t
+fun ext g (P p) t = foldPattern (Context2.extend, ext, ValuesM.untuple, ValuesM.unroll, Stuck) g p t
   | ext _ _ _ = raise Stuck
 
 structure Evaluator2 = Evaluator (type t = valueMono) (ValuesM)
