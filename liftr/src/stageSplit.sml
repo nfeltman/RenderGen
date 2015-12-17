@@ -39,24 +39,24 @@ fun freshPi () =
 
 fun terminates (E e) = case e of
     S.Fapp _ => false
-  | S.SEdata (DataFrag.Eerror _) => false
+  | S.SEdata (S.Eerror _) => false
   | other => List.all id ` S.collectExpr ` S.mapExpr terminates id id other 
  
 fun unusedAnswer (e as E exp) = case exp of
 	S.Fvar _ => []
-  | S.SEdata (DataFrag.EprimVal _) => []
+  | S.SEdata (S.EprimVal _) => []
   | S.Flam _ => []
   | S.Fapp (e1,e2) => [e]
-  | S.SEprod e => List.concat ` BranchlessFrag.collectExpr ` BranchlessFrag.mapExpr unusedAnswer e
-  | S.SEdata (DataFrag.Einj (_,_,e)) => unusedAnswer e
-  | S.SEdata (DataFrag.Ecase (e1,bs)) => [E (S.SEdata (DataFrag.Ecase (e1,map (fn (x,e) => (x,chain2 (e, Eunit))) bs)))]
-  | S.SEdata (DataFrag.Eif (e1,e2,e3)) => [E (S.SEdata (DataFrag.Eif (e1,chain2 (e2, Eunit),chain2 (e3, Eunit))))]
+  | S.SEprod e => List.concat ` S.collectProdExpr ` S.mapProdExpr unusedAnswer e
+  | S.SEdata (S.Einj (_,_,e)) => unusedAnswer e
+  | S.SEdata (S.Ecase (e1,bs)) => [E (S.SEdata (S.Ecase (e1,map (fn (x,e) => (x,chain2 (e, Eunit))) bs)))]
+  | S.SEdata (S.Eif (e1,e2,e3)) => [E (S.SEdata (S.Eif (e1,chain2 (e2, Eunit),chain2 (e3, Eunit))))]
   | S.Flet (e1,(x,e2)) => [E (S.Flet (e1,(x,chain2 (e2, Eunit))))]
-  | S.SEdata (DataFrag.Ebinop (_,e1,e2)) => (unusedAnswer e1) @ (unusedAnswer e2)
+  | S.SEdata (S.Ebinop (_,e1,e2)) => (unusedAnswer e1) @ (unusedAnswer e2)
   | S.Froll (_,e) => unusedAnswer e
   | S.Funroll e => unusedAnswer e
   | S.Ffix _ => []
-  | S.SEdata (DataFrag.Eerror _) => [e]
+  | S.SEdata (S.Eerror _) => [e]
 
 and chain2 (e1,e2) = 
 	let
@@ -115,7 +115,7 @@ fun mapResumer1 f (NoPrec1 (v, r)) = NoPrec1 (v, f r)
 
 fun flattenPrecomps pls =
 	let
-		fun toArray (E (S.SEprod (BranchlessFrag.Etuple ps)), LambdaPSF.P (S.Ptuple ls)) = ListPair.zip (ps,ls)
+		fun toArray (E (S.SEprod (S.Etuple ps)), LambdaPSF.P (S.Ptuple ls)) = ListPair.zip (ps,ls)
 		  | toArray (p,l) = ([(p,l)])
 	in
 		List.concat ` map toArray pls
@@ -159,7 +159,7 @@ fun unpackPredicate (NoPrec1 (e,r)) link = (id,e,r,id,link)
 			(fn x=> Elet (c,(PPtuple[PPvar v, PPvar p], x)), Evar v, r, fn p2 => Etuple[Evar p,p2], PPtuple[l,link])
 		end
   
-fun decompTuple (E (S.SEprod (BranchlessFrag.Etuple [v,p]))) f = f (v,p)
+fun decompTuple (E (S.SEprod (S.Etuple [v,p]))) f = f (v,p)
   | decompTuple c f = 
 		let
 			val (v,p) = (Variable.newvar "v", Variable.newvar "p")
@@ -186,7 +186,7 @@ fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 =
 		val answer = 
 		case exp of 
 		  S.Fvar v  => NoPrec1 (Evar v,  Evar v)
-		| S.SEdata (DataFrag.EprimVal i) => NoPrec1 (Eprim i,  Eunit)
+		| S.SEdata (S.EprimVal i) => NoPrec1 (Eprim i,  Eunit)
 		| S.Flam (t, (x,e)) => 
 			let
 				val (c,(l,r)) = coerce (split e)
@@ -246,15 +246,15 @@ fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 =
 							)
 						end
 			end
-		| S.SEprod (BranchlessFrag.Etuple es) => simpleMerge (map split es) Etuple Etuple
-		| S.SEprod (BranchlessFrag.Epi (i, e)) => 
+		| S.SEprod (S.Etuple es) => simpleMerge (map split es) Etuple Etuple
+		| S.SEprod (S.Epi (i, e)) => 
 			let
 				fun proj x = Epi (i, x)
 			in
 				merge1 (split e) proj proj
 			end
-		| S.SEdata (DataFrag.Einj (ts, us, e)) => merge1 (split e) (fn v => Einj (eraseTy ts, eraseTy us, v)) id
-		| S.SEdata (DataFrag.Ecase (e1, bs)) => 
+		| S.SEdata (S.Einj (ts, us, e)) => merge1 (split e) (fn v => Einj (eraseTy ts, eraseTy us, v)) id
+		| S.SEdata (S.Ecase (e1, bs)) => 
 			let
 				val (link,z) = (Variable.newvar "l", Variable.newvar "z")
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
@@ -277,7 +277,7 @@ fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 =
 					(l, Elet (r1, (PPvar z, Ecase(Evar link,residuals))))
 				)
 			end
-		| S.SEdata (DataFrag.Eif (e1, e2, e3)) => 
+		| S.SEdata (S.Eif (e1, e2, e3)) => 
 			let
 				val link = Variable.newvar "l"
 				val (w1,v1,r1,pWrap,l) = unpackPredicate (split e1) (PPvar link)
@@ -317,7 +317,7 @@ fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 =
 								(PPtuple [l1,l2],makeLet2 r1 r2))
 					end
 			end
-		| S.SEdata (DataFrag.Ebinop (bo,e1,e2)) =>
+		| S.SEdata (S.Ebinop (bo,e1,e2)) =>
 			simpleMerge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b)) (fn (r1,r2) => chain3(r1,r2,Etuple[]))
 		| S.Froll (_,e) => merge1 (split e) roll id
 		| S.Funroll e => merge1 (split e) Eunroll id
@@ -336,7 +336,7 @@ fun stageSplit1 gamma (L12core exp) : type12 * stage1Part splitResult1 =
 					)))
 				)
 			end
-		| S.SEdata (DataFrag.Eerror t) => NoPrec1 (Eerror (), Eerror ())
+		| S.SEdata (S.Eerror t) => NoPrec1 (Eerror (), Eerror ())
 	in
 		(t,
 		case answer of
@@ -428,14 +428,14 @@ and stageSplit2 gamma (L12core exp) : type12 * splitResult2 =
 		(t,
 		case exp2 of 
 		  S.Fvar v => NoPrec2 (Evar v)
-		| S.SEdata (DataFrag.EprimVal p) => NoPrec2 (Eprim p)
+		| S.SEdata (S.EprimVal p) => NoPrec2 (Eprim p)
 		| S.Flam (t, (x,e)) => merge1 (split e) (fn r => Elam ((), (convertMonoPattern x,r)))
 		| S.Fapp (e1, e2) => merge2 (split e1, split e2) (fn (a,b) => Eapp (a,b))
-		| S.SEprod (BranchlessFrag.Etuple es) => mergeList (map split es) Etuple
-		| S.SEprod (BranchlessFrag.Epi (i, e)) => merge1 (split e) (fn r => Epi (i, r))
-		| S.SEdata (DataFrag.Einj (ts, us, e)) => merge1 (split e) (fn r => Einj (eraseTy ts, eraseTy us, r))
-		| S.SEdata (DataFrag.Eif (e1, e2, e3)) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
-		| S.SEdata (DataFrag.Ecase (e,bs)) => 
+		| S.SEprod (S.Etuple es) => mergeList (map split es) Etuple
+		| S.SEprod (S.Epi (i, e)) => merge1 (split e) (fn r => Epi (i, r))
+		| S.SEdata (S.Einj (ts, us, e)) => merge1 (split e) (fn r => Einj (eraseTy ts, eraseTy us, r))
+		| S.SEdata (S.Eif (e1, e2, e3)) => merge3 (split e1, split e2, split e3) (fn (a,b,c) => Eif (a,b,c))
+		| S.SEdata (S.Ecase (e,bs)) => 
 			let
 				val (xs, es) = unzip bs
 				val xs = map convertMonoPattern xs
@@ -444,12 +444,12 @@ and stageSplit2 gamma (L12core exp) : type12 * splitResult2 =
 			in
 				mergeList (map split (e :: es)) f
 			end
-		| S.SEdata (DataFrag.Ebinop (bo,e1,e2)) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
+		| S.SEdata (S.Ebinop (bo,e1,e2)) => merge2 (split e1, split e2) (fn (a,b) => Ebinop(bo,a,b))
 		| S.Flet (e1,(x, e2)) => merge2 (split e1, split e2) (fn (a,b) => Elet(a,(convertMonoPattern x,b)))
 		| S.Froll (_,e) => merge1 (split e) roll
 		| S.Funroll e => merge1 (split e) Eunroll
 		| S.Ffix (_,_,(x,e)) => merge1 (split e) (fn r => Efix ((),(),(convertMonoPattern x,r)))
-		| S.SEdata (DataFrag.Eerror t) => NoPrec2 (Eerror ())
+		| S.SEdata (S.Eerror t) => NoPrec2 (Eerror ())
 		)
 	end
   | stageSplit2 gamma (L12stage (E2prev e)) = 

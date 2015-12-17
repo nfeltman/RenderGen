@@ -17,7 +17,7 @@ val Vprim = V o VFprim
 val Vinj = V o VFinj
 val Vroll = V o VFroll
 val Vtuple = V o VFtuple
-fun Ftuple x = SEprod ` BranchlessFrag.Etuple x
+fun Ftuple x = SEprod ` Etuple x
 
 in
 

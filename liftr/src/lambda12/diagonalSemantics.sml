@@ -73,7 +73,7 @@ fun eval1 env (L12core exp) =
 	in
 		case exp of 
 		  Fvar v => (id, Contexts1.C1.lookup env v)
-		| SEdata (DataFrag.EprimVal pv) => (id, V ` VFprim pv)
+		| SEdata (EprimVal pv) => (id, V ` VFprim pv)
 		| Flam (_, b) => (id, V ` VFlam (fn v => evalBranchClean v b))
 		| Fapp (e1,e2) => 
 			let 
@@ -82,23 +82,23 @@ fun eval1 env (L12core exp) =
 			in
 				comp1 (g1 o g2) (f v)
 			end
-		| SEprod (BranchlessFrag.Etuple es) => map2 (V o VFtuple) (List.foldr (fn ((g,v),(gs,vs))=>(g o gs,v::vs)) (id,[]) (map eval es))
-		| SEprod (BranchlessFrag.Epi (i, e)) => (case eval e of (g,v) => (g, List.nth(untuple ` unV v,i)))
-		| SEdata (DataFrag.Einj (ts, _, e)) => map2 (fn x => V ` VFinj (length ts,x)) (eval e)
-		| SEdata (DataFrag.Ecase (e, bs)) => 
+		| SEprod (Etuple es) => map2 (V o VFtuple) (List.foldr (fn ((g,v),(gs,vs))=>(g o gs,v::vs)) (id,[]) (map eval es))
+		| SEprod (Epi (i, e)) => (case eval e of (g,v) => (g, List.nth(untuple ` unV v,i)))
+		| SEdata (Einj (ts, _, e)) => map2 (fn x => V ` VFinj (length ts,x)) (eval e)
+		| SEdata (Ecase (e, bs)) => 
 			let
 				val (g,(i,v)) = map2 (uninj o unV) (eval e)
 			in
 				evalBranch env (g,v) ` List.nth (bs,i)
 			end
-		| SEdata (DataFrag.Eif (e1, e2, e3)) => 
+		| SEdata (Eif (e1, e2, e3)) => 
 			let
 				val (g,b) = map2 (Prims.unbool o unprimV o unV) (eval e1)
 			in
 				comp1 g ` eval (if b then e2 else e3)
 			end
 		| Flet (e,b) => evalBranch env (eval e) b
-		| SEdata (DataFrag.Ebinop (bo,e1,e2)) => 
+		| SEdata (Ebinop (bo,e1,e2)) => 
 			let
 				val (g1,v1) = eval e1
 				val (g2,v2) = eval e2
@@ -113,7 +113,7 @@ fun eval1 env (L12core exp) =
 				(id, V ` VFlam f)
 			end
 		| Funroll e => map2 (unroll o unV) (eval e)
-		| SEdata (DataFrag.Eerror _) => raise Stuck
+		| SEdata (Eerror _) => raise Stuck
 	end
   | eval1 env (L12stage expr) = 
   	case expr of
@@ -128,7 +128,7 @@ fun eval1 env (L12core exp) =
 			val (g,v) = eval1 env e
 			val y = Variable.newvar "y" 
 		in
-			(fn r=> g ` E ` Flet (E ` SEdata ` DataFrag.EprimVal ` unprimV ` unVM ` unmono v, (P (Pvar y), r)), V1hat y)
+			(fn r=> g ` E ` Flet (E ` SEdata ` EprimVal ` unprimV ` unVM ` unmono v, (P (Pvar y), r)), V1hat y)
 		end
 	| E1mono e => (id, V1mono ` evalM env e)
 	| E1pushPrim e => map2 (V1 o VFprim o unprimV o unVM o unmono) (eval1 env e)

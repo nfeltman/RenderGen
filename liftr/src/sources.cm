@@ -6,8 +6,6 @@ Group is
 	  common/variable.sml
 	  common/context.sml
 	  (*corelang/fragment.sml*)
-	  corelang/products.sml
-	  corelang/dataFragment.sml
 	  corelang/prim.sml
 	  corelang/sourceLang.sml
 	  corelang/coreTypes.sml
