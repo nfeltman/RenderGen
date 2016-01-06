@@ -61,14 +61,14 @@ content, much like the type system of \lang\
 (though this correspondence is less clear without our addition of 
 \bbonep\ and $\curr$).
 
-However unlike splitting, where the goal is to emit code where first stage results
-are computed once and then reused in multiple invocations of second
-stage execution, the second (dynamic) function produced by binding time separation
+However unlike splitting, where the goal is to emit code where first-stage results
+are computed once and then reused in multiple invocations of second-stage execution, 
+the second (dynamic) function produced by binding time separation
 does not use the results of the first; instead,
 %only serves as a preprocessing step for the subsequent
 %specialization phase of partial evaluation.
-it has access to the first stage inputs and recomputes all required
-first stage computations. As noted by Knoblock and
+it has access to the first-stage inputs and recomputes all required
+first-stage computations. As noted by Knoblock and
 Ruf\,\cite{knoblock96}, it may be possible to modify the program
 bifurcation algorithm to cache and reuse the intermediate results, but
 this was never attempted.

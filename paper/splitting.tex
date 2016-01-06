@@ -199,7 +199,7 @@ namely the immediate value $i$.
 that immediate value must be exactly identical on both sides of the step.
 
 The correctness of \bbonem\ term splitting with respect to hoisting steps is given in \ref{lem:hoistCorrect}.
-Because hoisting steps are nothing but rearrangement of second stage code,
+Because hoisting steps are nothing but rearrangement of second-stage code,
 this lemma can use the strong requirement of identical combined terms.
 
 \begin{lemma} [Hoisting Step Correctness]
@@ -330,9 +330,9 @@ allowing splitting to avoid generating the resumer \texttt{part2}
 and calling it from \texttt{qs2}.
 
 Since direct staged term evaluation (\ref{sec:semantics})
-reduces all first stage terms to value forms without any remaining stage two work,
+reduces all first-stage terms to value forms without any remaining stage two work,
 the distinction between \bbonem\ and \bbonep\ is unnecessary.
-In contrast, when performing program transformations before the first stage inputs are known,
+In contrast, when performing program transformations before the first-stage inputs are known,
 it is valuable to form a clear distinction between ground and mixed terms.
 This was similarly observed in prior work seeking to implement self-applicable partial evaluators\,\cite{Mogensen89a,Mogensen89b}.
 While this paper assumes that ground annotations already exist in the input,

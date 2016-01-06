@@ -123,8 +123,8 @@ to indicate a \emph{shallow} evaluation context which looks a single level deep.
 \paragraph{World \bbtwo.} Steps at world \bbtwo\ are given by the judgment \mbox{$\steptwo e {e'}$}.
 Since first pass evaluation should not reduce stage two terms, this judgment does nothing but traverse $e$ to find {\tt prev} blocks, under which it performs in-place reductions.
 A world \bbtwo\ term is done evaluating when it has the form $\exv q$, where $q$ is a residual. 
-To be a residual, a term must have no first stage subterms (equivalently, no {\tt prev}s), even within the body of a function or branches of a case.
-This implies that $\stepsym \bbtwo$ must proceed underneath second stage binders.
+To be a residual, a term must have no first-stage subterms (equivalently, no {\tt prev}s), even within the body of a function or branches of a case.
+This implies that $\stepsym \bbtwo$ must proceed underneath second-stage binders.
 
 \paragraph{World \bbonep.} Since the ground fragment of the language is not dependent on other worlds, the semantics of ground is just that of a monostage language.
 Thus, $\steppure e {e'}$ traverses into subterms to find the left-most unevaluated code where it performs a reduction. 
@@ -175,7 +175,7 @@ all cross-stage communication.
 
 The statics and dynamics of \lang\ are related by the type safety theorems below, again annotated by world.
 In all cases, $\Gamma$ may be any list of variable bindings at world \bbtwo,
-representing the second stage binders under which we are evaluating.
+representing the second-stage binders under which we are evaluating.
 Note how the progress theorem for world \bbonem\ states that every well-typed term must take 
 either a standard step or a hoisting step.
 \begin{abstrsyn}
