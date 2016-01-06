@@ -7,13 +7,14 @@
 
 We express two-stage programs as terms in \lang, a typed, modal lambda calculus. 
 Although \lang\ describes computations that occur in two stages,
-we find it helpful for the specification of splitting to differentiate terms into three \emph{worlds}.
+we find it helpful for the specification of splitting to codify terms using one of three \emph{worlds}.
 A world is essentially a slightly finer classification than a stage.
 Whereas there is only one world, \bbtwo, for second-stage computations,
 there are two worlds corresponding to the first stage:
 \bbonem\ for \emph{mixed} first-stage computations, which may contain second-stage subterms within {\tt next} blocks,
 and \bbonep\ for \emph{ground} first-stage computations, which may not.
-The distinction between these two first-stage worlds is necessary for an efficient splitting algorithm
+The distinction between these two first-stage worlds is necessary 
+for the splitting algorithm to produce efficient outputs
 and will be discussed in \ref{sec:needGround}.
 
 The abstract syntax of \lang\ is presented as a grammar in \ref{fig:grammar}.  
@@ -46,7 +47,7 @@ These ``standard'' features can only be constructed from subterms of the same wo
 and variables can only be used at the same world where they were introduced.
 Thus differing worlds (and hence, differing stages of computation) only interact by means
 of the $\fut$ and $\curr$ type formers.  These modalities are internalizations
-of typing at worlds \bbtwo\ and \bbonep, respectively, to typing at \bbonem.
+of worlds \bbtwo\ and \bbonep, respectively, to types at world \bbonem.
 
 At the term level, {\tt next} blocks can be used to form future computations:
 given a term $e$ of type $A$ at world \bbtwo, $\next{e}$ has type $\fut A$ at \bbonem. 
@@ -165,7 +166,8 @@ Otherwise, the semantics would need a mechanism to accumulate the bindings that 
 Consider the following example, where {\tt P} has type $\curr(\rmunit + \rmunit)$,\begin{lstlisting}
            1`caseg P of _ => next{`2`0`1`} | _ => next{`2`literalone`1`}`
 \end{lstlisting}
-Depending on what {\tt P} evaluates to in the first stage, whole term will step to either {\tt next\{0\}} or {\tt next\{1\}}.
+Depending on what {\tt P} evaluates to in the first stage, 
+the whole term will step to either {\tt next\{0\}} or {\tt next\{1\}}.
 In this sense, we can see {\tt case} (at world \bbonem) and {\tt caseg} as the constructs that facilitate
 all cross-stage communication.
 

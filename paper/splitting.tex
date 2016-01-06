@@ -65,7 +65,7 @@ the second pass, we say $p$ is a {\em precomputation} that produces a
 Splitting a partial value $v$, via $\vsplito$, yields $\mval i q$.
 Since partial values, by definition, have no remaining work in the first pass
 and since transfer of information between the stages occurs in the first pass of evalution,
-we know that the second stage components of $v$ can no longer depend on its first stage components.
+we know that the second-stage components of $v$ can no longer depend on its first-stage components.
 Analogously, this must also hold for the output of splitting, 
 which is why $q$---unlike the resumer of world \bbtwo\ term splitting---is not open on a variable.
 Thus, $i$ and $q$ are operationally independent, but they represent the complementary portions of $v$ that are relevant to each stage.
@@ -353,7 +353,7 @@ This structure can be described with a type; for instance, the staged quickselec
 Indeed, for most of our examples in \ref{sec:examples}, inferring this type is straight-forward. 
 However, we do not yet have a formal characterization of these boundary types that is defined for all \lang\ programs,
 though we plan to pursue this in future work.
-\footnote{Observe that in the outputs of splitting we could have ommitted the {\tt roll} tag from functions or 
+\footnote{Observe that in the outputs of splitting we could have omitted the {\tt roll} tag from functions or 
 replaced $\inl a$ and $\inr b$ with $\tup {0,a}$ and $\tup {1,b}$, and the proof of correctness would still have gone through.
 We chose the tags, however, in order to keep the typed interpretation more natural, even in absence of a formal result.
 }
