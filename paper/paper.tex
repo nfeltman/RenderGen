@@ -32,10 +32,6 @@
 \captionsetup[subfigure]{subrefformat=simple,labelformat=simple}
 \renewcommand\thesubfigure{(\alph{subfigure})}
 
-\titlespacing*{\paragraph}{0pt}{0.5\baselineskip}{1em}
-\titlespacing*{\section}{0pt}{\baselineskip}{0.5\baselineskip}
-\titlespacing*{\subsection}{0pt}{0.75\baselineskip}{0.3\baselineskip}
-
 %\newtheorem{theorem}{Theorem}[section]
 %\newtheorem{theorem*}{Theorem}
 %\newtheorem{lemma}[theorem]{Lemma}
@@ -43,7 +39,6 @@
 %\newtheorem{remark}[theorem]{Remark}
 
 \input{macros}
-\input{macros-ref}
 %\input{remarks}
 
 \DeclareMathSymbol{\Gamma}{\mathalpha}{operators}{0}
@@ -86,6 +81,7 @@
 
 %\doi{nnnnnnn.nnnnnnn}
 
+%
 % Uncomment one of the following two, if you are not going for the 
 % traditional copyright transfer agreement.
 
@@ -100,7 +96,19 @@
 %\preprintfooter{short description of paper}   % 'preprint' option specified.
 
 \title{Automatically Splitting a Two-Stage Lambda Calculus}
-\subtitle{}
+%
+\titlerunning{Automatic Splitting} 
+%
+\author{Nicolas Feltman\inst{1} \and Carlo Angiuli\inst{1}
+\and Umut Acar\inst{1,2} \and Kayvon Fatahalian\inst{1}}
+%
+\authorrunning{Feltman et al.} % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+\tocauthor{Nicolas Feltman, Carlo Angiuli, Umut Acar, and Kayvon Fatahalian}
+%
+\institute{Carnegie Mellon University \and Inria Paris-Rocquencourt}
+
 
 
 \maketitle
