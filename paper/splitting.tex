@@ -87,7 +87,7 @@ That is, $[b/l]r$ (the \emph{applied resumer}) should be equivalent
 to the residual $q$ produced by direct evaluation, $e \stepsym \bbtwo \cdots \stepsym \bbtwo \exv q$.
 This condition is stated more precisely as \ref{thm:allCorrect},
 where ``$\reduce e v$'' indicates standard monostage reduction of the term $e$ to the value $v$,
-and ``$\equiv$'' indicates a monostage equivalence, which we cover later.
+and ``$\equiv$'' indicates a monostage equivalence, which is defined in \ref{fig:equiv}.
 
 \begin{theorem} [End-to-End Correctness]
 \label{thm:allCorrect}
@@ -187,6 +187,13 @@ such as injection tags.
 % However, the tags of injections and rolls are replicated only in the immediate value, 
 % since they represent first-stage information.
 
+
+\end{abstrsyn}
+
+\input{figures/splitting-values}
+
+\begin{abstrsyn}
+
 \subsection{World \bbonem\ Term Splitting}
 
 The correctness of \bbonem\ term splitting with respect to a $\stepsym \bbonem$ step is given in \ref{lem:stepCorrect}.
@@ -210,11 +217,17 @@ then $c = c'$,
 and $l.r \equiv l'.\letin y q {r'}$.
 \end{lemma}
 
+\end{abstrsyn}
+
+\input{figures/splitting-term}
+\input{figures/splitting-misc}
+
+\begin{abstrsyn}
+
 \subsection{Example Cases}
 
 In this section, we consider a few exemplar cases 
 from the proof of \ref{lem:stepCorrect}.
-The equivalence relation ``$\equiv$'' is defined in \ref{fig:equiv}.
 
 \paragraph{Reduction of {\tt pi1}.}
 Define 
@@ -285,12 +298,6 @@ Inversion of the step and reduction yield \mbox{$\steppure e {e'}$} and $\reduce
 As a simple property of monostage reduction (which $\stepsym \bbonep$ is), we know $\reduce e i$.
 From here, we can derive $\reduce {\tup {e,\exv {\tup{}}}} {\tup{i,\tup{}}}$ and $\exv{\tup {}} \equiv \exv{\tup {}}$ directly.
 
-\end{abstrsyn}
-
-\input{figures/splitting-term}
-\input{figures/splitting-misc}
-
-\begin{abstrsyn}
 \subsection {Role of World \bbonep}
 \label{sec:needGround}
 
