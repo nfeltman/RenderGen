@@ -11,10 +11,11 @@ fun @$F(x, y_1, y_2 \ldots, y_m)$@ =
   @$f(x, y_1);  f(x, y_2); \ldots; f(x, y_m)$@
 \end{lstlisting}
 %
-In this scenario, a multivariate function is applied many times with
-one argument fixed, so it is advantageous to find the computations in
-$f$ that depend on $x$ and then stage program execution so they are
-performed only once at the beginning of execution.
+Observe that this would be wasteful if $f(x,y_i)$ does a significant 
+amount of work that does not depend on $y_i$.
+In such a case, it would be advantageous to find the computations in
+$f$ that depend only on $x$ and then stage execution of $f$ so they are
+performed only once at the beginning of $F$.
 
 %Programs featuring this structure are particularly important in real-time
 %computer graphics; in fact, modern graphics architectures \emph{require} that
@@ -57,7 +58,7 @@ as
 fun @$F_v(y_1, y_2, \ldots, y_m)$@ = 
   @$f_v(y_1);  f_v(y_2); \ldots; f_v(y_m)$@.
 \end{lstlisting}
-eliminating the need to compute $m$ times those parts of $f(v,-)$
+This eliminates the need to compute $m$ times those parts of $f(v,-)$
 which do not depend on the second argument.
 
 Closely related to partial evaluation is {\em metaprogramming}, where

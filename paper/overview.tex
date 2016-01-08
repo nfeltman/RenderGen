@@ -7,17 +7,17 @@
 
 Suppose that we wish to perform a series of order statistics queries
 on a list~\texttt{l}. To this end, we can use the quickselect
-algorithm~\cite{Hoare:1961}, which given a list~\texttt{l} and a rank
-\texttt{k}, returns the element of \texttt{l} with rank \texttt{k}.
+algorithm~\cite{Hoare:1961}, which given a list~\texttt{l} and an integer
+\texttt{k}, returns the element of \texttt{l} with rank \texttt{k} (i.e. the $k$th-largest element).
 As implemented in an ML-like language in \ref{fig:qs-unstaged},
 \texttt{qs} partitions \texttt{l} using the first element as
 a pivot and then recurs on one of the two resulting sides, depending on
 the relationship of \texttt{k} to the size \texttt{i} of the first half, in
 order to find the desired element.  
 If the index is out of range, a default value of \texttt{0} is returned.
-Assuming that the input is uniformly
-randomly ordered (which can be achieved by pre-permuting the input), \texttt{qs}
-runs in expected $O(n)$ time.
+Assuming that the input list, with size $n$, is uniformly
+randomly ordered (which can be achieved by pre-permuting it), \texttt{qs}
+runs in expected $\Theta(n)$ time.
 %
 Using \texttt{qs}, we can perform $m$ different order statistics queries with
 ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
@@ -26,7 +26,7 @@ ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
 (qs l k1, qs l k2, ..., qs l km)
 \end{lstlisting}
 %
-Unfortunately, this approach requires $O(n \cdot m)$ time.
+Unfortunately, this approach requires $\Theta(n \cdot m)$ time.
 
 We can attempt to improve on this algorithm by factoring out computations shared
 between these calls to \texttt{qs}. In particular, the comparisons performed by
@@ -34,16 +34,17 @@ between these calls to \texttt{qs}. In particular, the comparisons performed by
 \texttt{part} are made by each call to \texttt{qs}.
 
 A first cut at a solution might be to first sort \texttt{l} into
-\texttt{s} and then perform lookups in \texttt{s}.
-Unfortunately, lookups in \texttt{s} are also $O(n)$ on average, since
+a sorted list \texttt{s} and then perform lookups in \texttt{s}.
+Unfortunately, lookups in \texttt{s} are also $\Theta(n)$ on average, since
 \texttt{s} is a list, leading to no improvement in efficiency.  
 
 A more sophisticated solution is to construct a binary search
 tree out of \texttt{l} and then simply look for the \texttt{k}th
 leftmost element of that tree. To do this efficiently requires one more
 innovation---augmenting the tree by storing at each node the size of its left
-subtree. For a sufficiently balanced tree, this approach has 
-(expected) runtime $\Theta(n\log{n} + m\log{n})$, 
+subtree. For a sufficiently balanced tree, 
+which one would get with a random choice of pivot, this approach has 
+expected runtime $\Theta(n\log{n} + m\log{n})$, 
 a nearly linear-time improvement in $m$.
 
 In both cases, we replace our simple solution with a two-part algorithm which
