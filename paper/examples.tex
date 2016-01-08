@@ -170,14 +170,14 @@ of the code; ordinarily, the quickselect algorithm only explores a single
 branch, but the staging annotations force the entire tree to be built.
 
 This is an instance where stage-splitting is more practical than partial
-evaluation---if $l$ is large, partially evaluating \texttt{quickselect} requires
+evaluation; if $l$ is large, partially evaluating \texttt{quickselect} requires
 runtime generation of a huge amount of code simultaneously encoding the tree and
 traversal algorithm. (Avoiding the code blowup by not expanding some calls to
 \texttt{part}, would result in duplicating first-stage computations.)
 
 Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
 \texttt{qs2} performs expected $\Theta(\log n)$ work.  This results in a net
-speedup over standard quickselect if we perform $\Omega(n / \log n)$ queries on
+speedup over standard quickselect if we perform $\omega(\log n)$ queries on
 the same list. 
 
 Note that the recursive \texttt{part} function is defined within a \texttt{gr}

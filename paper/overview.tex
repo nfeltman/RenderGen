@@ -29,33 +29,36 @@ ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
 Unfortunately, this approach requires $\Theta(n \cdot m)$ time.
 
 We can attempt to improve on this algorithm by factoring out computations shared
-between these calls to \texttt{qs}. In particular, the comparisons performed by
-\texttt{part} depend only on \texttt{l}, although different calls to
-\texttt{part} are made by each call to \texttt{qs}.
-
+between these calls to \texttt{qs}, 
+namely the parts that depend only on \texttt{l}.
 A first cut at a solution might be to first sort \texttt{l} into
-a sorted list \texttt{s} and then perform lookups in \texttt{s}.
-Unfortunately, lookups in \texttt{s} are also $\Theta(n)$ on average, since
-\texttt{s} is a list, leading to no improvement in efficiency.  
+a sorted list \texttt{s}, at cost $\Theta(n \log n)$, and then perform lookups in \texttt{s}.
+Unfortunately, lookups in \texttt{s} are $\Theta(n)$ on average, 
+since \texttt{s} is a list.
+Thus, the total cost is $\Theta(n \log n + mn)$, which is no improvement.  
 
 A more sophisticated solution is to construct a binary search
-tree out of \texttt{l} and then simply look for the \texttt{k}th
-leftmost element of that tree. To do this efficiently requires one more
-innovation---augmenting the tree by storing at each node the size of its left
-subtree. For a sufficiently balanced tree, 
-which one would get with a random choice of pivot, this approach has 
-expected runtime $\Theta(n\log{n} + m\log{n})$, 
-a nearly linear-time improvement in $m$.
+tree out of \texttt{l}, again at cost $\Theta(n\log{n})$, and then simply look for the \texttt{k}th
+leftmost element of that tree. 
+Doing lookups efficiently, in $\Theta(\log{n})$ time, 
+requires one more innovation---augmenting the tree 
+by storing at each node the size of its left subtree. 
+Thus in total this approach has expected runtime $\Theta(n\log{n} + m\log{n})$.
 
-In both cases, we replace our simple solution with a two-part algorithm which
-first processes the input into a lookup data structure, and then subsequently
-performs fast lookups. Improving algorithms in this way is highly non-trivial,
-as it requires reasoning about intricate algorithmic concerns, and implementing
-more complex algorithms and data structures.  
+Is this method, wherein we precompute a data structure, better than the direct $\Theta(mn)$ method from above? 
+The answer depends on the relationship between the number of lookups $m$ and the size of the list $n$.
+If $m$ is constant, then the direct method is superior for sufficiently large $n$.
+This is because the precomputed method does unnecessary work 
+sorting parts of the list where there are no query points.
+However, if the number of queries grows with the size of the list, 
+specficially in $\omega(\log n)$,
+then the precomputed method will be asymptotically faster.
 
-In this paper, we present a splitting algorithm which automatically transforms
-staged programs into multi-part programs. In certain cases, this algorithm even
-improves input algorithms in the way described above!
+Rewriting algorithms in this way---to 
+precompute some intermediate results that depend on constant (or slowly-varying) inputs---is 
+highly non-trivial,
+as it requires implementing more complex data structures and algorithms.  
+In this paper, we present a splitting algorithm which does much of this task automatically.
 
 \subsection{Staging}
 
