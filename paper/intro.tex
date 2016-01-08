@@ -11,7 +11,7 @@ fun @$F(x, y_1, y_2 \ldots, y_m)$@ =
   @$f(x, y_1);  f(x, y_2); \ldots; f(x, y_m)$@
 \end{lstlisting}
 %
-Observe that this would be wasteful if $f(x,y_i)$ does a significant 
+Observe that this implementation would be wasteful if $f(x,y_i)$ does a significant 
 amount of work that does not depend on $y_i$.
 In such a case, it would be advantageous to find the computations in
 $f$ that depend only on $x$ and then stage execution of $f$ so they are

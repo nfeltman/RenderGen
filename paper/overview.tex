@@ -29,23 +29,16 @@ ranks $\mathtt{k1},\dots,\mathtt{km}$ as follows:
 Unfortunately, this approach requires $\Theta(n \cdot m)$ time.
 
 We can attempt to improve on this algorithm by factoring out computations shared
-between these calls to \texttt{qs}, 
-namely the parts that depend only on \texttt{l}.
-A first cut at a solution might be to first sort \texttt{l} into
-a sorted list \texttt{s}, at cost $\Theta(n \log n)$, and then perform lookups in \texttt{s}.
-Unfortunately, lookups in \texttt{s} are $\Theta(n)$ on average, 
-since \texttt{s} is a list.
-Thus, the total cost is $\Theta(n \log n + mn)$, which is no improvement.  
-
-A more sophisticated solution is to construct a binary search
-tree out of \texttt{l}, again at cost $\Theta(n\log{n})$, and then simply look for the \texttt{k}th
+between these calls to \texttt{qs}.
+In particular, we can construct a binary search
+tree out of \texttt{l}, at cost $\Theta(n\log{n})$, and then simply look for the \texttt{k}th
 leftmost element of that tree. 
 Doing lookups efficiently, in $\Theta(\log{n})$ time, 
 requires one more innovation---augmenting the tree 
 by storing at each node the size of its left subtree. 
 Thus in total this approach has expected runtime $\Theta(n\log{n} + m\log{n})$.
 
-Is this method, wherein we precompute a data structure, better than the direct $\Theta(mn)$ method from above? 
+Is this method, wherein we precompute a data structure, better than the direct $\Theta(mn)$ method? 
 The answer depends on the relationship between the number of lookups $m$ and the size of the list $n$.
 If $m$ is constant, then the direct method is superior for sufficiently large $n$.
 This is because the precomputed method does unnecessary work 
@@ -55,8 +48,7 @@ specficially in $\omega(\log n)$,
 then the precomputed method will be asymptotically faster.
 
 Rewriting algorithms in this way---to 
-precompute some intermediate results that depend on constant (or slowly-varying) inputs---is 
-highly non-trivial,
+precompute some intermediate results that depend on constant (or infrequently-varying) inputs---is non-trivial,
 as it requires implementing more complex data structures and algorithms.  
 In this paper, we present a splitting algorithm which does much of this task automatically.
 
@@ -129,7 +121,7 @@ recursive calls, tagged by the branch (\texttt{LT}, \texttt{EQ}, or \texttt{GT})
 in which that call occurred. Since the recursive calls occur in two different
 branches (\texttt{LT} and \texttt{GT}) the boundary structure is a binary tree.  
 %
-Lastly, it records \texttt{i} (the size of the left subtree) and \texttt{\#1 ht}
+Lastly, it records~\texttt{i} (the size of the left subtree) and \texttt{\#1 ht}
 (the pivot/head of the list) in the boundary structure, because those
 computations are \emph{held} for use in the second stage.
 %
