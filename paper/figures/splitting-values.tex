@@ -1,0 +1,23 @@
+%!TEX root = ../paper.tex
+\begin{abstrsyn}
+\begin{figure}[t]
+\begin{mathpar}
+\infer {x 					\vsplito \mval x x}														{\cdot}												\and
+\infer {\tup{} 				\vsplito \mval {\tup{}} {\tup{}}}										{\cdot}												\and
+\infer {\pure m 			\vsplito \mval m {\tup{}}}												{\cdot}												\and
+\infer {\next y 			\vsplito \mval {\tup{}} y}												{\cdot}												\and
+\infer {\tup{v_1,v_2} 		\vsplito \mval {\tup{i_1,i_2}} {\tup{q_1,q_2}}}							{v_1 \vsplito \mval {i_1} {q_1} 
+																									&v_2 \vsplito \mval {i_2} {q_2}}					\and
+\infer {\scont v 			\vsplito \mval {\scont i} q}											{v \vsplito \mval i q
+																									& \scont \dash \in \{ 
+																										\inl \dash , 
+																										\inr \dash,
+																										\roll \dash 
+																									\}}								\and
+\infer {\fix f x e			\vsplito \mval {\fix f x {\letin {\tup{x,y}} c {\tup{x,\roll y}}}} 
+							{\fix f {\tup{x,\roll l}} r}}											{\splitone e A c {l.r}}								\and
+\end{mathpar}
+\caption{Partial value splitting rules.}
+\label{fig:valueSplit}
+\end{figure}
+\end{abstrsyn}
