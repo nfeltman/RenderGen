@@ -210,20 +210,15 @@ evaluate the program:
 \begin{lstlisting}
 2`prev{`1`f a`2`} b`
 \end{lstlisting}
-
 Moreover, the reuse of first-stage computations across
 multiple second-stage computations can even be encoded within \lang. 
 The following program runs many order statistics queries
 $\texttt{k1},\dots,\texttt{km}$ on the same list:
 \begin{lstlisting}
 2`prev{`1` let val list = `3`gr{`1`[7,4,2,5,9,...,3]`3`}`1` in 
-next{ `2`let fun qs k = prev{`1`qss (list,next{`2`k`1`})2`}`
-      2`in (qs k1,...,qs km)`1`}`2`}`
+next{ `2`let fun lookup k = prev{`1`qss (list,next{`2`k`1`})2`}`
+      2`in (lookup k1,...,lookup km)`1`}`2`}`
 \end{lstlisting}
-To see that the partial application of \texttt{qss} is only evaluated once,
-observe that after the first stage of evaluation, the residual has the form:
-\begin{lstlisting}
-2`let fun qs k = (let val y = ... in y)
-2`in (qs k1,...,qs km)`
-\end{lstlisting}
-where $y$ is bound to a large nest of case statements open on $k$.
+Observe that this code evaluates \texttt{qss} only once
+and subsitutes its result into the body of the function \texttt{lookup},
+which is then called many times in the second stage.

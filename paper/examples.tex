@@ -32,7 +32,6 @@ computation; and the second stage to take the final coordinates and the result
 of the first stage, then multiply and add.
 
 Our algorithm splits \texttt{dot} into the two functions:
-%
 \begin{lstlisting} 
 1`fun dot1 ((x1,y1,()), (x2,y2,()))    = ((), (x1*x2)+(y1*y2))`
 2`fun dot2 ((((),(),z1),((),(),z2)),l) = l+(z1*z2)`
@@ -52,12 +51,9 @@ and $b$ is known at the second stage.
 %
 \begin{lstlisting} 
 1`fun exp (next{`2`b`1`} : $`2`int`1` , `3`gr{`1`e`3`}`1` : ^int) = 
-  if `3`gr{`1`e == 0`3`}`1` then 
-    next{`2`literalone`1`}
-  else if `3`gr{`1`(e mod 2) == 0`3`}`1` then
-    exp(next{`2`b*b`1`},`3`gr{`1`e/literaltwo`3`}`1`)
-  else 
-    next{`2`b * prev{`1`exp(next{`2`b*b`1`},`3`gr{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
+ if      `3`gr{`1`e == 0`3`}`1`       then next{`2`literalone`1`}
+ else if `3`gr{`1`e mod 2 == 0`3`}`1` then exp(next{`2`b*b`1`},`3`gr{`1`e/literaltwo`3`}`1`)
+ else                     next{`2`b*prev{`1`exp(next{`2`b*b`1`},`3`gr{`1`(e-1)/literaltwo`3`}`1`)`2`}`1`}`
 \end{lstlisting}
 %
 Because \texttt{exp} is a recursive function whose conditionals test the parity
@@ -74,12 +70,9 @@ datatype binnat = Zero
                 | Odd of binnat
 
 1`fun exp1 (b : unit, e : int) =
-  if e==0 then
-    ((), Zero)
-  else if (e mod 2)==0 then 
-    ((), Even (#2 (exp1 ((), e/2))))
-  else 
-    ((), Odd (#2 (exp1 ((), (e-1)/2))))`
+  if      e == 0       then ((), Zero)
+  else if e mod 2 == 0 then ((), Even (#2 (exp1 ((), e/2))))
+  else                      ((), Odd  (#2 (exp1 ((), (e-1)/2))))`
 
 2`fun exp2 ((b : int, e : unit), l : binnat) =
     case l of
@@ -172,7 +165,7 @@ branch, but the staging annotations force the entire tree to be built.
 This is an instance where stage-splitting is more practical than partial
 evaluation; if $l$ is large, partially evaluating \texttt{quickselect} requires
 runtime generation of a huge amount of code simultaneously encoding the tree and
-traversal algorithm. (Avoiding the code blowup by not expanding some calls to
+traversal algorithm. (Avoiding the code blowup, by not expanding some calls to
 \texttt{part}, would result in duplicating first-stage computations.)
 
 Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
@@ -186,58 +179,93 @@ at \bbonem\ would cause it to split in a way that incurs extra cost at the secon
 In this case, that cost would be $\Theta(n)$ in the size of the input list,
 enough to overpower the asymptotic speedup gained elsewhere.
 With \texttt{gr} annotations, however, this can be prevented.
+%
 
-To run many order statistics queries $\texttt{k1},\dots,\texttt{km}$ on the same
-list, use \texttt{qs1} to compute the boundary tree in the first pass, and in
-the second pass, evaluate \texttt{qs2} on that tree and each rank.
-\begin{lstlisting}
-1`let val (_,t) = qs1 ([7,4,2,5,9,...,3],())
-in `2`(qs2 (((),k1),1`t`),...,qs2 (((),km),1`t`))`
+\subsection {Mixed Map Combinator}
+
+[working on this section!]
+
+In \ref{sec:exampleQS}, we showed the output of splitting quickselect
+applied to one list and $m$ queries.  Here, we generalize to mapping
+quickselect onto a list of queries. Note that we have to define a
+datatype for integer lists at the second stage, which is given by
+\texttt{list2}.
+\begin{lstlisting} 
+1`atsignnext{`2`
+  datatype list2 = Empty2 | Cons2 of int * list2
+`1`}
+
+map : (^list * $`2`int`1` -> $`2`int`1`)
+      -> ^list * $`2`list2`1` -> $`2`list2`1`
+fun map f (l, q) = next {`2`
+  let 
+  fun m Empty2 = Empty2
+    | m (Cons2(h,t)) =
+                    Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
+  in m prev{`1`q`2`}`1`}
+
+val mapqss = map qss`
+\end{lstlisting}
+The \texttt{map} function splits into the following two functions:
+\begin{lstlisting} 
+2`datatype list2 = Empty2 | Cons2 of int * list2
+
+`1`fun map1 f = (fn (l,()) => ((),#2 (f (l,()))),())
+`2`fun map2 (f,()) ((l,q), p : tree) =
+  let 
+  fun m Empty2 = Empty2
+    | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
+  in m q
+
+`1`val (mapqss1,()) = map1 qs1
+`2`val mapqss2 = map2 (qs2, ())`
 \end{lstlisting}
 %
+Indeed, \texttt{qs1}, which is passed to \texttt{map1}, is evaluated only in the
+first pass, whereas \texttt{qs2}, which is passed to \texttt{map2}, is evaluated
+in the second pass, once per query \texttt{k}.
 
 \subsection{Composing Graphics Pipeline Programs}
 \label{sec:graphics}
 
-Programs featuring staged structure are particularly important in
-real-time computer graphics since modern graphics architectures
-\emph{require} that graphics computations be organized into a pipeline
+Composable staged programs are particularly important the domain of real-time graphics.
+This need arises because modern graphics architectures actually
+\emph{require} that graphics computations be structured as a pipeline
 of stages which perform increasingly fine-grained computations (e.g.,
-per object, per screen region, per pixel). Many computations in later
+per-object, per-screen region, per-pixel). Many computations in later
 stages use the results from a single computation in an earlier
 stage\,\cite{OpenGL4Spec}.
 
-While performant, manually partitioning programs by stage results in
-complex code where invariants must hold across different stages, and
+The standard way to program these graphics pipelines is to define one program (usually called a \emph{shader}) per stage.
+In other words, the programmer is expected to manually split their multi-stage programs.
+Yet manually partitioning programs by stage results in
+complex code where invariants must hold across different stages and
 local changes to the logic of one stage may require changes to that of
-upstream stages other stages to ``plumb'' its inputs through the
-pipeline.  Thus, manual separation of programs by stage breaks key
-programming abstractions such as composition and modularity.  Graphics
-researchers therefore have suggested using mixed-staged programs
-\,\cite{Proudfoot:2001,Foley:2011,He:2014} to express logic related to
-a single application concern conveniently as a single staged function
-(referred to as a pipeline program)\,\cite{Foley:2011}.
+upstream stages to communicate required inputs through the pipeline. 
+This harms composition and modularity.  
+Graphics researchers therefore have suggested using mixed-staged programs
+\,\cite{Proudfoot:2001,Foley:2011,He:2014} to express graphics program logic 
+for the entire pipeline as a single staged function\,\cite{Foley:2011}.
 
-Pipeline programs can be directly expressed as staged functions in
-\lang\ with splitting used to generate monostaged code required for
-each graphics pipeline stage. Composition of such functions in
-\lang\ allows more complex pipelines to be expressed in a modular
-programming style that is becoming increasingly desirable as graphics
-programs increase in complexity\,\cite{Foley:2011,He:2014}.
-
-A simple example of composition of staged functions (representing graphics
-pipeline programs) is given below.  The code defines a pipeline as a
-staged function that takes an object definition in the first stage
-(\texttt{obj}) and a pixel coordinate (\texttt{xy}) in the second
-stage and emits the color of the object at the specified pixel. The
-code defines a pipeline combinator \texttt{shade} which modulates the
-results of the object's reflectance at a given pixel with the results
-of a function that computes the object's albedo (surface color).
+As a language, \lang\ is well suited for specification of such functions,
+and we give a simple example below.
+In it, we consider a graphics pipeline program to be a
+staged function that takes an object definition in the first stage (\texttt{object})
+and a pixel coordinate in the second stage ($\fut$\texttt{coord}), 
+and emits the color of the object at the specified pixel ($\fut$\texttt{color}). 
+Given two such multistage functions, we then define a combinator
+that multiplies their results pointwise in the second 
+stage.\footnote{Although this is a general pointwise multiplication combinator, 
+the variable names suggest a possible interpretations of the inputs and output:
+the first input function calculates the albedo of an object (a measure of how much light it reflects),
+the second input calculates the object's incoming light,
+and so the output (the product of these terms) is a function that calculates 
+the outgoing light from an object.}
 %
 \begin{lstlisting} 
 1`datatype object = ...`
 2`atsignnext{  type coord = int * int
-        type color = int        }`
+        type color = ...        }`
 1`type pipeline = object * $`2`coord`1` -> `$2`color`
 
 1`fun shade (refl : pipeline, albedo : pipeline) : pipeline =
@@ -245,6 +273,5 @@ of a function that computes the object's albedo (surface color).
        2`prev{`1`refl (obj,next{2`xy`})`2`} * prev{`1`albedo (obj,next{2`xy`})`2`}`
 \end{lstlisting}
 %
-Whereas prior systems provide combinators like \texttt{par} as
-language features\,\cite{Foley:2011} to support composition, \lang\ is
-powerful enough to define those combinators in-language.
+A key strength of \lang\ is that it allows users to define combinators like this one as higher order functions.
+Prior work\,\cite{Foley:2011} does not support higher order functions.
