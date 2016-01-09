@@ -13,13 +13,12 @@ algorithm does not type its output.
 Our first example, \texttt{dot}, appears in \cite{knoblock96}. \texttt{dot} is a
 first-order, non-recursive function---precisely the sort of code studied in
 prior work on pass separation for imperative languages. \texttt{dot} takes the
-dot product of two three-dimensional integer vectors, where the first two
+dot product of two three-dimensional vectors, where the first two
 coordinates are first-stage, and the last coordinate is second-stage. 
 %
 \begin{lstlisting} 
 1`type vec = ^int * ^int * $`2`int`
-
-1`dot : vec * vec -> $int
+1`// dot : vec * vec -> $int
 fun dot ((3`gr{`1`xliteralone`3`}`1`,`3`gr{`1`yliteralone`3`}`1`,next{`2`zliteralone`1`}),(3`gr{`1`xliteraltwo`3`}`1`,`3`gr{`1`yliteraltwo`3`}`1`,next{`2`zliteraltwo`1`})) = 
   next{ 2`prev{`1`hold `3`gr{`1`(x1*x2) + (y1*y2)`3`}`2`} + (z1*z2)` 1`}`
 \end{lstlisting}
@@ -30,7 +29,6 @@ The body of \texttt{dot} is an \rmint\ term at world \bbtwo\ containing an
 to take the first two coordinates of each vector and perform that first-stage
 computation; and the second stage to take the final coordinates and the result
 of the first stage, then multiply and add.
-
 Our algorithm splits \texttt{dot} into the two functions:
 \begin{lstlisting} 
 1`fun dot1 ((x1,y1,()), (x2,y2,()))    = ((), (x1*x2)+(y1*y2))`
@@ -39,8 +37,8 @@ Our algorithm splits \texttt{dot} into the two functions:
 %
 As expected, \texttt{dot1} returns \texttt{(x1*x2)+(y1*y2)} as the
 precomputation, and \texttt{dot2} adds that precomputation to the products of
-the final coordinates. This is exactly what is done in \cite{knoblock96}, except
-that they write the precomputation into a mutable cache.
+the final coordinates. This is exactly what is done in \cite{knoblock96}, though
+they write the precomputation into a mutable cache.
 
 \subsection{Exponentiation by Squaring}
 
@@ -114,30 +112,24 @@ second-stage.
 Stage-splitting \texttt{qss} produces:
 %
 \begin{lstlisting} 
-datatype tree = Leaf
-              | Branch of int * tree * int * tree
+datatype tree = Leaf | Branch of int * tree * int * tree
 1`datatype list = Empty | Cons of int * list
 
 fun part ((p,l):int*list) : (int*list*list) = 
-  case l of 
-    Empty => (0,Empty, Empty) 
+  case l of Empty => (0,Empty, Empty) 
   | Cons (h,t) => 
       let val (n,left,right) = part (p,t) in 
-      if h<p 
-      then (n+1,Cons(h,left),right) 
-      else (n,left,Cons(h,right))
+      if h<p then (n+1,Cons(h,left),right) 
+             else (n,left,Cons(h,right))
 
 fun qs1 (l : list, k : unit) = 
-  ((), case l of
-    Empty => Leaf
-  | Cons (h,t) => 
-      Branch (
-        let val (n,left,right) = part (h,t) in
-        (n, #2 (qs1 left k), h, #2 (qs1 right k))))`
+  ((), case l of Empty => Leaf
+       | Cons (h,t) => Branch (
+           let val (n,left,right) = part (h,t) in
+           (n, #2 (qs1 left k), h, #2 (qs1 right k))))`
 
 2`fun qs2 (((), k : int), p : tree) = 
-  case p of
-    Leaf => 0
+  case p of Leaf => 0
   | Branch (n,left,h,right) =>
       case compare k n of 
         LT => qs2 (((), k), left) 
@@ -168,62 +160,58 @@ runtime generation of a huge amount of code simultaneously encoding the tree and
 traversal algorithm. (Avoiding the code blowup, by not expanding some calls to
 \texttt{part}, would result in duplicating first-stage computations.)
 
-Thus, \texttt{qs1} performs $\Theta(n \log n)$ work per call, whereas
-\texttt{qs2} performs expected $\Theta(\log n)$ work.  This results in a net
-speedup over standard quickselect if we perform $\omega(\log n)$ queries on
-the same list. 
-
 Note that the recursive \texttt{part} function is defined within a \texttt{gr}
 annotation.  As explained in \ref{sec:needGround}, defining \texttt{part}
 at \bbonem\ would cause it to split in a way that incurs extra cost at the second stage.
 In this case, that cost would be $\Theta(n)$ in the size of the input list,
 enough to overpower the asymptotic speedup gained elsewhere.
 With \texttt{gr} annotations, however, this can be prevented.
-%
 
-\subsection {Mixed Map Combinator}
+As discussed in \ref{sec:overview}, \texttt{qs1} performs $\Theta(n \log n)$ expected work per call, 
+whereas \texttt{qs2} performs $\Theta(\log n)$ expected work.  
+This results in a net speedup over standard quickselect if we 
+perform many (specifically, $\omega(\log n)$) queries on
+the same list---precisely the topic of our next example. 
 
-[working on this section!]
+\subsection {Mixed-Stage Map Combinator}
 
-In \ref{sec:exampleQS}, we showed the output of splitting quickselect
-applied to one list and $m$ queries.  Here, we generalize to mapping
-quickselect onto a list of queries. Note that we have to define a
-datatype for integer lists at the second stage, which is given by
-\texttt{list2}.
+As a lambda calculus, one of the strengths of \lang\ is that it
+can express combinators as higher order functions.
+In this example, we consider just such a combinator: \texttt{tmap},
+which turns a function of type
+$\curr \mathtt{list} * \fut \mathtt{int} \to \fut \mathtt{int}$
+into one of type
+$\curr \mathtt{list} * \fut \mathtt{list2} \to \fut \mathtt{list2}$,
+by mapping over the second argument.\footnote{
+\lang\ doesn't have a way to ``share'' datatype declarations between stages, 
+so we define \texttt{list2} to be a list of integers at the second stage.}
 \begin{lstlisting} 
-1`atsignnext{`2`
-  datatype list2 = Empty2 | Cons2 of int * list2
-`1`}
+1`atsignnext{`2` datatype list2 = Empty2 | Cons2 of int * list2 `1`}
 
-map : (^list * $`2`int`1` -> $`2`int`1`)
-      -> ^list * $`2`list2`1` -> $`2`list2`1`
-fun map f (l, q) = next {`2`
-  let 
-  fun m Empty2 = Empty2
-    | m (Cons2(h,t)) =
-                    Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
-  in m prev{`1`q`2`}`1`}
-
-val mapqss = map qss`
+fun tmap (f : ^list * $`2`int`1` -> $`2`int`1`) (l : ^list, q : $`2`listliteraltwo`1`) = 
+  next{`2` let fun m Empty2       = Empty2
+              | m (Cons2(h,t)) = Cons2(prev{`1`f (l,next{`2`h`1`})`2`}, m t)
+        in m prev{`1`q`2`}`1`}
+val mapqss = tmap qss`
 \end{lstlisting}
-The \texttt{map} function splits into the following two functions:
+Importantly, \texttt{tmap f} performs the first-stage part of \texttt{f} once
+and second-stage part of \texttt{f} many times.
+This was discussed in the context of partial evaluation in \ref{sec:topLevel}, 
+but it is especially clear when we look at the output of splitting:
 \begin{lstlisting} 
-2`datatype list2 = Empty2 | Cons2 of int * list2
+1`fun tmap1 f = (fn (l,()) => ((),#2 (f (l,()))),())
+val (mapqss1,()) = tmap1 qs1
 
-`1`fun map1 f = (fn (l,()) => ((),#2 (f (l,()))),())
-`2`fun map2 (f,()) ((l,q), p : tree) =
-  let 
-  fun m Empty2 = Empty2
-    | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
+`2`datatype list2 = Empty2 | Cons2 of int * list2
+fun tmap2 (f,()) ((l,q), p : tree) =
+  let fun m Empty2 = Empty2
+        | m (Cons2(h,t)) = Cons2(f ((l,h), p), m t) 
   in m q
-
-`1`val (mapqss1,()) = map1 qs1
-`2`val mapqss2 = map2 (qs2, ())`
+val mapqss2 = tmap2 (qs2, ())`
 \end{lstlisting}
 %
-Indeed, \texttt{qs1}, which is passed to \texttt{map1}, is evaluated only in the
-first pass, whereas \texttt{qs2}, which is passed to \texttt{map2}, is evaluated
-in the second pass, once per query \texttt{k}.
+Indeed, observe that the argument \texttt{f} of \texttt{qs1} is called only once,
+whereas the corresponding argument \texttt{f} in \texttt{qs2} is evaluated once per element in \texttt{q}.
 
 \subsection{Composing Graphics Pipeline Programs}
 \label{sec:graphics}
@@ -232,20 +220,20 @@ Composable staged programs are particularly important the domain of real-time gr
 This need arises because modern graphics architectures actually
 \emph{require} that graphics computations be structured as a pipeline
 of stages which perform increasingly fine-grained computations (e.g.,
-per-object, per-screen region, per-pixel). Many computations in later
-stages use the results from a single computation in an earlier
-stage\,\cite{OpenGL4Spec}.
+per-object, per-screen region, per-pixel), where computations in later
+stages use the results of an earlier
+stage multiple times\,\cite{OpenGL4Spec}.
 
-The standard way to program these graphics pipelines is to define one program (usually called a \emph{shader}) per stage.
-In other words, the programmer is expected to manually split their multi-stage programs.
-Yet manually partitioning programs by stage results in
-complex code where invariants must hold across different stages and
-local changes to the logic of one stage may require changes to that of
-upstream stages to communicate required inputs through the pipeline. 
+The standard way to program these graphics pipelines is 
+to define one program (usually called a \emph{shader}) per stage.
+In other words, the programmer is expected to write their 
+multi-stage programs in an already split form.
+This requirement results in complex code where invariants must hold across different stages and
+local changes to the logic of one stage may require changes to that of upstream stages. 
 This harms composition and modularity.  
-Graphics researchers therefore have suggested using mixed-staged programs
-\,\cite{Proudfoot:2001,Foley:2011,He:2014} to express graphics program logic 
-for the entire pipeline as a single staged function\,\cite{Foley:2011}.
+Graphics researchers therefore have suggested using mechanisms like our stages
+\,\cite{Proudfoot:2001,Foley:2011,He:2014} to express graphics program logic,
+including representing entire pipeline as a single multi-stage function\,\cite{Foley:2011}.
 
 As a language, \lang\ is well suited for specification of such functions,
 and we give a simple example below.
@@ -256,7 +244,7 @@ and emits the color of the object at the specified pixel ($\fut$\texttt{color}).
 Given two such multistage functions, we then define a combinator
 that multiplies their results pointwise in the second 
 stage.\footnote{Although this is a general pointwise multiplication combinator, 
-the variable names suggest a possible interpretations of the inputs and output:
+the variable names suggest a possible interpretation of the inputs and output:
 the first input function calculates the albedo of an object (a measure of how much light it reflects),
 the second input calculates the object's incoming light,
 and so the output (the product of these terms) is a function that calculates 
@@ -273,5 +261,5 @@ the outgoing light from an object.}
        2`prev{`1`refl (obj,next{2`xy`})`2`} * prev{`1`albedo (obj,next{2`xy`})`2`}`
 \end{lstlisting}
 %
-A key strength of \lang\ is that it allows users to define combinators like this one as higher order functions.
-Prior work\,\cite{Foley:2011} does not support higher order functions.
+Prior work\,\cite{Foley:2011} lacks the ability to define such combinators,
+because it does not support higher order functions.

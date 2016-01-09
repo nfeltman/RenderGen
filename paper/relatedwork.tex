@@ -25,13 +25,8 @@ evaluation, which distinguishes between static (compile-time) and
 dynamic (runtime) stages. Given a program and values for all static
 inputs, partial evaluation generates a specialized program by
 performing computations that depend only on the static
-inputs~\cite{jones96}.  The roots of partial evaluation go back to
-Kleene's $s$-$m$-$n$ theorem~\cite{Kleene52},
-%Kleene did not intend to improve efficiency, however.  Lombardi
-%appears to be the first person to use the term in his work on
-%incremental computation~\cite{Lombardi67}.
-%There has since been an enormous body of work on partial evaluation,
-and we refer the reader to the book by Jones, Gommard, and Sestoft for
+inputs~\cite{jones96}.  
+We refer the reader to the book by Jones, Gommard, and Sestoft for
 a comprehensive discussion of partial evaluation work until the early
 90's~\cite{JGS93}.
 
@@ -107,8 +102,6 @@ Another class of precomputation techniques is incremental computation,
 where a program can efficiently respond to small changes in its inputs
 by only recomputing parts of the computation affected by the
 changes~\cite{DemersReTe81,PughTe89,RamalingamRe93,AcarBlBlHaTa09}.
-Thus, incremental computation can be thought of as a staged model,
-where changes in inputs come over a period of time in stages.
 However, unlike splitting, incremental computation does not require
 fixing any of its inputs and, in the general case, allows for all
 program inputs to change. Thus, the benefits of incremental
@@ -117,7 +110,7 @@ while it is possible to apply incremental computation to the
 quickselect example in \ref{sec:overview}, techniques would unfold the
 quickselect function based on the demanded ranks, potentially
 incurring linear time cost at each step of the algorithm (as opposed
-to the logarithmic result produced by splitting).  Unlike splitting,
+to the logarithmic result produced by splitting).  Moreover,
 incremental computation techniques must also maintain sophisticated
 data structures dynamically at run time to track what computations
 must be performed.

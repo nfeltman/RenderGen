@@ -3,16 +3,10 @@
 \section {Implementation}
 \label{sec:implementation}
 
-\subsection {Proof Implementation}
-
+\begin{abstrsyn}
 We have encoded the type system, dynamic semantics, splitting algorithm, and output semantics in Twelf,
 as well as all of the theorems of \ref{sec:semantics,sec:splitting}, and their proofs. 
-Details can be found in the supplementary materials.
-
-\subsection {Example Implementation}
-
-\begin{abstrsyn}
-We have a Standard ML implementation of the \lang\ language, a staged
+We also have a Standard ML implementation of the \lang\ language, a staged
 interpreter, the splitting algorithm, and an interpreter for split programs.
 This implementation extends the language described in \ref{sec:semantics} with 
 \rmint{}s,
@@ -23,8 +17,7 @@ datatype and function declarations, and
 deep pattern matching (including $\next{}$ and $\pure{}$ patterns).
 The code snippets in this paper are written in our concrete syntax, using 
 these additional features when convenient.
-
-We allow staging annotations around declarations. For example,
+Our expanded syntax allows staging annotations around declarations. For example,
 \begin{lstlisting}
 3`atsigngr{`1`
   datatype list = Empty | Cons of int * list
