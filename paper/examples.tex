@@ -210,8 +210,9 @@ fun tmap2 (f,()) ((l,q), p : tree) =
 val mapqss2 = tmap2 (qs2, ())`
 \end{lstlisting}
 %
-Indeed, observe that the argument \texttt{f} of \texttt{qs1} is called only once,
-whereas the corresponding argument \texttt{f} in \texttt{qs2} is evaluated once per element in \texttt{q}.
+Indeed, observe that the argument \texttt{f} (for which \texttt{qs1} is later substituted) of \texttt{tmap1} is called only once,
+whereas the corresponding argument \texttt{f} (for which \texttt{qs2} is later substituted) in \texttt{tmap2} is evaluated once 
+per element in the query list \texttt{q}.
 
 \subsection{Composing Graphics Pipeline Programs}
 \label{sec:graphics}

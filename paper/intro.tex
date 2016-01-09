@@ -92,8 +92,7 @@ the second function on each $y_i$.
 %
 \begin{lstlisting}
 fun @$F_\textrm{multipass}(x, y_1, y_2, \ldots, y_m)$@ = 
-  let @$z = f_1(x)$@
-  in @$f_2(z, y_1);  f_2(z, y_2); \ldots; f_2(z, y_m)$@
+  let @$z = f_1(x)$@ in @$f_2(z, y_1);  f_2(z, y_2); \ldots; f_2(z, y_m)$@
 \end{lstlisting}
 %
 The key difference between splitting and partial evaluation (or
