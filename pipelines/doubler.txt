@@ -1,0 +1,5 @@
+
+type gemShaderTy = (int * int -> $int) -> A * $bool -> $B
+type gemEngineTy = gemShaderTy -> A * $bool -> $(B*B)
+
+fun geminiEngine () = 
