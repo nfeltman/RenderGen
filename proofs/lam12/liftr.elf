@@ -614,6 +614,7 @@ conv-cong/lam : ({x : {L} term L} lang-convert (M (x lang1) : term lang1) (M' (x
 %worlds (term-block) (conv-conglam _ _).
 %total {} (conv-conglam _ _).}%
 
+%{
 lang-convert-total : {E : term L1} {L2} {E2 : term L2} lang-convert E L2 E2 -> type.
 %mode lang-convert-total +E +L2 -E' -Dconv.
 - : lang-convert-total ztup _ ztup conv-ztup.
@@ -681,6 +682,7 @@ lang-convert-total : {E : term L1} {L2} {E2 : term L2} lang-convert E L2 E2 -> t
 %%block convert-total-ignore-block = (convert-total-ignore-block_0 | convert-total-ignore-block_2).
 %worlds (convert-total-block) (lang-convert-total _ _ _ _).
 %total (D) (lang-convert-total D _ _ _).
+}%
 
 lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) -> type.
 %mode lang-convert_12-total +E -E'.
