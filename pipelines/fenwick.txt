@@ -1,0 +1,16 @@
+
+
+// sumrange : [int] * (int * int) * $(int * int) -> int * $int
+
+
+fun sumrange l next{(a,b)} =
+	let val (left,right,n0) = split l in
+	next
+	{
+		let val n = hold{n0} in
+		case compareRage n range of
+		  Less => prev{ sumrange  }
+		| Interior => 
+		| Greater =>  (a-n,b-n)
+
+	}
