@@ -6,7 +6,7 @@ type shaderTy = A * $int -> int * $B
 type engineTy = shaderTy -> A -> $(list B)
 
 fun nfoldEngine (s : shaderTy) (a : A) = 
-	let (n,srest) = strengthen (i => s (a,i)) in
+	let val (n,srest) = strengthen (i => s (a,i)) in
 	next{
 		let fun f i = prev{ srest next{i} }
 		in map f (range hold{n})

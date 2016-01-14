@@ -1,3 +1,13 @@
-// MapReduce pipeline
+// MAP-REDUCE
+// Basically, do a mapreduce query.
 
-type mapredShaderTy = 
+type shaderTy = A * $(Key * list B) -> list (Key * B) * $C
+type engineTy = shaderTy -> A -> $(list C)
+
+// sortbuckets : list (Key * B) -> list (Key * list B)
+
+fun mapreduceEngine (s : shaderTy) (a : A) = 
+	let val (list, srest) = strengthen (kl => s (a,kl)) in
+	next{
+		map (fn kl => prev{srest next{kl}}) hold{sortbuckets list}
+	}
