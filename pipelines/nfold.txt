@@ -1,0 +1,13 @@
+// STATIC NFOLD
+// Runs the second stage static n times, based on external input.
+
+type shaderTy = (list int -> $int) -> A * int -> $B
+type engineTy = shaderTy -> A * int -> $(list B)
+
+fun nfoldEngine (s : shaderTy) (a : A, n : int) = 
+	next{
+		let fun f i = prev{ 
+				s (fn l => next{nth i hold{l}}) (a,n)
+			}
+		in map f (range hold{n})
+	}

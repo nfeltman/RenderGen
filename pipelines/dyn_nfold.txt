@@ -1,0 +1,13 @@
+// DYNAMIC NFOLD
+// Runs the second stage static n times, dynamically (based on the shader).
+// No hold this time.
+
+type shaderTy = A * $int -> int * $B
+type engineTy = shaderTy -> A -> $(list B)
+
+fun nfoldEngine (s : shaderTy) (a : A) = 
+	let (n,srest) = strengthen (i => s (a,i)) in
+	next{
+		let fun f i = prev{ srest next{i} }
+		in map f (range hold{n})
+	}

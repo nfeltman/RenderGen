@@ -1,0 +1,13 @@
+// TWOFOLD
+// Runs the second stage two times.
+
+type shaderTy = (int * int -> $int) -> A -> $B
+type engineTy = shaderTy -> A -> $(B*B)
+
+fun twofoldEngine (s : shaderTy) (a : A) = 
+	next{
+		let fun f b = prev{ 
+				s (fn (x,y) => next{if b then hold{x} else hold{y}}) a
+			}
+		in (f true, f false)
+	}
