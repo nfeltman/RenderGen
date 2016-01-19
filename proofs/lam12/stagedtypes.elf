@@ -17,7 +17,7 @@ grnd-worG : ground-wor worG.
 %worlds () (ground-wor _).
 
 %% TYPE WELL-FORMED
-ty^wf : ty -> wor -> type.
+ty^wf : ty -> wor -> type. %name ty^wf Dwf.
 %mode ty^wf +T +W.
 ty^wf-unit	: ty^wf unit W.
 ty^wf-prod	: ty^wf (prod A B) W
@@ -89,6 +89,9 @@ of^-next	: of^ (next E) (fut A) wor1
 				<- ({x:term} of^ x A wor2 -> of^ (M x) B wor1).}% 
 of^-prev	: of^ (prev E) A wor2
 				<- of^ E (fut A) wor1.
+of^-stren 	: of^ (stren M) (curr B) wor1
+				<- ({x} of^ x A wor2 -> of^ (M x) (curr B) wor1)
+				<- ty^wf A wor2.
 of^-grnd 	: of^ (grnd E) (curr T) wor1
 				<- of^ E T worG.
 of^-letg 	: of^ (letg E M) T2 wor1
@@ -142,6 +145,8 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- ({x:term} {Dof : of^ x A wor2} {_ : of^-wf Dof Dwf1} of^-wf (DofM x Dof) Dwf2).}%
 - : of^-wf (of^-prev Dof) Dwf
 	<- of^-wf Dof (ty^wf-fut Dwf).
+- : of^-wf (of^-stren Dwf1 DofM) Dwf2
+	<- ({x} {ofx : of^ x A wor2} of^-wf ofx Dwf1 -> of^-wf (DofM x ofx) Dwf2).
 - : of^-wf (of^-exv Dof) Dwf
 	<- of^-wf Dof Dwf.
 - : of^-wf (of^-grnd Dof) (ty^wf-curr Dwf)
@@ -154,7 +159,7 @@ of^-wf : of^ E T W -> ty^wf T W -> type.
 	<- ({x} {dof} of^-wf dof DwfE -> of^-wf (DofM x dof) DwfM).
 %block var-of^-wf : 
 	some {L : lang} {A : ty} {W : wor} {Dwf : ty^wf A W}
-	block {x:term L} {Dof : of^ x A W} {_ : of^-wf Dof Dwf}.
+	block {x:term L} {ofx : of^ x A W} {_ : of^-wf ofx Dwf}.
 %worlds (var-of^-wf | term-block) (of^-wf _ _).
 %total D (of^-wf D _).
 
@@ -278,8 +283,10 @@ form^next-c : form^ (next E) comp1 wor1
 			<- form^ E comp1 wor2.
 form^next-n : form^ (next E) norm1 wor1
 			<- form^ E vars2 wor2.
-form^prev  : form^ (prev E) comp1 wor2
+form^prev  	: form^ (prev E) comp1 wor2
 			<- form^ E comp1 wor1.
+form^stren  : form^ (stren M) comp1 wor1
+			<- {x} form^ x vars2 wor2 -> form^ (M x) comp1 wor1.
 
 form^grnd  : form^ (grnd E) N wor1
 			<- form^ E N worG.
@@ -293,3 +300,184 @@ form^caseg : form^ (caseg E M N) comp1 wor1
 
 %block form^-block : some {L} {N} {W} {x : term L} block {_ : form^ x N W}.
 %block of^-form^-block = (ofs-block | form^-block).
+
+of^strengthen-2/g : ({x} of^ x A wor2 -> of^ (E x) B worG) -> ({x} eq-term (E x) E') -> type.
+%mode of^strengthen-2/g +Dof -Deq.
+- : of^strengthen-2/g ([x][ofx] Dof) ([x] eq-term_). %% covers ztup and variable cases
+- : of^strengthen-2/g ([x][ofx] of^-exv (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong exv (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-tup (Dof1 x ofx) (Dof2 x ofx)) Deq'
+	<- of^strengthen-2/g Dof1 Deq1
+	<- of^strengthen-2/g Dof2 Deq2
+	<- {x} eq-cong2 tup (Deq1 x) (Deq2 x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-pi1 (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong pi1 (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-pi2 (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong pi2 (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-inj1 Dwf (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong inj1 (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-inj2 Dwf (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong inj2 (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-roll Dwf (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong roll (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-unrl (Dof x ofx)) Deq'
+	<- of^strengthen-2/g Dof Deq
+	<- {x} eq-cong unrl (Deq x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-case (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) Deq'
+	<- of^strengthen-2/g Dof1 Deq1
+	<- ({y}{ofy} of^strengthen-2/g ([x][ofx] Dof2 x ofx y ofy) (Deq2 y))
+	<- ({y}{ofy} of^strengthen-2/g ([x][ofx] Dof3 x ofx y ofy) (Deq3 y))
+	<- {x} eq-cong/case (Deq1 x) ([y] Deq2 y x) ([y] Deq3 y x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-lam Dwf (Dof x ofx)) Deq'
+	<- ({y}{ofy}{z}{ofz} of^strengthen-2/g ([x][ofx] Dof x ofx y ofy z ofz) (Deq y z))
+	<- {x} eq-cong/lam ([y][z] Deq y z x) (Deq' x).
+- : of^strengthen-2/g ([x][ofx] of^-app (Dof1 x ofx) (Dof2 x ofx)) Deq'
+	<- of^strengthen-2/g Dof1 Deq1
+	<- of^strengthen-2/g Dof2 Deq2
+	<- {x} eq-cong2 app (Deq1 x) (Deq2 x) (Deq' x).
+ %worlds (term-block | of^-form^-block) (of^strengthen-2/g _ _).
+ %total D (of^strengthen-2/g D _). 
+
+
+of^strengthen/of : ({x} of^ x A W1 -> of^ E B W) -> of^ E B W -> type.
+%mode of^strengthen/of +Dof -Dof'.
+- : of^strengthen/of ([x][ofx] Dof) Dof. %% covers ztup and variable cases
+- : of^strengthen/of ([x][ofx] of^-exv (Dof x ofx)) (of^-exv Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-tup (Dof1 x ofx) (Dof2 x ofx)) (of^-tup Dof1' Dof2')
+	<- of^strengthen/of Dof1 Dof1'
+	<- of^strengthen/of Dof2 Dof2'.
+- : of^strengthen/of ([x][ofx] of^-pi1 (Dof x ofx)) (of^-pi1 Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-pi2 (Dof x ofx)) (of^-pi2 Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-roll T (Dof x ofx)) (of^-roll T Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-unrl (Dof x ofx)) (of^-unrl Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-inj1 T (Dof x ofx)) (of^-inj1 T Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-inj2 T (Dof x ofx)) (of^-inj2 T Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-case (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (of^-case Dof1' Dof2' Dof3')
+	<- of^strengthen/of Dof1 Dof1'
+	<- ({y} {ofy : of^ y A W} 
+		of^strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<- {y} {ofy : of^ y B W} 
+		of^strengthen/of ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : of^strengthen/of ([x][ofx] of^-lam Dwf (Dof x ofx)) (of^-lam Dwf Dof')
+	<- {f} {off}  {y} {ofy} 
+		of^strengthen/of ([x][ofx] Dof x ofx f off y ofy) (Dof' f off y ofy).
+- : of^strengthen/of ([x][ofx] of^-app (Dof1 x ofx) (Dof2 x ofx)) (of^-app Dof1' Dof2')
+	<- of^strengthen/of Dof1 Dof1'
+	<- of^strengthen/of Dof2 Dof2'.
+- : of^strengthen/of ([x][ofx] of^-let (Dof1 x ofx) (Dof2 x ofx)) (of^-let Dof1' Dof2')
+	<- of^strengthen/of Dof1 Dof1'
+	<- {y} {ofy} of^strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : of^strengthen/of ([x][ofx] of^-next (Dof x ofx)) (of^-next Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-prev (Dof x ofx)) (of^-prev Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-grnd (Dof x ofx)) (of^-grnd Dof')
+	<- of^strengthen/of Dof Dof'.
+- : of^strengthen/of ([x][ofx] of^-letg (Dof1 x ofx) (Dof2 x ofx)) (of^-letg Dof1' Dof2')
+	<- of^strengthen/of Dof1 Dof1'
+	<- {y} {ofy} of^strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : of^strengthen/of ([x][ofx] of^-caseg (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (of^-caseg Dof1' Dof2' Dof3')
+	<- of^strengthen/of Dof1 Dof1'
+	<- ({y} {ofy} of^strengthen/of ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<-  {y} {ofy} of^strengthen/of ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : of^strengthen/of ([x][ofx] of^-stren Dwf (Dof x ofx)) (of^-stren Dwf Dof')
+	<- {y} {ofy} of^strengthen/of ([x][ofx] Dof x ofx y ofy) (Dof' y ofy).
+ %worlds (term-block | of^-form^-block) (of^strengthen/of _ _).
+ %total D (of^strengthen/of D _). 
+
+
+form^strengthen/form : ({x} form^ x vars2 wor2 -> form^ E N W) -> form^ E N W -> type.
+%mode form^strengthen/form +Dof -Dof'.
+- : form^strengthen/form ([x][ofx] Dof) Dof. %% covers ztup and variable cases
+- : form^strengthen/form ([x][ofx] form^exv (Dof x ofx)) (form^exv Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^tup-c (Dof1 x ofx) (Dof2 x ofx)) (form^tup-c Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- form^strengthen/form Dof2 Dof2'.
+- : form^strengthen/form ([x][ofx] form^tup-n (Dof1 x ofx) (Dof2 x ofx)) (form^tup-n Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- form^strengthen/form Dof2 Dof2'.
+- : form^strengthen/form ([x][ofx] form^pi1-c (Dof x ofx)) (form^pi1-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^pi2-c (Dof x ofx)) (form^pi2-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^pi1-n2 (Dof x ofx)) (form^pi1-n2 Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^pi2-n2 (Dof x ofx)) (form^pi2-n2 Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^roll-c (Dof x ofx)) (form^roll-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^roll-n (Dof x ofx)) (form^roll-n Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^unrl-c (Dof x ofx)) (form^unrl-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^unrl-n2 (Dof x ofx)) (form^unrl-n2 Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^inj1-c (Dof x ofx)) (form^inj1-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^inj2-c (Dof x ofx)) (form^inj2-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^inj1-n (Dof x ofx)) (form^inj1-n Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^inj2-n (Dof x ofx)) (form^inj2-n Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^case-c (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx) Dfsw) (form^case-c Dof1' Dof2' Dof3' Dfsw)
+	<- form^strengthen/form Dof1 Dof1'
+	<- ({y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : form^strengthen/form ([x][ofx] form^case-c2 (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (form^case-c2 Dof1' Dof2' Dof3')
+	<- form^strengthen/form Dof1 Dof1'
+	<- ({y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : form^strengthen/form ([x][ofx] form^case-n2 (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (form^case-n2 Dof1' Dof2' Dof3')
+	<- form^strengthen/form Dof1 Dof1'
+	<- ({y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : form^strengthen/form ([x][ofx] form^lam1 (Dof x ofx) Dfsw) (form^lam1 Dof' Dfsw)
+	<- {y} {ofy} {z} {ofz} form^strengthen/form ([x][ofx] Dof x ofx y ofy z ofz) (Dof' y ofy z ofz).
+- : form^strengthen/form ([x][ofx] form^lam2c (Dof x ofx)) (form^lam2c Dof')
+	<- {y} {ofy} {z} {ofz} form^strengthen/form ([x][ofx] Dof x ofx y ofy z ofz) (Dof' y ofy z ofz).
+- : form^strengthen/form ([x][ofx] form^lam2n (Dof x ofx)) (form^lam2n Dof')
+	<- {y} {ofy} {z} {ofz} form^strengthen/form ([x][ofx] Dof x ofx y ofy z ofz) (Dof' y ofy z ofz).
+- : form^strengthen/form ([x][ofx] form^app-c (Dof1 x ofx) (Dof2 x ofx)) (form^app-c Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- form^strengthen/form Dof2 Dof2'.
+- : form^strengthen/form ([x][ofx] form^app-n2 (Dof1 x ofx) (Dof2 x ofx)) (form^app-n2 Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- form^strengthen/form Dof2 Dof2'.
+- : form^strengthen/form ([x][ofx] form^let-c (Dof1 x ofx) (Dof2 x ofx)) (form^let-c Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : form^strengthen/form ([x][ofx] form^let-n2 (Dof1 x ofx) (Dof2 x ofx)) (form^let-n2 Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : form^strengthen/form ([x][ofx] form^next-c (Dof x ofx)) (form^next-c Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^prev (Dof x ofx)) (form^prev Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^grnd (Dof x ofx)) (form^grnd Dof')
+	<- form^strengthen/form Dof Dof'.
+- : form^strengthen/form ([x][ofx] form^letg (Dof1 x ofx) (Dof2 x ofx)) (form^letg Dof1' Dof2')
+	<- form^strengthen/form Dof1 Dof1'
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy).
+- : form^strengthen/form ([x][ofx] form^caseg (Dof1 x ofx) (Dof2 x ofx) (Dof3 x ofx)) (form^caseg Dof1' Dof2' Dof3')
+	<- form^strengthen/form Dof1 Dof1'
+	<- ({y} {ofy} form^strengthen/form ([x][ofx] Dof2 x ofx y ofy) (Dof2' y ofy))
+	<-  {y} {ofy} form^strengthen/form ([x][ofx] Dof3 x ofx y ofy) (Dof3' y ofy).
+- : form^strengthen/form ([x][ofx] form^stren (Dof x ofx)) (form^stren Dof')
+	<- {y} {ofy} form^strengthen/form ([x][ofx] Dof x ofx y ofy) (Dof' y ofy).
+ %worlds (term-block | of^-form^-block) (form^strengthen/form _ _).
+ %total D (form^strengthen/form D _). 

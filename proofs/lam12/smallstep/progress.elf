@@ -1,7 +1,7 @@
 
 
 %% DONE-OR-STEP JUDGEMENT
-dos : wor -> term L -> type.
+dos : wor -> term L -> type. %name dos Ddos.
 dos-done	: dos W (exv E).
 dos-mstep	: mstep W E E' -> dos W E.
 dos-lstep	: lstep E Q E' -> dos wor1 E.
@@ -242,6 +242,34 @@ prog/caseg : {M}{N} dos wor1 E -> form^ E comp1 wor1 -> of^ E (curr (sum A B)) w
 	<- prog/caseg/pred M N Dof Dval Dstep.
 %worlds (von-block) (prog/caseg _ _ _ _ _ _).
 %total (Dvos) (prog/caseg Dvos _ _ _ _ _).
+
+%% stren/strengthen : of^ (stren ([x] (exv V)))
+
+prog/stren/help : 
+	({x} of^ x A wor2 -> of^ (exv (V x)) (curr B) wor1) -> 
+	({x} form^ x vars2 wor2 -> form^ (exv (V x)) comp1 wor1) -> 
+	dos wor1 (stren ([x] (exv (V x)))) -> type.
+%mode prog/stren/help +Dof +Dform -Deq.
+- : prog/stren/help ([x][ofx] of^-exv (of^-grnd (Dof x ofx))) ([x][vx] form^exv _) (dos-mstep Dstep)
+	<- of^strengthen-2/g Dof Deq
+	<- ({x} eq-cong ([y] exv (grnd y)) (Deq x) (Deq1 x))
+	<- eq-cong/1 stren Deq1 (Deq2 : eq-term (stren ([x] exv (grnd (V x)))) (stren ([x] exv (grnd V'))))
+	<- eq-term-sym Deq2 Deq3
+	<- mstep-resp ms-stren-r Deq3 eq-term_ Dstep.
+%worlds (von-block) (prog/stren/help _ _ _).
+%total {} (prog/stren/help _ _ _).
+
+prog/stren : 
+	({x} dos wor1 (M x)) -> 
+	({x} of^ x A wor2 -> of^ (M x) (curr B) wor1) -> 
+	({x} form^ x vars2 wor2 -> form^ (M x) comp1 wor1) -> 
+	dos wor1 (stren M) -> type.
+%mode prog/stren +Ddos +Dof +Dform -Ddos'.
+- : prog/stren ([x] dos-mstep (Dstep x)) _ _ (dos-mstep (ms-stren-s Dstep)).
+- : prog/stren ([x] dos-done) Dof Dform Ddos
+	<- prog/stren/help Dof Dform Ddos.
+%worlds (von-block) (prog/stren _ _ _ _).
+%total {} (prog/stren _ _ _ _).
 
 %% PROGRESS
 prog : of^ E T W -> form^ E comp1 W -> dos W E -> type.

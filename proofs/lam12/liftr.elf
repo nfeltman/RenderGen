@@ -45,6 +45,7 @@ prev  : term L -> term L.
 grnd  : term L -> term L.
 letg  : term L -> (term L -> term L) -> term L.
 caseg : term L -> (term L -> term L) -> (term L -> term L) -> term L.
+stren : (term L -> term L) -> term L.
 exv   : term L -> term L.
 fix   : (term L -> term L) -> term L.
 
@@ -322,6 +323,9 @@ lang-indep : neq-lang L1 L2 -> {E : term L1 -> term L2} ({x : term L1} eq-term (
 - : lang-indep Dneq ([x] prev (E x)) Deq'
   <- lang-indep Dneq E Deq
   <- {x} eq-cong prev (Deq x) (Deq' x).
+- : lang-indep Dneq ([x] stren ([y] E y x)) Deq'
+  <- ({y} lang-indep Dneq (E y) ([x] Deq x y))
+  <- {x} eq-cong/1 stren (Deq x) (Deq' x).
 - : lang-indep Dneq ([x] exv (E x)) Deq'
   <- lang-indep Dneq E Deq
   <- {x} eq-cong exv (Deq x) (Deq' x).
@@ -541,6 +545,8 @@ conv-lam : lang-convert (lam M) L2 (lam (M' ztup (ztup : term L1)))
         {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M f x) L2 (M' f x f' x' : term L2).
 conv-fix : lang-convert (fix M) L2 (fix (M' (ztup : term L1)))
     <- {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2).
+conv-stren : lang-convert (stren M) L2 (stren (M' (ztup : term L1)))
+    <- {x:term L1}{x': term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2).
 conv-case : lang-convert (case E M N) L2 (case E' (M' (ztup : term L1)) (N' (ztup : term L1)))
     <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (N x) L2 (N' x x' : term L2))
     <- ({x:term L1}{x':term L2} lang-convert x L2 x' -> lang-convert (M x) L2 (M' x x' : term L2))
@@ -731,6 +737,9 @@ lang-convert_12-total : {E : term lang1} lang-convert E lang2 (E2 : term lang2) 
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (prev E) (conv-prev Dconv')
     <- lang-convert_12-total E Dconv'.
+- : lang-convert_12-total (stren M) (conv-stren DconvM)
+    <- ({x}{x2}{convx : lang-convert x lang2 x2} lang-convert_12-total x convx -> 
+        lang-convert_12-total (M x) (DconvM x x2 convx)).
 - : lang-convert_12-total (grnd E) (conv-grnd Dconv')
     <- lang-convert_12-total E Dconv'.
 - : lang-convert_12-total (letg E M) (conv-letg Dconv' DconvM)

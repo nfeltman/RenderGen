@@ -149,9 +149,20 @@ ms-prev-s	: mstep wor2 (prev E) (prev E')
 			<- mstep wor1 E E'.
 ms-prev-ls	: mstep wor2 (prev E) (let (exv Q) ([x] prev (E' x)))
 			<- lstep E Q E'.
+ms-stren-s	: mstep wor1 (stren M) (stren M')
+			<- {x} mstep wor1 (M x) (M' x).
+ms-stren-ls	: mstep wor1 (stren M) (stren ([x] stren ([y] M' x y)))
+			<- ({x} lstep (M x) (Q x) ([y] M' x y)).
+ms-stren-r	: mstep wor1 (stren ([x] (exv V))) (exv V).
 
 %freeze mstep.
 %freeze lstep.
+
+mstep-resp : mstep W E1 E2 -> eq-term E1 E1' -> eq-term E2 E2' -> mstep W E1' E2' -> type.
+%mode mstep-resp +D1 +D2 +D3 -D3.
+- : mstep-resp Dstep eq-term_ eq-term_ Dstep.
+%worlds (term-block) (mstep-resp _ _ _ _).
+%total {} (mstep-resp _ _ _ _).
 
 %% PATHS
 
